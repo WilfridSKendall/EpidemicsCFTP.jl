@@ -1,0 +1,132 @@
+\documentclass[]{article}
+\usepackage{ifpdf}
+
+\synctex=1
+
+\newcommand{\Title}{Perfect Epidemics}
+\usepackage[british]{babel}
+\newcommand{\Date}{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Various packages.
+\usepackage{calc, xspace}
+\usepackage{amsmath, amsthm, amsfonts, euscript}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Bibtex
+\usepackage[longnamesfirst]{natbib}
+\setcitestyle{round}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Font selection
+% \usepackage{times}
+\usepackage[T1]{fontenc}
+%\usepackage[utf8x]{inputenc}
+% \usepackage{ccfonts,eulervm}
+\usepackage[expert,altbullet,seriftt]{lucidabr}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Tracking queries (NB also loads colours!)
+\RequirePackage[no-comment]{WSKtracking}  %% Colour and Graphics
+
+\definecolor{linkcolor}{named}{Maroon}
+\definecolor{citecolor}{named}{PineGreen}
+%\definecolor{pagecolor}{named}{Maroon}
+\definecolor{urlcolor}{named}{RoyalPurple}
+\definecolor{okcolor}{named}{OliveGreen}
+\definecolor{alertcolor}{named}{BrickRed}
+
+\ifpdf
+ \DeclareGraphicsExtensions{.png,.jpg}%
+\else
+ \DeclareGraphicsExtensions{.eps,.ps,.png,.jpg}%
+\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Page format and latex key display
+%\usepackage{a4wide}
+\usepackage[totalwidth=480pt,totalheight=680pt]{geometry}
+% totalwidth  <=  8.26in
+% totalheight <= 11.00in
+%
+\usepackage[notcite,color]{showkeys}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Material for hyperref package.
+ \usepackage[
+ \ifpdf
+   pdftex,
+   pdfstartview=FitH,
+   unicode,
+ \fi
+ ]{hyperref}
+% \PrerenderUnicode{Π}
+% Then use, eg, \texorpdfstring{$\Pi$}{Π} in section title.
+ \hypersetup{
+ pdfauthor={Stephen B. Connor and Wilfrid S. Kendall},
+ pdftitle={\Title},
+% pdfsubject={Coupling for Brownian motions augmented with local times},
+ }
+ \hypersetup{pdfstartview=FitH}
+ \hypersetup{citecolor=citecolor}
+ \hypersetup{linkcolor=linkcolor}
+% \hypersetup{pagecolor=pagecolor}
+ \hypersetup{urlcolor=urlcolor}
+ \hypersetup{colorlinks=true}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Mathematics
+\RequirePackage{WSKmaths}
+
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Document
+ \begin{document}
+ \TrackingPreamble
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Title page
+ \title{\Title}
+ \author{%
+\href{http://maths.york.ac.uk/www/sbc502}{Stephen B. Connor} 
+\footnote{\href{mailto:stephen.connor@york.ac.uk}%
+{\scriptsize stephen.connor@york.ac.uk}}%
+ \and
+\href{http://warwick.ac.uk/wsk}{Wilfrid S. Kendall}%
+\footnote{\href{mailto:w.s.kendall@warwick.ac.uk}%
+{\scriptsize w.s.kendall@warwick.ac.uk}}%
+}
+ \date{\Date}
+ \maketitle
+
+% =========================================   
+\begin{abstract}\noindent
+\TBC{(abstract)}
+\end{abstract}
+
+% =========================================   
+ \section{Introduction}\label{sec:introduction}
+   \TBC{Unfinished!\\
+   Long-ago previous work, from which we can eventually build up a historical account (no particular need to look at this right now!)\\
+   \cite{CaiKendall-2002},
+   \cite{KendallSaunders-1983},
+   \cite{KendallThoennes-1999}.}
+
+% =========================================   
+ \section{Conclusion}\label{sec:conclusion}
+   \TBC{Unfinished!}
+
+% =========================================   
+%   \scriptsize \input hyperbib
+%   \label{sec:bibliography}
+   \bibliographystyle{chicago}
+   \bibliography{PerfectEpidemics}
+
+\appendix
+\twocolumn
+\pagenumbering{alph}
+\setcounter{page}{1}
+
+\TrackingPostamble
+
+\end{document}

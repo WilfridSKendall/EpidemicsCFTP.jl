@@ -1,0 +1,64 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-06-04T16:33:48+01:00
+
+====== Perfect Simulation Talk ======
+Created Wednesday 04 June 2014
+
+Recall, from Giacomo's talk of last week, the notion of Markov chain Monte Carlo. One has a target distribution π on a state-space //S//. This target distribution may be specified as a posterior distribution arising from a problem in Bayesian data analysis, or it may be the distribution of a point process specified by local properties, or it may even itself be defined in terms of a Markov chain such as an M/G/c queue, or an S-I-R epidemic. Typically it is too complicated for easy calculation, and so one way to deal with it is to learn how to simulate from it. If one can construct a simulation algorithm which draws from π then one can produce a sequence of samples from π and thus use empirical statistics (frequency estimates of means, variances, covariances, ...) to learn what one wants to know about π.
+
+The MCMC way to proceed is to construct a Markov chain which has π as its (unique) equilibrium. The Markov chain is question is designed so that it is relatively easy to simulate, //and// so that hopefully) it converges reasonably fast to π in some suitable metric (commonly the metric of total variation, though there are better metrics for specific applications). Technically, one says that it is required for the chain to have reasonably short "burn-in". One then runs the Markov chain for sufficiently long that one has reaonable confidence that it is near equilbrium, and then draws a sample. To get more than one sample, either one can then repeat the whole process or one continues the original simulation for long enough that "mixing" is thought to have happened, and then one draws another sample. The objective o f this "mixing" is to ensure that successive draws are, say, nearly independent, or (more commonly) nearly uncorrelated (a rather easier condition to fulfil).
+
+Note that "burn-in" is a bit different from "mixing"; "burn-in" will depend on choice of the starting point of the chain (a substantial issue in high-dimensional problems).
+
+It is commonplace in the MCMC community to point out that MCMC is typically //slow//, so that in practice one should try all sorts of other methods before resorting to MCMC. Remember this! It is often a mistake to launch straight into an MCMC solution before trying other tricks.
+
+At any rate, let's review which page we are on for MCMC. Given the target π, design the chain //X//  to have acceptable burn-in time and good mixing properties. Then simulate the chain for long enough to ensure burn-in has happened (10^{2} iterations? 10^{6}? 10^{9}?) and then draw the first sample. Cross fingers and hope for good mixing too, so that you can sample at successive intervals to get a nearly independent or nearly uncorrelated sample. The practical person needs to know, //exactly// how long is burn-in? (They also need to know about mixing time, but we won't deal with that here.)
+
+===== Estimating burn-in =====
+There are several approaches:
+* if the set-up is very symmetrical, then group-theoretic methods will work very well. See the famous Bayer & Diaconis (1992) paper, which showed that about 8 riffle shuffles suffice to randomly shuffle a pack of 52 cards (less would not be enough, more would be unnecessarily many). 
+* a spectral method known as "canonical paths" can produce upper bounds for set-ups with good structure. See Jerrum & Sinclair (1996), whose techniques can be used to get upper bounds for problems involving sampling random matchings, related to Giacomo's thesis work.
+* coupling can be used; if one can couple two realizations of a Markov chain starting from different starting points, and estimate the rate at which coupling occurs, then a simple argument shows how to exploit this estimate to control burn-in.
+* or one can get very empirical, and produce diagnositc methods which aim to show when burn-in has occurred.
+The first method is wonderful when it applies — but really does require a great deal of symmetry. The second and third are liable to produce substantial over-estimates. The fourth is good at indicating when burn-in has definitely not occurred. However it is a rather simple matter to produce target distributions π and Markov chains //X// which will produce diagnostics of satisfactory appearance while actually being very far from equilibrium. Thus diagnostics are not useless — they may be able to indicate when something is wrong — but still fall short of giving complete confidence.
+
+For a long time it was felt that MCMC was the sort of problem where one should not expect to evade uncertainty about length of burn-in. Do bear in mind, this is not an uncommon situation in mathematical science.  Pure mathematical methods often only prove rigorous results for vastly over-simplified situations; actual methods in asymptotics and simulation and approximation have to rely on less quantifiable matters of good judgement and insight. MCMC burn-in looks like a clear case where this has to hold.
+
+===== Perfection =====
+So it came as a big shock to all when Propp & Wilson (1996) showed that in favourable situations it was possible to have one's cake and eat it! They showed how a relatively simple modification of the MCMC procedure would in suitable cases allow one to make an //exact// draw from equilibrium. The price is two-fold: (a) the algorithm will take a random amount of time to terminate, and (b) typically it will take longer, and be more complicated, than the straightforward MCMC run. But Propp and Wilson showed that the algorithm could produce an exact draw from the critical Ising model on a 4200×4200 grid. Diaconis said, when he first saw the resulting image, it was like seeing the hidden face of the planet Mars.
+
+Propp and Wilson called this method "Coupling from the Past" (CFTP), and described it as a method of "exact simulation". In a follow-up paper (Kendall 1998) I called it "perfect simulation", and the name appears to have stuck.
+
+===== CFTP =====
+To understand CFTP, consider the following caricature of conventional MCMC. Start at time 0 at a given state (call it //i//_{0}), and simulate your chain //X// out to time //n//. If //n// is large enough, then //X//(//n//) will be close to equilibrium π. We could imagine the simulation procedure as being a random input-output map //F//_{(0,n)} producing a result //X//(//n//) = //F//_{(0,n)}(//i//_{0}) from input //i//_{0}. If //n// is not big enough to exceed burn-in, then increase it: look at (say) //X//(2n) = //F//_{(0,2n)}(//i//_{0}) = //F//_{(n,2n)}(//F//_{(0,n)}(//i//_{0})). If 2//n// is not big enough, then maybe try 4//n//, and so forth.
+Now adopt a different perspective. Suppose that instead you think of starting at time -//n//, and look at the result //F//_{(-n,0)}(//i//_{0}). If //n// is not big enough, then start from earlier: look at  //F//_{(-2n,0)}(//i//_{0}) = //F//_{(-n,0)}(//F//_{(-2n,-n)}(//i//_{0})). If 2//n// is not big enough, then maybe try 4//n//, and so forth.
+This "backwards time" perspective has two interesting features.
+1. If one has to extend, then in order to compute //F//_{(-2n,0)}(//i//_{0}) = //F//_{(-n,0)}(//F//_{(-2n,-n)}(//i//_{0})), one must know not //F//_{(-n,0)}(//i//_{0}). but //F//_{(-n,0)}(//k//) where //k //= //F//_{(-2n,-n)}(//i//_{0}). So, in order to be sure of being able to extend, one needs somehow to record //all //possible  //F//_{(-n,0)}(//k//). Or, if you like, one must specify the entire input-output map  //F//_{(-n,0);}
+2. on the other hand, suppose that at some stage one achieves the result that //F//_{(-n,0)} has a singleton point image. Then any further extensions back to time -2//n//, or //-4n//, or whatever, cannot affect the answer //F//_{(-m,0)} for //m// ≥ //n//. it will be as if one has produced a simulation from time minus infinity. And then the conventional Markov chain theory hints that it must then be the case that the output in the singleton point image must be a perfect draw from equilibrium.
+These two points capture the trade-off of perfect simulation. On the one hand, CFTP requires one somehow to track all possible outputs of all possible inputs — as many inputs as there are points in the state-space (reality check: Ising model on a 4200×4200 grid has state space of cardinality 2**17640000). So one //must// be able to find clever ways to track all these inputs and outputs. On the other hand, by extending backwards in time, if the input-output maps are designed so as to have atendency to coalesce then perfect simulation can happen.
+
+Now you see where the "Coupling" and the "from the Past" come from: "from the Past", because we extend simulations back into the past; "Coupling", because the task of designing good input-output maps is exactly the task of designing couplings of the Markov chain which couple may different realizations simultaneously. 
+
+===== Illustration =====
+The classic illustration of CFTP concerns simulation of reflecting random walk on the state space {0, 1, 2, ..., 10} (say). "Reflection" means that if the random walk tries to push outside the boundary (jumping +1 from state 10, or jumping -1 from state 0) then that particular transition is forbideen and the chain stays where it is for that time epoch. In that case we can design the input-output maps so that all the coupled chains make the same +1 or -1 jump except where forbidden by the reflection rule. Coalescence happens at the boundaries 0 and 10, two trajectories coalescing at a time, and the whole scenario described above Just Works; moreover one can track the entire input-output map just by keeping track of what happens to the highest and the lowest trajectories.  
+
+===== Further topics =====
+Many people thought that CFTP could work only when the state space was "finite". They were wrong (see Kendall 1998). Many people thought CFTP would necessarily involve simulation backwards in time, so that it would be hard to produce sequential samples. They were wrong (see Wilson, 2000). Many people thought it could work only when there was monotonicity. They were wrong (see Murdoch and Green, 1998, also Kendall, 2004). Many people thought that CFTP methods were confined to the case of geometric ergodicity. They were wrong (see Connor and Kendall, 2007) .
+
+
+===== Further reading =====
+Look at Kendall (2005) for a survey of CFTP techniques (much more than is discussed here)  including mathematical proofs; look at Kendall (2014) for a tutorial including actual implementations in R. Most recently my attention has focussed on trying to push perfect simulation in actual applied scenarios: see Connor & Kendall (2014) for an application to M/G/c queues (and we hope soon to report on applications to S-I-R epidemics).
+
+===== References =====
+[ ] Bayer, D., & Diaconis, P. (1992). Trailing the dovetail shuffle to its lair. The Annals of Applied Probability, 2(2), 294-313.
+[ ] Connor, S. B., & Kendall, W. S. (2007). Perfect simulation for a class of positive recurrent Markov chains. The Annals of Applied Probability, 17(3), 781-808. correction (5/6), 1808-1810.
+[ ] Connor, S. B., & Kendall, W. S. (2014). Perfect Simulation of M/G/c Queues. arXiv, 1402.7248, 23 pp.
+[ ] Jerrum, M., & Sinclair, A. (1996). The Markov chain Monte Carlo method: an approach to approximate counting and integration. In D. S. Hochbaum (Ed.), Approximation algorithms for NP-hard problems (pp. 482-520). PWS Publishing.
+[ ] Kendall, W. S. (1998). Perfect simulation for the area-interaction point process. In L. Accardi & C. C. Heyde (Eds.), Probability Towards 2000 (pp. 218-234). New York: Springer-Verlag.
+[ ] Kendall, W. S. (2004). Geometric Ergodicity and Perfect Simulation. Electronic Communications in Probability, 9(Paper 15), 140-151.
+[ ] Kendall, W. S. (2005). Notes on Perfect Simulation. In Wilfrid S Kendall and F. Liang and J.-S. Wang (Ed.), Markov chain Monte Carlo: Innovations and Applications (pp. 93-146). Singapore: World Scientific.
+[ ] Kendall, W. S. (2014). Introduction to CFTP using R. In V. Schmidt (Ed.), Stochastic Geometry, Spatial Statistics and Random Fields (p. to appear). Springer.
+[ ] Murdoch, D. J., & Green, P. J. (1998). Exact Sampling from a Continuous State Space. Scandinavian Journal of Statistics Theory and Applications, 25, 483-502.
+[ ] Propp, J. G., & Wilson, D. B. (1996). Exact sampling with coupled Markov chains and applications to statistical mechanics. Random Structures and Algorithms, 9, 223-252.
+[ ] Wilson, D. B. (2000). How to couple from the past using a read-once source of randomness. Random Structures and Algorithms, 16(1), 85-113.

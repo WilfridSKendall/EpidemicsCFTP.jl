@@ -7,8 +7,8 @@
 # ----------------------------------------------
 # Shell:
 SHELL := /bin/bash
-WSKLIB := $(HOME)/lib
-export PYTHONPATH=/home/wilfrid/lib/python
+# WSKLIB := $(HOME)/lib
+export PYTHONPATH=$(HOME)/lib/python
 export DISPLAY=:0.0
 
 # ----------------------------------------------

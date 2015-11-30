@@ -92,7 +92,7 @@ products.txt: Makefile
 
 # ----------------------------------------------
 # Bibliography:
-$(title).bib: $(HOME)/Reading/+OngoingProjects-$(title).bib
+$(title).bib: $(HOME)/Reading/$(title).bib
 	sed -e's/\\o /{\\o}/' -e's/∞/$$\\infty$$/' $< > $(title).bib
 
 # ----------------------------------------------

@@ -7,8 +7,8 @@
 # ----------------------------------------------
 # Shell:
 SHELL := /bin/bash
-WSKLIB := $(HOME)/lib
-export PYTHONPATH=/home/wilfrid/lib/python
+# WSKLIB := $(HOME)/lib
+export PYTHONPATH=$(HOME)/lib/python
 export DISPLAY=:0.0
 
 # ----------------------------------------------
@@ -92,7 +92,7 @@ products.txt: Makefile
 
 # ----------------------------------------------
 # Bibliography:
-$(title).bib: $(HOME)/Reading/+OngoingProjects-$(title).bib
+$(title).bib: $(HOME)/Reading/$(title).bib
 	sed -e's/\\o /{\\o}/' -e's/∞/$$\\infty$$/' $< > $(title).bib
 
 # ----------------------------------------------

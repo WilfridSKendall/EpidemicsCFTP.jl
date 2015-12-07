@@ -74,7 +74,7 @@ biblio: $(title).bib
 
 # ----------------------------------------------
 # Remove temporary files:
-clean:: ; -rm \#*\# *~ *.log *.blg *.toc *.out *.synctex.gz
+clean: ; -rm \#*\# *~ *.log *.blg *.toc *.out *.synctex.gz
 # ----------------------------------------------
 # Remove temporary, auxiliary files AND pdf files:
 virgin: clean ; -rm *.aux *.bbl *.pdf *.cache

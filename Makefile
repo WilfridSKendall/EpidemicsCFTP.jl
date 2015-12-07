@@ -31,6 +31,8 @@ backupfiles := $(sourcefiles) $(productfiles)
 
 # ----------------------------------------------
 # Utilities and flags:
+TEXIFY := /usr/bin/rubber
+PDF_TEXIFYFLAGS := --pdf
 ACROPRINT := "$(ACROREAD)" /p
 SCP := /bin/scp
 START := '/usr/bin/xdg-open'

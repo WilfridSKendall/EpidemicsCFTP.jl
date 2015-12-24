@@ -1,6 +1,8 @@
 # README #
 
-This is a collaboration between Stephen Connor and Wilfrid Kendall aimed at developing a perfect simulation algorithm for S-I-R epidemics conditioned on complete observation of removals.
+This is a collaboration between Stephen Connor and Wilfrid Kendall.
+Its aim is to developing a perfect simulation algorithm for S-I-R 
+epidemics, conditioned on complete observation of removals.
 
 ### Who do I talk to? ###
 

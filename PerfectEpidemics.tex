@@ -27,7 +27,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Tracking queries (NB also loads colours!)
-\RequirePackage[no-comment]{WSKtracking}  %% Colour and Graphics
+% \RequirePackage[no-comment]{WSKtracking}  %% Colour and Graphics
+\RequirePackage{WSKtracking}  %% Colour and Graphics
 
 \definecolor{linkcolor}{named}{Maroon}
 \definecolor{citecolor}{named}{PineGreen}
@@ -77,6 +78,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Mathematics
 \RequirePackage{WSKmaths}
+%
+\newcommand{\SIR}{S-I-R\xspace}
 
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -106,15 +109,202 @@
 
 % =========================================   
  \section{Introduction}\label{sec:introduction}
-   \TBC{Unfinished!\\
-   Long-ago previous work, from which we can eventually build up a historical account (no particular need to look at this right now!)\\
+%
+\TBC{  Long-ago previous work, from which we can eventually build up a historical account (no particular need to look at this right now!)\\
    \cite{CaiKendall-2002},
    \cite{KendallSaunders-1983},
-   \cite{KendallThoennes-1999}.}
+   \cite{KendallThoennes-1999}.
+   \\
+ Contrast \cite{ConnorKendall-2014}, where the \CFTP algorithm was obtained by considering the modelled random process.
+ In the present case we use a notion of ``algorithmic time'' to evolve the entire trajectory of the modelled random process.
+}
+
+\TBC{
+The idea of this paper is to produce a perfect simulation of an \SIR epidemic conditioned on observation of its removals.
+The plan of attack is:
+\begin{itemize}
+ \item Realize the unconditioned epidemic using 
+   \begin{itemize}
+    \item Poisson processes of potential removals 
+    (one Poisson process per time-line of individual to be removed);
+    \item and of potential infections 
+    (one Poisson process per time-line of individual.
+    \\
+    The only active infection time-line is the time-line corresponding to most recently infected individual.
+   \end{itemize}
+  Marks are used to adjust rates of infection appropriately.
+ \item Produce a dynamic process in ``algorithmic time'' according to a reversible trajectory-valued immigration-death process, 
+ whose equilibrium distribution is the target epidemic.
+ \item Introduce the conditioning on removals by fixing actual times of removal.
+ This corresponds very simply to restriction of the state-space.
+ \item Discover monotonicity structure to allow for \CFTP constructions.
+\end{itemize}
+Structure of paper:
+Section \ref{sec:introduction}: this introduction.
+Section \ref{sec:SIR}: construction of \SIR epidemic.
+Section \ref{sec:algorithmic}: introduction to algorithmic time.
+Section \ref{sec:restrictions}: restrictions and conditioning.
+Section \ref{sec:cftp}: monotonicity and \CFTP. 
+Section \ref{sec:examples}: Simulations, fitting data.
+Section \ref{sec:conclusion}: Discussion and extensions.
+}
+
+% =========================================   
+ \section{Poisson processes of incidents and \SIR epidemics}\label{sec:SIR}
+%
+\TBC{Construction of \SIR epidemic using Poisson processes of potential removals.}
+
+   
+\TBC{Data structures:
+\\
+Timelines
+\\
+We suppose a population of \(n\) individuals. 
+We construct \(n\) individual time-lines indexed by \(x=1, \ldots, n\), 
+running over the non-negative continuous-time axis \([0,\infty)\). 
+These are associated with a number of independent Poisson patterns of incidents, 
+corresponding to potential removal and potential infection times.
+\\
+Potential removal incidents
+\\
+To each individual time-line \(x\) is associated a Poisson(\(\beta\)) pattern of potential removal incidents distributed over time.
+\\
+Potential infection incidents
+\\
+% To each pair of individual time-lines (i, j), with j=i+1, ..., n , there is associated a Poisson(\(\alpha\)) pattern of potential infection incidents distributed over time.
+To each individual time-line \(x\) there is associated a Poisson(\(x(n-x)\alpha\)) marked pattern of potential infection incidents,
+marked so as to allow for censoring according to the number \(r\) of current removals and the number \(i\) of current infectives.
+This is activated \emph{only} in the eventuality that the individual \(x\) is infected and individuals \(x+1, \ldots, n\) are not infected (which forces \(x = r + i\)), 
+in which case (if the potential infection passes the marking criterion, with probability \(i / x = 1 - r / x\)) the individual \(x\) infects the individual \(x+1\).
+\\
+Actual infection and removal times
+\\
+Let \(s\) denote the size of the epidemic; the number of individuals who are ever infected.
+\\
+To each time-line \(x=1, \ldots, s\) there are associated an infection time \(\sigma_x\) and a removal time \(\tau_x\). 
+Here \(0 \leq \sigma_x  <  \tau_x\). 
+\\
+Initial condition
+\\
+We suppose the simplest possible initial condition: 
+\(\sigma_x=0\) if and only if \(x=1\) (so just one initial infective). 
+Other more involved initial conditions are (I think) feasible at the price of some extra complexity at the \CFTP stage. 
+}
+\begin{thm}\label{thm:SIR-epidemic}
+ The process \((S, I, R)\), viewed in process time, forms an \SIR epidemic.
+\end{thm}
+\begin{proof}
+ Show that the process \((S, I, R)\) solves the relevant martingale problem, 
+ citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
+ \NB[WSK1]{Complete statement and proof of Theorem \ref{thm:SIR-epidemic}.}
+\end{proof}
+
+
+% =========================================   
+ \section{Algorithmic time and dynamic simulation}\label{sec:algorithmic}
+%
+\TBC{Dynamic process in ``algorithmic time'', produced according to a reversible trajectory-valued immigration-death process.}
+
+\TBC{
+The Poisson(\((x(n-x)\alpha\)) and Poisson(\(\beta\)) patterns of marked incidents evolve in ``algorithmic time'' 
+(one might think of this as ``orthogonal'' to ``process time'': ``process time'' runs along the time-line axis). 
+In one possible variant, they evolve in continuous algorithmic  time as independent "spatial" (dimension \(d=1\)) immigration-death processes with unit death rates, 
+and with immigration rates per unit time being \(\alpha\) and \(\beta\) respectively. 
+In another, they evolve in discrete algorithmic time, alternately replacing all potential removal incidents and all potential infection incidents. 
+In this second variant it is useful to track down the continuous process time axis, treating potential incidents ``pixel by pixel''. 
+\\
+Compare \citet{BanerjeeKendall-2015}, where algorithmic time is used to construct a simple but efficient non-Markovian coupling.
+\\
+Reversibility
+\\
+In the first case (continuous algorithmic time), reversibility follows rather directly from reversibility of spatial immigration-death processes, 
+and Theorem \ref{thm:SIR-epidemic} in Section \ref{sec:SIR}, that a realization of the SIR epidemic can be achieved as a measurable function of the Poisson equilibrium.
+Side-note: here we will end up dealing with \CFTP for a process \((X, F(X))\), 
+where \(F\) is a measurable function of the Markov chain X. 
+This is somewhat reminiscent of an ongoing programme of immersion coupling for nilpotent diffusions (recent overviews are given in \citealp{Kendall-2009d,Kendall-2013a}).
+\\
+In the second case, one has to use notions of dynamic reversibility.
+}
+
+% =========================================   
+ \section{Restrictions and conditioning}\label{sec:restrictions}
+%
+\TBC{Implementing conditioning on removals by fixing actual times of removal for the dynamic process evolving in algorithmic time.}
+
+\TBC{
+Conditioning on removal times
+\\
+Our objective is to obtain a Markov chain whose equilibrium distribution is the conditional distribution of the \SIR epidemic conditional on all individuals being infected, 
+and all removals being observed to occur at exactly specified times. 
+(Variations on this may be feasible, at the price of additional complexity.)
+We use a fundamental fact about reversible Markov chains: restriction of state-space leads to equilibria which are conditional distributions. 
+One simply needs to check that the Markov chain in the restricted state-space is irreducible and positive-recurrent.  
+}
+\begin{thm}\label{thm:conditioning}
+ If the dynamic process in algorithmic time is restricted so as to stay within the subset of configuration space corresponding
+ to conditioned removals, then the restricted process has the conditioned \SIR epidemic as equilibrium distribution.
+\end{thm}
+\begin{proof}
+  Verify detailed (perhaps dynamic) balance is satisfied.%
+  \NB[WSK1]{Complete statement and proof of Theorem \ref{thm:conditioning}.}
+\end{proof}
+
+\begin{rem}
+ This applies if we restrict the state-space by fixing all removal times.
+\end{rem}
+
+\begin{rem}
+ The relevant restrictions on the Markov chain in algorithmic time are:%
+ \NB[WSK1]{Check the list of relevant restrictions on the Markov chain in algorithmic time.}
+ \begin{itemize}
+  \item proposals to add potential removals are refused if they immediately result in actual removals 
+  (which is to say, if the potential removal is placed on the infected part of an individual time-line). 
+  \item Proposals to delete potential removals are refused only if the removal in question is actual, 
+  hence one of the observed removals. 
+  \item Proposals to remove potential infections are refused if they immediately result in the epidemic not infecting the entire population.
+  \item Proposals to add potential infections are refused if they would become actual infections 
+  and they themselves would lead to infection of a time-line before a potential, not actual, removal; 
+  they are also refused if they would become actual infections and they would lead indirectly to 
+  infection of a time-line before a potential, not actual, removal.
+  \item If a proposal to remove a potential infection is refused, 
+  we say that the retained potential infection is perpetuated. Note that perpetuated potential infections must be actual infections.
+ \end{itemize}
+\end{rem}
+
+
+% =========================================   
+ \section{Monotonicity and \CFTP}\label{sec:cftp}
+%
+\TBC{
+Simulation
+\\
+To make sure we have a secure understanding of this, we should consider how to build a robust simulation programme for the algorithmic time evolution. 
+In particular, we need to check reversibility and conditioning arguments, as well as evaluating the possibility of monotonicity structures.  
+\begin{itemize}
+ \item Monotonicity structures;
+ \item Proofs;
+ \item Sandwiching;
+ \item \CFTP algorithm.
+\end{itemize}
+}
+
+
+% =========================================   
+ \section{Examples}\label{sec:examples}
+%
+\TBC{Simulation output. Applications to a real dataset?}
+
 
 % =========================================   
  \section{Conclusion}\label{sec:conclusion}
-   \TBC{Unfinished!}
+%
+\TBC{
+\begin{enumerate}
+ \item Perfect simulation to include inference about parameters \(\alpha\) and \(\beta\)? (Omnithermal simulation?)
+ \item More general compartment models?
+ \item Moving from Poisson processes to shifted renewal processes?
+\end{enumerate}
+}
 
 % =========================================   
 %   \scriptsize \input hyperbib

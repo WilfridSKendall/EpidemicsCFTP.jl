@@ -29,7 +29,7 @@
 %% Tracking queries (NB also loads colours!)
 % \RequirePackage[no-comment]{WSKtracking}  %% Colour and Graphics
 \usepackage{graphicx}
-\graphicspath{{image/}}
+\graphicspath{{./image/}}
 \RequirePackage{WSKtracking}  %% Colour and Graphics
 
 \definecolor{linkcolor}{named}{Maroon}
@@ -308,6 +308,7 @@ and further arguments assure us that this is the unique equilibrium distribution
  The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic.
 \end{thm}
 \begin{proof}[Sketch proof]
+ Verify detailed (perhaps dynamic) balance is satisfied.
  Show that the process \(({S}, {I}, {R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
  citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
  \NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
@@ -363,6 +364,11 @@ and further arguments assure us that this is the unique equilibrium distribution
  Thus the (time-varying) rate of potential infection arising from individual \(m\) at time \(t\) is given by \((m-R_t)(n-m)\);
  recall that this infection will be realized if and only if the individual concerned is the highest-indexed infected individual at the relevant time.
 %  , and the mark conditional on removals is Uniform (\(\{R_t+1, \ldots, m\}\)).
+ Figure \ref{fig:graphical} illustrates this construction.
+ \begin{Figure}
+  \includegraphics[width=3in]{Timelines1.pdf}
+  \caption{Modified graphical representation of \SIR epidemic, conditioned on removals.\label{fig:graphical}}
+ \end{Figure}
 
  
   \begin{thm}\label{thm:conditioned-SIR-epidemic}
@@ -372,14 +378,13 @@ and further arguments assure us that this is the unique equilibrium distribution
  The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic conditioned on these removals taking place.
 \end{thm}
 \begin{proof}[Sketch proof]
+ Again we will appeal to detailed (perhaps dynamic) balance.
  Show that the simulation in algorithmic time of this conditioned \SIR epidemic is irreducible.%
  \NB[WSK2]{Need to complete the irreducibility required for Theorem \ref{thm:conditioned-SIR-epidemic}.}
 \end{proof}
  
- ****
  
- 
- \TBC{Describe the above in terms of epidemic trajectory, boundary of ``no-fly zone'', and trajectory of last feasible epidemic.}
+%  \TBC{Describe the above in terms of epidemic trajectory, boundary of ``no-fly zone'', and trajectory of last feasible epidemic.}
 It is helpful to develop a vocabulary describing three boundaries over time-line space, depending implicitly on the algorithmic time \(\tau\),.
 For \(m=1\),\ldots, \(n\), 
 we denote the potential infections on time-line \(m\) occurring before removal time \(\rho_m\) by \(\sigma_m^1 < \sigma_m^2 < \ldots < \sigma_m^{j_m}\).
@@ -393,18 +398,20 @@ Note that \(\mu_m\geq m\) is required in order to ensure removal of individual \
 Note that we have suppressed the implicit dependence on \(\tau\) and note also that \(j_m=0\), \(k_m=0\) are both possible;
 for convenience we write \(\sigma_m^0=0\), \(\rho_m^0=0\).
 
- The \emph{``no-fly'' zone} boundary is located at process time \(\xi_m\) for time-line \(m\), defined inductively by
+ The boundary of the \emph{``no-fly'' zone} is located at process time \(\xi_m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:boundary-time}
  \xi_n \quad=&\quad \max\{\rho_s^{k_s}\;:\; s\leq n\}\,, \text{ the last unrealized removal on or below time-line }n\,,
  \nonumber\\
- \xi_m \quad=&\quad 
- \begin{cases}
- \rho^{(m)}_{k_m}                                      & \text{ if there is no potential infection for \(m\) in }(\rho^{(m)}_{k_m}, \xi_{m+1})\,,
- \\
- \max\{\sigma^{(m)}_j\;:\; \sigma^{(m)}_j<\xi_{m+1}\} & \text{ otherwise.}
- \end{cases}
+ \xi_m \quad=&\quad \max\{\rho_s^{k_s}\;:\; s\leq m\} \wedge \max\{\phi_m^i\;:\;\phi_m^j<\xi_{m+1}\}
+ \text{ if }m<n\,.
  \end{align}
-
+ Proposals of potential infections of ``no-fly'' portions of time-lines must be forbidden.
+ Figure \ref{fig:no-fly} illustrates this construction.
+ \begin{Figure}
+  \includegraphics[width=3in]{Timelines2.pdf}
+  \caption{``No-fly'' zone for this graphical representation.\label{fig:no-fly}}
+ \end{Figure}
+ 
  The \emph{epidemic trajectory} is built out of those potential infections that become realized.
  It is located at boundary time \(\phi_m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:epidemic}
@@ -412,32 +419,45 @@ for convenience we write \(\sigma_m^0=0\), \(\rho_m^0=0\).
   \nonumber\\
   \phi_m \quad=&\quad
   \begin{cases}
-   \infty                                                    & \text{if \(m> R_0+I_0=I_0\) and no potential infection} 
+   \infty                                                    & \text{ if \(m> R_0+I_0=I_0\) and no potential infection} 
    \\
-                                                             & \text{from \(m-1\) occurs in \([\phi_{m-1},\widetilde{\rho}^{(m-1)}]\),}
+                                                             & \text{ from \(m-1\) occurs in \([\phi_{m-1},{\rho}_{m-1}]\),}
    \\
-   \min\{\sigma^{(m-1)}_j\;:\; \sigma^{(m-1)}_j>\phi_{m-1}\} & \text{ otherwise.}
+   \min\{\sigma_{m-1}^j\;:\; \sigma_{m-1}^j>\phi_{m-1}\} & \text{ otherwise.}
   \end{cases}
  \end{align}
  Note that \(\phi_m=\infty\) cannot occur for any \(m\) if we condition on all individuals eventually being removed.
+ The epidemic must avoid the ``no-fly'' zone and must reach the marks set for each of the conditioned removals.
+ Figure \ref{fig:epidemic} illustrates this construction.
+ \begin{Figure}
+  \includegraphics[width=3in]{Timelines3.pdf}
+  \caption{Epidemic trajectory for this graphical representation.\label{fig:epidemic}}
+ \end{Figure}
 
  The \emph{last feasible epidemic} boundary delimits the region within which it is possible for an epidemic to proceed to completion.
  It is located at boundary time \(\eta_m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:last-epidemic}
  \eta_n \quad=&\quad \text{ time of actual removal for individual \(n\),}
  \nonumber\\
- \eta_m \quad=&\quad \max\{\sigma^{(m)}_j\;:\; \sigma^{(m)}_j<\eta_{m+1} \wedge \min\{\widetilde{\rho}^{i}\;:\; \mu^{(i)}\geq m\}\}\,.
+ \eta_m \quad=&\quad \max\{\sigma_{m}^j\;:\; \sigma_{m}^j<\eta_{m+1} \wedge \min\{\rho_{i}\;:\; \mu_{i}=m+1\}\}
+ \text{ if }m<n\,.
  \end{align}
+ The rationale for the definition of \(\eta_m\) is that the last feasible epidemic from time-line \(m\) must certainly infect \(m+1\) prior to the last feasible epidemic from time-line \(m+1\),
+ but must also infect \(m+1\) before any conditioned removal whose mark requires time-line \(m+1\) to be infected in order for the conditioned removal to proceed.
+  Figure \ref{fig:last-epidemic} illustrates this construction.
+ \begin{Figure}
+  \includegraphics[width=3in]{Timelines4.pdf}
+  \caption{Last feasible epidemic trajectory for this graphical representation.\label{fig:last-epidemic}}
+ \end{Figure}
 
- 
-\begin{thm}\label{thm:conditioning}
- If the dynamic process in algorithmic time is restricted so as to stay within the subset of configuration space corresponding
- to conditioned removals, then the restricted process has the conditioned \SIR epidemic as equilibrium distribution.
-\end{thm}
-\begin{proof}[Sketch proof]
-  Verify detailed (perhaps dynamic) balance is satisfied.%
-  \NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:conditioning}.}
-\end{proof}
+% \begin{thm}\label{thm:conditioning}
+%  If the dynamic process in algorithmic time is restricted so as to stay within the subset of configuration space corresponding
+%  to conditioned removals, then the restricted process has the conditioned \SIR epidemic as equilibrium distribution.
+% \end{thm}
+% \begin{proof}[Sketch proof]
+%   Verify detailed (perhaps dynamic) balance is satisfied.%
+%   \NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:conditioning}.}
+% \end{proof}
 
  
 % =========================================   

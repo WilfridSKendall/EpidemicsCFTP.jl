@@ -21,6 +21,7 @@
  \RequirePackage{tocloft}
  \RequirePackage{framed}
  \RequirePackage[usenames,dvipsnames]{xcolor}
+ \RequirePackage{ifthen}
 
  \definecolor{okcolor}{named}{OliveGreen}
  \definecolor{alertcolor}{named}{Red}
@@ -94,9 +95,12 @@
  \pagenumbering{arabic}
  \setcounter{page}{1}
 }
-\newcommand{\TrackingPostamble}{
-\vfill
+\newcommand{\TrackingPostamble}[1][]{
+ \vfill
  {\scriptsize\VerbatimInput{VERSION}}
+  \ifthenelse {\equal {#1} {} }
+  {}
+  {\vfill{\scriptsize\VerbatimInput{#1}}}
 }
 \DeclareOption{no-comment}{
  \renewcommand{\NoteThis}[1]{}%

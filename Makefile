@@ -106,6 +106,14 @@ help: products.txt ; $(PYTHON) "$(PYTHONPATH)/make/browser.py"
 gui: products.txt ; $(PYTHON) "$(PYTHONPATH)/make/browser.py" --gui &
 
 # ----------------------------------------------
+# Latex macros:
+macros: WSKmaths.sty WSKtracking.sty
+WSKmaths.sty: $(HOME)/texmf/tex/latex/WSKmaths/WSKmaths.sty
+	cp $< $@
+WSKtracking.sty: $(HOME)/texmf/tex/latex/WSKtracking/WSKtracking.sty
+	cp $< $@
+
+# ----------------------------------------------
 # (Patterned targets follow):
 $(targets): %: %.pdf ; -$(START) $<
 

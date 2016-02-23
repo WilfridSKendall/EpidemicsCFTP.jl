@@ -20,8 +20,9 @@ title := PerfectEpidemics
 latexfiles := $(title).tex
 bibtexfiles := $(wildcard *.bib)
 diafiles := $(wildcard image/*.dia)
-svgfiles := $(wildcard image/*.svg)
-imagefiles := $(subst .svg,.pdf, $(svgfiles))
+#svgfiles := $(wildcard image/*.svg)
+#imagefiles := $(subst .svg,.pdf, $(svgfiles))
+imagefiles := image/Timelines1.pdf image/Timelines2.pdf image/Timelines3.pdf image/Timelines4.pdf 
 
 # ----------------------------------------------
 # Internal variables:
@@ -33,11 +34,13 @@ backupfiles := $(sourcefiles) $(productfiles)
 
 # ----------------------------------------------
 # Utilities and flags:
-TEXIFY := /usr/bin/rubber
+TEXIFY := '/usr/bin/rubber'
 PDF_TEXIFYFLAGS := --pdf
 ACROPRINT := "$(ACROREAD)" /p
-SCP := /bin/scp
+SCP := '/bin/scp'
 START := '/usr/bin/xdg-open'
+DIA := '/usr/bin/dia'
+INKSCAPE := '/usr/bin/inkscape'
 
 # ----------------------------------------------
 # Special targets:
@@ -53,7 +56,7 @@ phonytargets := all checkin clean virgin help gui backup \
 # ----------------------------------------------
 all: products ; echo $^ now up to date
 view: all ; $(START) $(title).pdf
-products: $(imagefiles) $(productfiles) ; echo $^ now up to date
+products: $(diafiles) $(productfiles) ; echo $^ now up to date
 
 # ----------------------------------------------
 # Create 'productfiles' and then print them:
@@ -62,7 +65,14 @@ print: $(imagefiles) $(productfiles)
 
 # ----------------------------------------------
 # graphics conversions:
-$(imagefiles): ; inkscape --export-pdf=$@ $(subst .pdf,.svg, $@)
+image/Timelines1.svg: image/Timelines.dia
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections --export=$@ $< 
+image/Timelines2.svg: image/Timelines.dia
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone --export=$@ $< 
+image/Timelines3.svg: image/Timelines.dia
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic --export=$@ $< 
+image/Timelines4.svg: image/Timelines.dia
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastPossible --export=$@ $< 
 $(title).pdf: $(imagefiles)
 
 # ----------------------------------------------
@@ -123,8 +133,9 @@ $(targets): %: %.pdf ; -$(START) $<
 
 %.png: %.dia ; $(DIA) --export $@ $<
 
-%-2x2.pdf: %.pdf
-	$(PDFNUP) $(PDFNUP_FLAGS) --nup 2x2 $(subst -2x2.pdf,.pdf, $@)
+%-2x2.pdf: %.pdf ; $(PDFNUP) $(PDFNUP_FLAGS) --nup 2x2 --suffix=2x2 $<
+
+image/%.pdf: image/%.svg ; $(INKSCAPE) --export-pdf=$@ $<
 
 # NOTE: trouble here may arise if bibtex files do not exist!
 %.pdf: %.tex $(bibtexfiles) $(imagefiles)

@@ -20,12 +20,14 @@ title := PerfectEpidemics
 latexfiles := $(title).tex
 bibtexfiles := $(wildcard *.bib)
 diafiles := $(wildcard image/*.dia)
+svgfiles := $(wildcard image/*.svg)
+imagefiles := $(subst .svg,.pdf, $(svgfiles))
 
 # ----------------------------------------------
 # Internal variables:
 sourcefiles := Makefile VERSION $(latexfiles) $(bibtexfiles)
 targets := $(subst .tex,,$(latexfiles))
-imagefiles := $(subst .dia,.png,$(diafiles))
+#imagefiles := $(subst .dia,.png,$(diafiles))
 productfiles := $(subst .tex,.pdf,$(latexfiles))
 backupfiles := $(sourcefiles) $(productfiles)
 
@@ -51,15 +53,17 @@ phonytargets := all checkin clean virgin help gui backup \
 # ----------------------------------------------
 all: products ; echo $^ now up to date
 view: all ; $(START) $(title).pdf
-products: $(productfiles) ; echo $^ now up to date
+products: $(imagefiles) $(productfiles) ; echo $^ now up to date
 
 # ----------------------------------------------
 # Create 'productfiles' and then print them:
-print: $(productfiles)
+print: $(imagefiles) $(productfiles)
 	-for f in $^ ; do ($(ACROPRINT) $$f &) ; done
 
 # ----------------------------------------------
-# Latex targets:
+# graphics conversions:
+$(imagefiles): ; inkscape --export-pdf=$@ $(subst .pdf,.svg, $@)
+$(title).pdf: $(imagefiles)
 
 # ----------------------------------------------
 # Checkin targets:

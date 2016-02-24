@@ -22,7 +22,7 @@ bibtexfiles := $(wildcard *.bib)
 diafiles := $(wildcard image/*.dia)
 #svgfiles := $(wildcard image/*.svg)
 #imagefiles := $(subst .svg,.pdf, $(svgfiles))
-imagefiles := image/Timelines1.pdf image/Timelines2.pdf image/Timelines3.pdf image/Timelines4.pdf 
+imagefiles := $(addsuffix .pdf, $(addprefix image/Timelines,1 2 3 4 5))
 
 # ----------------------------------------------
 # Internal variables:
@@ -68,11 +68,13 @@ print: $(imagefiles) $(productfiles)
 image/Timelines1.svg: image/Timelines.dia
 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections --export=$@ $< 
 image/Timelines2.svg: image/Timelines.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone --export=$@ $< 
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,NoFlyZoneB --export=$@ $< 
 image/Timelines3.svg: image/Timelines.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic --export=$@ $< 
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,EpidemicB --export=$@ $< 
 image/Timelines4.svg: image/Timelines.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastPossible --export=$@ $< 
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,LastViableB --export=$@ $< 
+image/Timelines5.svg: image/Timelines.dia
+	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,IncidentalB,RemovedB --export=$@ $< 
 $(title).pdf: $(imagefiles)
 
 # ----------------------------------------------

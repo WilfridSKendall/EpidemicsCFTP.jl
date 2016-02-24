@@ -287,7 +287,8 @@ This is somewhat reminiscent of an ongoing programme of immersion coupling for n
  This is directly analogous to using a systematic scan for the heat-bath dynamics for the Ising model.%
 \NB[WSK2]{Supply appropriate reference to systematic scans for the Ising model.}
  For simplicity suppose that we are simulating over a process time interval \([0,T]\) for some fixed deterministic time \(T\).
- Over a period \((2(m-1)T, 2mT]\) of algorithmic time we take the following steps:
+ Over a period \([2(m-1)T, 2mT)\) of algorithmic time we take the following steps:%
+\NB[WSK2]{Here we update using a vertical line moving forwards (for removals) then backwards (for infections) in process time, as opposed to the original TV-scan.}
 \begin{enumerate}
  \item Over the algorithmic time interval \([2(m-1)T, (2m-1)T)\),%
 \NB[WSK2]{No need to worry about whether a potential removal occurs exactly at time $(2m-1)T$! Almost surely this will never happen.}
@@ -297,7 +298,7 @@ This is somewhat reminiscent of an ongoing programme of immersion coupling for n
  (So by algorithmic time \((2m-1)T\) all old potential removal incidents have been replaced by new old potential removal incidents.)
 %  \item Exactly at time \((m-1)T\) we re-sample the uniform marks corresponding to the various removal incidents. 
 %  (This step will prove to be crucial if we are to ensure that the result of restricting actual realized removals to specific nominated times still leads to an irreducible Markov chain.)
- \item Over the algorithmic time interval \([(2m-1)T, 2mT]\),%
+ \item Over the algorithmic time interval \([(2m-1)T, 2mT)\),%
 \xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $(2m-1)T$! Almost surely this will never happen.}
 we re-sample all the potential infections as follows: create a new sample of potential infections over process time interval \([0,T]\),
  by algorithmic time \((2m-1)T+t\) (for \(0\leq t\leq T\))
@@ -401,13 +402,14 @@ Figure \ref{fig:graphical} illustrates this construction.
 \end{proof}
  
  
-%  \TBC{Describe the above in terms of epidemic trajectory, boundary of ``no-fly zone'', and trajectory of last feasible epidemic.}
-It is helpful to develop a vocabulary describing the boundaries of four regions of time-line space, depending implicitly on the algorithmic time \(\tau\),.
+%  \TBC{Describe the above in terms of epidemic trajectory, boundary of ``no-fly zone'', and trajectory of last viable epidemic.}
+It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time \(\tau\),.
 For \(m=1\),\ldots, \(n\), 
 we denote the potential infections on time-line \(m\) occurring before removal time \(\rho_m\) by \(\sigma_m^1 < \sigma_m^2 < \ldots < \sigma_m^{j_m}\).
 Consider
 the unrealized removals on time-line \(m\) occurring before removal time \(\rho_m\);
-we denote these by \(\rho_m^1 < \rho_m^2 < \ldots < \rho_m^{k_m}\).
+we denote these by \(\rho_m^1 < \rho_m^2 < \ldots < \rho_m^{k_m}\).%
+\NB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
 % Finally we denote by  \(\mu_m\) the mark for the realized removal on time-line \(m\) (occurring at process-time \(\rho_m\)).
 % Note that \(\mu_m\geq m\) is required in order to ensure removal of individual \(m\) at time \(\rho_m\), per conditioning.%
 % \NB[WSK2]{We must have $\mu_m\geq m$ because we are running an \SIR epidemic conditioned so that individual $m$ is removed at time $\mu_m$.}
@@ -429,10 +431,10 @@ for convenience we write \(\sigma_m^0=0\), \(\rho_m^0=0\).
  Figure \ref{fig:no-fly} illustrates this construction.
  \begin{Figure}
   \includegraphics[width=3in]{Timelines2.pdf}
-  \caption{``No-fly'' zone for this graphical representation.\label{fig:no-fly}}
+  \caption{``No-fly'' zone and boundary for this graphical representation.\label{fig:no-fly}}
  \end{Figure}
  
- The second region lies between the \emph{epidemic trajectory} and the ``no-fly'' zone.
+ The second region lies between the \emph{(first) epidemic trajectory} and the ``no-fly'' zone.
  Here the {epidemic trajectory} is built using those potential infections that become realized.
  It is located at boundary time \(\phi_m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:epidemic}
@@ -453,37 +455,87 @@ for convenience we write \(\sigma_m^0=0\), \(\rho_m^0=0\).
  Figure \ref{fig:epidemic} illustrates this construction.
  \begin{Figure}
   \includegraphics[width=3in]{Timelines3.pdf}
-  \caption{Epidemic trajectory for this graphical representation.\label{fig:epidemic}}
+  \caption{Second region and Epidemic trajectory for this graphical representation.\label{fig:epidemic}}
  \end{Figure}
 
- The \emph{last feasible epidemic} is the last conceivable epidemic trajectory which avoids unconditioned removals and produces all conditioned removals,
+ The \emph{last viable epidemic} is the last epidemic trajectory which avoids unconditioned removals and produces all conditioned removals,
  Together with the epidemic trajectory, it delimits the third region, within which it is possible for an epidemic to proceed to completion.
- The last feasible epidemic is located at boundary time \(\eta_m\) for time-line \(m\), defined inductively by
+ The last viable epidemic is located at boundary time \(\eta_m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:last-epidemic}
  \eta_n \quad=&\quad \rho_n\,, \qquad\text{ time of actual removal for individual \(n\),}
  \nonumber\\
  \eta_m \quad=&\quad \max\{\sigma_{m}^j\;:\; \sigma_{m}^j<\eta_{m+1} \wedge \rho_m \}
 \qquad \text{ if }m<n\,.
  \end{align}
- The rationale for the definition of \(\eta_m\) is that the last feasible epidemic from time-line \(m\) must certainly infect \(m+1\) prior to the last feasible epidemic from time-line \(m+1\),
+ The rationale for the definition of \(\eta_m\) is that the last viable epidemic from time-line \(m\) must certainly infect \(m+1\) prior to the last viable epidemic from time-line \(m+1\),
  but must also infect \(m+1\) before the conditioned removal of \(m\).
  Note that, under the conditioning, the maximum in \eqref{eq:last-epidemic} must be taken over a non-empty set.
   Figure \ref{fig:last-epidemic} illustrates this construction.
  \begin{Figure}
   \includegraphics[width=3in]{Timelines4.pdf}
-  \caption{Last feasible epidemic trajectory for this graphical representation.\label{fig:last-epidemic}}
+  \caption{Third region and last viable epidemic trajectory for this graphical representation.\label{fig:last-epidemic}}
  \end{Figure}
 
- The fourth region is made up of those parts of time-lines which are removed together with those parts from which it would not be possible for an epidemic to proceed to completion.
+ The fourth region is made up of those parts from which it would not be possible for an epidemic to proceed to completion,
+ while the fifth region is made up of those parts of time-lines which are removed (Figure \ref{fig:fourth-and-fifth}).
+  \begin{Figure}
+  \includegraphics[width=3in]{Timelines5.pdf}
+  \caption{Fourth and fifth regions for this graphical representation.\label{fig:fourth-and-fifth}}
+ \end{Figure}
+
+ We can now concisely summarize which introductions or deletions of potential removals and infections might be refused.
+ Potential removals and infections strictly within the fifth region (emanating from a removed section of time-line) can be ignored, as they do not influence any possible trajectory.
+ It is always possible to delete a potential removal without jeopardizing the conditioning;
+ clearly deletion of a realized removal must be refused because its deletion would violate the conditioning restriction.
+ Potential removals may only be introduced when they are located earlier than the epidemic trajectory on the corresponding time-line; 
+ other potential removals would become actual infections and so lead to violation of the conditioning restriction, and therefore must be refused.
  
- We can now concisely summarize which potential removals and infections can be realized or deleted.
- It is always possible to delete an unrealized removal without jeopardizing the conditioning;
- clearly a realized removal cannot be removed.
- Potential removals may only be realized when they are located earlier than the epidemic trajectory on the corresponding time-line.
- It is always possible to delete an unrealized infection.
- A realized infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last feasible epidemic.
- Potential infections can be realized unless they connect the epidemic trajectory to the ``no-fly'' zone.
+ It is always possible to delete a potential infection.
+ An actual infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last viable epidemic;
+ if it \emph{does} belong to both these epidemics then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
+ In other words, actual infections belonging simultaneously to first and last epidemics must be perpetuated.
+ Potential infections can be introduced unless they connect the epidemic trajectory to the ``no-fly'' zone.
+ So potential infections can be introduced (whether or not they become actual, unless the introduction bridges the gap between epidemic and ``no-fly'' zone.
  
+ We now formalize a number of these observations in the form of lemmas, which should be useful when establishing monotonicity of the epidemic trajectory.
+ 
+ \begin{lem}\label{lem:infect1}
+  Potential infections with source and destination no earlier than the epidemic trajectory will always be made actual 
+  (if we exclude cases in which source lies in the removal region).
+ \end{lem}
+ \begin{proof}
+  \emph{(to be completed)}
+ \end{proof}
+
+ \begin{lem}\label{lem:infect2}
+  Potential infections with source strictly earlier than the epidemic trajectory and destination lying within the ``no-fly'' zone 
+  will extend the ``no-fly'' zone.
+ \end{lem}
+ \begin{proof}
+  \emph{(to be completed)}
+ \end{proof}
+
+ \begin{lem}\label{lem:infect3}
+  Current infections are perpetuated exactly when they simultaneously form part of the current epidemic trajectory and the current last viable epidemic.
+  Moreover there can be at most one perpetuated infection on each time-line.
+ \end{lem}
+ \begin{proof}
+  \emph{(to be completed)}
+ \end{proof}
+
+  \begin{lem}\label{lem:removal1}
+  Consider the phase of algorithmic time \([2(m-1)T, (2m-1)T)\) during which potential removals are introduced.
+  This can be implemented very directly as follows:
+\begin{enumerate}
+\item remove all current potential removals;
+\item for each time-line \(m\), introduce new potential removals according to a Poisson process of time-varying intensity \(\beta(m-R_t)\)
+over the range \([0,\phi_m]\), where \(\phi_m\) is (as above) when the time-line \(m\) currently becomes infected.
+\end{enumerate}
+ \end{lem}
+ \begin{proof}
+  \emph{(to be completed)}
+ \end{proof}
+
  
 % \begin{thm}\label{thm:conditioning}
 %  If the dynamic process in algorithmic time is restricted so as to stay within the subset of configuration space corresponding

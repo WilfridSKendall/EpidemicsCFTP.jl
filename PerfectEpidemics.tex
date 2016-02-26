@@ -192,7 +192,7 @@ one copy of the process time-axis \([0,\infty)\) for each individual in the popu
  and in this case the individual changes from infected to removed at the time of the incident;
  potential infections are realized as actual infections if one of the two corresponding individuals is actually infected just before the incident
  and the other is susceptible, and in this case the susceptible individual changes from susceptible to infected at the time of the incident.
- In theory we could carry out such simulations running over the complete process time-scale \([0,\infty)\),
+ In theory we could carry out such si mulations running over the complete process time-scale \([0,\infty)\),
  though in practice we will restrict attention to some bounded time-interval \([0,T]\).%
 \NB[WSK2]{Hence $T$, the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic, recurs throughout this exposition!}
 
@@ -432,7 +432,7 @@ we denote the point-set of realized or potential infections on time-line \(m\) o
 Consider
 the point-set of unrealized removals on time-line \(m\) occurring before removal time \(\rho_m\);
 we denote this point-set by \(\Removals_m\).%
-\NB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
+\xNB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
 % Finally we denote by  \(\mu_m\) the mark for the realized removal on time-line \(m\) (occurring at process-time \(\rho_m\)).
 % Note that \(\mu_m\geq m\) is required in order to ensure removal of individual \(m\) at time \(\rho_m\), per conditioning.%
 % \NB[WSK2]{We must have $\mu_m\geq m$ because we are running an \SIR epidemic conditioned so that individual $m$ is removed at time $\mu_m$.}
@@ -442,7 +442,7 @@ Note here that we have suppressed the implicit dependence of \(\Infections_m\) a
 % for convenience we write \(\sigma_m^0=0\), \(\rho_m^0=0\).
 Note also that if the \SIR epidemic is to be total (if all \(n\) individuals are to be infected) then \(\Infections_m\neq\emptyset\) for all \(m<n\).
 (It is always true that \(\Infections_n=\emptyset\).)
-However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\).
+However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\). 
 
  The first region is the \emph{``no-fly'' zone}.%
 \NB[WSK2]{Do we need specifically to define the ``no-fly'' zone boundary?}

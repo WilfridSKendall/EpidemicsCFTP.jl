@@ -496,7 +496,8 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
  \begin{align}\label{eq:last-epidemic}
  \eta_n \quad=&\quad \rho_n\,, \qquad\text{ time of actual removal for individual \(n\),}
  \nonumber\\
- \eta_m \quad=&\quad \max\{\sigma_{m}^j\;:\; \sigma_{m}^j<\eta_{m+1} \wedge \rho_m \}
+%  \eta_m \quad=&\quad \max\{\sigma_{m}^j\;:\; \sigma_{m}^j<\eta_{m+1} \wedge \rho_m \}
+ \eta_m \quad=&\quad \max\left\{\Infections_{m}\cap[0,\eta_{m+1} \wedge \rho_m)\right\} 
 \qquad \text{ if }m<n\,.
  \end{align}
  The rationale for the definition of \(\eta_m\) is that the last viable epidemic from time-line \(m\) must certainly infect \(m+1\) prior to the last viable epidemic from time-line \(m+1\),

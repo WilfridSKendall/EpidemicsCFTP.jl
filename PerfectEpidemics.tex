@@ -192,7 +192,7 @@ one copy of the process time-axis \([0,\infty)\) for each individual in the popu
  and in this case the individual changes from infected to removed at the time of the incident;
  potential infections are realized as actual infections if one of the two corresponding individuals is actually infected just before the incident
  and the other is susceptible, and in this case the susceptible individual changes from susceptible to infected at the time of the incident.
- In theory we could carry out such si mulations running over the complete process time-scale \([0,\infty)\),
+ In theory we could carry out such simulations running over the complete process time-scale \([0,\infty)\),
  though in practice we will restrict attention to some bounded time-interval \([0,T]\).%
 \NB[WSK2]{Hence $T$, the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic, recurs throughout this exposition!}
 
@@ -201,14 +201,14 @@ one copy of the process time-axis \([0,\infty)\) for each individual in the popu
  
  The above construction is the simplest graphical representation of an SIR epidemic.
  For purposes of perfect simulation we will need to consider a slightly more complicated variant;
- however for the purposes of exposition we first make some remarks about this simpler variant.
+ however for the purposes of exposition we first make some remarks about the simpler case.
  
  % =========================================   
  \section{Algorithmic time and simulation of stochastic dynamics}\label{sec:algorithmic}
 % Constructing S-I-R epidemic trajectories using a trajectory-valued process driven by spatial immigration-death processes.
 %
  We can realize the Poisson streams of potential incidents using \(n+\tbinom{n}{2}\) independent stationary spatial immigration-death processes, using an ``algorithmic time'' parameter \(\tau\in\Reals\).
- The spatial parameter \(t\in[0,\infty)\) of the immigration-death processes is actually the ``process time'' as follows.
+ The spatial parameter \(t\in[0,\infty)\) of the immigration-death processes actually plays the part of the ``process time''.
  Running in algorithmic time \(\tau\), potential removal incidents for any given individual are introduced at algorithmic-time-rate \(\beta\) per unit of process time \(t\), 
  and specific removal incidents then die at unit algorithmic-time-rate per incident;
  potential infection incidents for any given pair of individuals are introduced at algorithmic-time-rate \(\alpha\) per unit of process time \(t\), and die at unit algorithmic-time-rate per incident.
@@ -359,7 +359,7 @@ heat-bath dynamics for the Ising model.%
 process time interval \([0,T]\) for some fixed deterministic time
 \(T\).  Over a period \([2(k-1)T, 2kT)\) of algorithmic time we take
 the following steps:%
-\NB[SBC]{Changed time period from $[2(m-1)T, 2mT)$ to $[2(k-1)T,
+\xNB[SBC]{Changed time period from $[2(m-1)T, 2mT)$ to $[2(k-1)T,
   2kT)$, so as to reduce potential for confusion caused by using $m$
   to enumerate timelines.}  \NB[WSK2]{Here we update using a vertical
   line moving forwards (for removals) then backwards (for infections)

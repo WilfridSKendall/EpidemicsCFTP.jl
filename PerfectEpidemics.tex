@@ -192,7 +192,7 @@ one copy of the process time-axis \([0,\infty)\) for each individual in the popu
  and in this case the individual changes from infected to removed at the time of the incident;
  potential infections are realized as actual infections if one of the two corresponding individuals is actually infected just before the incident
  and the other is susceptible, and in this case the susceptible individual changes from susceptible to infected at the time of the incident.
- In theory we could carry out such si mulations running over the complete process time-scale \([0,\infty)\),
+ In theory we could carry out such simulations running over the complete process time-scale \([0,\infty)\),
  though in practice we will restrict attention to some bounded time-interval \([0,T]\).%
 \NB[WSK2]{Hence $T$, the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic, recurs throughout this exposition!}
 
@@ -201,14 +201,15 @@ one copy of the process time-axis \([0,\infty)\) for each individual in the popu
  
  The above construction is the simplest graphical representation of an SIR epidemic.
  For purposes of perfect simulation we will need to consider a slightly more complicated variant;
- however for the purposes of exposition we first make some remarks about this simpler variant.
+ however for the purposes of exposition we first make some remarks about the simpler case.
  
  % =========================================   
  \section{Algorithmic time and simulation of stochastic dynamics}\label{sec:algorithmic}
 % Constructing S-I-R epidemic trajectories using a trajectory-valued process driven by spatial immigration-death processes.
 %
  We can realize the Poisson streams of potential incidents using \(n+\tbinom{n}{2}\) independent stationary spatial immigration-death processes, using an ``algorithmic time'' parameter \(\tau\in\Reals\).
- The spatial parameter \(t\in[0,\infty)\) of the immigration-death processes is actually the ``process time'' as follows.
+ The spatial parameter \(t\in[0,\infty)\) of the immigration-death
+ processes actually plays the part of the  ``process time''.
  Running in algorithmic time \(\tau\), potential removal incidents for any given individual are introduced at algorithmic-time-rate \(\beta\) per unit of process time \(t\), 
  and specific removal incidents then die at unit algorithmic-time-rate per incident;
  potential infection incidents for any given pair of individuals are introduced at algorithmic-time-rate \(\alpha\) per unit of process time \(t\), and die at unit algorithmic-time-rate per incident.
@@ -271,33 +272,32 @@ This is somewhat related to an ongoing programme investigating immersion couplin
 
  If we wish to condition on actual times of removal then this convergence result is not applicable in the form prescribed above.
  Suppose we consider the case when there is just one initial infective and we condition on \(n-1\) specified times of removal (almost surely there then will be \(n-1\) such times).
- The resulting subset \(A\) of trajectory space produces a \emph{reducible} modified Markov chain, since it is not possible to alter which individual is removed at the first removal time, \emph{et cetera}.
+ The resulting subset \(A\) of trajectory space produces a \emph{reducible} constrained Markov chain, since it is not possible to alter which individual is removed at the first removal time, \emph{et cetera}.
  This could perhaps be overcome using symmetry considerations;
  however it also appears to be difficult to discover any monotonicity structure, given the exchangeability of the \(n\) individuals involved.
  These considerations motivate the introduction of a variant free Markov chain (and consequently of a variant constrained Markov chain).
 
  The first component of the variation is to observe that we can require that the initial configuration of \(R_0\) removed, \(I_0\) infected, and \(S_0\) susceptible individuals must be arranged in index order, 
  with individuals \(1, \ldots, R_0\) being initially removed, \(R_0+1, ..., R_0+I_0\) initially infected, and \(R_0+I_0+1, \ldots, R_0+I_0+S_0=n\) initially susceptible.
- With no loss of generality (since removed individuals have no further effect on the stochastic evolution of the trajectory), so in practice one could set \(R_0=0\).
+ With no loss of generality (since removed individuals have no further effect on the stochastic evolution of the trajectory), in practice one could set \(R_0=0\).
 
  We now change the dynamics of the algorithmic time evolution so that removals, infectives and susceptibles continue for all algorithmic time \(\tau\) to be given by three contiguous ranges partitioning \(\{1, \ldots, n\}\): 
  we obtain this by working with the following Poisson streams of potential incidents.
  Potential removals form a Poisson (\(n\beta\)) point process of incidents in algorithmic time, 
  independently marked by draws from a Uniform (\(\{1, \ldots, n\}\))
- distribution;  potential infections applying to an individual \(m\) form a Poisson (\(m (n-m)\alpha\)) point process of incidents in algorithmic time, 
-  independently marked by draws from a Uniform (\(\{1, \ldots, m\}\)) distribution.
- All these marked Poisson point processes are independent of each
- other.
-
- A potential removal at process time \(t\) for the \(m^\text{th}\) individual only becomes actual if (a) individual \(m\) is currently (at time \(t-\)) the infected individual of \emph{lowest} index,
- (b) the corresponding mark lies in the interval \([R_{t-}+1,R_{t-}+I_{t-}]\). 
- In that case, individual \(m\) is switched from infective to removed at time \(t\), so \(R_t=R_{t-}+1\), \(I_t=I_{t-}-1\).%
+ distribution: these marks are used to assign potential removals to timelines. A potential removal at process time \(t\) only becomes actual if the corresponding mark lies in the interval
+ \([R_{t-}+1,R_{t-}+I_{t-}]\). (Equivalently, if the potential removal
+ is assigned to a timeline that is infected at time \(t\).) In that
+ case, the infected individual of \emph{lowest} index at time \(t-\) is switched from infective to removed at time \(t\), so \(R_t=R_{t-}+1\), \(I_t=I_{t-}-1\). 
 \xNB[WSK2]{Need to remark somewhere that all our random processes have \emph{c\`adl\`ag} trajectories.}
 
- On the other hand, a potential infection at process time \(t\) for the \(m^\text{th}\) individual only becomes actual if (a) individual \(m\) is currently (at time \(t-\)) the infected individual of \emph{highest} index,
+Similarly, potential infections applying to an individual \(m\) form a Poisson (\(m (n-m)\alpha\)) point process of incidents in algorithmic time,  independently marked by draws from a Uniform (\(\{1, \ldots, m\}\)) distribution.
+A potential infection at process time \(t\) for the \(m^\text{th}\) individual only becomes actual if (a) individual \(m\) is currently (at time \(t-\)) the infected individual of \emph{highest} index,
  (b) the corresponding mark exceeds \(R_{t-}\).
  In that case, individual \(m+1\) is switched from susceptible to infected at time \(t\), so \(I_t=I_{t-}+1\), \(S_t=S_{t-}-1\).
- For both potential removal and infection incidents, the Uniform mark is used to thin out the number of proposed incidents to match the correct rate for the \SIR epidemic.
+ 
+All these marked Poisson point processes are independent of each
+other, and for both potential removal and infection incidents the Uniform marks are used to thin out the number of proposed incidents to match the correct rates for the \SIR epidemic.
  
  It follows immediately (by an argument using induction over the time-ordered set of potential incidents) that at process time \(t\)
  the individuals \(1, \ldots, R_t\) are removed, \(R_t+1, ..., R_t+I_t\) are infected, and \(R_t+I_t+1, \ldots, R_t+I_t+S_t=n\) are susceptible.
@@ -306,23 +306,23 @@ This is somewhat related to an ongoing programme investigating immersion couplin
  This is directly analogous to using a systematic scan for the heat-bath dynamics for the Ising model.%
 \NB[WSK2]{Supply appropriate reference to systematic scans for the Ising model.}
  For simplicity suppose that we are simulating over a process time interval \([0,T]\) for some fixed deterministic time \(T\).
- Over a period \([2(m-1)T, 2mT)\) of algorithmic time we take the following steps:%
+ Over a period \([2(k-1)T, 2kT)\) of algorithmic time we take the following steps:%
 \NB[WSK2]{Here we update using a vertical line moving forwards (for removals) then backwards (for infections) in process time, as opposed to the original TV-scan.}
 \begin{enumerate}
- \item Over the algorithmic time interval \([2(m-1)T, (2m-1)T)\),%
-\NB[WSK2]{No need to worry about whether a potential removal occurs exactly at time $(2m-1)T$! Almost surely this will never happen.}
+ \item Over the algorithmic time interval \([2(k-1)T, (2k-1)T)\),%
+\NB[WSK2]{No need to worry about whether a potential removal occurs exactly at time $(2k-1)T$! Almost surely this will never happen.}
  we re-sample all the potential removals as follows: create a new sample of potential removals over process time interval \([0,T]\),
- by algorithmic time \(2(m-1)T+t\) (for \(0\leq t<T\))
+ by algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\))
  replace old potential removal incidents in process time interval \([0,t]\) by the corresponding new potential removal incidents in process time interval \([0,t]\).
- (So almost surely by algorithmic time \((2m-1)T\) all old potential removal incidents will have been replaced by new old potential removal incidents.)
+ (So almost surely by algorithmic time \((2k-1)T\) all old potential removal incidents will have been replaced by new old potential removal incidents.)
 %  \item Exactly at time \((m-1)T\) we re-sample the uniform marks corresponding to the various removal incidents. 
 %  (This step will prove to be crucial if we are to ensure that the result of restricting actual realized removals to specific nominated times still leads to an irreducible Markov chain.)
- \item Over the algorithmic time interval \([(2m-1)T, 2mT)\),%
-\NB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $2mT$! Almost surely this will never happen.}
+ \item Over the algorithmic time interval \([(2k-1)T, 2kT)\),%
+\NB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $2kT$! Almost surely this will never happen.}
 we re-sample all the potential infections as follows: create a new sample of potential infections over process time interval \([0,T]\),
- by algorithmic time \((2m-1)T+t\) (for \(0\leq t< T\))
+ by algorithmic time \((2k-1)T+t\) (for \(0\leq t< T\))
  replace old potential infection incidents in process time interval \([T-t,T]\) by the corresponding new potential infection incidents in process time interval \([T-t,T]\).
- (So almost surely by algorithmic time \(2mT\) all old potential infection incidents will have been replaced by new old potential infection incidents.)
+ (So almost surely by algorithmic time \(2kT\) all old potential infection incidents will have been replaced by new old potential infection incidents.)
 \end{enumerate}
 
 A dynamic reversibility argument confirms that the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution,
@@ -386,7 +386,7 @@ and further arguments assure us that this is the unique equilibrium distribution
 % %  with conditional distribution Uniform (\(\{m, \ldots, m+I_{t-}-1\}\)).
 %  Thus the mark of a conditioned removal serves to define a threshold for the number of infectives, which must be exceeded at the time of removal.
 %  Actual removal times being subject to conditioning, w
- Potential removals are thinned using their associated marks, so the (time-varying) rate of introduction of potential removals arising from individual \(m\) at time \(t\) is given by \(m R_t\).%
+ Potential removals are thinned using their associated marks, so the (time-varying) rate of introduction of potential removals at time \(t\) is given by \(\beta I_t\).%
 \NB[WSK2]{I worry that there may be confusion between (a) the rates of introduction of various incidents in algorithmic time, and (b) the rates of introduction of various incidents in process time. Vary nomenclature?}
  These potential removals will be influential on the algorithmic-time evolution of the epidemic only if they occur on the un-removed portion of a  time-line \(m\).
  In order that the conditioning on observed removals be respected,
@@ -397,8 +397,8 @@ and further arguments assure us that this is the unique equilibrium distribution
  Similarly potential infections are thinned using their associated marks: 
  consider a potential infection originating from individual \(m\) at time \(t\) with Uniform(\(\{1, \ldots, m\}\)) mark.
  This potential infection is censored if the mark does not exceed \(R_t\). 
- Thus the (time-varying) rate of introduction of potential infections arising from individual \(m\) at time \(t\) is given by \((m-R_t)(n-m)\);
- recall that this infection will be realized if and only if the individual concerned is the highest-indexed infected individual at the relevant time, so that the overall infection rate will be \(I_t S_t\) as required.
+ Thus the (time-varying) rate of introduction of potential infections arising from individual \(m\) at time \(t\) is given by \((m-R_t)(n-m)\alpha\);
+ recall that this infection will be realized if and only if the individual concerned is the highest-indexed infected individual at the relevant time, so that the overall infection rate will be \(I_t S_t\alpha\) as required.
  Again, the realization of a potential infection must be forbidden if it leads to a removal not specified by the conditioning.
  Moreover the removal of a realized infection (in the course of algorithmic time as specified above) must be forbidden if thereby one would fail to produce a complete epidemic with removals as specified by the conditioning.
 %  , and the mark conditional on removals is Uniform (\(\{R_t+1, \ldots, m\}\)).

@@ -65,15 +65,15 @@ print: $(imagefiles) $(productfiles)
 
 # ----------------------------------------------
 # graphics conversions:
-image/Timelines1.svg: image/Timelines.dia
+image/Timelines1.svg: image/Timelines_SBC3.dia
 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections --export=$@ $< 
-image/Timelines2.svg: image/Timelines.dia
+image/Timelines2.svg: image/Timelines_SBC3.dia
 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,NoFlyZoneB --export=$@ $< 
-image/Timelines3.svg: image/Timelines.dia
+image/Timelines3.svg: image/Timelines_SBC3.dia
 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,EpidemicB --export=$@ $< 
-image/Timelines4.svg: image/Timelines.dia
+image/Timelines4.svg: image/Timelines_SBC3.dia
 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,LastViableB --export=$@ $< 
-image/Timelines5.svg: image/Timelines.dia
+image/Timelines5.svg: image/Timelines_SBC3.dia
 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,IncidentalB,RemovedB --export=$@ $< 
 $(title).pdf: $(imagefiles)
 

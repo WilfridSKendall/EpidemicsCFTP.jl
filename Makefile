@@ -22,7 +22,7 @@ bibtexfiles := $(wildcard *.bib)
 diafiles := $(wildcard image/*.dia)
 #svgfiles := $(wildcard image/*.svg)
 #imagefiles := $(subst .svg,.pdf, $(svgfiles))
-imagefiles := $(addsuffix .pdf, $(addprefix image/Timelines,1 2 3 4 5))
+imagefiles := $(addsuffix .pdf, $(addprefix image/Timelines,1 2 3 4 5 6 7 8 9 10))
 
 # ----------------------------------------------
 # Internal variables:
@@ -76,6 +76,22 @@ image/Timelines4.svg: image/Timelines_SBC3.dia
 image/Timelines5.svg: image/Timelines_SBC3.dia
 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,IncidentalB,RemovedB --export=$@ $< 
 $(title).pdf: $(imagefiles)
+image/Timelines6.svg: image/Timelines_SBC3b.dia
+	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB0,Infections0,Epidemic0,LastViable0 --export=$@ $< 
+$(title).pdf: $(imagefiles)
+image/Timelines7.svg: image/Timelines_SBC3b.dia
+	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB1,Infections1,Epidemic1,LastViable1 --export=$@ $< 
+$(title).pdf: $(imagefiles)
+image/Timelines8.svg: image/Timelines_SBC3b.dia
+	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB1,Infections2,Epidemic2,LastViable2 --export=$@ $< 
+$(title).pdf: $(imagefiles)
+image/Timelines9.svg: image/Timelines_SBC3b.dia
+	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB3,Infections3,Epidemic2,LastViable3 --export=$@ $< 
+$(title).pdf: $(imagefiles)
+image/Timelines10.svg: image/Timelines_SBC3b.dia
+	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB3,Infections4,Epidemic4,LastViable4 --export=$@ $< 
+$(title).pdf: $(imagefiles)
+
 
 # ----------------------------------------------
 # Checkin targets:

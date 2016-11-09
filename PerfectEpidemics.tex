@@ -436,7 +436,7 @@ Figure \ref{fig:graphical} illustrates this construction.
  
 %  \TBC{Describe the above in terms of epidemic trajectory, boundary of ``no-fly zone'', and trajectory of last viable epidemic.}
 It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time \(\tau\).
-For \(m=1\),\ldots, \(n\), 
+For \(m=1\),\ldots, \(n\),
 we denote the point-set of realized or potential infections on time-line \(m\) occurring before removal time \(\rho_m\) by \(\Infections_m\).%
 \NB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
 Consider
@@ -466,7 +466,7 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
  &\text{ the last unrealized removal on or below time-line }n\,,
  \nonumber\\
  \xi_m \quad=&\quad \max\left\{\bigcup_{s=1}^m \Removals_s\right\} \vee \max\left\{\Infections_m\cap[0,\xi_{m+1}\right)\}
- &\text{ if }m<n\,.
+ &\text{ if }1<m<n\,.
  \end{align}
  (Here and throughout we use the convention that \(\max\emptyset:=0\)
  and \(\min\emptyset:=\infty\).) Thus by construction \(\xi_m\) must be increasing in \(m\).
@@ -487,7 +487,7 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
   \nonumber\\
   \phi_m \quad=&\quad
   \min\left\{\Infections_{m-1}\cap[\phi_{m-1},\rho_{m-1})\right\} 
-  & \text{otherwise.}
+  & \text{ if } I_0 < m \le n \,.
 %   \begin{cases}
 %    \infty                                                    & \text{ if \(m> R_0+I_0=I_0\) and no potential infection} 
 %    \\
@@ -507,19 +507,30 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
  The \emph{last viable epidemic} is the last epidemic trajectory which avoids unconditioned removals and produces all conditioned removals,
  Together with the epidemic trajectory, it delimits the third region
  -- the \emph{``infection window''} -- within which it is possible for an epidemic to proceed to completion.
- The last viable epidemic is located at boundary time \(\eta_m\) for time-line \(m\), defined inductively by
+ The last viable epidemic is located at boundary time \(\eta_m\) for
+ time-line \(m\), defined inductively by
+\NB[SBC]{I've changed this definition to make \(\eta_m\) the time at
+  which individual \(m\) is infected in the last possible epidemic:
+  this seems more consistent with \(\phi_m\) being the time at which
+  it is infected in the epidemic trajectory, and makes the ordering in
+  \eqref{eq:event-order} more natural.}
+
  \begin{align}\label{eq:last-epidemic}
- \eta_n \quad=&\quad \rho_n\,, \qquad\text{ time of actual removal for individual \(n\),}
+% \eta_n \quad=&\quad \rho_n\,, \qquad\text{ time of actual removal
+% for individual \(n\),}
+ \eta_n \quad=&\quad
+                \max\left\{\Infections_{n-1}\cap[0,\min\Conditioned_n)\right\}
  \nonumber\\
 %  \eta_m \quad=&\quad \max\{\sigma_{m}^j\;:\; \sigma_{m}^j<\eta_{m+1} \wedge \rho_m \}
  \eta_m \quad=&\quad
-                \max\left\{\Infections_{m}\cap[0,\min\Conditioned_{m+1}
-                \wedge \eta_{m+1} \wedge \rho_m)\right\} 
-\qquad \text{ if }m<n\,.
+                \max\left\{\Infections_{m-1}\cap[0,\min\Conditioned_m
+                \wedge \eta_{m+1})\right\} 
+\qquad \text{ if }1<m<n \\
+\eta_1 \quad=&\quad 0 \,. \nonumber
  \end{align}
- The rationale for the definition of \(\eta_m\) is that the last viable epidemic from time-line \(m\) must certainly infect \(m+1\) prior to the last viable epidemic from time-line \(m+1\),
- but must also infect \(m+1\) before the conditioned removal of \(m\);
- furthermore, it must infect \(m+1\) before the first conditioned removal assigned to that time-line.
+ The rationale for the definition of \(\eta_m\) is that the last viable epidemic from time-line \(m-1\) must certainly infect \(m\) prior to the last viable epidemic from time-line \(m\),
+ but must also infect \(m\) before any conditioned removals assigned
+ to time-line \(m\).
  Note that, under the conditioning, the maximum in \eqref{eq:last-epidemic} must be taken over a non-empty set.
   Figure \ref{fig:last-epidemic} illustrates this construction.
  \begin{Figure}
@@ -556,15 +567,17 @@ individual \(m\) is removed (at time \(\rho_m\)).
  We can now concisely summarize which introductions or deletions of potential removals and infections might be refused.
  Potential removals and infections lying strictly within the dead zone (emanating from a removed section of time-line) can be ignored, as they do not influence any possible trajectory.
  More generally, it is always possible to delete an unrealized removal without jeopardizing the conditioning;
- clearly deletion of a realized removal must be refused because its
+ clearly deletion of a conditioned removal must be refused because its
  deletion would violate the conditioning restriction.
 Re-sampling of the time-line to which a conditioned removal \(\rho\) is
 attached must similarly be refused if the proposed new time-line is
 not infected at time \(\rho\).
  Potential removals may only be introduced when they are located earlier than the current epidemic trajectory on the corresponding time-line; 
- other potential removals would become actual infections and so lead to violation of the conditioning restriction, and therefore must be refused.
+ other potential removals would become actual removals and so lead to violation of the conditioning restriction, and therefore must be refused.
  
  It is always possible to delete a potential infection.
+\NB[SBC]{When working right-to-left in algorithmic time, updating the
+  values of \(\phi_m\) and \(\eta_m\) as we go. This might need to be clarified!}
  A realized infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last viable epidemic;
  if it \emph{does} belong to both these epidemics then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
  In other words, if \(\phi_m=\eta_m\) for some \(m\), the (necessarily

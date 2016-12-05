@@ -693,11 +693,11 @@ Consider the following partial ordering between two conditioned realisations \(\
 Write \(\Epidemic(\tau) \ple \Epidemic^*(\tau)\) if and only if the following set of relations all hold, for all \(m=1,\dots,n\):
 \begin{align}
 % \xi_m &\le \xi^*_m \label{eq:no-fly_order} \\
-\phi_m(\tau) &\le \phi^*_m(\tau) \label{eq:trajectory_order} \\
-\eta_m(\tau) &\le \eta^*_m(\tau) \label{eq:last_order} \\
-\text{mark}(\rho_m)(\tau) &\ge \text{mark}(\rho^*_m)(\tau)  \label{eq:cond-removal_order} \\
-\Removals_m(\tau) &\subseteq \Removals^*_m(\tau) \label{eq:removals_order} \\
-\Infections_m(\tau) \cap [\min\Infections^*_m(\tau),\,T] &= \Infections^*_m(\tau) \label{eq:infections_order}
+\phi_m(\tau)\quad &\le \quad\phi^*_m(\tau) \label{eq:trajectory_order} \\
+\eta_m(\tau)\quad &\le \quad\eta^*_m(\tau) \label{eq:last_order} \\
+\text{mark}(\rho_m)(\tau)\quad &\ge\quad \text{mark}(\rho^*_m)(\tau)  \label{eq:cond-removal_order} \\
+\Removals_m(\tau)\quad &\subseteq \quad\Removals^*_m(\tau) \label{eq:removals_order} \\
+\Infections_m(\tau) \cap [\min\Infections^*_m(\tau),\,T]\quad &=\quad \Infections^*_m(\tau) \label{eq:infections_order}
 \end{align}
 The intuition here is that \(\Epidemic\) describes an epidemic that spreads through the population earlier than that in \(\Epidemic^*\). The ordering in \eqref{eq:trajectory_order} -- \eqref{eq:last_order} ensures that the epidemic trajectory and last viable epidemic lines are no later in \(\Epidemic(\tau)\) than in \(\Epidemic^*(\tau)\). The condition in \eqref{eq:cond-removal_order} forces each conditioned removal to be assigned to a time-line in \(\Epidemic(\tau)\) with index at least as great as in \(\Epidemic^*(\tau)\). (Recall that the time-line to which \(\rho_m\) is assigned must be infected before time \(\rho_m\), and so increasing the mark of \(\rho_m\) can only lead to an earlier epidemic trajectory.) The statement in \eqref{eq:removals_order} allows for the realisation \(\Epidemic^*(\tau)\) to have more unconditioned removals than \(\Epidemic(\tau)\), while \eqref{eq:infections_order} ensures that any extra potential infections in \(\Infections_m(\tau)\) occur strictly earlier (in process time) than all potential infections belonging to \(\Infections^*_m(\tau)\).
 
@@ -708,14 +708,18 @@ The intuition here is that \(\Epidemic\) describes an epidemic that spreads thro
 \end{lem}
 
 \begin{proof}
-	Since the sets of potential infections are unchanged when we resample removals, \(\Infections_m(\tau) = \Infections_m(\tau+T)\) etc, and it is immediate that the equality in \eqref{eq:infections_order} still holds at algorithmic time \(\tau+T\).
+Recall the three steps of implementing the update of removals in Lemma~\ref{lem:removal1}. In steps 1 and 2, the set of current potential removals is erased and a new set of potential removals is sampled on each time-line as a new Poisson process of rate \(\beta\) up to the current epidemic trajectory time; in step 3 we update the time-lines to which each of the conditioned removals is assigned.		
+		
+Since the sets of potential infections are unchanged when we resample removals, \(\Infections_m(\tau) = \Infections_m(\tau+T)\) and \(\Infections^*_m(\tau) = \Infections^*_m(\tau+T)\), and it is immediate that the equality in \eqref{eq:infections_order} still holds at algorithmic time \(\tau+T\). 
 	
-	Recall the three steps of implementing the update of removals in Lemma~\ref{lem:removal1}. In steps 1 and 2, the set of current potential removals is erased and a new set of potential removals is sampled on each time-line as a new Poisson process of rate \(\beta\) up to the current epidemic trajectory time. This action can only possibly affect the ordering in \eqref{eq:removals_order}. (Note that this resampling \emph{will} in general change the boundary of the no-fly zone. However, even if this leads to some potential infection in \(\Infections_m(\tau)\) moving from the no-fly zone into the pre-epidemic zone, this will not affect the epidemic trajectory \(\phi_m(\tau)\). For if this were to happen, there would need to be a path of infections joining the trajectory \(\phi_m(\tau)\) to the no-fly zone at time \(\tau\), and this is forbidden under our conditioning.)
-		\NB[SBC]{This also affects the no-fly zone boundaries, but we \textbf{don't} necessarily maintain the ordering of no-fly zones after updating potential removals! I don't yet know whether this is a problem or not.}
+We next observe that neither the updating of the potential removals, nor the re-assignment of conditioned removals to time-lines, will affect the epidemic trajectory \(\phi_m(\tau)\). (Steps 1 and 2 \emph{will} in general change the boundary of the no-fly zone. However, even if this leads to some potential infection in \(\Infections_m(\tau)\) moving from the no-fly zone into the pre-epidemic zone, this will not affect the epidemic trajectory. For if this were to happen, there would need to be a path of infections joining the trajectory \(\phi_m(\tau)\) to the no-fly zone at time \(\tau\), and this is forbidden under our conditioning. Similarly, a conditioned removal \(\rho\) is only allowed to be re-assigned to a different time-line if that time-line is already infected at time \(\rho\), and so this update can have no effect on the epidemic trajectory.) It follows that \(\phi_m(\tau+T)= \phi_m(\tau)\) and \(\phi^*_m(\tau+T)= \phi^*_m(\tau)\), and so \eqref{eq:trajectory_order} is satisfied at algorithmic time \(\tau+T\).
+	
+	
+In steps 1 and 2, the only relation that can possibly be affected is the ordering in \eqref{eq:removals_order}. 
 	Writing \(\Lambda_m(\tau+T)\) for the Poisson process corresponding to time-line \(m\) (common to both \(\Epidemic(\tau+T)\) and \(\Epidemic^*(\tau+T)\)), we obtain
 	\begin{align*}
-	\Removals_m(\tau+T) & = \Lambda_m(\tau+T) \cap [0,\phi_m(\tau)] \\
-	\Removals^*_m(\tau+T) & = \Lambda_m(\tau+T) \cap [0,\phi^*_m(\tau)]\,.
+	\Removals_m(\tau+T) \quad & =  \quad\Lambda_m(\tau+T) \cap [0,\phi_m(\tau)] \\
+	\Removals^*_m(\tau+T) \quad & = \quad \Lambda_m(\tau+T) \cap [0,\phi^*_m(\tau)]\,.
 	\end{align*}
 	Since \(\phi_m(\tau)\le \phi^*_m(\tau)\) by \eqref{eq:trajectory_order}, it follows that \(\Removals_m(\tau+T)\subseteq \Removals^*_m(\tau+T)\), and so the relation in \eqref{eq:removals_order} is preserved.
 
@@ -731,16 +735,36 @@ The intuition here is that \(\Epidemic\) describes an epidemic that spreads thro
 %	\quad &= \quad \xi_m(\tau+T) \,.
 %	\end{align*}
 	
-	In step 3 we update the time-lines to which each of the conditioned removals is assigned, in the following way. Suppose that a conditioned removal \(\rho\) is currently assigned to time-line \(m\) in \(\Epidemic(\tau)\); that is, \(\text{mark}(\rho)(\tau) = m\), or \(\rho \in \Conditioned_m(\tau)\). We sample \(\hat m\sim\text{Uniform}\{1,\dots,n\}\) and set
-	\[ \text{mark}(\rho)(\tau+T) = \begin{cases}
-		\hat m & \quad\text{if } \phi_{\hat m}\le \rho\le \rho_{\hat m} \\
+	In step 3 we update the time-lines to which each of the conditioned removals is assigned, in the following way. Suppose that a conditioned removal \(\rho\) is currently assigned to time-line \(m\) in \(\Epidemic(\tau)\). (Equivalently, \(\text{mark}(\rho)(\tau) = m\), or \(\rho \in \Conditioned_m(\tau)\).) We sample \(\hat m\sim\text{Uniform}\{1,\dots,n\}\) and set
+	\begin{equation}\label{eq:rejection}
+		\text{mark}(\rho)(\tau+T) \quad = \quad \begin{cases}
+		\hat m & \quad\text{if } \phi_{\hat m}(\tau)\le \rho\le \rho_{\hat m} \\
 		m & \quad\text{otherwise.}
 		\end{cases}
-	\]
-	Note that resampling the marks of conditioned removals once again has no effect on the epidemic trajectory, and so it is immediate that inequality \eqref{eq:trajectory_order} holds at time \(\tau + T)\). However, this action will in general affect the two relations \eqref{eq:last_order} and  \eqref{eq:cond-removal_order}, and so we now check that these still hold at time \(\tau+T\). 
+	\end{equation}
+		
+	In updating the marks for processes \(\Epidemic\) and \(\Epidemic^*\) we use the same uniform draws, i.e. \(\hat m^* = \hat m\) in the above. Since the rejection rule in \eqref{eq:rejection} is monotonic in \(\phi_{\hat m}(\tau)\), inequality \eqref{eq:cond-removal_order} follows immediately from \eqref{eq:trajectory_order} and the observation that \(\phi_m(\tau)\) is an increasing function of \(m\).
 	
-	
-	
+	It therefore remains to check the effect of step 3 on the relation in \eqref{eq:last_order}, the path of the last-viable epidemic. From its definition in \eqref{eq:last-epidemic} we observe that 
+	\begin{align*}
+		\eta^*_n(\tau+T) \quad &= \quad \max\left\{\Infections^*_{n-1}(\tau+T)\cap[0,\min \Conditioned^*_n(\tau+T))\right\}\\
+		\quad &= \quad\max\left\{\Infections_{n-1}(\tau+T)\cap[0,\min \Conditioned^*_n(\tau+T))\right\} \\
+		\quad &\ge\quad \max\left\{\Infections_{n-1}(\tau+T)\cap[0,\min \Conditioned_n(\tau+T))\right\} \\
+		\quad &= \quad\eta_n(\tau+T)\,.
+	\end{align*}
+	Here the second equality follows from \eqref{eq:infections_order}, which ensures that \(\Infections_{n-1}\cap\Infections^*_{n-1} = \Infections^*_{n-1}\), with any extra infections in \(\Infections_{n-1}\) occurring earlier than all those in \(\Infections^*_{n-1}\), and the inequality follows from \eqref{eq:cond-removal_order}. For time-lines \(m<n\) we proceed inductively, once again starting with the definition in \eqref{eq:last-epidemic}. Suppose that \(\eta^*_{m+1}(\tau+T) \ge \eta_{m+1}(\tau+T)\) for some \(m< n\). Then:
+	\begin{align*}
+	\eta^*_m(\tau+T) \quad&=\quad
+	\max\left\{\Infections^*_{m-1}(\tau+T)\cap[0,\min\Conditioned^*_m(\tau+T)
+	\wedge \eta^*_{m+1}(\tau+T)\right\}  \\
+	\quad&=\quad
+	\max\left\{\Infections_{m-1}(\tau+T)\cap[0,\min\Conditioned^*_m(\tau+T)
+	\wedge \eta^*_{m+1}(\tau+T)\right\} \\
+	\quad &\ge\quad \max\left\{\Infections_{m-1}(\tau+T)\cap[0,\min\Conditioned_m(\tau+T)
+	\wedge \eta_{m+1}(\tau+T)\right\} \\
+	\quad &= \quad\eta_m(\tau+T)\,,
+	\end{align*}
+	where the inequality follows from \eqref{eq:cond-removal_order} and our inductive assumption. Therefore \eqref{eq:last_order} also holds at algorithmic time \(\tau+T\), and our proof is complete.	
 \end{proof}
 
 

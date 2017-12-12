@@ -19,7 +19,7 @@ Command-line options::
     --beta=BETA:           rate of removal;
     --n=N:                 number of individuals;
     --T=T:                 plot over time range [0, T];
-    --consistent:          allow consistent extensions over time; 
+    --consistent:          allow consistent extensions over time;
     --logging=LOGGING:     logging verbosity level.
 
 Notes:
@@ -35,7 +35,9 @@ Notes:
 # \section{Definitions}
 # We need the logging module regardless of whether the #logging# option
 # is deployed, since #logging.info# calls are scattered through the text.
-import logging, os, sys
+import logging
+import os
+import sys
 
 from itertools import combinations, count
 from math import floor
@@ -66,20 +68,20 @@ class Display(tk.Canvas):
         tk.Canvas.__init__(self, **kwargs)
         self.xmax, self.ymax = xmax, ymax - 1
         self.w, self.h = kwargs['width'], kwargs['height']
-    
+
     def xpxl(self, x):
         "Convert #x# coordinate to pixel 'x' reference."
         return self.w * (0.05 + (0.9 * x) / self.xmax)
-        
+
     def ypxl(self, y):
         "Convert #y# coordinate to pixel 'y' reference."
         return self.h * (0.05 + (0.9 * (self.ymax - y)) / self.ymax)
-        
+
     def segment(self, x0, y0, x1, y1, tag='null'):
         "Produce line segment."
         self.create_line(self.xpxl(x0), self.ypxl(y0), \
                          self.xpxl(x1), self.ypxl(y1), tag=tag)
-    
+
     def disk(self, x, y, r=1, tag='null'):
         "Produce disk."
         a, b = self.xpxl(x), self.ypxl(y)
@@ -88,15 +90,15 @@ class Display(tk.Canvas):
     def removal(self, x, y, tag='null'):
         "Indicate removal using 'error' bitmap."
         self.create_bitmap(self.xpxl(x), self.ypxl(y), bitmap='error', tag=tag)
-        
+
     def infection(self, t, i, j, tag='null'):
         "Indicate infection using segment."
         self.segment(t, i, t, j, tag=tag)
-        
+
     def insert_text(self, x, y, text='', tag='null'):
         "Insert text at specified position."
         self.create_text(self.xpxl(x), self.ypxl(y), text=text, tag=tag)
-        
+
 
 
 # \section{Functions}
@@ -165,10 +167,10 @@ def main(opt, arguments):
     iv = Innovations(remove=rel, infect=ill)
     logging.info('r: %s' % pformat(iv.remove))
     logging.info('i: %s' % pformat(iv.infect))
-    
+
     logging.info('Compute epidemic')
     epidemic = FreeEpidemic(innovations=iv)
-    traj = epidemic.compute()
+    traj = epidemic()
     logging.info('t: %s' % str(traj))
 
     logging.info('Set-up Tk root')    
@@ -179,7 +181,7 @@ def main(opt, arguments):
     max_y = epidemic.n
     c = Display(root, T, max_y, background='white', height=720, width=1024)
     c.pack()
-    
+
     logging.info('Display frame')    
     c.segment(0, 0, T, 0, tag='frame')
     c.segment(0, epidemic.n - 1, T, epidemic.n - 1, tag='frame')
@@ -200,11 +202,11 @@ def main(opt, arguments):
             c.segment(tic, yneg, tic, yneg + 3 * ydel, tag='axis')
             c.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
         tx += 1
-    
+
     logging.info('Display time-lines')    
     for i in range(epidemic.n):
         c.segment(0, i, T, i, tag='timeline')
-    
+
     logging.info('Display potential removals')    
     for i, ll in enumerate(iv.remove):
         for t in ll:
@@ -216,7 +218,7 @@ def main(opt, arguments):
             for t in ll:
                 c.disk(t, i, r=4, tag='infection_incident')
                 c.infection(t, i, i + j + 1, tag='potential_infection')
-    
+
     logging.info('Compute infectious portions of time-lines')    
     I = traj[0][1][1]
     infection, removal = [0] * I, []
@@ -247,7 +249,7 @@ def main(opt, arguments):
     c.itemconfig('infection_incident', outline='red', width=2)
     c.itemconfig('infectious', width=6, fill='yellow', arrow=tk.LAST)
     c.itemconfig('epidemic', width=2, fill='red')
-    
+
     logging.info('Tkinter main loop')    
     root.mainloop()
 

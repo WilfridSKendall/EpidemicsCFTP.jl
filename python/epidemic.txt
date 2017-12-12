@@ -12,7 +12,7 @@ Here is a typical invocation of the 'innovation' class::
      [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
 
      >>> epidemic = FreeEpidemic(innovations=iv)
-     >>> pprint(epidemic.compute())
+     >>> pprint(epidemic())
      [(0, (2, 1, 0)),
       (0.4, (1, 2, 0)),
       (0.6, (0, 3, 0)),
@@ -29,7 +29,7 @@ And now a rather more extensive test::
      ...        [[3.0]]]
      >>> iv =Innovations(remove=rel, infect=ill)
      >>> epidemic = FreeEpidemic(innovations=iv)
-     >>> pprint(epidemic.compute())
+     >>> pprint(epidemic())
      [(0, (4, 1, 0)),
       (0.5, (3, 2, 0)),
       (0.6, (2, 3, 0)),

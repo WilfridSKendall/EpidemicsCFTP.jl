@@ -92,7 +92,7 @@ class FreeEpidemic(object):
      ...                          [[0.2, 1.1, 1.5]]])
 
      >>> epidemic = FreeEpidemic(innovations=innov)
-     >>> pprint(epidemic.compute())
+     >>> pprint(epidemic())
      [(0, (2, 1, 0)),
       (0.4, (1, 2, 0)),
       (0.6, (0, 3, 0)),
@@ -126,7 +126,7 @@ class FreeEpidemic(object):
         # Return list of incidents sorted by time.
         return sorted(list(chain(rem, inf)))
 
-    def compute(self, I=1):
+    def __call__(self, I=1):
         """
         Returns a sequence of changes of state of an SIR epidemic driven by
         #FreeEpidemic# innovations. Note that no conditioning is imposed here!
@@ -164,7 +164,7 @@ def main(opt, arguments):
     print(str(innov))
     logging.info('    and consequent epidemic')
     epidemic = FreeEpidemic(innovations=innov)
-    pprint(epidemic.compute())
+    pprint(epidemic())
 
 
 def _doctest():

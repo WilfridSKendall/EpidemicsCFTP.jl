@@ -1,9 +1,9 @@
 figures := $(wildcard image/*.png)
 
-main: innovate.py.doctested
+main: epidemic.py.doctested
 
-figure1: gr-static.py innovate.py
+figure1: gr-static.py epidemic.py
 	echo $(figures)
 	python3 gr-static.py
 
-innovate.py.doctested: innovate.py innovate.txt ; python3 innovate.py --doctest --logging=INFO
+epidemic.py.doctested: epidemic.py epidemic.txt ; python3 epidemic.py --doctest --logging=INFO

@@ -42,7 +42,7 @@ from math import floor
 from pprint import pformat # only needed when logging!
 from random import expovariate, random, seed
 
-from innovate import Innovation, FreeEpidemic
+from epidemic import Innovations, FreeEpidemic
 
 # Under python3 in Ubuntu it is necessary to install python3-tk!
 try:
@@ -161,8 +161,8 @@ def main(opt, arguments):
             #print(pformat(rel))
             #print(pformat(ill))
  
-    logging.info('Set-up innovation structure')
-    iv = Innovation(remove=rel, infect=ill)
+    logging.info('Set-up innovations structure')
+    iv = Innovations(remove=rel, infect=ill)
     logging.info('r: %s' % pformat(iv.remove))
     logging.info('i: %s' % pformat(iv.infect))
     

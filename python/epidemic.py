@@ -41,7 +41,7 @@ class BadDataError(Error):
     pass
 
 # \section{Classes}
-class Innovation:
+class Innovations:
     """
     This class captures innovation incidents related to 
     construction of an SIR epidemic trajectory, thus providing
@@ -51,11 +51,11 @@ class Innovation:
     checks and a printing method::
     
      >>> from pprint import pprint
-     >>> inn = Innovation(remove=[[1, 1.6], [1.3], [0.5, 2]],
+     >>> iv = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
      ...                          [[0.2, 1.1, 1.5]]])
 
-     >>> print(str(inn))
+     >>> print(str(iv))
      [[1, 1.6], [1.3], [0.5, 2]]
      [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
     """
@@ -82,11 +82,11 @@ class FreeEpidemic(object):
     This class computes a (free) SIR epidemic, given an #Innovation# instance::
     
      >>> from pprint import pprint
-     >>> innov = Innovation(remove=[[1, 1.6], [1.3], [0.5, 2]],
+     >>> iv = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
      ...                          [[0.2, 1.1, 1.5]]])
 
-     >>> epidemic = FreeEpidemic(innovations=innov)
+     >>> epidemic = FreeEpidemic(innovations=iv)
      >>> pprint(epidemic.compute())
      [(0, (2, 1, 0)),
       (0.4, (1, 2, 0)),
@@ -155,10 +155,10 @@ def main(opt, arguments):
 
     logging.info('Default settings:')
     logging.info('    innovation structure')
-    inn = Innovation()
-    print(str(inn))
+    iv = Innovations()
+    print(str(iv))
     logging.info('    and consequent epidemic')
-    epidemic = FreeEpidemic(innovations=inn)
+    epidemic = FreeEpidemic(innovations=iv)
     pprint(epidemic.compute())
 
 

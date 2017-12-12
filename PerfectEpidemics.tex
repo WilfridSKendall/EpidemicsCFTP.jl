@@ -534,9 +534,9 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
  but must also infect \(m\) before any conditioned removals assigned
  to time-line \(m\).
  Note that, under the conditioning, the maximum in \eqref{eq:last-epidemic} must be taken over a non-empty set. It will be convenient for monotonicity arguments later on to replace the set \(\Conditioned_m\) in \eqref{eq:last-epidemic} by the larger set
- 	\[ \Conditioned_{m+}(\tau) \quad = \quad \bigcup_{s=m}^n \Conditioned_s(\tau) \,. \]
+ 	\[ \Conditioned_{m+} \quad = \quad \bigcup_{s=m}^n \Conditioned_s \,. \]
  This is permissible since \(\Conditioned_{n+} = \Conditioned_n\), and we know that \(\eta_m \le \min\Conditioned_m \wedge \eta_{m+1}\), and so the equivalence of this formulation follows by induction.
- \NB[SBC]{Perhaps we should just make this the definition? Or put it into a Lemma for easy reference?}
+ \NB[SBC]{Perhaps we should just make this the definition of $\eta_m$? Or put it into a Proposition for easy reference?}
  
  
   Figure \ref{fig:last-epidemic} illustrates this construction.
@@ -660,7 +660,7 @@ not infected at time \(\rho\).
 \item remove all current potential removals;
 \item for each time-line \(m\), introduce new potential removals
   according to a Poisson process of intensity \(\beta\) over the range
-  \([0,\phi_m(\tau+T)]\), where \(\phi_m(\tau+T)\) is (as above) when the time-line \(m\) currently becomes infected;
+  \([0,\phi_m(\tau+T)]\), where \(\phi_m(\tau+T)\) is (as above) the process time when the time-line \(m\) currently becomes infected;
 \item update the mark for each conditioned removal time \(\rho\) as follows:
   suppose that \(\rho\) is currently assigned to time-line \(m\)
   (equivalently, \(\rho\in\Conditioned_m(\tau+T)\)); sample
@@ -747,7 +747,7 @@ maintains this ordering for all algorithmic times \(\tau\geq\tau_0\).
 \TBC{I believe that the full \CFTP construction follows quickly from this.}
 
 Consider the following partial ordering between two conditioned
-\NB[SBC]{Do we need to emphasise that they're both conditioned on the same set of removal times?} realisations \(\Epidemic(\tau)\) and \(\hat\Epidemic(\tau)\) at algorithmic time \(\tau\).
+\NB[SBC]{Possibly we should emphasise that they're both conditioned on the same set of removal times?} realisations \(\Epidemic(\tau)\) and \(\hat\Epidemic(\tau)\) at algorithmic time \(\tau\).
 \NB[SBC]{Better notation here?! (I've chosen $\Epidemic$ for ``epidemic''.)}
 Write \(\Epidemic(\tau) \ple \hat\Epidemic(\tau)\) if and only if the following set of relations all hold, for all \(m=1,\dots,n\):
 \begin{align}
@@ -758,12 +758,11 @@ Write \(\Epidemic(\tau) \ple \hat\Epidemic(\tau)\) if and only if the following 
 \Removals_m(\tau)\quad &\subseteq \quad\hat\Removals_m(\tau) \label{eq:removals_order} 
 %\Infections_m^1(\tau) \subseteq  \hat\Infections_m^1(\tau) \quad&\text{and}\quad \hat\Infections_m^2(\tau)\subseteq  \Infections_m^2(\tau) \,. \label{eq:infections_order}
 \end{align}
-The intuition here is that \(\Epidemic\) describes an epidemic that spreads through the population earlier than that in \(\hat\Epidemic\). The orderings in \eqref{eq:no-fly_order} -- \eqref{eq:last_order} ensure that the no-fly zone boundary, epidemic trajectory and last viable epidemic lines are no later in \(\Epidemic(\tau)\) than in \(\hat\Epidemic(\tau)\). The condition in \eqref{eq:cond-removal_order} forces each conditioned removal to be assigned to a time-line in \(\Epidemic(\tau)\) with index at least as great as in \(\hat\Epidemic(\tau)\). (Recall that the time-line to which \(\rho_m\) is assigned must be infected before time \(\rho_m\), and so increasing the mark of \(\rho_m\) can only lead to an earlier epidemic trajectory.) Using the notation introduced in Corollary~\ref{cor:conditioned_sets}, we note that  the ordering in \eqref{eq:cond-removal_order} implies that 
+The intuition here is that \(\Epidemic\) describes an epidemic that spreads through the population earlier than that in \(\hat\Epidemic\). The orderings in \eqref{eq:no-fly_order} -- \eqref{eq:last_order} ensure that the no-fly zone boundary, epidemic trajectory and last viable epidemic lines are no later in \(\Epidemic(\tau)\) than in \(\hat\Epidemic(\tau)\). The condition in \eqref{eq:cond-removal_order} forces each conditioned removal to be assigned to a time-line in \(\Epidemic(\tau)\) with index at least as great as in \(\hat\Epidemic(\tau)\). (Recall that the time-line to which \(\rho_m\) is assigned must be infected before time \(\rho_m\), and so increasing the mark of \(\rho_m\) can only lead to an earlier epidemic trajectory.) Using the notation introduced following \eqref{eq:last-epidemic}, we note that the ordering in \eqref{eq:cond-removal_order} implies that 
 \begin{equation}\label{eq:cond-removal-order2}
 \hat\Conditioned_{m+}(\tau) \subseteq \Conditioned_{m+}(\tau) \,.
 \end{equation}
-
- The statement in \eqref{eq:removals_order} allows for the realisation \(\hat\Epidemic(\tau)\) to have more unconditioned removals than \(\Epidemic(\tau)\). 
+ The statement in \eqref{eq:removals_order} ensures that any unconditioned removals in \(\Epidemic(\tau)\) are also present in the realisation \(\hat\Epidemic(\tau)\). 
 %Finally, \eqref{eq:infections_order} ensures that all infections occurring \emph{inside} the no-fly zone of \(\Epidemic(\tau)\) are also present in \(\hat\Epidemic(\tau)\), and that all infections occurring \emph{outside} the no-fly zone for \(\hat\Epidemic(\tau)\) are also present in \(\Epidemic(\tau)\).
 
 
@@ -851,19 +850,18 @@ In steps 1 and 2, the only relationships that can possibly be affected are the o
 	We next show that the ordering of no-fly zones in \eqref{eq:no-fly_order} is maintained by these steps. Since the sets of potential infections are unchanged when we resample removals, \(\Infections_m(\tau+2T) = \Infections_m(\tau+T)\) and \(\hat\Infections_m(\tau+2T) = \hat\Infections_m(\tau+T)\). Recall from \eqref{eq:boundary-time} the definition of the no-fly zone boundary, which is completely determined by the sets of infections and unrealized removals. Since \(\Removals_m(\tau+2T)\subseteq \hat\Removals_m(\tau+2T)\) for all \(m\) we see immediately that \(\xi_n(\tau+2T) \le \hat\xi_n(\tau+2T)\). Now suppose that \(\xi_{m+1}(\tau+2T) \le \hat\xi_{m+1}(\tau+2T)\) for some \(m<n\). Then
 %
 	\begin{align}
-	\xi_m(\tau+2T) \quad&=\quad \max\left\{\bigcup_{s=1}^m \Removals_s(\tau+2T)\right\} \vee \max\left\{\Infections_m(\tau+2T)\cap[0,\xi_{m+1}(\tau+2T))\right\}  \nonumber\\
-	\quad &\le \quad \max\left\{\bigcup_{s=1}^m \hat\Removals_s(\tau+2T)\right\} \vee \max\left\{\Infections_m(\tau+2T)\cap[0,\xi_{m+1}(\tau+2T)\right\} \,. \label{eq:new_no-fly}
+	\xi_m(\tau+2T) \quad&=\quad \max\left\{\bigcup_{s=1}^m \Removals_s(\tau+2T)\right\} \vee \max\left\{\Infections_m(\tau+2T)\cap[0,\xi_{m+1}(\tau+2T))\right\}\,.  \label{eq:new_no-fly}
 	\end{align}
 	%
 	
-To show that this is bounded above by \(\hat\xi_m(\tau+2T)\), we just need to check that if the maximum in \eqref{eq:new_no-fly} is attained by some potential infection \(i \in \Infections_m(\tau+2T)\), then this infection also belongs to the set \(\hat\Infections_m(\tau+2T)\). Observe that 
+	Thanks to \eqref{eq:removals_order} holding at time $\tau+2T$, to show that \(\xi_m(\tau+2T)\le \hat\xi_m(\tau+2T)\), we just need to check that if the maximum in \eqref{eq:new_no-fly} is attained by some potential infection \(i \in \Infections_m(\tau+2T)\), then \(i\) also belongs to the set \(\hat\Infections_m(\tau+2T)\). Observe that 
 \[ \Infections_m(\tau+2T)\cap[0,\xi_{m+1}(\tau+2T)) \quad= \quad \Lambda_m^I(\tau+T)\setminus(\phi_m(\tau+T),\xi_{m+1}(\tau+T)) \cap[0,\xi_{m+1}(\tau+2T))\,,  \]
 where recall that the interval \((\phi_m(\tau+T),\xi_{m+1}(\tau+T))\) should be read as the empty set in the case that \(\phi_m(\tau+T)>\xi_{m+1}(\tau+T)\).
 
 \textbf{If \(i\) is contained within the no-fly zone of \(\Epidemic(\tau+T)\), then the ordering in \eqref{eq:no-fly_order} at time \(\tau+T\) ensures that \(i\) also belongs to the no-fly zone of \(\hat\Epidemic(\tau+T)\). Alternatively, suppose that the maximum in \eqref{eq:new_no-fly} is attained by some potential infection situated completely outside the no-fly zone of \(\Epidemic(\tau+T)\). 
 \medskip
 In that case, \(i\) must lie in the pre-epidemic window of \(\Epidemic(\tau+T)\), i.e. \(\xi_m(\tau+T)<i<\phi_m(\tau+T)\). This means that \(i\in \Lambda^I_m\), i.e. that \(i\) was not a perpetuated infection in \(\Epidemic(\tau+T)\). Thus \(i\) will also belong to \(\hat\Infections_m(\tau+2T)\) unless \(i\in(\hat\phi_m(\tau+T),\hat\xi_m(\tau+T))\), in which case it would have been censored when the infections were updated over period \([\tau,\tau+T)\). But if \(i>\hat\phi_m(\tau+T) \) then \(i>\phi_m(\tau+T) \) also, thanks to the ordering in \eqref{eq:trajectory_order} at time \(\tau+T\), and this would contradict our previous inequality (four lines ago).
-		}
+		}\NB[SBC]{Bold text needs correcting/completing.}
 	
 	In step 3 we update the time-lines to which each of the conditioned removals is assigned, in the following way. Suppose that a conditioned removal \(\rho\) is currently assigned to time-line \(m\) in \(\Epidemic(\tau+T)\). (Equivalently, \(\text{mark}(\rho)(\tau+T) = m\), or \(\rho \in \Conditioned_m(\tau+T)\).) We sample \(m'\sim\text{Uniform}\{1,\dots,n\}\) and set
 	\begin{equation}\label{eq:rejection}
@@ -885,7 +883,7 @@ In that case, \(i\) must lie in the pre-epidemic window of \(\Epidemic(\tau+T)\)
 		\quad &= \quad \max\left\{\hat\Infections_{n-1}(\tau+T)\cap[0,\min\hat \Conditioned_n(\tau+2T))\right\}\\
 		\quad &= \quad\hat\eta_n(\tau+2T)\,.
 	\end{align*}
-	The second equality above once again says that the infection event attaining the required maximum will either be a new infection belonging to \(\Lambda_{n-1}^I(\tau+T)\) or will be a perpetuated infection at time \(\eta_n(\tau+T)\). The inequality then makes use of the orderings between epidemic trajectories and last-viable epidemics at time \(\tau+T)\) (established in the first half of this proof), as well as the ordering between sets \(\Conditioned_n\) and \(\hat\Conditioned_n\) that we have just demonstrated.
+	The second equality above once again says that the infection event attaining the required maximum will either be a new infection belonging to \(\Lambda_{n-1}^I(\tau+T)\) or will be a perpetuated infection at time \(\eta_n(\tau+T)\). The inequality then makes use of the orderings between epidemic trajectories and last-viable epidemics at time \(\tau+T\) (established in the first half of this proof), as well as the ordering between sets \(\Conditioned_n\) and \(\hat\Conditioned_n\) that we have just demonstrated.
 	
 	 For time-lines \(m<n\) we proceed inductively, once again starting with the definition in \eqref{eq:last-epidemic}. Suppose that \(\eta_{m+1}(\tau+2T) \le \hat\eta_{m+1}(\tau+2T)\) for some \(m< n\). Then:
 	\begin{align*}

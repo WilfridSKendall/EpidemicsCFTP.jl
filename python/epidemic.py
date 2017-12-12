@@ -65,7 +65,7 @@ class Innovations(object):
     """
     def __init__(self, remove=[[1], [2]], infect=[[[0.5, 1.2]]]):
         self.remove, self.infect = remove, infect
-        self.n = len(remove)
+        # self.n = len(remove)
 
         # Sanity checks. We require:
         #
@@ -73,14 +73,15 @@ class Innovations(object):
         #    for each row except for the first row,
         # 2. and each sub-list in #self.infect# to be made up of one list of potential
         #    infections for each sub-list located above current sub-list.
-        if len(self.infect) != self.n - 1:
+        if len(self.infect) != len(self) - 1:
             raise BadDataError("infection and removal data structure lengths do not agree")
         for i, llst in enumerate(self.infect):
-            if len(llst) != self.n - i - 1:
+            if len(llst) != len(self) - i - 1:
                 raise BadDataError("infection data sub-structure is inconsistent")
-
     def __str__(self):
         return "%s\n%s" % (self.remove, self.infect)
+    def __len__(self):
+        return len(self.remove)
 
 class FreeEpidemic(object):
     """
@@ -104,7 +105,9 @@ class FreeEpidemic(object):
     def __init__(self, innovations=None):
         if not innovations:
             raise BadDataError("No innovations supplied for FreeEpidemic object")
-        self.innov, self.n = innovations, innovations.n
+        self.innov = innovations
+    def __len__(self):
+        return len(self.innov)
 
     def _build_time_line(self):
         """
@@ -131,18 +134,18 @@ class FreeEpidemic(object):
         Returns a sequence of changes of state of an SIR epidemic driven by
         #FreeEpidemic# innovations. Note that no conditioning is imposed here!
         """
-        S, R = self.n - I, 0
+        S, R = len(self) - I, 0
         trajectory = [(0, (S, I, R))]
-        for x in self._build_time_line():
-            if len(x) == 3:
-                t, i, j = x
+        for incident in self._build_time_line():
+            if len(incident) == 3:
+                t, i, j = incident
                 if R <= i and i < I + R and I + R <= j:
                     logging.info('[%f]: R=%d, i=%d, I+R=%d, j=%d' % (t, R, i, I+R, j))
                     I += 1
                     S -= 1
                     trajectory.append((t, (S, I, R)))
-            if len(x) == 2:
-                t,  i = x
+            if len(incident) == 2:
+                t,  i = incident
                 if R <= i and i < I + R:
                     I -= 1
                     R += 1

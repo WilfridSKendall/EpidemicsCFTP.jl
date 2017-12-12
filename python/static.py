@@ -6,7 +6,7 @@ Metadata:
 
   - Author:    W.S.Kendall
   - Copyright: opensource (c) W.S.Kendall 2014
-  - Date:      2014-04-26
+  - Date:      2014-04-26, revised 2017-12-12
   - URL:       http://www.wilfridkendall.co.uk
   - Generator: '/home/wilfrid/lib/python/generate.py' version 1.27.
 
@@ -107,10 +107,10 @@ def poisson(lamda, t0, t1):
     Returns a Poisson pattern of points over the time interval '[t0, t1]'
     using intensity 'lamda'.
     """
-    t, points = t0 + expovariate(lamda), []
-    while t < t1:
-        points.append(t)
-        t += expovariate(lamda)
+    temp, points = t0 + expovariate(lamda), []
+    while temp < t1:
+        points.append(temp)
+        temp += expovariate(lamda)
     return points
 
 def marked_poisson(lamda, t0, t1):
@@ -118,10 +118,10 @@ def marked_poisson(lamda, t0, t1):
     Returns a marked Poisson pattern of points over the time interval '[t0, t1]'
     using intensity 'lamda'. Marks are independent Uniform'(0,1)'.
     """
-    t, marked_points = t0 + expovariate(lamda), []
-    while t < t1:
-        marked_points.append((t, random()))
-        t += expovariate(lamda)
+    temp, marked_points = t0 + expovariate(lamda), []
+    while temp < t1:
+        marked_points.append((temp, random()))
+        temp += expovariate(lamda)
     return marked_points
 
 def main(opt, arguments):
@@ -137,56 +137,56 @@ def main(opt, arguments):
     else:
         logging.info('Create data using rng')
         seed(int(opt.seed))
-        n = int(opt.n)
+        num = int(opt.n)
         T = float(opt.T)
         alfa = float(opt.alfa)
         beta = float(opt.beta)
         if opt.consistent is None:
             # Note that the simulations here do not couple well over varying #T#.
             # This could be arranged if we used a marked point process.
-            rel = [poisson(beta * T, 0, T) for i in range(n)]
-            ill= [[poisson(alfa * T, 0, T) for j in range(i+1, n)] for i in range(n-1)]
+            rel = [poisson(beta * T, 0, T) for i in range(num)]
+            ill= [[poisson(alfa * T, 0, T) for j in range(i+1, num)] for i in range(num - 1)]
         else:
             logging.info('Create consistent data using rng')
-            gam = (n * (n - 1) / 2) * alfa + n * beta
-            divide = (n * (n - 1) / 2) * alfa / gam
-            rel = [[] for dummy in range(n)]
-            ill = [[[] for dummy in range(r)] for r in range(n - 1, 0, -1)]
-            idx = list(combinations(range(n),2))
+            gam = (num * (num - 1) / 2) * alfa + num * beta
+            divide = (num * (num - 1) / 2) * alfa / gam
+            rel = [[] for dummy in range(num)]
+            ill = [[[] for dummy in range(r)] for r in range(num - 1, 0, -1)]
+            idx = list(combinations(range(num),2))
             for t, u in marked_poisson(gam, 0, T):
                 if u > divide:
-                    ix = floor(n * (u - divide) / (1 - divide))
+                    ix = floor(num * (u - divide) / (1 - divide))
                     rel[ix].append(t)
                 else:
-                    a, b = idx[floor((n * (n - 1) / 2) * u /divide)]
+                    a, b = idx[floor((num * (num - 1) / 2) * u /divide)]
                     ill[a][b - a - 1].append(t)
             #print(pformat(rel))
             #print(pformat(ill))
  
     logging.info('Set-up innovations structure')
-    iv = Innovations(remove=rel, infect=ill)
-    logging.info('r: %s' % pformat(iv.remove))
-    logging.info('i: %s' % pformat(iv.infect))
+    innov = Innovations(remove=rel, infect=ill)
+    logging.info('r: %s' % pformat(innov.remove))
+    logging.info('i: %s' % pformat(innov.infect))
 
     logging.info('Compute epidemic')
-    epidemic = FreeEpidemic(innovations=iv)
+    epidemic = FreeEpidemic(innovations=innov)
     traj = epidemic()
     logging.info('t: %s' % str(traj))
 
-    logging.info('Set-up Tk root')    
+    logging.info('Set-up Tk root')
     root = tk.Tk()
     root.title('SIR Epidemics (I)')
 
-    logging.info('Display Canvas')  
-    max_y = epidemic.n
+    logging.info('Display Canvas')
+    max_y = len(epidemic)
     c = Display(root, T, max_y, background='white', height=720, width=1024)
     c.pack()
 
     logging.info('Display frame')    
     c.segment(0, 0, T, 0, tag='frame')
-    c.segment(0, epidemic.n - 1, T, epidemic.n - 1, tag='frame')
-    c.segment(0, 0, 0, epidemic.n - 1, tag='frame')
-    c.segment(T, 0, T, epidemic.n - 1, tag='frame')
+    c.segment(0, len(epidemic) - 1, T, len(epidemic) - 1, tag='frame')
+    c.segment(0, 0, 0, len(epidemic) - 1, tag='frame')
+    c.segment(T, 0, T, len(epidemic) - 1, tag='frame')
 
     logging.info('Display time axis')
     yneg, ydel = -0.01 * max_y, -0.005 * max_y
@@ -203,23 +203,23 @@ def main(opt, arguments):
             c.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
         tx += 1
 
-    logging.info('Display time-lines')    
-    for i in range(epidemic.n):
+    logging.info('Display time-lines')
+    for i in range(len(epidemic)):
         c.segment(0, i, T, i, tag='timeline')
 
-    logging.info('Display potential removals')    
-    for i, ll in enumerate(iv.remove):
+    logging.info('Display potential infections')
+    for i, lll in enumerate(innov.infect):
+        for j, ll in enumerate(lll):
+            for t in ll:
+                c.disk(t, i, r=6, tag='infection_incident')
+                c.infection(t, i, i + j + 1, tag='potential_infection')
+
+    logging.info('Display potential removals')
+    for i, ll in enumerate(innov.remove):
         for t in ll:
             c.removal(t, i, tag='potential_removal')
 
-    logging.info('Display potential infections')  
-    for i, lll in enumerate(iv.infect):
-        for j, ll in enumerate(lll):
-            for t in ll:
-                c.disk(t, i, r=4, tag='infection_incident')
-                c.infection(t, i, i + j + 1, tag='potential_infection')
-
-    logging.info('Compute infectious portions of time-lines')    
+    logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]
     infection, removal = [0] * I, []
     for t, x in traj[1:]:
@@ -231,8 +231,10 @@ def main(opt, arguments):
     for i, t0, t1 in zip(count(), infection, removal):
         logging.info((i, t0, t1))
         c.segment(t0, i, t1, i, tag='infectious')
+        if t1 < T:
+            c.removal(t1, i, tag='removal')
 
-    logging.info('Compute epidemic trajectory')    
+    logging.info('Display epidemic trajectory')
     told, iold = 0, 0
     for t, sir in traj:
         i = sir[1] + sir[2] - 1
@@ -240,15 +242,16 @@ def main(opt, arguments):
         c.segment(t, iold, t, i, tag='epidemic')
         told, iold = t, i
 
-    logging.info('Format the graphical alements')    
+    logging.info('Format the graphical alements')
     c.itemconfig('text', anchor=tk.N)
     c.itemconfig('timeline', width=2, fill='purple')
     c.itemconfig('frame', fill='grey50')
-    c.itemconfig('potential_removal', foreground='red')
+    c.itemconfig('potential_removal', foreground='blue')
+    c.itemconfig('removal', foreground='red')
     c.itemconfig('potential_infection', width=6, fill='palegreen', arrow=tk.LAST)
     c.itemconfig('infection_incident', outline='red', width=2)
-    c.itemconfig('infectious', width=6, fill='yellow', arrow=tk.LAST)
-    c.itemconfig('epidemic', width=2, fill='red')
+    c.itemconfig('infectious', width=6, fill='yellow')
+    c.itemconfig('epidemic', width=4, fill='red')
 
     logging.info('Tkinter main loop')    
     root.mainloop()
@@ -266,15 +269,23 @@ if __name__ == '__main__':
 
     if option.alfa is None:
         option.alfa = 0.1
+    else:
+        option.alfa = float(option.alfa)
 
     if option.beta is None:
         option.beta = 0.1
+    else:
+        option.beta = float(option.beta)
 
     if option.n is None:
         option.n = 5
+    else:
+        option.n = int(option.n)
 
     if option.T is None:
         option.T = 10
+    else:
+        option.T = float(option.T)
 
 
     # The action of the module as script should be concentrated

@@ -59,57 +59,67 @@ class Error(Exception):
 
 # \section{Classes}
 class Display(tk.Canvas):
+    """
+    Paint and display an image.
+    """
     def __init__(self, root, xmax, ymax, **kwargs):
         tk.Canvas.__init__(self, **kwargs)
         self.xmax, self.ymax = xmax, ymax - 1
         self.w, self.h = kwargs['width'], kwargs['height']
     
     def xpxl(self, x):
+        "Convert #x# coordinate to pixel 'x' reference."
         return self.w * (0.05 + (0.9 * x) / self.xmax)
         
     def ypxl(self, y):
+        "Convert #y# coordinate to pixel 'y' reference."
         return self.h * (0.05 + (0.9 * (self.ymax - y)) / self.ymax)
         
     def segment(self, x0, y0, x1, y1, tag='null'):
+        "Produce line segment."
         self.create_line(self.xpxl(x0), self.ypxl(y0), \
                          self.xpxl(x1), self.ypxl(y1), tag=tag)
     
     def disk(self, x, y, r=1, tag='null'):
+        "Produce disk."
         a, b = self.xpxl(x), self.ypxl(y)
         self.create_oval(a - r, b - r, a + r, b + r, tag=tag)
 
     def removal(self, x, y, tag='null'):
+        "Indicate removal using 'error' bitmap."
         self.create_bitmap(self.xpxl(x), self.ypxl(y), bitmap='error', tag=tag)
         
     def infection(self, t, i, j, tag='null'):
+        "Indicate infection using segment."
         self.segment(t, i, t, j, tag=tag)
         
     def insert_text(self, x, y, text='', tag='null'):
+        "Insert text at specified position."
         self.create_text(self.xpxl(x), self.ypxl(y), text=text, tag=tag)
         
 
 
 # \section{Functions}
-def poisson(lambd, t0, t1):
+def poisson(lamda, t0, t1):
     """
     Returns a Poisson pattern of points over the time interval '[t0, t1]'
-    using intensity 'lambd'.
+    using intensity 'lamda'.
     """
-    t, points = t0 + expovariate(lambd), []
+    t, points = t0 + expovariate(lamda), []
     while t < t1:
         points.append(t)
-        t += expovariate(lambd)
+        t += expovariate(lamda)
     return points
 
-def marked_poisson(lambd, t0, t1):
+def marked_poisson(lamda, t0, t1):
     """
     Returns a marked Poisson pattern of points over the time interval '[t0, t1]'
-    using intensity 'lambd'. Marks are independent Uniform'(0,1)'.
+    using intensity 'lamda'. Marks are independent Uniform'(0,1)'.
     """
-    t, marked_points = t0 + expovariate(lambd), []
+    t, marked_points = t0 + expovariate(lamda), []
     while t < t1:
         marked_points.append((t, random()))
-        t += expovariate(lambd)
+        t += expovariate(lamda)
     return marked_points
 
 def main(opt, arguments):
@@ -231,10 +241,10 @@ def main(opt, arguments):
     c.itemconfig('text', anchor=tk.N)
     c.itemconfig('timeline', width=2, fill='purple')
     c.itemconfig('frame', fill='grey50')
-    c.itemconfig('potential_removal', foreground='blue')
-    c.itemconfig('potential_infection', width=6, fill='palegreen')
+    c.itemconfig('potential_removal', foreground='red')
+    c.itemconfig('potential_infection', width=6, fill='palegreen', arrow=tk.LAST)
     c.itemconfig('infection_incident', outline='red', width=2)
-    c.itemconfig('infectious', width=6, fill='yellow')
+    c.itemconfig('infectious', width=6, fill='yellow', arrow=tk.LAST)
     c.itemconfig('epidemic', width=2, fill='red')
     
     logging.info('Tkinter main loop')    
@@ -273,4 +283,3 @@ if __name__ == '__main__':
     sys.exit(0)
 
 
-# $ $Id: python.py,v 1.1 2013/07/08 11:19:51 wilfrid Exp wilfrid $ $

@@ -68,12 +68,16 @@ class Innovation:
         self.remove, self.infect = remove, infect
         self.n = len(remove)
         
-        # Sanity checks
+        # Sanity checks. We require::  
+        # 1. #self.infect# to be made up of one list of lists of potential infections
+        #    for each row except for the first row,
+        # 2. and each list in #self.infect# to be made up of one list of potential
+        #    infections for each (weakly) successive list.
         if len(self.infect) != self.n - 1:
             raise BadDataError("infection and removal data structure lengths do not agree")
         for i, ll in enumerate(self.infect):
             if len(ll) != self.n - i - 1:
-                raise BadDataError("internal inconsistencies in infection data sub-structure lengths")
+                raise BadDataError("infection data sub-structure is inconsistent")
         
     def __str__(self):
         return "%s\n%s" % (self.remove, self.infect)
@@ -82,17 +86,26 @@ class Innovation:
         """
         Constructs indexed sequence of incidents.
         """
+        # List of lists of row indices, one for each removal time.
         res = [[i]*len(ll) for i, ll in enumerate(self.remove)]
+        # List of (removal time, row mark). 
         rem = zip(chain(*self.remove), chain(*res))
+
+        # List of lists of pairs of row indices, one pair for each infection time.
         ins = chain(*[chain(*[[(i, i+j+1)]*len(ll) for j, ll in enumerate(lll)]) \
                                            for i, lll, in enumerate(self.infect)])
+        # List of lists of incoming infections for each row.
         in1 = chain(*[chain(*lll) for lll in self.infect])
+        # List of (infection time, outgoing row, incoming row)
         inf = map(lambda y: (y[0], y[1][0], y[1][1]), zip(in1, ins))
+        
+        # Return list of incidents sorted by time.
         return sorted(list(chain(rem, inf)))
         
     def epidemic(self, I=1):
         """
         Returns a sequence of changes of state of an SIR epidemic driven by these innovations.
+        Note that no conditioning is imposed here!
         """
         S, R = self.n - I, 0
         trajectory = [(0, (S, I, R))]
@@ -161,6 +174,3 @@ if __name__ == '__main__':
 
     logging.info('Finishing')
     sys.exit(0)
-
-
-# $ $Id: python.py,v 1.1 2013/07/08 11:19:51 wilfrid Exp wilfrid $ $

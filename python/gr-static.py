@@ -42,7 +42,7 @@ from math import floor
 from pprint import pformat # only needed when logging!
 from random import expovariate, random, seed
 
-from innovate import Innovation
+from innovate import Innovation, FreeEpidemic
 
 # Under python3 in Ubuntu it is necessary to install python3-tk!
 try:
@@ -162,12 +162,13 @@ def main(opt, arguments):
             #print(pformat(ill))
  
     logging.info('Set-up innovation structure')
-    inn = Innovation(remove=rel, infect=ill)
-    logging.info('r: %s' % pformat(inn.remove))
-    logging.info('i: %s' % pformat(inn.infect))
+    iv = Innovation(remove=rel, infect=ill)
+    logging.info('r: %s' % pformat(iv.remove))
+    logging.info('i: %s' % pformat(iv.infect))
     
     logging.info('Compute epidemic')
-    traj = inn.epidemic()
+    epidemic = FreeEpidemic(innovations=iv)
+    traj = epidemic.compute()
     logging.info('t: %s' % str(traj))
 
     logging.info('Set-up Tk root')    
@@ -175,15 +176,15 @@ def main(opt, arguments):
     root.title('SIR Epidemics (I)')
 
     logging.info('Display Canvas')  
-    max_y = inn.n
+    max_y = epidemic.n
     c = Display(root, T, max_y, background='white', height=720, width=1024)
     c.pack()
     
     logging.info('Display frame')    
     c.segment(0, 0, T, 0, tag='frame')
-    c.segment(0, inn.n - 1, T, inn.n - 1, tag='frame')
-    c.segment(0, 0, 0, inn.n - 1, tag='frame')
-    c.segment(T, 0, T, inn.n - 1, tag='frame')
+    c.segment(0, epidemic.n - 1, T, epidemic.n - 1, tag='frame')
+    c.segment(0, 0, 0, epidemic.n - 1, tag='frame')
+    c.segment(T, 0, T, epidemic.n - 1, tag='frame')
 
     logging.info('Display time axis')
     yneg, ydel = -0.01 * max_y, -0.005 * max_y
@@ -201,16 +202,16 @@ def main(opt, arguments):
         tx += 1
     
     logging.info('Display time-lines')    
-    for i in range(inn.n):
+    for i in range(epidemic.n):
         c.segment(0, i, T, i, tag='timeline')
     
     logging.info('Display potential removals')    
-    for i, ll in enumerate(inn.remove):
+    for i, ll in enumerate(iv.remove):
         for t in ll:
             c.removal(t, i, tag='potential_removal')
 
     logging.info('Display potential infections')  
-    for i, lll in enumerate(inn.infect):
+    for i, lll in enumerate(iv.infect):
         for j, ll in enumerate(lll):
             for t in ll:
                 c.disk(t, i, r=4, tag='infection_incident')

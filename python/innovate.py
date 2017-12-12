@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 A python module with logging, doctest to construct a set of innovation 
-incidents to allow simulate of an SIR epidemic.
+incidents to allow simulation of an SIR epidemic.
 
 Metadata:
 
   - Author:    W.S.Kendall
   - Copyright: opensource (c) W.S.Kendall 2014
-  - Date:      2014-04-26
+  - Date:      2014-04-26, revised 2017-12-12
   - URL:       http://www.wilfridkendall.co.uk
   - Generator: '/home/wilfrid/lib/python/generate.py' version 1.27.
 
@@ -43,8 +43,12 @@ class BadDataError(Error):
 # \section{Classes}
 class Innovation:
     """
-    This class captures innovation incidents to permit construction of an
-    SIR trajectory and provides a method for generating the epidemic::
+    This class captures innovation incidents related to 
+    construction of an SIR epidemic trajectory, thus providing
+    the randomness needed to generate SIR epidemics, At least
+    initially, we assume the innovations are provided
+    deterministically, so the class requires only sanity
+    checks and a printing method::
     
      >>> from pprint import pprint
      >>> inn = Innovation(remove=[[1, 1.6], [1.3], [0.5, 2]],
@@ -54,15 +58,6 @@ class Innovation:
      >>> print(str(inn))
      [[1, 1.6], [1.3], [0.5, 2]]
      [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
-
-     >>> pprint(inn.epidemic())
-     [(0, (2, 1, 0)),
-      (0.4, (1, 2, 0)),
-      (0.6, (0, 3, 0)),
-      (1, (0, 2, 1)),
-      (1.3, (0, 1, 2)),
-      (2, (0, 0, 3))]
-
     """
     def __init__(self, remove=[[1], [2]], infect=[[[0.5, 1.2]]]):
         self.remove, self.infect = remove, infect
@@ -71,8 +66,8 @@ class Innovation:
         # Sanity checks. We require::  
         # 1. #self.infect# to be made up of one list of lists of potential infections
         #    for each row except for the first row,
-        # 2. and each list in #self.infect# to be made up of one list of potential
-        #    infections for each (weakly) successive list.
+        # 2. and each sub-list in #self.infect# to be made up of one list of potential
+        #    infections for each sub-list located above current sub-list.
         if len(self.infect) != self.n - 1:
             raise BadDataError("infection and removal data structure lengths do not agree")
         for i, ll in enumerate(self.infect):
@@ -82,30 +77,54 @@ class Innovation:
     def __str__(self):
         return "%s\n%s" % (self.remove, self.infect)
 
+class FreeEpidemic(object):
+    """
+    This class computes a (free) SIR epidemic, given an #Innovation# instance::
+    
+     >>> from pprint import pprint
+     >>> innov = Innovation(remove=[[1, 1.6], [1.3], [0.5, 2]],
+     ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
+     ...                          [[0.2, 1.1, 1.5]]])
+
+     >>> epidemic = FreeEpidemic(innovations=innov)
+     >>> pprint(epidemic.compute())
+     [(0, (2, 1, 0)),
+      (0.4, (1, 2, 0)),
+      (0.6, (0, 3, 0)),
+      (1, (0, 2, 1)),
+      (1.3, (0, 1, 2)),
+      (2, (0, 0, 3))]
+
+    """
+    def __init__(self, innovations=None):
+        if not innovations:
+            raise BadDataError("No innovations supplied for FreeEpidemic object")
+        self.iv, self.n = innovations, innovations.n
+    
     def _build_time_line(self):
         """
         Constructs indexed sequence of incidents.
         """
         # List of lists of row indices, one for each removal time.
-        res = [[i]*len(ll) for i, ll in enumerate(self.remove)]
+        res = [[i]*len(ll) for i, ll in enumerate(self.iv.remove)]
         # List of (removal time, row mark). 
-        rem = zip(chain(*self.remove), chain(*res))
+        rem = zip(chain(*self.iv.remove), chain(*res))
 
         # List of lists of pairs of row indices, one pair for each infection time.
         ins = chain(*[chain(*[[(i, i+j+1)]*len(ll) for j, ll in enumerate(lll)]) \
-                                           for i, lll, in enumerate(self.infect)])
+                                           for i, lll, in enumerate(self.iv.infect)])
         # List of lists of incoming infections for each row.
-        in1 = chain(*[chain(*lll) for lll in self.infect])
+        in1 = chain(*[chain(*lll) for lll in self.iv.infect])
         # List of (infection time, outgoing row, incoming row)
         inf = map(lambda y: (y[0], y[1][0], y[1][1]), zip(in1, ins))
         
         # Return list of incidents sorted by time.
         return sorted(list(chain(rem, inf)))
         
-    def epidemic(self, I=1):
+    def compute(self, I=1):
         """
-        Returns a sequence of changes of state of an SIR epidemic driven by these innovations.
-        Note that no conditioning is imposed here!
+        Returns a sequence of changes of state of an SIR epidemic driven by 
+        #FreeEpidemic# innovations. Note that no conditioning is imposed here!
         """
         S, R = self.n - I, 0
         trajectory = [(0, (S, I, R))]
@@ -139,7 +158,8 @@ def main(opt, arguments):
     inn = Innovation()
     print(str(inn))
     logging.info('    and consequent epidemic')
-    pprint(inn.epidemic())
+    epidemic = FreeEpidemic(innovations=inn)
+    pprint(epidemic.compute())
 
 
 def _doctest():

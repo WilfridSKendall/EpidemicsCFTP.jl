@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-A python module with logging, doctest to construct a set of innovation incidents to allow simulation of an SIR epidemic.
+A python module with logging, doctest to construct a set
+of innovation incidents to allow simulation of an SIR epidemic.
 
 Metadata:
 
@@ -48,7 +49,7 @@ class Innovations(object):
     """
     This class captures innovation incidents related to
     construction of an SIR epidemic trajectory, thus providing
-    the randomness needed to generate SIR epidemics, At least
+    the randomness needed to generate SIR epidemics. At least
     initially, we assume the innovations are provided
     deterministically, so the class requires only sanity
     checks and a printing method::
@@ -61,6 +62,18 @@ class Innovations(object):
      >>> print(str(innov))
      [[1, 1.6], [1.3], [0.5, 2]]
      [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
+    
+    Note the data format. An #Innovations# instance is effectively
+    a list of two sub-lists. The first sub-list is the #remove#
+    list, containing #n# sub-sub-lists, one for each timeline row.
+    Each such sub-sub-list is a list of potential removal times,
+    each of these removals being marked by the corresponding row.
+
+    The second sub-list is the #infect# sub-list, containing #n-1#
+    sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
+    row, and contains sub-sub-sub-lists of potential infection times,
+    one sub-sub-sub-list corresponding to each row /below/ the timeline
+    row corresponding to the relevant sub-sub-list. 
     """
     def __init__(self, remove=[[1], [2]], infect=[[[0.5, 1.2]]]):
         self.remove, self.infect = remove, infect

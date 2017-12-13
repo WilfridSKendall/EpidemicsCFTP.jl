@@ -511,9 +511,15 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
  -- the \emph{``infection window''} -- within which it is possible for an epidemic to proceed to completion.
  The last viable epidemic is located at boundary time \(\eta_m\) for
  time-line \(m\), defined inductively by
+<<<<<<< HEAD
 \NB[SBC]{I've changed this definition to make \(\eta_m\) the time at
   which individual \(m\) is infected in the last possible epidemic:
   this seems more consistent with \(\phi_m\) being the time at which
+=======
+\NB[SBC]{I've changed this definition to make $\eta_m$ the time at
+  which individual $m$ is infected in the last possible epidemic:
+  this seems more consistent with $\phi_m$ being the time at which
+>>>>>>> 521ba5a871795cbe14db61595b4a3ef92365e837
   it is infected in the epidemic trajectory, and makes the ordering in
   \eqref{eq:event-order} more natural.}
 
@@ -585,7 +591,11 @@ not infected at time \(\rho\).
  
  It is always possible to delete a potential infection.
 \NB[SBC]{When working right-to-left in algorithmic time, updating the
+<<<<<<< HEAD
   values of \(\phi_m\) and \(\eta_m\) as we go. This might need to be clarified!}
+=======
+  values of $\phi_m$ and $\eta_m$ as we go. This might need to be clarified!}
+>>>>>>> 521ba5a871795cbe14db61595b4a3ef92365e837
  A realized infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last viable epidemic;
  if it \emph{does} belong to both these epidemics then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
  In other words, if \(\phi_m=\eta_m\) for some \(m\), the (necessarily

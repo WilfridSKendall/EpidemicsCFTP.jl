@@ -1,3 +1,9 @@
-main: innovate.py
+figures := $(wildcard image/*.png)
 
-innovate.py: innovate.py.doctested innovate.txt ; python3 innovate.py --doctest --logging=INFO
+main: epidemic.py.doctested
+
+figure1: static.py epidemic.py
+	echo $(figures)
+	python3 static.py --seed=2 --T=3 --n=10
+
+epidemic.py.doctested: epidemic.py epidemic.txt ; python3 epidemic.py --doctest --logging=INFO

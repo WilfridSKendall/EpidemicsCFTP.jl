@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-A python module with logging, doctest to construct a set of
-innovation incidents to allow simulation of an SIR epidemic.
+A python module with logging, doctest to construct a set of innovation incidents to allow simulation of an SIR epidemic.
 
 Metadata:
 

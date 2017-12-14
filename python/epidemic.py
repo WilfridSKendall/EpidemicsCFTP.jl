@@ -58,24 +58,26 @@ class Innovations(object):
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
      ...                          [[0.2, 1.1, 1.5]]])
-
+     >>> len(innov)
+     3
      >>> print(str(innov))
      [[1, 1.6], [1.3], [0.5, 2]]
      [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
-    
+
     Note the data format. An #Innovations# instance is effectively
     a list of two sub-lists. The first sub-list is the #remove#
     list, containing #n# sub-sub-lists, one for each timeline row.
-    Each such sub-sub-list is a list of potential removal times,
-    each of these removals being marked by the corresponding row.
+    Each such sub-sub-list is a list of potential removal times, the mark
+    for each of these removals being implied by the corresponding row.
 
     The second sub-list is the #infect# sub-list, containing #n-1#
     sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
-    row, and contains sub-sub-sub-lists of potential infection times,
-    one sub-sub-sub-list corresponding to each row /below/ the timeline
-    row corresponding to the relevant sub-sub-list. 
+    row starting at row #n# and working downwards to row #2#, and contains
+    sub-sub-sub-lists of potential infection times, one sub-sub-sub-list
+    corresponding to each row /below/ the timeline row corresponding to 
+    the relevant sub-sub-list.
     """
-    def __init__(self, remove=[[1], [2]], infect=[[[0.5, 1.2]]]):
+    def __init__(self, remove=None, infect=None):
         self.remove, self.infect = remove, infect
         # self.n = len(remove)
 
@@ -105,6 +107,8 @@ class FreeEpidemic(object):
      ...                          [[0.2, 1.1, 1.5]]])
 
      >>> epidemic = FreeEpidemic(innovations=innov)
+     >>> len(epidemic)
+     3
      >>> pprint(epidemic())
      [(0, (2, 1, 0)),
       (0.4, (1, 2, 0)),
@@ -115,9 +119,10 @@ class FreeEpidemic(object):
 
     """
     def __init__(self, innovations=None):
-        if not innovations:
+        if innovations is None:
             raise BadDataError("No innovations supplied for FreeEpidemic object")
         self.innov = innovations
+
     def __len__(self):
         return len(self.innov)
 
@@ -170,16 +175,8 @@ def main(opt, arguments):
     """
     The action of the module as script should be concentrated here!
     """
-    logging.info('Entering main function')
-    from pprint import pprint
-
-    logging.info('Default settings:')
-    logging.info('    innovation structure')
-    innov = Innovations()
-    print(str(innov))
-    logging.info('    and consequent epidemic')
-    epidemic = FreeEpidemic(innovations=innov)
-    pprint(epidemic())
+    logging.info('No main actions')
+    return
 
 
 def _doctest():

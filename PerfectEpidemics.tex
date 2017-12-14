@@ -307,25 +307,29 @@ other, and for both potential removal and infection incidents the Uniform marks 
  This is directly analogous to using a systematic scan for the heat-bath dynamics for the Ising model.%
 \NB[WSK2]{Supply appropriate reference to systematic scans for the Ising model.}
  For simplicity suppose that we are simulating over a process time interval \([0,T]\) for some fixed deterministic time \(T\).
- Over a period \([2(k-1)T, 2kT)\) of algorithmic time we take the following steps:%
+ Over a period \((2(k-1)T, 2kT]\) of algorithmic time we take the following steps:%
 \NB[WSK2]{Here we update using a vertical line moving forwards (for removals) then backwards (for infections) in process time, as opposed to the original TV-scan.}
 \begin{enumerate}
-  \item Over the algorithmic time interval \([2(k-1)T, (2k-1)T)\),%
-\xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $2kT$! Almost surely this will never happen.}
-we re-sample all the potential infections as follows: create a new sample of potential infections over process time interval \([0,T]\),
- by algorithmic time \(2(k-1)T+t\) (for \(0\leq t< T\))
- replace old potential infection incidents in process time interval \([T-t,T]\) by the corresponding new potential infection incidents in process time interval \([T-t,T]\).
- (So almost surely by algorithmic time \((2k-1)T\) all old potential infection incidents will have been replaced by new potential infection incidents.)
-\item Over the algorithmic time interval \([(2k-1)T, 2kT)\),%
+\item Over the algorithmic time interval \((2(k-1)T, (2k-1)T]\),%
 \NB[WSK2]{No need to worry about whether a potential removal occurs exactly at time $(2k-1)T$! Almost surely this will never happen.}
-we re-sample all the potential removals as follows: create a new sample of potential removals over process time interval \([0,T]\),
-by algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\))
+we re-sample all the potential removals as follows: 
+\begin{enumerate}
+	\item create a new sample of potential removals over process time interval \([0,T]\),
+by algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\))
 replace old potential removal incidents in process time interval \([0,t]\) by the corresponding new potential removal incidents in process time interval \([0,t]\).
-(So almost surely by algorithmic time \(2kT\) all old potential
+(So almost surely by algorithmic time \((2k-1)T\) all old potential
 removal incidents will have been replaced by a new set of potential
-removal incidents, each assigned to a uniformly chosen timeline.)
+removal incidents.)
+	\item for each new potential removal, re-sample the time-line to which it is attached (by independently generating a new mark for each removal, uniformly from the set \(\{1,\dots,n\}\)).
+\end{enumerate}
 %  \item Exactly at time \((m-1)T\) we re-sample the uniform marks corresponding to the various removal incidents. 
 %  (This step will prove to be crucial if we are to ensure that the result of restricting actual realized removals to specific nominated times still leads to an irreducible Markov chain.)
+  \item Over the algorithmic time interval \(((2k-1)T, 2kT]\),%
+  \xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $2kT$! Almost surely this will never happen.}
+  we re-sample all the potential infections as follows: create a new sample of potential infections over process time interval \([0,T]\),
+  by algorithmic time \((2k-1)T+t\) (for \(0\leq t< T\))
+  replace old potential infection incidents in process time interval \([T-t,T]\) by the corresponding new potential infection incidents in process time interval \([T-t,T]\).
+  (So almost surely by algorithmic time \(2kT\) all old potential infection incidents will have been replaced by new potential infection incidents.)
 \end{enumerate}
 
 A dynamic reversibility argument confirms that the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution,
@@ -439,13 +443,14 @@ Figure \ref{fig:graphical} illustrates this construction.
 %  \TBC{Describe the above in terms of epidemic trajectory, boundary of ``no-fly zone'', and trajectory of last viable epidemic.}
 It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time \(\tau\).
 For \(m=1\),\ldots, \(n\),
-we denote the point-set of realized or potential infections on time-line \(m\) occurring before removal time \(\rho_m\) by \(\Infections_m\).%
+we denote by \(\Infections_m\) the point-set of realized or potential infections originating from time-line \(m\) occurring before removal time \(\rho_m\).%
 \NB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
 Consider
 the point-set of unrealized removals assigned to time-line \(m\) occurring before removal time \(\rho_m\);
 we denote this point-set by \(\Removals_m\). %
 Similarly, we denote the point-set of \emph{conditioned} removals
 assigned to time-line \(m\) by \(\Conditioned_m\).
+\NB[SBC]{Possibly simplify notation by replacing $\Conditioned_{m+}$ with $\Conditioned_m$ and $\Removals_{m-}$ with $\Removals_m$?}
 \xNB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
 % Finally we denote by  \(\mu_m\) the mark for the realized removal on time-line \(m\) (occurring at process-time \(\rho_m\)).
 % Note that \(\mu_m\geq m\) is required in order to ensure removal of individual \(m\) at time \(\rho_m\), per conditioning.%
@@ -516,27 +521,31 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
   this seems more consistent with $\phi_m$ being the time at which
   it is infected in the epidemic trajectory, and makes the ordering in
   \eqref{eq:event-order} more natural.}
-
- \begin{align}\label{eq:last-epidemic}
+ \begin{align}
 % \eta_n \quad=&\quad \rho_n\,, \qquad\text{ time of actual removal
 % for individual \(n\),}
- \eta_n \quad=&\quad
-                \max\left\{\Infections_{n-1}\cap[0,\min\Conditioned_n)\right\}
- \nonumber\\
-%  \eta_m \quad=&\quad \max\{\sigma_{m}^j\;:\; \sigma_{m}^j<\eta_{m+1} \wedge \rho_m \}
+% \eta_n \quad=&\quad
+%                \max\left\{\Infections_{n-1}\cap[0,\min\Conditioned_n)\right\}
+% \nonumber\\
+%%  \eta_m \quad=&\quad \max\{\sigma_{m}^j\;:\; \sigma_{m}^j<\eta_{m+1} \wedge \rho_m \}
+% \eta_m \quad=&\quad
+%                \max\left\{\Infections_{m-1}\cap[0,\min\Conditioned_m
+%                \wedge \eta_{m+1})\right\} 
+%\qquad \text{ if }1<m<n \\
+%\eta_1 \quad=&\quad 0 \,. \nonumber
+ \eta_{n+1} \quad=&\quad \rho_n \nonumber \\
  \eta_m \quad=&\quad
-                \max\left\{\Infections_{m-1}\cap[0,\min\Conditioned_m
-                \wedge \eta_{m+1})\right\} 
-\qquad \text{ if }1<m<n \\
-\eta_1 \quad=&\quad 0 \,. \nonumber
+ \max\left\{\Infections_{m-1}\cap[0,\min\Conditioned_{m+}
+ \wedge \eta_{m+1})\right\} 
+ \qquad \text{ if }1<m<n\,. \label{eq:last-epidemic}
  \end{align}
- The rationale for the definition of \(\eta_m\) is that the last viable epidemic from time-line \(m-1\) must certainly infect \(m\) prior to the last viable epidemic from time-line \(m\),
- but must also infect \(m\) before any conditioned removals assigned
- to time-line \(m\).
- Note that, under the conditioning, the maximum in \eqref{eq:last-epidemic} must be taken over a non-empty set. It will be convenient for monotonicity arguments later on to replace the set \(\Conditioned_m\) in \eqref{eq:last-epidemic} by the larger set
- 	\[ \Conditioned_{m+} \quad = \quad \bigcup_{s=m}^n \Conditioned_s \,. \]
- This is permissible since \(\Conditioned_{n+} = \Conditioned_n\), and we know that \(\eta_m \le \min\Conditioned_m \wedge \eta_{m+1}\), and so the equivalence of this formulation follows by induction.
- \NB[SBC]{Perhaps we should just make this the definition of $\eta_m$? Or put it into a Proposition for easy reference?}
+ The rationale for the definition of \(\eta_m\) is that the last viable infection time of time-line \(m\) must certainly occur before the time at which the last viable epidemic reaches time-line \(m+1\),
+ and must also occur before any conditioned removals assigned to any of the time-lines \(m,m+1,\dots,n\).
+ Note that, under the conditioning, the maximum in \eqref{eq:last-epidemic} must be taken over a non-empty set. 
+%It will be convenient for monotonicity arguments later on to replace the set \(\Conditioned_m\) in \eqref{eq:last-epidemic} by the larger set
+% 	\[ \Conditioned_{m+} \quad = \quad \bigcup_{s=m}^n \Conditioned_s \,. \]
+% This is permissible since \(\Conditioned_{n+} = \Conditioned_n\), and we know that \(\eta_m \le \min\Conditioned_m \wedge \eta_{m+1}\), and so the equivalence of this formulation follows by induction.
+% \NB[SBC]{Perhaps we should just make this the definition of $\eta_m$? Or put it into a Proposition for easy reference?}
  
  
   Figure \ref{fig:last-epidemic} illustrates this construction.

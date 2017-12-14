@@ -1,6 +1,6 @@
 figures := $(wildcard image/*.png)
 
-main: epidemic.py.doctested
+main: DOCS/epidemic.py.doctested
 
 figure1: static.py epidemic.py
 	echo $(figures)

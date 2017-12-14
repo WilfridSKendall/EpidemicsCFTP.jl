@@ -189,9 +189,9 @@ def _doctest():
     logging.info('Commencing doctests')
     import doctest
     doctest_results = doctest.testmod()[0]
-    testfile_results = doctest.testfile(__file__[:-3] + '.txt', False)[0]
+    testfile_results = doctest.testfile('DOCS/' + __file__[:-3] + '.txt', False)[0]
     if doctest_results == 0 and testfile_results == 0:
-        os.system('touch %s.doctested' % __file__)
+        os.system('touch DOCS/%s.doctested' % __file__)
 
 
 # \section{Main script}

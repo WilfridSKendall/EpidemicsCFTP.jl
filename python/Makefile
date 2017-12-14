@@ -2,7 +2,7 @@ figures := $(wildcard image/*.png)
 
 main: DOCS/epidemic.py.doctested
 
-figure: static.py epidemic.py
+randomfigure: static.py epidemic.py
 	echo $(figures)
 	python3 static.py --seed=3 --T=5 --n=10
 

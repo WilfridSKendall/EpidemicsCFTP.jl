@@ -66,15 +66,17 @@ class Innovations(object):
 
     Note the data format. An #Innovations# instance is effectively
     a list of two sub-lists. The first sub-list is the #remove#
-    list, containing #n# sub-sub-lists, one for each timeline row.
-    Each such sub-sub-list is a list of potential removal times, the mark
-    for each of these removals being implied by the corresponding row.
+    list, containing `n` sub-sub-lists, one for each timeline row,
+    working from row `n` down to row #1# as per algorithm described
+    in the paper. Each such sub-sub-list is a list of potential removal
+    times, the mark for each of these removals being implied by the row
+    corresponding to the sub-sub-list.
 
-    The second sub-list is the #infect# sub-list, containing #n-1#
+    The second sub-list is the `infect` sub-list, containing `n-1`
     sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
-    row starting at row #n# and working downwards to row #2#, and contains
+    row starting at row `n` and working downwards to row `2`, and contains
     sub-sub-sub-lists of potential infection times, one sub-sub-sub-list
-    corresponding to each row /below/ the timeline row corresponding to 
+    corresponding to each row _below_ the timeline row corresponding to
     the relevant sub-sub-list.
     """
     def __init__(self, remove=None, infect=None):
@@ -83,9 +85,9 @@ class Innovations(object):
 
         # Sanity checks. We require:
         #
-        # 1. #self.infect# to be made up of one list of lists of potential infections
+        # 1. `self.infect` to be made up of one list of lists of potential infections
         #    for each row except for the first row,
-        # 2. and each sub-list in #self.infect# to be made up of one list of potential
+        # 2. and each sub-list in `self.infect` to be made up of one list of potential
         #    infections for each sub-list located above current sub-list.
         if len(self.infect) != len(self) - 1:
             raise BadDataError("infection and removal data structure lengths do not agree")
@@ -99,7 +101,7 @@ class Innovations(object):
 
 class FreeEpidemic(object):
     """
-    This class computes a (free) SIR epidemic, given an #Innovation# instance::
+    This class computes a (free) SIR epidemic, given an `Innovation` instance::
 
      >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
@@ -109,13 +111,15 @@ class FreeEpidemic(object):
      >>> epidemic = FreeEpidemic(innovations=innov)
      >>> len(epidemic)
      3
+     >>> epidemic._build_time_line()[:4] # First 4 incidents.
+     [(0.2, 2, 1), (0.4, 3, 1), (0.5, 1), (0.6, 3, 2)]
      >>> pprint(epidemic())
      [(0, (2, 1, 0)),
-      (0.4, (1, 2, 0)),
-      (0.6, (0, 3, 0)),
-      (1, (0, 2, 1)),
-      (1.3, (0, 1, 2)),
-      (2, (0, 0, 3))]
+      (0.2, (1, 2, 0)),
+      (0.4, (0, 3, 0)),
+      (0.5, (0, 2, 1)),
+      (1, (0, 1, 2)),
+      (1.6, (0, 0, 3))]
 
     """
     def __init__(self, innovations=None):
@@ -130,43 +134,54 @@ class FreeEpidemic(object):
         """
         Constructs indexed sequence of incidents.
         """
+        # Compute and store number of rows, and removals list, infections list.
+        nnn = len(self)
+        remove = self.innov.remove
+        infect = self.innov.infect
         # List of lists of row indices, one for each removal time.
-        res = [[i]*len(llst) for i, llst in enumerate(self.innov.remove)]
+        res = [[nnn - i]*len(x) for i, x in enumerate(remove)]
         # List of (removal time, row mark).
-        rem = zip(chain(*self.innov.remove), chain(*res))
+        rem = zip(chain(*remove), chain(*res))
 
         # List of lists of pairs of row indices, one pair for each infection time.
-        ins = chain(*[chain(*[[(i, i+j+1)]*len(llst) for j, llst in enumerate(lll)]) \
-                                           for i, lll, in enumerate(self.innov.infect)])
+        ins = chain(*[chain(*[[(nnn - i, j + 1)]*len(y) for j, y in enumerate(x)]) \
+                                           for i, x, in enumerate(infect)])
         # List of lists of incoming infections for each row.
-        in1 = chain(*[chain(*lll) for lll in self.innov.infect])
+        in1 = chain(*[chain(*x) for x in infect])
         # List of (infection time, outgoing row, incoming row)
-        inf = map(lambda y: (y[0], y[1][0], y[1][1]), zip(in1, ins))
+        inf = [(x, y[0], y[1]) for x, y in  zip(in1, ins)]
 
         # Return list of incidents sorted by time.
         return sorted(list(chain(rem, inf)))
 
-    def __call__(self, I=1):
+    def __call__(self, infe=1):
         """
         Returns a sequence of changes of state of an SIR epidemic driven by
-        #FreeEpidemic# innovations. Note that no conditioning is imposed here!
+        `FreeEpidemic` innovations. Note that no conditioning is imposed here!
         """
-        S, R = len(self) - I, 0
-        trajectory = [(0, (S, I, R))]
+        ttt, susc, remo = 0, len(self) - infe, 0
+        trajectory = [(0, (susc, infe, remo))]
+        legend = '[%f]: R=%d, i=%d, I+R=%d, j=%d'
+        logging.info('[%f]: R=%d, i= , I+R=%d, j= ', ttt, remo, infe+remo)
         for incident in self._build_time_line():
             if len(incident) == 3:
-                t, i, j = incident
-                if R <= i and i < I + R and I + R <= j:
-                    logging.info('[%f]: R=%d, i=%d, I+R=%d, j=%d' % (t, R, i, I+R, j))
-                    I += 1
-                    S -= 1
-                    trajectory.append((t, (S, I, R)))
+                # The incident is a potential infection.
+                ttt, i, j = incident
+                # The infection terminates at row `i` and starts at row `j`.
+                if i == infe + remo +1 and remo < j and j <= infe + remo:
+                    logging.info(legend, ttt, remo, i, infe+remo, j)
+                    infe += 1
+                    susc -= 1
+                    trajectory.append((ttt, (susc, infe, remo)))
             if len(incident) == 2:
-                t,  i = incident
-                if R <= i and i < I + R:
-                    I -= 1
-                    R += 1
-                    trajectory.append((t, (S, I, R)))
+                # The incident is a potential removal.
+                ttt, i = incident
+                # The removal occupies row `i`.
+                if remo < i and i <= infe + remo:
+                    logging.info(legend, ttt, remo, i, infe+remo, j)
+                    infe -= 1
+                    remo += 1
+                    trajectory.append((ttt, (susc, infe, remo)))
         return trajectory
 
 
@@ -174,6 +189,7 @@ class FreeEpidemic(object):
 def main(opt, arguments):
     """
     The action of the module as script should be concentrated here!
+    No action is included for this demonstration script.
     """
     logging.info('No main actions')
     return

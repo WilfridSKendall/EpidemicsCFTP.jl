@@ -169,6 +169,8 @@ class FreeEpidemic(object):
                 ttt, i, j = incident
                 # The infection terminates at row `i` and starts at row `j`.
                 if i == infe + remo +1 and remo < j and j <= infe + remo:
+                    # Row `i` is lowest susceptible, while row `j`
+                    # is infected.
                     logging.info(legend, ttt, remo, i, infe+remo, j)
                     infe += 1
                     susc -= 1
@@ -178,6 +180,7 @@ class FreeEpidemic(object):
                 ttt, i = incident
                 # The removal occupies row `i`.
                 if remo < i and i <= infe + remo:
+                    # Row `i` is infected.
                     logging.info(legend, ttt, remo, i, infe+remo, j)
                     infe -= 1
                     remo += 1

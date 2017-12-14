@@ -14,6 +14,8 @@ Metadata:
 Command-line options::
 
   usage: %prog [options] arguments
+    --infect=infect:       infection list of lists;
+    --remove=remove:       removal list;
     --seed=SEED:           integer seed for random number generator;
     --alfa=ALFA:           rate of infection;
     --beta=BETA:           rate of removal;
@@ -24,7 +26,7 @@ Command-line options::
 
 Notes:
  - if seed for random number generator is unset then program will use
- fixed hard-coded data.
+ `remove` and `infect` options.
  - values for 'logging' option:
  'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
  (decreasing level of verbosity), with 'WARNING' as default.
@@ -36,10 +38,10 @@ Notes:
 # We need the logging module regardless of whether the #logging# option
 # is deployed, since #logging.info# calls are scattered through the text.
 import logging
-import os
+# import os
 import sys
 
-from itertools import combinations, count
+from itertools import combinations, count, chain
 from math import floor
 from pprint import pformat # only needed when logging!
 from random import expovariate, random, seed
@@ -64,18 +66,18 @@ class Display(tk.Canvas):
     """
     Paint and display an image.
     """
-    def __init__(self, root, xmax, ymax, **kwargs):
+    def __init__(self, xmax, ymax, **kwargs):
         tk.Canvas.__init__(self, **kwargs)
         self.xmax, self.ymax = xmax, ymax - 1
         self.w, self.h = kwargs['width'], kwargs['height']
 
-    def xpxl(self, x):
-        "Convert #x# coordinate to pixel 'x' reference."
-        return self.w * (0.05 + (0.9 * x) / self.xmax)
+    def xpxl(self, xcoord):
+        "Convert `xcoord` coordinate to pixel `x` reference."
+        return self.w * (0.05 + (0.9 * xcoord) / self.xmax)
 
-    def ypxl(self, y):
-        "Convert #y# coordinate to pixel 'y' reference."
-        return self.h * (0.05 + (0.9 * (self.ymax - y)) / self.ymax)
+    def ypxl(self, ycoord):
+        "Convert `ycoord` coordinate to pixel `y` reference."
+        return self.h * (0.05 + (0.9 * (self.ymax - ycoord)) / self.ymax)
 
     def segment(self, x0, y0, x1, y1, tag='null'):
         "Produce line segment."
@@ -131,9 +133,9 @@ def main(opt, arguments):
     logging.info('Entering main function')
     if opt.seed is None:
         logging.info('Use hard-coded data')
-        T = 2
-        rel = [[1, 1.6], [1.3], [0.5, 2]]
-        ill = [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
+        rel = eval(opt.remove)
+        ill = eval(opt.infect)
+        T = max(max(chain(*rel)), max(chain(*[chain(*x) for x in ill])))
     else:
         logging.info('Create data using rng')
         seed(int(opt.seed))
@@ -147,6 +149,7 @@ def main(opt, arguments):
             rel = [poisson(beta * T, 0, T) for i in range(num)]
             ill= [[poisson(alfa * T, 0, T) for j in range(i+1, num)] for i in range(num - 1)]
         else:
+            # WARNING: This code as yet untested.
             logging.info('Create consistent data using rng')
             gam = (num * (num - 1) / 2) * alfa + num * beta
             divide = (num * (num - 1) / 2) * alfa / gam
@@ -160,8 +163,6 @@ def main(opt, arguments):
                 else:
                     a, b = idx[floor((num * (num - 1) / 2) * u /divide)]
                     ill[a][b - a - 1].append(t)
-            #print(pformat(rel))
-            #print(pformat(ill))
  
     logging.info('Set-up innovations structure')
     innov = Innovations(remove=rel, infect=ill)
@@ -179,7 +180,7 @@ def main(opt, arguments):
 
     logging.info('Display Canvas')
     max_y = len(epidemic)
-    c = Display(root, T, max_y, background='white', height=720, width=1024)
+    c = Display(T, max_y, background='white', height=720, width=1024)
     c.pack()
 
     logging.info('Display frame')    
@@ -203,21 +204,23 @@ def main(opt, arguments):
             c.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
         tx += 1
 
+    nnn = len(epidemic)
+
     logging.info('Display time-lines')
-    for i in range(len(epidemic)):
+    for i in range(nnn):
         c.segment(0, i, T, i, tag='timeline')
 
     logging.info('Display potential infections')
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                c.disk(t, i, r=6, tag='infection_incident')
-                c.infection(t, i, i + j + 1, tag='potential_infection')
+                c.disk(t, nnn - i - 1, r=6, tag='infection_incident')
+                c.infection(t, j, nnn - i - 1, tag='potential_infection')
 
     logging.info('Display potential removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            c.removal(t, i, tag='potential_removal')
+            c.removal(t, nnn - i - 1, tag='potential_removal')
 
     logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]
@@ -248,10 +251,10 @@ def main(opt, arguments):
     c.itemconfig('frame', fill='grey50')
     c.itemconfig('potential_removal', foreground='blue')
     c.itemconfig('removal', foreground='red')
-    c.itemconfig('potential_infection', width=6, fill='palegreen', arrow=tk.LAST)
+    c.itemconfig('potential_infection', width=6, fill='palegreen', arrow=tk.LAST, arrowshape=(8, 20, 12))
     c.itemconfig('infection_incident', outline='red', width=2)
     c.itemconfig('infectious', width=6, fill='yellow')
-    c.itemconfig('epidemic', width=4, fill='red')
+    c.itemconfig('epidemic', width=2, fill='red')
 
     logging.info('Tkinter main loop')    
     root.mainloop()
@@ -286,7 +289,6 @@ if __name__ == '__main__':
         option.T = 10
     else:
         option.T = float(option.T)
-
 
     # The action of the module as script should be concentrated
     # in the following function, to facilitate profiling.

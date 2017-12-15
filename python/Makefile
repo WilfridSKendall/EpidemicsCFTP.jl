@@ -5,11 +5,12 @@ main: DOCS/epidemic.py.doctested
 randomfigure: static.py epidemic.py
 	echo $(figures)
 	python3 static.py --title="Figure 1: a random example of a Free SIR Epidemic" \
-	        --seed=3 --T=5 --n=10
+		--seed=3 --T=5 --n=10
 
 figure1: static.py epidemic.py
 	echo $(figures)
 	python3 static.py --title="Figure 1: an example of a Free SIR Epidemic" \
+		--output=DOCS/image/figure1.eps \
 		--remove="[[1, 1.6], [1.3], [0.5, 2]]" \
 		--infect="[[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]"
 

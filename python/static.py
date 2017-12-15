@@ -21,7 +21,8 @@ Command-line options::
     --beta=BETA:           rate of removal;
     --n=N:                 number of individuals;
     --T=T:                 plot over time range [0, T];
-    --title=title:         title for figure.
+    --title=title:         title for figure;
+    --output=output:       produce postsscript output and save in this file;
     --consistent:          allow consistent extensions over time;
     --logging=LOGGING:     logging verbosity level.
 
@@ -41,6 +42,9 @@ Notes:
 import logging
 # import os
 import sys
+
+import io
+from PIL import Image
 
 from itertools import combinations, count, chain
 from math import floor
@@ -67,8 +71,8 @@ class Display(tk.Canvas):
     """
     Paint and display an image.
     """
-    def __init__(self, xmax, ymax, **kwargs):
-        tk.Canvas.__init__(self, **kwargs)
+    def __init__(self, root, xmax, ymax, **kwargs):
+        tk.Canvas.__init__(self, root, **kwargs)
         self.xmax, self.ymax = xmax, ymax - 1
         self.w, self.h = kwargs['width'], kwargs['height']
 
@@ -181,10 +185,9 @@ def main(opt, arguments):
 
     logging.info('Display Canvas')
     max_y = len(epidemic)
-    c = Display(T, max_y, background='white', height=720, width=1024)
-    c.pack()
+    c = Display(root, T, max_y, background='white', height=720, width=1024)
 
-    logging.info('Display frame')    
+    logging.info('Display frame')
     c.segment(0, 0, T, 0, tag='frame')
     c.segment(0, len(epidemic) - 1, T, len(epidemic) - 1, tag='frame')
     c.segment(0, 0, 0, len(epidemic) - 1, tag='frame')
@@ -257,8 +260,13 @@ def main(opt, arguments):
     c.itemconfig('infectious', width=6, fill='yellow')
     c.itemconfig('epidemic', width=2, fill='red')
 
-    logging.info('Tkinter main loop')    
+    logging.info('Tkinter main loop')
+    c.pack()
+
+    if opt.output is not None:
+        c.postscript(file='%s' % opt.output, colormode='color')
     root.mainloop()
+
 
 
 

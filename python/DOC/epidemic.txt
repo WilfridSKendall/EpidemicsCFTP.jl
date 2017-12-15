@@ -2,7 +2,7 @@ Testing FreeEpidemic
 ====================
 Basic documentation
 -------------------
-Here are simple invocations of the 'FreeEpidemic' and 'Innovations' classes:
+Here are simple invocations of the `FreeEpidemic` and `Innovations` classes:
 
      >>> from pprint import pprint
      >>> from epidemic import Innovations, FreeEpidemic
@@ -12,6 +12,7 @@ Here are simple invocations of the 'FreeEpidemic' and 'Innovations' classes:
      ...                          [[0.2, 1.1, 1.5]]])
 
 Note the form of the `Innovations` structure:
+
      >>> print(iv)
      Innovations for SIR epidemic on 3 individuals:
      Row               List of proposed potential removals
@@ -34,7 +35,7 @@ Note the form of the `Innovations` structure:
       (1.6, (0, 0, 3))]
 
      >>> summary = ["Time    S, I, R"]
-     >>> summary.extend(["%4.2f   %s" % (instant, str(event)) for instant, event in epidemic()])
+     >>> summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in epidemic()])
      >>> print('\n'.join(summary))   
      Time    S, I, R
      0.00   (2, 1, 0)
@@ -44,8 +45,7 @@ Note the form of the `Innovations` structure:
      1.00   (0, 1, 2)
      1.60   (0, 0, 3)
 
-We obtain 
-![Figure 1](/home/wilfrid/ms/PerfectEpidemics/python/image/figure1.png "Figure 1: free epidemic")
+![A graphical illustration of the resulting free SIR epidemic](DOC/image/figure1.png "Free epidemic")
 
 
 Further examples
@@ -82,14 +82,13 @@ And now we present the results of three further tests.
 
 
      >>> summary = ["Time    S, I, R"]
-     >>> summary.extend(["%4.2f   %s" % (instant, str(event)) for instant, event in epidemic()])
+     >>> summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in epidemic()])
      >>> print('\n'.join(summary))   
      Time    S, I, R
      0.00   (4, 1, 0)
      1.10   (4, 0, 1)
 
-We obtain Figure 2. 
-![Figure 2](/home/wilfrid/ms/PerfectEpidemics/python/image/figure2.png "Figure 2: free epidemic")
+![Another example of a free SIR epidemic](DOC/image/figure2.png "Free epidemic")
  
      
      >>> rem = [[1.0], [1.2], [1.3], [1.5], [1.1, 2.0]]
@@ -121,7 +120,7 @@ We obtain Figure 2.
        2:   (1)        0.10
 
      >>> summary = ["Time    S, I, R"]
-     >>> summary.extend(["%4.2f   %s" % (instant, str(event)) for instant, event in epidemic()])
+     >>> summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in epidemic()])
      >>> print('\n'.join(summary))   
      Time    S, I, R
      0.00   (4, 1, 0)
@@ -130,9 +129,9 @@ We obtain Figure 2.
      1.10   (2, 2, 1)
      1.30   (2, 1, 2)
 
-      
-We obtain Figure 3. ![Figure 3](/home/wilfrid/ms/PerfectEpidemics/python/image/figure3.png "Figure 3: free epidemic")
 
-Finally, here is a larger free epidemic produced at random. 
-![Random Figure](/home/wilfrid/ms/PerfectEpidemics/python/image/randomfigure.png "Figure: larger free epidemic generated at random")
+![Yet another example of a free SIR epidemic](DOC/image/figure3.png "Free epidemic")
+
+
+![Larger free SIR epidemic generated at random](DOC/image/randomfigure.png "Larger free epidemic generated at random")
 

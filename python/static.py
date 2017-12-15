@@ -23,6 +23,7 @@ Command-line options::
     --T=T:                 plot over time range [0, T];
     --title=title:         title for figure;
     --output=output:       produce postsscript output and save in this file;
+    --forceoutput:         do above without prompting;
     --consistent:          allow consistent extensions over time;
     --logging=LOGGING:     logging verbosity level.
 
@@ -67,6 +68,28 @@ class Error(Exception):
 
 
 # \section{Classes}
+class App(tk.Tk):
+    """
+    We appear to need to use this class to get postscript printing to work! 
+    """
+    def __init__(self, T, max_y, background='white', height=720, width=1024, \
+                 output=None, forceoutput=False):
+        tk.Tk.__init__(self)
+        self.output = output
+        self.line_start = None
+        self.canvas = Display(self, T, max_y, background='white', height=720, width=1024)
+        self.canvas.pack()
+        if not forceoutput and self.output is not None:
+            self.button = tk.Button(self, text="save", command=self.save)
+            self.button.pack(pady=10)
+        self.canvas.pack()
+
+    def save(self):
+        ps = self.canvas.postscript(colormode='color')
+        im = Image.open(io.BytesIO(ps.encode('utf-8')))
+        im.save(self.output)
+        print("output saved to %s" % self.output)
+
 class Display(tk.Canvas):
     """
     Paint and display an image.
@@ -82,7 +105,7 @@ class Display(tk.Canvas):
 
     def ypxl(self, ycoord):
         "Convert `ycoord` coordinate to pixel `y` reference."
-        return self.h * (0.05 + (0.9 * (self.ymax - ycoord)) / self.ymax)
+        return self.h * (0.1 + (0.8 * (self.ymax - ycoord)) / self.ymax)
 
     def segment(self, x0, y0, x1, y1, tag='null'):
         "Produce line segment."
@@ -104,6 +127,7 @@ class Display(tk.Canvas):
 
     def insert_text(self, x, y, text='', tag='null'):
         "Insert text at specified position."
+        # Need to specify font properly if this is to be printed to a file.
         self.create_text(self.xpxl(x), self.ypxl(y), text=text, tag=tag)
 
 
@@ -180,21 +204,22 @@ def main(opt, arguments):
     logging.info('t: %s' % str(traj))
 
     logging.info('Set-up Tk root')
-    root = tk.Tk()
-    root.title(opt.title)
+    pop = len(epidemic)
+    app = App(T, pop, background='white', height=720, width=1024, \
+                output=opt.output, forceoutput=opt.forceoutput)
+    app.title(opt.title)
 
     logging.info('Display Canvas')
-    max_y = len(epidemic)
-    c = Display(root, T, max_y, background='white', height=720, width=1024)
+    c = app.canvas
 
     logging.info('Display frame')
     c.segment(0, 0, T, 0, tag='frame')
-    c.segment(0, len(epidemic) - 1, T, len(epidemic) - 1, tag='frame')
-    c.segment(0, 0, 0, len(epidemic) - 1, tag='frame')
-    c.segment(T, 0, T, len(epidemic) - 1, tag='frame')
+    c.segment(0, pop - 1, T, pop - 1, tag='frame')
+    c.segment(0, 0, 0, pop - 1, tag='frame')
+    c.segment(T, 0, T, pop - 1, tag='frame')
 
     logging.info('Display time axis')
-    yneg, ydel = -0.01 * max_y, -0.005 * max_y
+    yneg, ydel = -0.01 * pop, -0.005 * pop
     c.segment(0, yneg, T, yneg, tag='axis')
     tx = 0
     while tx <= 10 * T:
@@ -250,7 +275,7 @@ def main(opt, arguments):
         told, iold = t, i
 
     logging.info('Format the graphical alements')
-    c.itemconfig('text', anchor=tk.N)
+    c.itemconfig('text', anchor=tk.N, font=('Times', 12, 'bold'))
     c.itemconfig('timeline', width=2, fill='purple')
     c.itemconfig('frame', fill='grey50')
     c.itemconfig('potential_removal', foreground='blue')
@@ -261,11 +286,10 @@ def main(opt, arguments):
     c.itemconfig('epidemic', width=2, fill='red')
 
     logging.info('Tkinter main loop')
-    c.pack()
-
-    if opt.output is not None:
-        c.postscript(file='%s' % opt.output, colormode='color')
-    root.mainloop()
+    app.update_idletasks()
+    if opt.forceoutput:
+        app.save()
+    app.mainloop()
 
 
 
@@ -301,6 +325,8 @@ if __name__ == '__main__':
 
     if option.title is None:
         option.title = "Free SIR Epidemics: Figure"
+
+    option.forceoutput = (option.forceoutput is not None)
 
     # The action of the module as script should be concentrated
     # in the following function, to facilitate profiling.

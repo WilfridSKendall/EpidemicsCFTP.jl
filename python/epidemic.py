@@ -236,9 +236,9 @@ def _doctest():
     logging.info('Commencing doctests')
     import doctest
     doctest_results = doctest.testmod()[0]
-    testfile_results = doctest.testfile('DOCS/' + __file__[:-3] + '.txt', False)[0]
+    testfile_results = doctest.testfile('DOC/' + __file__[:-3] + '.txt', False)[0]
     if doctest_results == 0 and testfile_results == 0:
-        os.system('touch DOCS/%s.doctested' % __file__)
+        os.system('touch DOC/%s.doctested' % __file__)
 
 
 # \section{Main script}
@@ -253,11 +253,9 @@ if __name__ == '__main__':
     if option.doctest:
         _doctest()
 
-
     # The action of the module as script should be concentrated
     # in the following function, to facilitate profiling.
     main(option, args)
-
 
     logging.info('Finishing')
     sys.exit(0)

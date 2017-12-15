@@ -151,6 +151,14 @@ class FreeEpidemic(object):
       (0.5, (0, 2, 1)),
       (1, (0, 1, 2)),
       (1.6, (0, 0, 3))]
+     >>> print(epidemic(pretty=True))
+     Time    S, I, R
+     0.00   (2, 1, 0)
+     0.20   (1, 2, 0)
+     0.40   (0, 3, 0)
+     0.50   (0, 2, 1)
+     1.00   (0, 1, 2)
+     1.60   (0, 0, 3)
 
     """
     def __init__(self, innovations=None):
@@ -185,7 +193,7 @@ class FreeEpidemic(object):
         # Return list of incidents sorted by time.
         return sorted(list(chain(rem, inf)))
 
-    def __call__(self, infe=1):
+    def __call__(self, infe=1, pretty=False):
         """
         Returns a sequence of changes of state of an SIR epidemic driven by
         `FreeEpidemic` innovations. Note that no conditioning is imposed here!
@@ -216,7 +224,12 @@ class FreeEpidemic(object):
                     infe -= 1
                     remo += 1
                     trajectory.append((ttt, (susc, infe, remo)))
-        return trajectory
+        if pretty:
+            summary = ["Time    S, I, R"]
+            summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in trajectory])
+            return '\n'.join(summary)
+        else:
+            return trajectory
 
 
 # \section{Functions}

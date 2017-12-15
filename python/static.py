@@ -281,7 +281,7 @@ def main(opt, arguments):
     c.itemconfig('potential_removal', foreground='blue')
     c.itemconfig('removal', foreground='red')
     c.itemconfig('potential_infection', width=6, fill='palegreen', arrow=tk.LAST, arrowshape=(8, 20, 12))
-    c.itemconfig('infection_incident', outline='red', width=2)
+    c.itemconfig('infection_incident', outline='yellow', width=2)
     c.itemconfig('infectious', width=6, fill='yellow')
     c.itemconfig('epidemic', width=2, fill='red')
 

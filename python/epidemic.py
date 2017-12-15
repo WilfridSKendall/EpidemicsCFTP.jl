@@ -60,9 +60,17 @@ class Innovations(object):
      ...                          [[0.2, 1.1, 1.5]]])
      >>> len(innov)
      3
-     >>> print(str(innov))
-     [[1, 1.6], [1.3], [0.5, 2]]
-     [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
+     >>> print(innov)
+     Innovations for SIR epidemic on 3 individuals:
+     Row               List of proposed potential removals
+       3:              1.00 1.60
+       2:              1.30
+       1:              0.50 2.00
+     Target row
+          (Origin)     List of proposed potential infections
+       3:   (1)        0.40 0.90
+            (2)        0.60 1.40
+       2:   (1)        0.20 1.10 1.50
 
     Note the data format. An #Innovations# instance is effectively
     a list of two sub-lists. The first sub-list is the #remove#
@@ -94,8 +102,24 @@ class Innovations(object):
         for i, llst in enumerate(self.infect):
             if len(llst) != len(self) - i - 1:
                 raise BadDataError("infection data sub-structure is inconsistent")
-    def __str__(self):
+    def __repr__(self):
         return "%s\n%s" % (self.remove, self.infect)
+    def __str__(self):
+        pop = len(self)
+        def lstr(lst):
+            "Temporary function to convert list of floats into string of space-separated floats"
+            return ' '.join('%4.2f' % e for e in lst)
+        legend1 = "Innovations for SIR epidemic on %d individuals:" % len(self)
+        legend2 = "Row               List of proposed potential removals"
+        #removals = "%s" % self.remove
+        removals = '\n'.join(" %2d:              %s" % (pop - i, lstr(x)) for i, x in enumerate(self.remove))
+        legend3 = "Target row"
+        infections = "%s" % self.infect
+        infections = '\n'.join([" %2d: %s" % \
+           (pop - i,'\n     '.join(['  (%1d)        %s' % (j + 1, lstr(y)) \
+               for j, y in enumerate(x)])) for i, x in enumerate(self.infect)])
+        legend4 = "     (Origin)     List of proposed potential infections"
+        return '\n'.join([legend1, legend2, removals, legend3, legend4, infections])
     def __len__(self):
         return len(self.remove)
 

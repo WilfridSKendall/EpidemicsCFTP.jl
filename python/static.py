@@ -21,6 +21,7 @@ Command-line options::
     --beta=BETA:           rate of removal;
     --n=N:                 number of individuals;
     --T=T:                 plot over time range [0, T];
+    --title=title:         title for figure.
     --consistent:          allow consistent extensions over time;
     --logging=LOGGING:     logging verbosity level.
 
@@ -176,7 +177,7 @@ def main(opt, arguments):
 
     logging.info('Set-up Tk root')
     root = tk.Tk()
-    root.title('SIR Epidemics (I)')
+    root.title(opt.title)
 
     logging.info('Display Canvas')
     max_y = len(epidemic)
@@ -289,6 +290,9 @@ if __name__ == '__main__':
         option.T = 10
     else:
         option.T = float(option.T)
+
+    if option.title is None:
+        option.title = "Free SIR Epidemics: Figure"
 
     # The action of the module as script should be concentrated
     # in the following function, to facilitate profiling.

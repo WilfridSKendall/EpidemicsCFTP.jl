@@ -52,7 +52,7 @@ class Innovations(object):
     the randomness needed to generate SIR epidemics. At least
     initially, we assume the innovations are provided
     deterministically, so the class requires only sanity
-    checks and a printing method::
+    checks and a printing method:
 
      >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
@@ -60,6 +60,8 @@ class Innovations(object):
      ...                          [[0.2, 1.1, 1.5]]])
      >>> len(innov)
      3
+
+    The innovation list structure is to be interpreted as follows:
      >>> print(innov)
      Innovations for SIR epidemic on 3 individuals:
      Row               List of proposed potential removals
@@ -125,7 +127,7 @@ class Innovations(object):
 
 class FreeEpidemic(object):
     """
-    This class computes a (free) SIR epidemic, given an `Innovation` instance::
+    This class computes a (free) SIR epidemic, given an `Innovation` instance:
 
      >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
@@ -137,6 +139,11 @@ class FreeEpidemic(object):
      3
      >>> epidemic._build_time_line()[:4] # First 4 incidents.
      [(0.2, 2, 1), (0.4, 3, 1), (0.5, 1), (0.6, 3, 2)]
+
+    Now we calculate the epidemic evolution as a list of changes, each change
+    summarised by time of change, and then a tuple giving numbers of Susceptibles,
+    Infectives, and Removals.
+
      >>> pprint(epidemic())
      [(0, (2, 1, 0)),
       (0.2, (1, 2, 0)),

@@ -67,8 +67,8 @@ And now we present the results of three further tests.
             (2)        
             (3)        
        3:   (1)        0.90
-            (2)        2.10
-       2:   (1)        3.00
+            (2)        1.80
+       2:   (1)        1.90
 
      >>> print(epidemic(pretty=True))   
      Time    S, I, R

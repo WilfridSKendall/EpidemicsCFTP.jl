@@ -43,8 +43,9 @@ Notes:
 import logging
 # import os
 import sys
-
 import io
+import configparser
+
 from PIL import Image
 
 from itertools import combinations, count, chain
@@ -161,7 +162,7 @@ def main(opt, arguments):
     """
     logging.info('Entering main function')
     if opt.seed is None:
-        logging.info('Use hard-coded data')
+        logging.info('Use hard-coded data (INSECURE!)')
         rel = eval(opt.remove)
         ill = eval(opt.infect)
         T = max(max(chain(*rel)), max(chain(*[chain(*x) for x in ill])))
@@ -212,6 +213,14 @@ def main(opt, arguments):
     logging.info('Display Canvas')
     c = app.canvas
 
+    #logging.info('Format the graphical elements (INSECURE!)')
+    #configfile = 'static.cfg'
+    #config = configparser.ConfigParser()
+    #config.read(configfile)
+    #for tag in config.sections():
+        #for prop, val in config.items(tag):
+            #eval('app.canvas.itemconfig("%s", %s=%s)' % (tag, prop, val)) 
+    
     logging.info('Display frame')
     c.segment(0, 0, T, 0, tag='frame')
     c.segment(0, pop - 1, T, pop - 1, tag='frame')
@@ -274,21 +283,18 @@ def main(opt, arguments):
         c.segment(t, iold, t, i, tag='epidemic')
         told, iold = t, i
 
-    logging.info('Format the graphical alements')
-    c.itemconfig('text', anchor=tk.N, font=('Times', 12, 'bold'))
-    c.itemconfig('timeline', width=2, fill='purple')
-    c.itemconfig('frame', fill='grey50')
-    c.itemconfig('potential_removal', foreground='blue')
-    c.itemconfig('removal', foreground='red')
-    c.itemconfig('potential_infection', width=6, fill='palegreen', arrow=tk.LAST, arrowshape=(8, 20, 12))
-    c.itemconfig('infection_incident', outline='yellow', width=2)
-    c.itemconfig('infectious', width=6, fill='yellow')
-    c.itemconfig('epidemic', width=2, fill='red')
+    logging.info('Format the graphical elements (INSECURE!)')
+    configfile = 'static.cfg'
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    for tag in config.sections():
+        for prop, val in config.items(tag):
+            eval('c.itemconfig("%s", %s=%s)' % (tag, prop, val)) 
 
     logging.info('Tkinter main loop')
     app.update_idletasks()
     if opt.forceoutput:
-        app.save()
+        app.save() 
     app.mainloop()
 
 

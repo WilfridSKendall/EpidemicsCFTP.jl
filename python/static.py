@@ -74,23 +74,61 @@ class App(tk.Tk):
     """
     We appear to need to use this class to get postscript printing to work! 
     """
-    def __init__(self, T, max_y, background='white', height=720, width=1024, \
+    def __init__(self, T, pop, background='white', height=720, width=1024, \
                  output=None, forceoutput=False):
         tk.Tk.__init__(self)
         self.output = output
         self.line_start = None
-        self.canvas = Display(self, T, max_y, background='white', height=720, width=1024)
+        self.canvas = Display(self, T, pop, background='white', height=720, width=1024)
         self.canvas.pack()
         if not forceoutput and self.output is not None:
             self.button = tk.Button(self, text="save", command=self.save)
             self.button.pack(pady=10)
         self.canvas.pack()
+        self.setup(T, pop)
+
+    def setup(self, T, pop):
+        "Set up the basic elements of the canvas"
+        logging.info('Display frame')
+        self.canvas.segment(0, 0, T, 0, tag='frame')
+        self.canvas.segment(0, pop - 1, T, pop - 1, tag='frame')
+        self.canvas.segment(0, 0, 0, pop - 1, tag='frame')
+        self.canvas.segment(T, 0, T, pop - 1, tag='frame')
+
+        logging.info('Display time axis')
+        yneg, ydel = -0.01 * pop, -0.005 * pop
+        self.canvas.segment(0, yneg, T, yneg, tag='axis')
+        tx = 0
+        while tx <= 10 * T:
+            tic = 0.1 * tx
+            if tx % 5 != 0:
+                self.canvas.segment(tic, yneg, tic, yneg + ydel, tag='axis')
+            elif tx % 10 !=0:
+                self.canvas.segment(tic, yneg, tic, yneg + 2 * ydel, tag='axis')
+            else:
+                self.canvas.segment(tic, yneg, tic, yneg + 3 * ydel, tag='axis')
+                self.canvas.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
+            tx += 1
+
+        logging.info('Display time-lines')
+        for i in range(pop):
+            self.canvas.segment(0, i, T, i, tag='timeline')
+
+    def style(self, configfile='static.cfg'):
+        "Format the graphical elements of the canvas"
+        config = configparser.ConfigParser()
+        config.read(configfile)
+        for tag in config.sections():
+            for prop, val in config.items(tag):
+                self.canvas.itemconfig(tag, **{prop: str(val)})
 
     def save(self):
+        "Save canvas as PNG file."
         ps = self.canvas.postscript(colormode='color')
         im = Image.open(io.BytesIO(ps.encode('utf-8')))
         im.save(self.output)
         logging.info("output saved to %s", self.output)
+
 
 class Display(tk.Canvas):
     """
@@ -178,7 +216,7 @@ def main(opt, arguments):
             # Note that the simulations here do not couple well over varying #T#.
             # This could be arranged if we used a marked point process.
             rel = [poisson(beta * T, 0, T) for i in range(num)]
-            ill= [[poisson(alfa * T, 0, T) for j in range(i+1, num)] for i in range(num - 1)]
+            ill = [[poisson(alfa * T, 0, T) for j in range(i+1, num)] for i in range(num - 1)]
         else:
             # WARNING: This code as yet untested.
             logging.info('Create consistent data using rng')
@@ -205,61 +243,25 @@ def main(opt, arguments):
     traj = epidemic()
     logging.info('t: %s' % str(traj))
 
-    logging.info('Set-up Tk root')
+    logging.info('Set-up Tk root and canvas')
     pop = len(epidemic)
     app = App(T, pop, background='white', height=720, width=1024, \
                 output=opt.output, forceoutput=opt.forceoutput)
     app.title(opt.title)
-
     logging.info('Display Canvas')
     c = app.canvas
-
-    #logging.info('Format the graphical elements (INSECURE!)')
-    #configfile = 'static.cfg'
-    #config = configparser.ConfigParser()
-    #config.read(configfile)
-    #for tag in config.sections():
-        #for prop, val in config.items(tag):
-            #eval('app.canvas.itemconfig("%s", %s=%s)' % (tag, prop, val)) 
-    
-    logging.info('Display frame')
-    c.segment(0, 0, T, 0, tag='frame')
-    c.segment(0, pop - 1, T, pop - 1, tag='frame')
-    c.segment(0, 0, 0, pop - 1, tag='frame')
-    c.segment(T, 0, T, pop - 1, tag='frame')
-
-    logging.info('Display time axis')
-    yneg, ydel = -0.01 * pop, -0.005 * pop
-    c.segment(0, yneg, T, yneg, tag='axis')
-    tx = 0
-    while tx <= 10 * T:
-        tic = 0.1 * tx
-        if tx % 5 != 0:
-            c.segment(tic, yneg, tic, yneg + ydel, tag='axis')
-        elif tx % 10 !=0:
-            c.segment(tic, yneg, tic, yneg + 2 * ydel, tag='axis')
-        else:
-            c.segment(tic, yneg, tic, yneg + 3 * ydel, tag='axis')
-            c.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
-        tx += 1
-
-    nnn = len(epidemic)
-
-    logging.info('Display time-lines')
-    for i in range(nnn):
-        c.segment(0, i, T, i, tag='timeline')
 
     logging.info('Display potential infections')
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                c.disk(t, nnn - i - 1, r=6, tag='infection_incident')
-                c.infection(t, j, nnn - i - 1, tag='potential_infection')
+                c.disk(t, pop - i - 1, r=6, tag='infection_incident')
+                c.infection(t, j, pop - i - 1, tag='potential_infection')
 
     logging.info('Display potential removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            c.removal(t, nnn - i - 1, tag='potential_removal')
+            c.removal(t, pop - i - 1, tag='potential_removal')
 
     logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]
@@ -285,12 +287,7 @@ def main(opt, arguments):
         told, iold = t, i
 
     logging.info('Format the graphical elements')
-    configfile = 'static.cfg'
-    config = configparser.ConfigParser()
-    config.read(configfile)
-    for tag in config.sections():
-        for prop, val in config.items(tag):
-            c.itemconfig(tag, **{prop: str(val)})
+    app.style()
 
     logging.info('Tkinter main loop')
     app.update_idletasks()

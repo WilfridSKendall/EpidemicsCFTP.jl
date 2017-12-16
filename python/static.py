@@ -289,7 +289,9 @@ def main(opt, arguments):
     config.read(configfile)
     for tag in config.sections():
         for prop, val in config.items(tag):
+            #c.itemconfig(tag, **{prop: val})
             eval('c.itemconfig("%s", %s=%s)' % (tag, prop, val)) 
+    #c.itemconfig("text", **{"font": ("Times", 24, "italic")})
 
     logging.info('Tkinter main loop')
     app.update_idletasks()

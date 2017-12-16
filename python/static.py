@@ -41,17 +41,18 @@ Notes:
 # We need the logging module regardless of whether the #logging# option
 # is deployed, since #logging.info# calls are scattered through the text.
 import logging
-# import os
 import sys
 import io
 import configparser
 
-from PIL import Image
+from ast import literal_eval
 
-from itertools import combinations, count, chain
 from math import floor
 from pprint import pformat # only needed when logging!
 from random import expovariate, random, seed
+
+from PIL import Image
+from itertools import combinations, count, chain
 
 from epidemic import Innovations, FreeEpidemic
 
@@ -89,7 +90,7 @@ class App(tk.Tk):
         ps = self.canvas.postscript(colormode='color')
         im = Image.open(io.BytesIO(ps.encode('utf-8')))
         im.save(self.output)
-        print("output saved to %s" % self.output)
+        logging.info("output saved to %s", self.output)
 
 class Display(tk.Canvas):
     """
@@ -162,12 +163,12 @@ def main(opt, arguments):
     """
     logging.info('Entering main function')
     if opt.seed is None:
-        logging.info('Use hard-coded data (INSECURE!)')
-        rel = eval(opt.remove)
-        ill = eval(opt.infect)
+        logging.info('Use hard-coded data from command-line')
+        rel = literal_eval(opt.remove)
+        ill = literal_eval(opt.infect)
         T = max(max(chain(*rel)), max(chain(*[chain(*x) for x in ill])))
     else:
-        logging.info('Create data using rng')
+        logging.info('Create data using rng seeded by %s', int(opt.seed))
         seed(int(opt.seed))
         num = int(opt.n)
         T = float(opt.T)
@@ -283,20 +284,18 @@ def main(opt, arguments):
         c.segment(t, iold, t, i, tag='epidemic')
         told, iold = t, i
 
-    logging.info('Format the graphical elements (INSECURE!)')
+    logging.info('Format the graphical elements')
     configfile = 'static.cfg'
     config = configparser.ConfigParser()
     config.read(configfile)
     for tag in config.sections():
         for prop, val in config.items(tag):
-            #c.itemconfig(tag, **{prop: val})
-            eval('c.itemconfig("%s", %s=%s)' % (tag, prop, val)) 
-    #c.itemconfig("text", **{"font": ("Times", 24, "italic")})
+            c.itemconfig(tag, **{prop: str(val)})
 
     logging.info('Tkinter main loop')
     app.update_idletasks()
     if opt.forceoutput:
-        app.save() 
+        app.save()
     app.mainloop()
 
 

@@ -2,7 +2,7 @@ figures := $(wildcard DOC/image/*.png)
 
 main: DOC/epidemic.py.doctested
 graphics: $(figures) 
-docs: epidemic-doc.pdf
+docs: epidemic-doc.pdf README.pdf
 
 view: docs ; xdg-open epidemic-doc.pdf
 
@@ -11,8 +11,11 @@ figure2: DOC/image/figure2.png
 figure3: DOC/image/figure3.png
 randomfigure: DOC/image/randomfigure.png
 
-epidemic-doc.pdf: DOC/epidemic.txt $(figures)
-	pandoc DOC/epidemic.txt -o epidemic-doc.pdf
+epidemic-doc.pdf: DOC/epidemic.md $(figures)
+	pandoc DOC/epidemic.md -o epidemic-doc.pdf
+
+README.pdf: README.md $(figures)
+	pandoc README.md -o README.pdf
 
 DOC/image/figure1.png: static.py epidemic.py
 	-python3 static.py --title="Figure 1: an example of a Free SIR Epidemic" \
@@ -40,5 +43,5 @@ DOC/image/randomfigure.png: static.py epidemic.py
 		--seed=3 --T=5 --n=10
 
 
-DOC/epidemic.py.doctested: epidemic.py DOC/epidemic.txt
+DOC/epidemic.py.doctested: epidemic.py DOC/epidemic.md
 	python3 epidemic.py --doctest --logging=INFO

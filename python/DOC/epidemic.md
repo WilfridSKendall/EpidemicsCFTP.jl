@@ -26,7 +26,7 @@ Note the form of the `Innovations` structure:
        2:   (1)        0.20 1.10 1.50
 
      >>> epidemic = FreeEpidemic(innovations=iv)
-     >>> print('\n'.join(summary))   
+     >>> print(epidemic(pretty=True))  
      Time    S, I, R
      0.00   (2, 1, 0)
      0.20   (1, 2, 0)
@@ -45,8 +45,8 @@ And now we present the results of three further tests.
      >>> rem = [[1.0], [0.1], [0.2], [0.3], [1.1, 2.0]]
      >>> ill = [[[0.5], [0.6], [0.7], [1.2]], 
      ...        [[], [], []], 
-     ...        [[0.9], [2.1]],
-     ...        [[3.0]]]
+     ...        [[0.9], [1.8]],
+     ...        [[1.9]]]
      >>> iv =Innovations(remove=rem, infect=ill)
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(iv)

@@ -35,7 +35,7 @@ Note the form of the `Innovations` structure:
      1.00   (0, 1, 2)
      1.60   (0, 0, 3)
 
-![A graphical illustration of the resulting free SIR epidemic](DOC/image/figure1.png "Free epidemic")
+![A graphical illustration of the resulting free SIR epidemic](image/figure1.png "Free epidemic")
 
 
 Further examples
@@ -75,7 +75,7 @@ And now we present the results of three further tests.
      0.00   (4, 1, 0)
      1.10   (4, 0, 1)
 
-![Another example of a free SIR epidemic](DOC/image/figure2.png "Free epidemic")
+![Another example of a free SIR epidemic](image/figure2.png "Free epidemic")
  
      
      >>> rem = [[1.0], [1.2], [1.3], [1.5], [1.1, 2.0]]
@@ -115,8 +115,8 @@ And now we present the results of three further tests.
      1.30   (2, 1, 2)
 
 
-![Yet another example of a free SIR epidemic](DOC/image/figure3.png "Free epidemic")
+![Yet another example of a free SIR epidemic](image/figure3.png "Free epidemic")
 
 
-![Larger free SIR epidemic generated at random](DOC/image/randomfigure.png "Larger free epidemic generated at random")
+![Larger free SIR epidemic generated at random](image/randomfigure.png "Larger free epidemic generated at random")
 

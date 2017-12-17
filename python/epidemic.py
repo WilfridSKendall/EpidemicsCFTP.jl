@@ -249,7 +249,7 @@ def _doctest():
     logging.info('Commencing doctests')
     import doctest
     doctest_results = doctest.testmod()[0]
-    testfile_results = doctest.testfile('DOC/' + __file__[:-3] + '.md', False)[0]
+    testfile_results = doctest.testfile(__file__[:-3] + '-doc.md', False)[0]
     if doctest_results == 0 and testfile_results == 0:
         os.system('touch DOC/%s.doctested' % __file__)
 

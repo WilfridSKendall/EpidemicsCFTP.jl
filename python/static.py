@@ -70,49 +70,53 @@ class Error(Exception):
 
 
 # \section{Classes}
-class App(tk.Tk):
+class Display(tk.Tk):
     """
-    We appear to need to use this class to get postscript printing to work! 
+    Frame for various buttons and Canvas, includes high-level drawing routines
+    and printing. 
     """
     def __init__(self, T, pop, background='white', height=720, width=1024, \
                  output=None, forceoutput=False):
         tk.Tk.__init__(self)
         self.output = output
         self.line_start = None
-        self.canvas = Display(self, T, pop, background='white', height=720, width=1024)
+        self.canvas = tk.Canvas(self, background='white', height=720, width=1024)
         self.canvas.pack()
         if not forceoutput and self.output is not None:
             self.button = tk.Button(self, text="save", command=self.save)
             self.button.pack(pady=10)
         self.canvas.pack()
+
+        self.xmax, self.ymax = T, pop - 1
+        self.w, self.h = width, height
         self.setup(T, pop)
 
     def setup(self, T, pop):
         "Set up the basic elements of the canvas"
         logging.info('Display frame')
-        self.canvas.segment(0, 0, T, 0, tag='frame')
-        self.canvas.segment(0, pop - 1, T, pop - 1, tag='frame')
-        self.canvas.segment(0, 0, 0, pop - 1, tag='frame')
-        self.canvas.segment(T, 0, T, pop - 1, tag='frame')
+        self.segment(0, 0, T, 0, tag='frame')
+        self.segment(0, pop - 1, T, pop - 1, tag='frame')
+        self.segment(0, 0, 0, pop - 1, tag='frame')
+        self.segment(T, 0, T, pop - 1, tag='frame')
 
         logging.info('Display time axis')
         yneg, ydel = -0.01 * pop, -0.005 * pop
-        self.canvas.segment(0, yneg, T, yneg, tag='axis')
+        self.segment(0, yneg, T, yneg, tag='axis')
         tx = 0
         while tx <= 10 * T:
             tic = 0.1 * tx
             if tx % 5 != 0:
-                self.canvas.segment(tic, yneg, tic, yneg + ydel, tag='axis')
+                self.segment(tic, yneg, tic, yneg + ydel, tag='axis')
             elif tx % 10 !=0:
-                self.canvas.segment(tic, yneg, tic, yneg + 2 * ydel, tag='axis')
+                self.segment(tic, yneg, tic, yneg + 2 * ydel, tag='axis')
             else:
-                self.canvas.segment(tic, yneg, tic, yneg + 3 * ydel, tag='axis')
-                self.canvas.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
+                self.segment(tic, yneg, tic, yneg + 3 * ydel, tag='axis')
+                self.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
             tx += 1
 
         logging.info('Display time-lines')
         for i in range(pop):
-            self.canvas.segment(0, i, T, i, tag='timeline')
+            self.segment(0, i, T, i, tag='timeline')
 
     def style(self, configfile='static.cfg'):
         "Format the graphical elements of the canvas"
@@ -129,47 +133,33 @@ class App(tk.Tk):
         im.save(self.output)
         logging.info("output saved to %s", self.output)
 
-
-class Display(tk.Canvas):
-    """
-    Paint and display an image.
-    """
-    def __init__(self, root, xmax, ymax, **kwargs):
-        tk.Canvas.__init__(self, root, **kwargs)
-        self.xmax, self.ymax = xmax, ymax - 1
-        self.w, self.h = kwargs['width'], kwargs['height']
-
-    def xpxl(self, xcoord):
-        "Convert `xcoord` coordinate to pixel `x` reference."
-        return self.w * (0.05 + (0.9 * xcoord) / self.xmax)
-
-    def ypxl(self, ycoord):
-        "Convert `ycoord` coordinate to pixel `y` reference."
-        return self.h * (0.1 + (0.8 * (self.ymax - ycoord)) / self.ymax)
+    def pixel(self, xcoord, ycoord):
+        "Convert coordinate `(xcoord, ycoord)` to pixel reference."
+        return self.w * (0.05 + (0.9 * xcoord) / self.xmax), \
+                self.h * (0.1 + (0.8 * (self.ymax - ycoord)) / self.ymax)
 
     def segment(self, x0, y0, x1, y1, tag='null'):
         "Produce line segment."
-        self.create_line(self.xpxl(x0), self.ypxl(y0), \
-                         self.xpxl(x1), self.ypxl(y1), tag=tag)
+        self.canvas.create_line(self.pixel(x0, y0), \
+                         self.pixel(x1, y1), tag=tag)
 
     def disk(self, x, y, r=1, tag='null'):
         "Produce disk."
-        a, b = self.xpxl(x), self.ypxl(y)
-        self.create_oval(a - r, b - r, a + r, b + r, tag=tag)
-
-    def removal(self, x, y, tag='null'):
-        "Indicate removal using 'error' bitmap."
-        self.create_bitmap(self.xpxl(x), self.ypxl(y), bitmap='error', tag=tag)
+        a, b = self.pixel(x, y)
+        self.canvas.create_oval(a - r, b - r, a + r, b + r, tag=tag)
 
     def infection(self, t, i, j, tag='null'):
         "Indicate infection using segment."
         self.segment(t, i, t, j, tag=tag)
 
+    def removal(self, x, y, tag='null'):
+        "Indicate removal using 'error' bitmap."
+        self.canvas.create_bitmap(self.pixel(x, y), bitmap='error', tag=tag)
+
     def insert_text(self, x, y, text='', tag='null'):
         "Insert text at specified position."
         # Need to specify font properly if this is to be printed to a file.
-        self.create_text(self.xpxl(x), self.ypxl(y), text=text, tag=tag)
-
+        self.canvas.create_text(self.pixel(x, y), text=text, tag=tag)
 
 
 # \section{Functions}
@@ -245,7 +235,7 @@ def main(opt, arguments):
 
     logging.info('Set-up Tk root and canvas')
     pop = len(epidemic)
-    app = App(T, pop, background='white', height=720, width=1024, \
+    app = Display(T, pop, background='white', height=720, width=1024, \
                 output=opt.output, forceoutput=opt.forceoutput)
     app.title(opt.title)
     logging.info('Display Canvas')
@@ -255,13 +245,13 @@ def main(opt, arguments):
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                c.disk(t, pop - i - 1, r=6, tag='infection_incident')
-                c.infection(t, j, pop - i - 1, tag='potential_infection')
+                app.disk(t, pop - i - 1, r=6, tag='infection_incident')
+                app.infection(t, j, pop - i - 1, tag='potential_infection')
 
     logging.info('Display potential removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            c.removal(t, pop - i - 1, tag='potential_removal')
+            app.removal(t, pop - i - 1, tag='potential_removal')
 
     logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]
@@ -274,16 +264,16 @@ def main(opt, arguments):
         removal.extend([T] * (len(infection) - len(removal)))
     for i, t0, t1 in zip(count(), infection, removal):
         logging.info((i, t0, t1))
-        c.segment(t0, i, t1, i, tag='infectious')
+        app.segment(t0, i, t1, i, tag='infectious')
         if t1 < T:
-            c.removal(t1, i, tag='removal')
+            app.removal(t1, i, tag='removal')
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
     for t, sir in traj:
         i = sir[1] + sir[2] - 1
-        c.segment(told, iold, t, iold, tag='epidemic')
-        c.segment(t, iold, t, i, tag='epidemic')
+        app.segment(told, iold, t, iold, tag='epidemic')
+        app.segment(t, iold, t, i, tag='epidemic')
         told, iold = t, i
 
     logging.info('Format the graphical elements')

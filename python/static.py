@@ -94,18 +94,18 @@ class Display(tk.Tk):
         self.white.read('white.cfg')
  
         self.tog = dict((tag, 1) for tag in self.white.sections())
-        self.taglist = dict((val, key) for key, val in enumerate(self.white.sections()))
+        self.taglist = self.white.sections()
 
         if not forceoutput and self.output is not None:
-            frame = tk.Frame(self)
+            frm = tk.Frame(self)
             props = {'font': LABFONT, 'width': 15, 'indicatoron': False}
             props = {'font': LABFONT, 'width': 15}
-            for key in self.taglist.keys():
-                cb = tk.Checkbutton(frame, text=key, command=lambda tag=key: self.toggle(tag=tag), **props)
-                cb.pack(padx=5, side=tk.LEFT)
-            self.button = tk.Button(frame, text="Save", font=LABFONT, command=self.save)
-            self.button.pack(padx=60, pady=10, side=tk.LEFT)
-            frame.pack()
+            for key in self.taglist:
+                cb = tk.Checkbutton(frm, text=key, command=lambda tag=key: self.toggle(tag=tag), **props)
+                cb.pack(padx=1, side=tk.LEFT)
+            tk.Button(frm, text="Save", command=self.save, font=LABFONT).pack(padx=60, pady=10, side=tk.LEFT)
+            tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.LEFT)
+            frm.pack()
         self.canvas.pack()
 
         self.xmax, self.ymax = T, pop - 1

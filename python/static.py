@@ -22,7 +22,7 @@ Command-line options::
     --n=N:                 number of individuals;
     --T=T:                 plot over time range [0, T];
     --title=title:         title for figure;
-    --output=output:       produce postsscript output and save in this file;
+    --output=output:       produce postscript output and save in this file;
     --forceoutput:         do above without prompting;
     --consistent:          allow consistent extensions over time;
     --logging=LOGGING:     logging verbosity level.
@@ -62,6 +62,10 @@ try:
 except ImportError:
     import Tkinter as tk
 
+
+LABFONT = ("Times", 12, "bold")
+
+
 #\section{Exceptions}
 class Error(Exception):
     """
@@ -82,14 +86,35 @@ class Display(tk.Tk):
         self.line_start = None
         self.canvas = tk.Canvas(self, background='white', height=720, width=1024)
         self.canvas.pack()
+
+        self.color = configparser.ConfigParser()
+        self.color.read('static.cfg')
+
+        self.white = configparser.ConfigParser()
+        self.white.read('white.cfg')
+ 
+        self.tog = dict((tag, 1) for tag in self.white.sections())
+        self.taglist = dict((val, key) for key, val in enumerate(self.white.sections()))
+
         if not forceoutput and self.output is not None:
-            self.button = tk.Button(self, text="save", command=self.save)
-            self.button.pack(pady=10)
+            frame = tk.Frame(self)
+            props = {'font': LABFONT, 'width': 15, 'indicatoron': False}
+            props = {'font': LABFONT, 'width': 15}
+            for key in self.taglist.keys():
+                cb = tk.Checkbutton(frame, text=key, command=lambda tag=key: self.toggle(tag=tag), **props)
+                cb.pack(padx=5, side=tk.LEFT)
+            self.button = tk.Button(frame, text="Save", font=LABFONT, command=self.save)
+            self.button.pack(padx=60, pady=10, side=tk.LEFT)
+            frame.pack()
         self.canvas.pack()
 
         self.xmax, self.ymax = T, pop - 1
         self.w, self.h = width, height
         self.setup(T, pop)
+
+    def toggle(self, tag=None):
+        tog = self.tog[tag] = 1 - self.tog[tag]
+        self.paint(tag, self.cfg[tog])
 
     def setup(self, T, pop):
         "Set up the basic elements of the canvas"
@@ -118,13 +143,18 @@ class Display(tk.Tk):
         for i in range(pop):
             self.segment(0, i, T, i, tag='timeline')
 
-    def style(self, configfile='static.cfg'):
-        "Format the graphical elements of the canvas"
-        config = configparser.ConfigParser()
-        config.read(configfile)
-        for tag in config.sections():
-            for prop, val in config.items(tag):
-                self.canvas.itemconfig(tag, **{prop: str(val)})
+    def style(self):
+        "Format the graphical elements of the canvas and read white options"
+        for tag in self.color.sections():
+            self.paint(tag, self.color)         
+
+        self.cfg = [self.white, self.color]
+        for tag in self.color.sections():
+            self.tog[tag] = 1
+
+    def paint(self, tag, paintpot):
+        "Paint tag using paintpot"
+        self.canvas.itemconfig(tag, **dict(paintpot.items(tag)))
 
     def save(self):
         "Save canvas as PNG file."
@@ -245,13 +275,13 @@ def main(opt, arguments):
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                app.disk(t, pop - i - 1, r=6, tag='infection_incident')
-                app.infection(t, j, pop - i - 1, tag='potential_infection')
+                app.disk(t, pop - i - 1, r=6, tag='Infect')
+                app.infection(t, j, pop - i - 1, tag='Infect-P')
 
     logging.info('Display potential removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            app.removal(t, pop - i - 1, tag='potential_removal')
+            app.removal(t, pop - i - 1, tag='Remove-P')
 
     logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]
@@ -264,16 +294,16 @@ def main(opt, arguments):
         removal.extend([T] * (len(infection) - len(removal)))
     for i, t0, t1 in zip(count(), infection, removal):
         logging.info((i, t0, t1))
-        app.segment(t0, i, t1, i, tag='infectious')
+        app.segment(t0, i, t1, i, tag='Infectious')
         if t1 < T:
-            app.removal(t1, i, tag='removal')
+            app.removal(t1, i, tag='Remove')
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
     for t, sir in traj:
         i = sir[1] + sir[2] - 1
-        app.segment(told, iold, t, iold, tag='epidemic')
-        app.segment(t, iold, t, i, tag='epidemic')
+        app.segment(told, iold, t, iold, tag='Epidemic')
+        app.segment(t, iold, t, i, tag='Epidemic')
         told, iold = t, i
 
     logging.info('Format the graphical elements')

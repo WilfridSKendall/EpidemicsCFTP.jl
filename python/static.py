@@ -115,6 +115,10 @@ class Display(tk.Tk):
     def toggle(self, tag=None):
         tog = self.tog[tag] = not self.tog[tag]
         self.paint(tag, self.cfg[tog])
+        if tog:
+            self.canvas.lift(tag)
+        else:
+            self.canvas.lower(tag)
 
     def setup(self, T, pop):
         "Set up the basic elements of the canvas"
@@ -297,7 +301,7 @@ def main(opt, arguments):
         logging.info((i, t0, t1))
         app.segment(t0, i, t1, i, tag='Infectious')
         if t1 < T:
-            app.removal(t1, i, tag='Remove')
+            app.removal(t1, i, tag='Remove') # This needs fixing I think
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
@@ -306,6 +310,8 @@ def main(opt, arguments):
         app.segment(told, iold, t, iold, tag='Epidemic')
         app.segment(t, iold, t, i, tag='Epidemic')
         told, iold = t, i
+    if sir[1] != 0:
+        app.segment(t, i, T, i, tag='Epidemic')
 
     logging.info('Format the graphical elements')
     app.style()

@@ -78,14 +78,14 @@ class Innovations(object):
     Note the data format. An #Innovations# instance is effectively
     a list of two sub-lists. The first sub-list is the #remove#
     list, containing `n` sub-sub-lists, one for each timeline row,
-    working from row `n` down to row #1# as per algorithm described
-    in the paper. Each such sub-sub-list is a list of potential removal
-    times, the mark for each of these removals being implied by the row
-    corresponding to the sub-sub-list.
+    working from row `1` up to row `n` as per algorithm described
+    in the paper. Each such sub-sub-list is an ordered list of potential
+    removal times, the mark for each of these removals being implied by
+    the row corresponding to the sub-sub-list.
 
     The second sub-list is the `infect` sub-list, containing `n-1`
     sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
-    row starting at row `n` and working downwards to row `2`, and contains
+    row starting at row `2` and working up to row `n`, and contains
     sub-sub-sub-lists of potential infection times, one sub-sub-sub-list
     corresponding to each row _below_ the timeline row corresponding to
     the relevant sub-sub-list.

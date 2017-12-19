@@ -98,10 +98,10 @@ class Display(tk.Tk):
 
         if not forceoutput and self.output is not None:
             frm = tk.Frame(self)
-            props = {'font': LABFONT, 'width': 15, 'indicatoron': False}
-            props = {'font': LABFONT, 'width': 15}
+            cbprops = {'font': LABFONT, 'width': 15, 'indicatoron': False}
+            # cbprops = {'font': LABFONT, 'width': 15}
             for key in self.taglist:
-                cb = tk.Checkbutton(frm, text=key, command=lambda tag=key: self.toggle(tag=tag), **props)
+                cb = tk.Checkbutton(frm, text=key, command=lambda tag=key: self.toggle(tag=tag), **cbprops)
                 cb.pack(padx=1, side=tk.LEFT)
             tk.Button(frm, text="Save", command=self.save, font=LABFONT).pack(padx=60, pady=10, side=tk.LEFT)
             tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.LEFT)
@@ -113,7 +113,7 @@ class Display(tk.Tk):
         self.setup(T, pop)
 
     def toggle(self, tag=None):
-        tog = self.tog[tag] = 1 - self.tog[tag]
+        tog = self.tog[tag] = not self.tog[tag]
         self.paint(tag, self.cfg[tog])
 
     def setup(self, T, pop):
@@ -214,6 +214,7 @@ def marked_poisson(lamda, t0, t1):
         marked_points.append((temp, random()))
         temp += expovariate(lamda)
     return marked_points
+
 
 def main(opt, arguments):
     """

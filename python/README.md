@@ -46,4 +46,4 @@ Note the form of the `Innovations` structure:
      1.00   (0, 1, 2)
      1.60   (0, 0, 3)
 
-![A graphical illustration of the resulting free SIR epidemic](DOC/image/figure1.png "Free epidemic")
+![A graphical illustration of the resulting free SIR epidemic](image/figure1.png "Free epidemic")

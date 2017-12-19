@@ -8,21 +8,22 @@ Here are simple invocations of the `FreeEpidemic` and `Innovations` classes:
      >>> from epidemic import Innovations, FreeEpidemic
      
      >>> iv = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
-     ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
-     ...                          [[0.2, 1.1, 1.5]]])
+     ...                  infect=[[[0.2, 1.1, 1.5]],
+     ...                          [[0.4, 0.9], [0.6, 1.4]]
+     ...                         ])
 
 Note the form of the `Innovations` structure:
 
      >>> print(iv)
      Innovations for SIR epidemic on 3 individuals:
      Row               List of proposed potential removals
-       3:              1.00 1.60
+       3:              0.50 2.00
        2:              1.30
-       1:              0.50 2.00
+       1:              1.00 1.60
      Target row
           (Origin)     List of proposed potential infections
-       3:   (1)        0.40 0.90
-            (2)        0.60 1.40
+       3:   (2)        0.60 1.40
+            (1)        0.40 0.90
        2:   (1)        0.20 1.10 1.50
 
      >>> epidemic = FreeEpidemic(innovations=iv)
@@ -32,8 +33,8 @@ Note the form of the `Innovations` structure:
      0.20   (1, 2, 0)
      0.40   (0, 3, 0)
      0.50   (0, 2, 1)
-     1.00   (0, 1, 2)
-     1.60   (0, 0, 3)
+     1.30   (0, 1, 2)
+     2.00   (0, 0, 3)
 
 ![A graphical illustration of the resulting free SIR epidemic](image/figure1.png "Free epidemic")
 
@@ -42,11 +43,12 @@ Further examples
 ----------------
 And now we present the results of three further tests.
      
-     >>> rem = [[1.0], [0.1], [0.2], [0.3], [1.1, 2.0]]
-     >>> ill = [[[0.5], [0.6], [0.7], [1.2]], 
-     ...        [[], [], []], 
+     >>> rem = [[1.1, 2.0], [0.3], [0.2], [0.1], [1.0]]
+     >>> ill = [[[1.9]], 
      ...        [[0.9], [1.8]],
-     ...        [[1.9]]]
+     ...        [[], [], []], 
+     ...        [[0.5], [0.6], [0.7], [1.2]]
+     ...       ]
      >>> iv =Innovations(remove=rem, infect=ill)
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(iv)
@@ -59,15 +61,15 @@ And now we present the results of three further tests.
        1:              1.10 2.00
      Target row
           (Origin)     List of proposed potential infections
-       5:   (1)        0.50
-            (2)        0.60
+       5:   (4)        1.20
             (3)        0.70
-            (4)        1.20
-       4:   (1)        
+            (2)        0.60
+            (1)        0.50
+       4:   (3)        
             (2)        
-            (3)        
-       3:   (1)        0.90
-            (2)        1.80
+            (1)        
+       3:   (2)        1.80
+            (1)        0.90
        2:   (1)        1.90
 
      >>> print(epidemic(pretty=True))   
@@ -76,13 +78,12 @@ And now we present the results of three further tests.
      1.10   (4, 0, 1)
 
 ![Another example of a free SIR epidemic](image/figure2.png "Free epidemic")
- 
-     
-     >>> rem = [[1.0], [1.2], [1.3], [1.5], [1.1, 2.0]]
-     >>> ill = [[[0.5], [0.6], [0.7], [1.2]], 
-     ...        [[], [], []], 
+
+     >>> rem = [[1.1, 2.0], [1.5], [1.3], [1.2], [1.0]]
+     >>> ill = [[[0.1]], 
      ...        [[0.9], [1.8]],
-     ...        [[0.1]]]
+     ...        [[], [], []], 
+     ...        [[0.5], [0.6], [0.7], [1.2]]]
      >>> iv =Innovations(remove=rem, infect=ill)
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(iv)
@@ -95,15 +96,15 @@ And now we present the results of three further tests.
        1:              1.10 2.00
      Target row
           (Origin)     List of proposed potential infections
-       5:   (1)        0.50
-            (2)        0.60
+       5:   (4)        1.20
             (3)        0.70
-            (4)        1.20
-       4:   (1)        
+            (2)        0.60
+            (1)        0.50
+       4:   (3)        
             (2)        
-            (3)        
-       3:   (1)        0.90
-            (2)        1.80
+            (1)        
+       3:   (2)        1.80
+            (1)        0.90
        2:   (1)        0.10
 
      >>> print(epidemic(pretty=True))   
@@ -119,4 +120,3 @@ And now we present the results of three further tests.
 
 
 ![Larger free SIR epidemic generated at random](image/randomfigure.png "Larger free epidemic generated at random")
-

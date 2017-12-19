@@ -237,7 +237,7 @@ def main(opt, arguments):
             # Note that the simulations here do not couple well over varying #T#.
             # This could be arranged if we used a marked point process.
             rel = [poisson(beta * T, 0, T) for i in range(num)]
-            ill = [[poisson(alfa * T, 0, T) for j in range(i+1, num)] for i in range(num - 1)]
+            ill = [[poisson(alfa * T, 0, T) for j in range(i + 1)] for i in range(num - 1)]
         else:
             # WARNING: This code as yet untested.
             logging.info('Create consistent data using rng')
@@ -276,13 +276,13 @@ def main(opt, arguments):
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                app.disk(t, pop - i - 1, r=6, tag='Infect')
-                app.infection(t, j, pop - i - 1, tag='Infect-P')
+                app.disk(t, i + 1, r=6, tag='Infect')
+                app.infection(t, j, i + 1, tag='Infect-P')
 
     logging.info('Display potential removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            app.removal(t, pop - i - 1, tag='Remove-P')
+            app.removal(t, i, tag='Remove-P')
 
     logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]

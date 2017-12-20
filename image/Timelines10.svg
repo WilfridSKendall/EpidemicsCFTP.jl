@@ -174,14 +174,14 @@
     <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" points="612.16,226.916 603.201,233.605 613.927,236.759 "/>
   </g>
   <g>
-    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" x1="676" y1="266" x2="501.218" y2="342.115"/>
-    <polygon style="fill: #ffffff" points="499.222,337.53 492.05,346.107 503.215,346.699 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" points="499.222,337.53 492.05,346.107 503.215,346.699 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" d="M 502.21,346.364 A 272.745,272.745 0 0 0 676,266"/>
+    <polygon style="fill: #ffffff" points="502.082,341.639 492.235,346.934 502.379,351.635 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" points="502.082,341.639 492.235,346.934 502.379,351.635 "/>
   </g>
   <g>
-    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" x1="692" y1="268" x2="440.874" y2="451.774"/>
-    <polygon style="fill: #ffffff" points="437.922,447.739 432.804,457.679 443.827,455.809 "/>
-    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" points="437.922,447.739 432.804,457.679 443.827,455.809 "/>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" d="M 442.979,456.527 A 376.1,376.1 0 0 0 692,268"/>
+    <polygon style="fill: #ffffff" points="442.091,451.809 433.197,458.584 443.953,461.634 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" points="442.091,451.809 433.197,458.584 443.953,461.634 "/>
   </g>
   <g>
     <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #ff0000" cx="631.925" cy="710.625" rx="10.625" ry="10.625"/>

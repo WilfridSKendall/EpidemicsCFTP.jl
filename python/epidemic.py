@@ -56,8 +56,9 @@ class Innovations(object):
 
      >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
-     ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
-     ...                          [[0.2, 1.1, 1.5]]])
+     ...                     infect=[[[0.2, 1.1, 1.5]],
+     ...                             [[0.4, 0.9], [0.6, 1.4]]
+     ...                            ])
      >>> len(innov)
      3
 
@@ -65,26 +66,26 @@ class Innovations(object):
      >>> print(innov)
      Innovations for SIR epidemic on 3 individuals:
      Row               List of proposed potential removals
-       3:              1.00 1.60
+       3:              0.50 2.00
        2:              1.30
-       1:              0.50 2.00
+       1:              1.00 1.60
      Target row
           (Origin)     List of proposed potential infections
-       3:   (1)        0.40 0.90
-            (2)        0.60 1.40
+       3:   (2)        0.60 1.40
+            (1)        0.40 0.90
        2:   (1)        0.20 1.10 1.50
 
     Note the data format. An #Innovations# instance is effectively
     a list of two sub-lists. The first sub-list is the #remove#
     list, containing `n` sub-sub-lists, one for each timeline row,
-    working from row `n` down to row #1# as per algorithm described
-    in the paper. Each such sub-sub-list is a list of potential removal
-    times, the mark for each of these removals being implied by the row
-    corresponding to the sub-sub-list.
+    working from row `1` up to row `n` as per algorithm described
+    in the paper. Each such sub-sub-list is an ordered list of potential
+    removal times, the mark for each of these removals being implied by
+    the row corresponding to the sub-sub-list.
 
     The second sub-list is the `infect` sub-list, containing `n-1`
     sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
-    row starting at row `n` and working downwards to row `2`, and contains
+    row starting at row `2` and working up to row `n`, and contains
     sub-sub-sub-lists of potential infection times, one sub-sub-sub-list
     corresponding to each row _below_ the timeline row corresponding to
     the relevant sub-sub-list.
@@ -102,7 +103,7 @@ class Innovations(object):
         if len(self.infect) != len(self) - 1:
             raise BadDataError("infection and removal data structure lengths do not agree")
         for i, llst in enumerate(self.infect):
-            if len(llst) != len(self) - i - 1:
+            if len(llst) != i + 1:
                 raise BadDataError("infection data sub-structure is inconsistent")
     def __repr__(self):
         return "%s\n%s" % (self.remove, self.infect)
@@ -111,15 +112,16 @@ class Innovations(object):
         def lstr(lst):
             "Temporary function to convert list of floats into string of space-separated floats"
             return ' '.join('%4.2f' % e for e in lst)
+        # Enumerate reversed lists of removals and infections so that printed result looks like graphics.
+        rem = enumerate(reversed(self.remove))
+        inf = enumerate(reversed(self.infect))
         legend1 = "Innovations for SIR epidemic on %d individuals:" % len(self)
         legend2 = "Row               List of proposed potential removals"
-        #removals = "%s" % self.remove
-        removals = '\n'.join(" %2d:              %s" % (pop - i, lstr(x)) for i, x in enumerate(self.remove))
+        removals = '\n'.join(" %2d:              %s" % (pop - i, lstr(x)) for i, x in rem)
         legend3 = "Target row"
-        infections = "%s" % self.infect
         infections = '\n'.join([" %2d: %s" % \
-           (pop - i,'\n     '.join(['  (%1d)        %s' % (j + 1, lstr(y)) \
-               for j, y in enumerate(x)])) for i, x in enumerate(self.infect)])
+           (pop - i,'\n     '.join(reversed(['  (%1d)        %s' % (j + 1, lstr(y)) \
+               for j, y in enumerate(x)]))) for i, x in inf])
         legend4 = "     (Origin)     List of proposed potential infections"
         return '\n'.join([legend1, legend2, removals, legend3, legend4, infections])
     def __len__(self):
@@ -131,14 +133,15 @@ class FreeEpidemic(object):
 
      >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
-     ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
-     ...                          [[0.2, 1.1, 1.5]]])
+     ...                     infect=[[[0.2, 1.1, 1.5]],
+     ...                             [[0.4, 0.9], [0.6, 1.4]]
+     ...                            ])
 
      >>> epidemic = FreeEpidemic(innovations=innov)
      >>> len(epidemic)
      3
      >>> epidemic._build_time_line()[:4] # First 4 incidents.
-     [(0.2, 2, 1), (0.4, 3, 1), (0.5, 1), (0.6, 3, 2)]
+     [(0.2, 2, 1), (0.4, 3, 1), (0.5, 3), (0.6, 3, 2)]
 
     Now we calculate the epidemic evolution as a list of changes, each change
     summarised by time of change, and then a tuple giving numbers of Susceptibles,
@@ -149,16 +152,16 @@ class FreeEpidemic(object):
       (0.2, (1, 2, 0)),
       (0.4, (0, 3, 0)),
       (0.5, (0, 2, 1)),
-      (1, (0, 1, 2)),
-      (1.6, (0, 0, 3))]
+      (1.3, (0, 1, 2)),
+      (2, (0, 0, 3))]
      >>> print(epidemic(pretty=True))
      Time    S, I, R
      0.00   (2, 1, 0)
      0.20   (1, 2, 0)
      0.40   (0, 3, 0)
      0.50   (0, 2, 1)
-     1.00   (0, 1, 2)
-     1.60   (0, 0, 3)
+     1.30   (0, 1, 2)
+     2.00   (0, 0, 3)
 
     """
     def __init__(self, innovations=None):
@@ -175,20 +178,22 @@ class FreeEpidemic(object):
         """
         # Compute and store number of rows, and removals list, infections list.
         nnn = len(self)
-        remove = self.innov.remove
-        infect = self.innov.infect
-        # List of lists of row indices, one for each removal time.
-        res = [[nnn - i]*len(x) for i, x in enumerate(remove)]
+        remove = enumerate(self.innov.remove)
+        infect = enumerate(self.innov.infect)
+        # List of lists of row levels, one for each removal time.
+        res = [[i + 1] * len(x) for i, x in remove]
         # List of (removal time, row mark).
-        rem = zip(chain(*remove), chain(*res))
+        rem = zip(chain(*self.innov.remove), chain(*res))
 
-        # List of lists of pairs of row indices, one pair for each infection time.
-        ins = chain(*[chain(*[[(nnn - i, j + 1)]*len(y) for j, y in enumerate(x)]) \
-                                           for i, x, in enumerate(infect)])
+        # List of lists of pairs of row levels, one pair for each infection time.
+        # ins = chain(*[chain(*[[(i + 2, j + 1)]*len(y) for j, y in enumerate(x)]) \
+        #                                    for i, x, in enumerate(infect)])
+        ins = [[[(i + 2, j + 1)]*len(y) for j, y in enumerate(x)] for i, x, in infect]
         # List of lists of incoming infections for each row.
-        in1 = chain(*[chain(*x) for x in infect])
+        in1 = chain(*[chain(*x) for x in self.innov.infect])
+        in2 = chain(*[chain(*x) for x in ins])
         # List of (infection time, outgoing row, incoming row)
-        inf = [(x, y[0], y[1]) for x, y in  zip(in1, ins)]
+        inf = [(x, y[0], y[1]) for x, y in  zip(in1, in2)]
 
         # Return list of incidents sorted by time.
         return sorted(list(chain(rem, inf)))
@@ -207,7 +212,7 @@ class FreeEpidemic(object):
                 # The incident is a potential infection.
                 ttt, i, j = incident
                 # The infection terminates at row `i` and starts at row `j`.
-                if i == infe + remo +1 and remo < j and j <= infe + remo:
+                if i == infe + remo + 1 and remo < j and j <= infe + remo:
                     # Row `i` is lowest susceptible, while row `j`
                     # is infected.
                     logging.info(legend, ttt, remo, i, infe+remo, j)

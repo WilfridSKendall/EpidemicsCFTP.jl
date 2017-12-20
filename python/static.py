@@ -98,10 +98,10 @@ class Display(tk.Tk):
 
         if not forceoutput and self.output is not None:
             frm = tk.Frame(self)
-            props = {'font': LABFONT, 'width': 15, 'indicatoron': False}
-            props = {'font': LABFONT, 'width': 15}
+            cbprops = {'font': LABFONT, 'width': 15, 'indicatoron': False}
+            # cbprops = {'font': LABFONT, 'width': 15}
             for key in self.taglist:
-                cb = tk.Checkbutton(frm, text=key, command=lambda tag=key: self.toggle(tag=tag), **props)
+                cb = tk.Checkbutton(frm, text=key, command=lambda tag=key: self.toggle(tag=tag), **cbprops)
                 cb.pack(padx=1, side=tk.LEFT)
             tk.Button(frm, text="Save", command=self.save, font=LABFONT).pack(padx=60, pady=10, side=tk.LEFT)
             tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.LEFT)
@@ -113,8 +113,12 @@ class Display(tk.Tk):
         self.setup(T, pop)
 
     def toggle(self, tag=None):
-        tog = self.tog[tag] = 1 - self.tog[tag]
+        tog = self.tog[tag] = not self.tog[tag]
         self.paint(tag, self.cfg[tog])
+        if tog:
+            self.canvas.lift(tag)
+        else:
+            self.canvas.lower(tag)
 
     def setup(self, T, pop):
         "Set up the basic elements of the canvas"
@@ -215,6 +219,7 @@ def marked_poisson(lamda, t0, t1):
         temp += expovariate(lamda)
     return marked_points
 
+
 def main(opt, arguments):
     """
     The action of the module as script should be concentrated here!
@@ -236,7 +241,7 @@ def main(opt, arguments):
             # Note that the simulations here do not couple well over varying #T#.
             # This could be arranged if we used a marked point process.
             rel = [poisson(beta * T, 0, T) for i in range(num)]
-            ill = [[poisson(alfa * T, 0, T) for j in range(i+1, num)] for i in range(num - 1)]
+            ill = [[poisson(alfa * T, 0, T) for j in range(i + 1)] for i in range(num - 1)]
         else:
             # WARNING: This code as yet untested.
             logging.info('Create consistent data using rng')
@@ -275,13 +280,13 @@ def main(opt, arguments):
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                app.disk(t, pop - i - 1, r=6, tag='Infect')
-                app.infection(t, j, pop - i - 1, tag='Infect-P')
+                app.disk(t, i + 1, r=6, tag='Infect')
+                app.infection(t, j, i + 1, tag='Infect-P')
 
     logging.info('Display potential removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            app.removal(t, pop - i - 1, tag='Remove-P')
+            app.removal(t, i, tag='Remove-P')
 
     logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]
@@ -296,7 +301,7 @@ def main(opt, arguments):
         logging.info((i, t0, t1))
         app.segment(t0, i, t1, i, tag='Infectious')
         if t1 < T:
-            app.removal(t1, i, tag='Remove')
+            app.removal(t1, i, tag='Remove') # This needs fixing I think
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
@@ -305,6 +310,8 @@ def main(opt, arguments):
         app.segment(told, iold, t, iold, tag='Epidemic')
         app.segment(t, iold, t, i, tag='Epidemic')
         told, iold = t, i
+    if sir[1] != 0:
+        app.segment(t, i, T, i, tag='Epidemic')
 
     logging.info('Format the graphical elements')
     app.style()

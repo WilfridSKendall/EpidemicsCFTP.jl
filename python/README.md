@@ -81,29 +81,6 @@ Other examples can be found in `Makefile`.
 
 ![Screenshot of a version of `static.py`](image/static.jpg "static.jpg")
 
-The colour coding in the screenshot is described in `static.cfg`: here is the description as of 20 December 2017.
-
-`Infect-P`; potential infection (wide lightgreen arrow, running from putative infecting row to row that would be infected).
-For this infection actually to happen, the putative infecting row must be infected at the time of the
-infection, and the row to be infected must be the lowest row susceptible at time of infection.
-
-`Infect`; locates the actual potential infection (as a yellow circle with orange boundary on row that would be infected).
-
-`Infectious` ; portions of rows that are infected (yellow lines).
-
-`Epidemic`; traces most recently infected individual that is currently infected (as a thin red line).
-
-`Remove-P`; potential removal (blue no-way sign).
-For this removal actually to take effect, the row on which it sits must be infected at the relevant time.
-The lowest row currently infected will then suffer a removal.
-foreground: blue
-
-`Remove`; implemented removal (red no-way sign).
-This sits on the lowest row currently infected, which then suffers a removal;
-it sits below the corresponding potential removal. Note that sometimes potential and
-implemented removals coincide, in which case in the initial configuration of 'static.py'
-only the implemented removal is visible.
-
 Depress one of the group of six buttons at the bottom left of the window
 in order to toggle disappearance (and then appearance) of the corresponding
 elements in the image. This is useful for checking the image against the
@@ -111,24 +88,4 @@ commandline specification, as well as clarifying the elements of more complicate
 Note that reinstated elements are placed at the top layer of the image; this means that
 a double-click will make the relevant elements more prominent.
 
-Still to be done:
------------------
-
-* Paper:
- - Complete proof of monotonicity.
- - Illustrate using images produced by _python3_ code.
- - Can monotonicity extend to variation of parameters (eg infectivity parameter)?
- - Can anything be done with non-exponential infective periods?
- - More general compartment models?
-* Coding:
- - Colour-code potential infections according to whether or not they are active.
- - Introduce conditioned observed removals(!).
- - Compute Mordor, no-fly zone, and last feasible infections.
- - Produce a dynamic version, which updates according to our algorithm using a new `Innovations` instance.
- - Check monotonicity using many random runs.
- - Implement _CFTP_.
- - Omnithermal _CFTP_?
- - Estimation of parameters?
- - What about rates of infection that vary with time, or non-linearly with total number of susceptibles?
-
- 
+The colour coding in the screenshot is described in `static.cfg`:

@@ -32,9 +32,13 @@ figure4: image/randomfigure.png
 epidemic-doc.pdf: epidemic-doc.md $(figures)
 	pandoc epidemic-doc.md -o epidemic-doc.pdf
 
-README.pdf: README.md $(figure1)
-	pandoc README.md -o README.pdf
+README.pdf: README.md $(figure1) KEY.md TODO.md
+	pandoc README.md KEY.md TODO.md -o README.pdf
 
+KEY.md: static.cfg
+	sed -e'1d' -e'2d'  -e'/^[^#\[]/d' -e's/^# *//' -e's/ ; /: /' \
+	-e'/\]$$/d' -e's/\[/`/'  -e's/\]/`/' static.cfg > KEY.md
+	
 image/figure1.png: $(graphicsprogs) epidemic.py
 	-python3 static.py --title="Figure 1: an example of a Free SIR Epidemic" \
 		--output=$@  --forceoutput \

@@ -470,10 +470,10 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
  This is made up of initial portions of time-lines defined by the property, if a time-line point in this region is infected then there will result an unconditioned removal.
  The boundary of the no-fly zone is located at process time \(\xi_m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:boundary-time}
- \xi_n \quad=&\quad \max\left\{\bigcup_{s=1}^n \Removals_s\right\}\,,  
+ \xi_n \quad=&\quad \max \Removals_{n-}\,,  
  &\text{ the last unrealized removal on or below time-line }n\,,
  \nonumber\\
- \xi_m \quad=&\quad \max\left\{\bigcup_{s=1}^m \Removals_s\right\} \vee \max\left\{\Infections_m\cap[0,\xi_{m+1}\right)\}
+ \xi_m \quad=&\quad \max \Removals_{m-} \vee \max\left\{\Infections_m\cap[0,\xi_{m+1}\right)\}
  &\text{ if }1<m<n\,.
  \end{align}
  (Here and throughout we use the convention that \(\max\emptyset:=-\infty\)
@@ -596,9 +596,9 @@ not infected at time \(\rho\).
  other potential removals would become actual removals and so lead to violation of the conditioning restriction, and therefore must be refused.
  
  It is always possible to delete a potential infection.
-\NB[SBC]{When working right-to-left in algorithmic time, updating the
-  values of $\phi_m$ and $\eta_m$ as we go. This might need to be clarified!}
- A realized infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last viable epidemic;
+ A realized infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last viable epidemic; 
+ \NB[SBC]{When working right-to-left in algorithmic time, updating the
+ 	values of $\phi_m$ and $\eta_m$ as we go. This might need to be clarified!}
  if it \emph{does} belong to both these epidemics then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
  In other words, if \(\phi_m=\eta_m\) for some \(m\), the (necessarily
  realized) infection in \(\Infections_{m-1}\) occurring at time \(\phi_m\) must be perpetuated, and these are the only infections subject to perpetuation.
@@ -621,7 +621,7 @@ not infected at time \(\rho\).
 	\begin{enumerate}
 		\item delete all current potential removals;
 		\item for each time-line \(m\), introduce a new set of potential removals \(\Removals_m(\tau+T)\)
-		according to a Poisson process of intensity \(\beta\) over the range
+		according to a Poisson process \(\Lambda^R_m(\tau+T)\) of intensity \(\beta\) over the range
 		\([0,\phi_m(\tau)]\), where \(\phi_m(\tau)\) is (as above) the process time when the time-line \(m\) currently becomes infected;
 		%\item update the mark for each potential removal time \(r\) as follows:
 		%suppose that \(r\) is currently assigned to time-line \(m\)
@@ -640,33 +640,36 @@ not infected at time \(\rho\).
 		%  only if \(\phi_{m'}(\tau+T) \le \rho \le \rho_{m'}\)); if not, add \(\rho\) to the set \(\Conditioned_m(\tau + T)\).
 		
 		\item update the time-line to which each conditioned (respectively, potential) removal is assigned, as follows: for a given removal, sample \(m'\sim \textrm{Uniform}\{1,\dots,n\}\), and reassign the removal to time-line \(m'\) if and only if time-line \(m'\) is (respectively, is \textbf{not}) infected at the removal time. \\
-		(That is, if \(\rho\in\Conditioned_m(\tau)\) then add \(\rho\) to the set \(\Conditioned_{m'}(\tau+T)\)) if and only if \(\phi_{m'}(\tau) \le \rho \le \rho_{m'}\)); if not, add \(\rho\) to the set \(\Conditioned_m(\tau + T)\). Similarly, if \(r\in \Removals_m(\tau+T)\) then move \(r\) to the set \(\Removals_{m'}(\tau+T)\) if and only if \(r< \phi_{m'}(\tau)\).)
+		In other words, if \(\rho\in\Conditioned_m(\tau)\) then add \(\rho\) to the set \(\Conditioned_{m'}(\tau+T)\) if and only if \(\phi_{m'}(\tau) \le \rho \le \rho_{m'}\); if not, add \(\rho\) to the set \(\Conditioned_m(\tau + T)\). Similarly, if \(r\in \Removals_m(\tau+T)\) then move \(r\) to the set \(\Removals_{m'}(\tau+T)\) if and only if \(r< \phi_{m'}(\tau)\).
 	\end{enumerate}
 \end{lem}
 \begin{proof}
 	\textbf{(to be completed)}
 \end{proof}
 
+\begin{rem}
+	Note that although the boundary of the no-fly zone (\(\xi)\) and the last viable epidemic (\(\eta\)) will in general be affected by the updating of removals, the epidemic trajectory \(\phi\) will remain unchanged. This is a consequence of our conditioning: when sampling new potential removals we do not allow any to intersect the current epidemic trajectory, and when reassigning conditioned removals we only do so if the relevant time-line is already infected at the time in question. It follows that \(\phi_m(\tau+T) = \phi_m(\tau)\) for all time-lines \(m=1,\dots,n\).
+\end{rem}
+
 
 \begin{lem}\label{lem:update_last-viable}
-	Consider the phase of algorithmic time \([(2k-1)T, 2kT) = [\tau+T, \tau+2T) \) during
+	Consider the phase of algorithmic time \(((2k-1)T, 2kT] = (\tau+T, \tau+2T] \) during
 	which the set of infection times is updated. Given the realisations \(\Lambda^I_m(\tau+2T)\) for \(m=1,\dots n-1\), the last viable epidemic $\eta$ at time \(\tau+2T\) satisfies the following equations: 
 	\begin{align}
 		\eta_{n+1}(\tau+2T) \quad&=\quad \rho_n  \nonumber \\
-	 	\eta_m(\tau+2T) \quad&=\quad \phi_m(\tau)\vee \max \left\{\Lambda^I_{m-1}(\tau+2T) \cap [0, \min\Conditioned_{m+}(\tau+T)\wedge \eta_{m+1}(\tau+2T)) \right\}\,, \quad \text{ if }1<m\le n \label{eq:update_last-viable} \,.
+	 	\eta_m(\tau+2T) \quad&=\quad \phi_m(\tau+T)\vee \max \left\{\Lambda^I_{m-1}(\tau+2T) \cap [0, \min\Conditioned_{m+}(\tau+T)\wedge \eta_{m+1}(\tau+2T)) \right\}\,, \quad \text{ if }1<m\le n \label{eq:update_last-viable} \,.
 	 \end{align}
 \end{lem}
 
 \begin{proof}
-	This follows from a similar argument to the rationale behind equation~\eqref{eq:last-epidemic}. The last viable epidemic must infect time-line \(n\) before any conditioned removals currently assigned to that time-line; since removals are not updated during \([\tau,\tau+T)\), this means that we require \(\eta_n(\tau+T)\le \min\Conditioned_n(\tau)\). If \(\Lambda_{n-1}^I(\tau+T)\) contains at least one new potential infection event in the interval \([0, \min\Conditioned_n(\tau)) \) then \(\eta_n(\tau+T)\) will be the maximum of these; if not, the pre-existing infection event at time \(\phi_n(\tau)\) will be perpetuated, with \(\eta_n(\tau+T) = \phi_n(\tau)\). This proves the result for \(\eta_n(\tau+T)\).
-	
-	The argument for \(m< n\) proceeds along the same lines: the only modification is that in order \emph{not} to perpetuate the infection at \(\phi_m(\tau)\) we need there to be a new potential infection in \(\Lambda^I_{m-1}(\tau+T)\) that occurs not only before any conditioned removals on time-line \(m\), but also no later than the time \(\eta_{m+1}(\tau+T)\) that the (just updated) last-viable epidemic reaches time-line \(m+1\) (which in turn means that this must occur no later than all conditioned removals on timelines \(m,m+1,\dots,n\)).
+	This follows from a similar argument to the rationale behind equation~\eqref{eq:last-epidemic}. The last viable epidemic must infect time-line \(m\) before any conditioned removals currently assigned to that  time-line or any time-line of greater index, and also no later than the time at which the last viable epidemic reaches the line above. Given the (just updated) value of \(\eta_{m+1}(\tau+2T)\), if \(\Lambda_{m-1}^I(\tau+2T)\) contains at least one new potential infection event in the interval \[(\phi_m(\tau+T), \min\Conditioned_{m+}(\tau+T)\wedge \eta_{m+1}(\tau+2T)) \]
+	then \(\eta_m(\tau+2T)\) will be the maximum of these; if not, the pre-existing infection event at time \(\phi_m(\tau+T)\) will be perpetuated, in which case we arrive at \(\eta_m(\tau+2T) = \phi_m(\tau+T)\).
 \end{proof}
 
 
 
  \begin{lem}\label{lem:infect4}
- 	Consider the phase of algorithmic time \([(2k-1)T, 2kT) = [\tau+T, \tau+2T) \) during
+ 	Consider the phase of algorithmic time \(((2k-1)T, 2kT] =(\tau+T, \tau+2T] \) during
  	which the set of infection times is updated. The no-fly zone boundary $\xi$ and infection times $\Infections$ at time \(\tau+2T\) satisfy the following equations:
  	% \begin{enumerate}
  	% 	\item set \(m=n\)
@@ -685,10 +688,10 @@ not infected at time \(\rho\).
 % 	\intertext{and for \(1\le m<n\),}
 % 	\Infections_m(\tau+T) \quad &= \quad \left( \Lambda^I_m \setminus (\phi_m(\tau), \xi_{m+1}(\tau+T)) \right) \cup \,\left\{\phi_{m+1}(\tau)\vee\max \left\{\Lambda^I_m\cap(\phi_{m+1}(\tau),  \eta_{m+2}(\tau+T)\wedge \min \Conditioned_{m+1}(\tau))  \right\}\right\} \\
 % 	\xi_m(\tau+T) \quad&=\quad \max\left\{\bigcup_{s=1}^m \Removals_s(\tau)\right\} \vee \max\left\{\Infections_m(\tau+T)\cap[0,\xi_{m+1}(\tau+T)\right)\}\,.
-	\xi_n(\tau+2T)\quad &= \quad \max\left\{\bigcup_{s=1}^n \Removals_s(\tau+T)\right\}
+	\xi_n(\tau+2T)\quad &= \quad \max \Removals_{n-}(\tau+T)
 	\intertext{and for \(1\le m<n\),}
-	\Infections_m(\tau+2T) \quad &= \quad \left( \Lambda^I_m(\tau+2T) \setminus (\phi_m(\tau), \xi_{m+1}(\tau+2T)) \right) \cup \{\eta_{m+1}(\tau+2T)\} \\
-	\xi_m(\tau+2T) \quad&=\quad \max\left\{\bigcup_{s=1}^m \Removals_s(\tau+T)\right\} \vee \max\left\{\Infections_m(\tau+2T)\cap[0,\xi_{m+1}(\tau+2T)\right)\}\,.
+	\Infections_m(\tau+2T) \quad &= \quad \left( \Lambda^I_m(\tau+2T) \setminus (\phi_m(\tau+T), \xi_{m+1}(\tau+2T)) \right) \cup \{\eta_{m+1}(\tau+2T)\} \\
+	\xi_m(\tau+2T) \quad&=\quad \max \Removals_{m-}(\tau+T) \vee \max\left\{\Infections_m(\tau+2T)\cap[0,\xi_{m+1}(\tau+2T)\right)\}\,.
  	\end{align*}
  	
  \end{lem}
@@ -714,12 +717,24 @@ not infected at time \(\rho\).
 %  \textbf{(to be completed)}
 % \end{proof}
 
+\begin{rem}
+	Taken together, Lemmas~\ref{lem:removal1}, \ref{lem:update_last-viable} and \ref{lem:infect4} show that we may update the epidemic over the algorithmic time period \((2(k-1)T,2kT] = (\tau,\tau+2T]\) in the following manner:
+	\begin{gather*}
+	\left\{\xi_m(\tau), \, \phi_m(\tau),\, \eta_m(\tau),\, \Conditioned_m(\tau), \, \Removals_m(\tau)\,:\, m=1,\dots,n \right\} \\
+	\phantom{\text{using \(\Lambda^R(\tau+T)\)}} \quad	{\Bigg\downarrow} \quad \text{using \(\Lambda^R(\tau+T)\)} \\
+	\left\{\phi_m(\tau+T),\,\Conditioned_m(\tau+T), \, \Removals_m(\tau+T)\,:\, m=1,\dots,n \right\} \\
+	\phantom{\text{using \(\Lambda^I(\tau+T)\)}}\quad {\Bigg\downarrow} \quad \text{using \(\Lambda^I(\tau+2T)\)} \\
+	\left\{\xi_m(\tau+2T), \, \phi_m(\tau+2T),\, \eta_m(\tau+2T),\, \Conditioned_m(\tau+2T), \, \Removals_m(\tau+2T)\,:\, m=1,\dots,n \right\}\,.
+	\end{gather*}
+	Furthermore, we have already observed that \(\phi_m(\tau+T) = \phi_m(\tau)\), \(\Conditioned_m(\tau+2T) = \Conditioned_m(\tau+T)\) and \(\Removals_m(\tau+2T) = \Removals_m(\tau+T)\).
+\end{rem}
+
  \begin{lem}\label{lem:infect3}
   Current infections are perpetuated exactly when they simultaneously form part of the current epidemic trajectory and the current last viable epidemic.
   Moreover at any fixed algorithmic time \(\tau\)  there can be at most one perpetuated infection on each time-line.
  \end{lem}
  \begin{proof}
-  \textbf{(to be completed)}
+  \textbf{(Do we need this?)}
  \end{proof}
 
 
@@ -753,22 +768,22 @@ In particular, we need to check reversibility and conditioning arguments, as wel
 \end{itemize}
 }
 %
-\TBC{I believe all we need to prove here is the following:
-\\
-Suppose we have two separate conditioned \SIR epidemics (epidemics (I) and (II)) driven by the same sequences of potential removals and potential infections as above.
-Suppose further that at some algorithmic time \(\tau_0=2mT\) for some integer \(m\) it is the case that
-\begin{itemize}
- \item the ``no-fly'' zone for epidemic (I) is contained in that of epidemic (II);
- \item the epidemic trajectory for epidemic (I) is never later than that for epidemic (II);
- \item the last viable epidemic for epidemic (I) is never later than that for epidemic (II);
- \item (Consequently, on each time-line containing perpetuated incidents for both epidemics, the perpetuated incident for epidemic (I) is never later than that for epidemic (II);)
- \item the set of un-perpetuated realized infection incidents for epidemic (I) contains the set of un-perpetuated realized infection incidents for epidemic (II);
- \item the set of un-realized infection incidents for epidemic (I) is contained in the set of un-realized infection incidents for epidemic (II).
-\end{itemize}
-Then an inductive argument (inductive on the sequence of proposed incidents in the above construction)
-maintains this ordering for all algorithmic times \(\tau\geq\tau_0\).
-}
-\TBC{I believe that the full \CFTP construction follows quickly from this.}
+%\TBC{I believe all we need to prove here is the following:
+%\\
+%Suppose we have two separate conditioned \SIR epidemics (epidemics (I) and (II)) driven by the same sequences of potential removals and potential infections as above.
+%Suppose further that at some algorithmic time \(\tau_0=2mT\) for some integer \(m\) it is the case that
+%\begin{itemize}
+% \item the ``no-fly'' zone for epidemic (I) is contained in that of epidemic (II);
+% \item the epidemic trajectory for epidemic (I) is never later than that for epidemic (II);
+% \item the last viable epidemic for epidemic (I) is never later than that for epidemic (II);
+% \item (Consequently, on each time-line containing perpetuated incidents for both epidemics, the perpetuated incident for epidemic (I) is never later than that for epidemic (II);)
+% \item the set of un-perpetuated realized infection incidents for epidemic (I) contains the set of un-perpetuated realized infection incidents for epidemic (II);
+% \item the set of un-realized infection incidents for epidemic (I) is contained in the set of un-realized infection incidents for epidemic (II).
+%\end{itemize}
+%Then an inductive argument (inductive on the sequence of proposed incidents in the above construction)
+%maintains this ordering for all algorithmic times \(\tau\geq\tau_0\).
+%}
+%\TBC{I believe that the full \CFTP construction follows quickly from this.}
 
 Consider the following partial ordering between two conditioned realisations \(\Epidemic^\uparrow\) and \(\Epidemic^\downarrow\) at algorithmic time \(\tau\). Write \(\Epidemic^\uparrow(\tau) \ple \Epidemic^\downarrow(\tau)\) if and only if the following set of relations all hold, for all \(m=1,\dots,n\):
 \begin{align}

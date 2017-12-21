@@ -494,7 +494,7 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
   &\text{ if \(m\leq R_0+I_0=I_0\)}\,,
   \nonumber\\
   \phi_m \quad=&\quad
-  \min\left\{\Infections_{m-1}\cap[\phi_{m-1}\wedge \xi_m,\rho_{m-1})\right\} 
+  \min\left\{\Infections_{m-1}\cap[\phi_{m-1}\vee \xi_m,\rho_{m-1})\right\} 
   & \text{ if } I_0 < m \le n \,.
 %   \begin{cases}
 %    \infty                                                    & \text{ if \(m> R_0+I_0=I_0\) and no potential infection} 
@@ -504,6 +504,8 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
 %    \min\{\sigma_{m-1}^j\;:\; \sigma_{m-1}^j>\phi_{m-1}\} & \text{ otherwise.}
 %   \end{cases}
  \end{align}
+ That is, time-line \(m\) becomes infected at the time of the earliest infection occurring after time-line \(m-1\) is infected, and which avoids the no-fly zone.
+ \NB[SBC]{I've added reference to the no-fly zone into this definition. Poss not needed under conditioning, but I think that it makes the proof of monotonicity clearer later on.}
  Note that \(\phi_m=\infty\) cannot be allowed to occur for any \(m\) if we condition on all individuals eventually being removed.%
 \xNB[WSK2]{Reformulate (\ref{eq:epidemic}) in a manner similar to that of (\ref{eq:last-epidemic}): avoid the case of $\infty$ by noting this won't happen under conditioning.}
  Necessarily the epidemic must avoid the no-fly zone. Figure \ref{fig:epidemic} illustrates this construction.
@@ -955,20 +957,12 @@ At this stage we thus have sets of potential and conditioned removals, satisfyin
 
 
 	
-	Finally, we turn our attention to the ordering in \eqref{eq:trajectory_order}. Note from \eqref{eq:epidemic} that \(\phi_m(t)=0\) for all \(t\) when \(m\le I_0\) (the number of initially infected individuals). So suppose for the sake of induction that \(\phi^\uparrow_{m-1}(\tau+2T) \le \phi^\downarrow_{m-1}(\tau+2T)\) for some \(m> 1\). Note that an epidemic \(\Epidemic(\tau+2T)\) will see the infection reach time-line \(m\) at the time of the first potential infection belonging to \(\Infections_{m-1}(\tau+2T)\) that occurs after both \(\phi_{m-1}(\tau+2T)\) and \(\xi_m(\tau+2T)\). (In other words, time-line \(m\) can be infected no earlier than the time at which time-line \(m-1\) becomes infected, and there can be no infection connecting the epidemic trajectory on time-line \(m-1\) to the no-fly zone boundary on time-line \(m\).) Therefore,
+	Finally, we turn our attention to the ordering in \eqref{eq:trajectory_order}. Note from \eqref{eq:epidemic} that \(\phi_m(t)=0\) for all \(t\) when \(m\le I_0\) (the number of initially infected individuals). So suppose for the sake of induction that \(\phi^\uparrow_{m-1}(\tau+2T) \le \phi^\downarrow_{m-1}(\tau+2T)\) for some \(m> 1\). Note from \eqref{eq:epidemic} that an epidemic \(\Epidemic(\tau+2T)\) will see the infection reach time-line \(m\) at the time of the first potential infection belonging to \(\Infections_{m-1}(\tau+2T)\) that occurs after both \(\phi_{m-1}(\tau+2T)\) and \(\xi_m(\tau+2T)\):
 	\begin{align*}
-	\phi^\uparrow_m(\tau+2T) \quad &= \quad \min\left\{\Infections^\uparrow_{m-1}(\tau+2T) \cap[\phi^\uparrow_{m-1}(\tau+2T)\vee \xi^\uparrow_m(\tau+2T),\rho_{m-1})\right\} \\
-	&= \quad \min\left\{\Lambda^I_{m-1}(\tau+2T) \cap[\phi^\uparrow_{m-1}(\tau+2T)\vee \xi^\uparrow_m(\tau+2T),\rho_{m-1})\right\} \wedge \eta^\uparrow_m(\tau+2T) \\
-	&\le \quad \min\left\{\Lambda^I_{m-1}(\tau+2T) \cap[\phi^\downarrow_{m-1}(\tau+2T)\vee \xi^\downarrow_m(\tau+2T),\rho_{m-1})\right\} \wedge \eta^\downarrow_m(\tau+2T) \\
-	&= \quad \phi^\downarrow_m(\tau+2T) \,.
+		\phi_m(\tau+2T) \quad=&\quad \min\left\{\Infections_{m-1}(\tau+2T)\cap[\phi_{m-1}(\tau+2T)\wedge \xi_m(\tau+2T),\rho_{m-1})\right\} 
 	\end{align*}
 	
-	From \eqref{eq:epidemic} we see that 
-	\begin{align*}
-		\phi_m(\tau+2T)\quad = \quad \min\{\Infections_{m-1}(\tau+2T)\cap[\phi_{m-1}(\tau+2T),\rho_{m-1})\}
-	\end{align*}
-	
-	Here the second equality says that the infection event will either be a new infection (forming part of the Poisson process \(\Lambda_{m-1}^I(\tau+2T)\)) or will be a perpetuated infection which forms part of the last viable trajectory \(\eta^\uparrow_m(\tau+T)\). The inequality follows from our inductive assumption, along with the orderings in \eqref{eq:no-fly_order} and \eqref{eq:last_order} which have already been shown to hold at time \(\tau+2T\). 
+
 	Therefore \eqref{eq:trajectory_order} holds at algorithmic time \(\tau+2T\), and our proof is complete.
 \end{proof}
 

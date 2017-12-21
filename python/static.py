@@ -77,7 +77,7 @@ class Error(Exception):
 class Display(tk.Tk):
     """
     Frame for various buttons and Canvas, includes high-level drawing routines
-    and printing. 
+    and printing.
     """
     def __init__(self, T, pop, background='white', height=720, width=1024, \
                  output=None, forceoutput=False):
@@ -92,7 +92,7 @@ class Display(tk.Tk):
 
         self.white = configparser.ConfigParser()
         self.white.read('white.cfg')
- 
+
         self.tog = dict((tag, 1) for tag in self.white.sections())
         self.taglist = self.white.sections()
 
@@ -150,7 +150,7 @@ class Display(tk.Tk):
     def style(self):
         "Format the graphical elements of the canvas and read white options"
         for tag in self.color.sections():
-            self.paint(tag, self.color)         
+            self.paint(tag, self.color)
 
         self.cfg = [self.white, self.color]
         for tag in self.color.sections():
@@ -257,7 +257,7 @@ def main(opt, arguments):
                 else:
                     a, b = idx[floor((num * (num - 1) / 2) * u /divide)]
                     ill[a][b - a - 1].append(t)
- 
+
     logging.info('Set-up innovations structure')
     innov = Innovations(remove=rel, infect=ill)
     logging.info('r: %s' % pformat(innov.remove))
@@ -300,7 +300,7 @@ def main(opt, arguments):
     for i, t0, t1 in zip(count(), infection, removal):
         logging.info((i, t0, t1))
         app.segment(t0, i, t1, i, tag='Infectious')
-        if t1 < T:
+        if t1 <= T:
             app.removal(t1, i, tag='Remove') # This needs fixing I think
 
     logging.info('Display epidemic trajectory')
@@ -366,5 +366,3 @@ if __name__ == '__main__':
 
     logging.info('Finishing')
     sys.exit(0)
-
-

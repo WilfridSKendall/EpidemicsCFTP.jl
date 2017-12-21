@@ -96,14 +96,15 @@ class Display(tk.Tk):
         self.tog = dict((tag, 1) for tag in self.white.sections())
         self.taglist = self.white.sections()
 
-        if not forceoutput and self.output is not None:
+        if not forceoutput:
             frm = tk.Frame(self)
             cbprops = {'font': LABFONT, 'width': 15, 'indicatoron': False}
             # cbprops = {'font': LABFONT, 'width': 15}
             for key in self.taglist:
                 cb = tk.Checkbutton(frm, text=key, command=lambda tag=key: self.toggle(tag=tag), **cbprops)
                 cb.pack(padx=1, side=tk.LEFT)
-            tk.Button(frm, text="Save", command=self.save, font=LABFONT).pack(padx=60, pady=10, side=tk.LEFT)
+            if self.output is not None:
+                tk.Button(frm, text="Save", command=self.save, font=LABFONT).pack(padx=60, pady=10, side=tk.LEFT)
             tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.LEFT)
             frm.pack()
         self.canvas.pack()
@@ -296,12 +297,12 @@ def main(opt, arguments):
         removal.extend([t] * (I - x[1]))
         I = x[1]
     if len(removal) < len(infection):
-        removal.extend([T] * (len(infection) - len(removal)))
+        removal.extend([T + 0.001] * (len(infection) - len(removal))) # Not quite right!
     for i, t0, t1 in zip(count(), infection, removal):
         logging.info((i, t0, t1))
         app.segment(t0, i, t1, i, tag='Infectious')
         if t1 <= T:
-            app.removal(t1, i, tag='Remove') # This needs fixing I think
+            app.removal(t1, i, tag='Remove') 
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0

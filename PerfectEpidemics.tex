@@ -959,11 +959,11 @@ At this stage we thus have sets of potential and conditioned removals, satisfyin
 	
 	Finally, we turn our attention to the ordering in \eqref{eq:trajectory_order}. Note from \eqref{eq:epidemic} that \(\phi_m(t)=0\) for all \(t\) when \(m\le I_0\) (the number of initially infected individuals). So suppose for the sake of induction that \(\phi^\uparrow_{m-1}(\tau+2T) \le \phi^\downarrow_{m-1}(\tau+2T)\) for some \(m> 1\). Note from \eqref{eq:epidemic} that an epidemic \(\Epidemic(\tau+2T)\) will see the infection reach time-line \(m\) at the time of the first potential infection belonging to \(\Infections_{m-1}(\tau+2T)\) that occurs after both \(\phi_{m-1}(\tau+2T)\) and \(\xi_m(\tau+2T)\):
 	\begin{align*}
-		\phi_m(\tau+2T) \quad=&\quad \min\left\{\Infections_{m-1}(\tau+2T)\cap[\phi_{m-1}(\tau+2T)\wedge \xi_m(\tau+2T),\rho_{m-1})\right\} 
+		\phi_m(\tau+2T) \quad=&\quad \min\left\{\Infections_{m-1}(\tau+2T)\cap[\phi_{m-1}(\tau+2T)\vee \xi_m(\tau+2T),\rho_{m-1})\right\} \\
+		 \quad=&\quad \min\left\{\Lambda^I_{m-1}(\tau+2T)\cap[\phi_{m-1}(\tau+2T)\vee \xi_m(\tau+2T),\rho_{m-1})\right\} \wedge \eta_m(\tau+2T)\,,
 	\end{align*}
-	
-
-	Therefore \eqref{eq:trajectory_order} holds at algorithmic time \(\tau+2T\), and our proof is complete.
+	\NB[SBC]{Might be neater to make this expression for $\phi_m$ (the one not involving $\Infections$ an earlier result? In effect, I think this means that we don't need to keep track of the set $\Infections$ as we move from $\tau$ to $\tau+2T$.}
+	thanks to Lemma~\ref{lem:infect4} and the fact that \(\eta_m(\tau+2T) \ge \phi_{m-1}(\tau+2T)\vee \xi_m(\tau+2T)\) (see Corollary~\ref{cor:update_no-fly_direct}). Thus \(\phi_m(\tau+2T)\) is an increasing function of \(\phi_{m-1}(\tau+2T)\), \(\xi_m(\tau+2T)\) and \(\eta_m(\tau+2T)\). We have just established the orderings in \eqref{eq:no-fly_order} and \eqref{eq:last_order} at time \(\tau+2T\), and so our inductive assumption shows that \(\phi^\uparrow_m(\tau+2T) \le \phi^\downarrow_m(\tau+2T)\) for all time-lines \(m\), as required. Therefore \eqref{eq:trajectory_order} holds at algorithmic time \(\tau+2T\), and our proof is complete.
 \end{proof}
 
 

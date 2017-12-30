@@ -98,15 +98,34 @@ class Display(tk.Tk):
 
         if not forceoutput:
             frm = tk.Frame(self)
+            frm1 = tk.Frame(frm)
+            frm11 = tk.Frame(frm1)
+            frm12 = tk.Frame(frm1)
             cbprops = {'font': LABFONT, 'width': 15, 'indicatoron': False}
-            # cbprops = {'font': LABFONT, 'width': 15}
             for key in self.taglist:
-                cb = tk.Checkbutton(frm, text=key, command=lambda tag=key: self.toggle(tag=tag), **cbprops)
+                pnt = self.color[key]
+                if not 'type' in pnt.keys() or pnt['type'] == 'specified':
+                    f = frm11
+                else:
+                    f = frm12
+                if 'type' in pnt.keys():
+                    del pnt['type']
+                if 'mark' in pnt.keys():
+                    txt = pnt['mark']
+                    del pnt['mark']
+                else:
+                    txt = key
+                cb = tk.Checkbutton(f, text=txt,
+                    command=lambda tag=key: self.toggle(tag=tag), **cbprops)
+                    
                 cb.pack(padx=1, side=tk.LEFT)
+            tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.RIGHT, fill=tk.Y)
             if self.output is not None:
-                tk.Button(frm, text="Save", command=self.save, font=LABFONT).pack(padx=60, pady=10, side=tk.LEFT)
-            tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.LEFT)
-            frm.pack()
+                tk.Button(frm, text="Save", command=self.save, font=LABFONT, fg="dark green").pack(padx=60, side=tk.RIGHT, fill=tk.Y)
+            frm11.pack(side=tk.TOP, fill=tk.X)
+            frm12.pack(side=tk.TOP, fill=tk.X)
+            frm1.pack(side=tk.LEFT, fill=tk.X)
+            frm.pack(fill=tk.X)
         self.canvas.pack()
 
         self.xmax, self.ymax = T, pop - 1

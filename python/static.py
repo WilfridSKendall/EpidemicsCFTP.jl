@@ -5,8 +5,8 @@ A python module with logging
 Metadata:
 
   - Author:    W.S.Kendall
-  - Copyright: opensource (c) W.S.Kendall 2014
-  - Date:      2014-04-26, revised 2017-12-12
+  - Copyright: opensource (c) W.S.Kendall 2014, 2018
+  - Date:      2014-04-26, revised 2017-12-12, 2018-01-01
   - URL:       http://www.wilfridkendall.co.uk
   - Generator: '/home/wilfrid/lib/python/generate.py' version 1.27.
 
@@ -71,7 +71,10 @@ class Error(Exception):
     """
     Generic exception to be raised by this module.
     """
-
+class BadKeyError(Error):
+    """
+    Key does not have known prefix.
+    """
 
 # \section{Classes}
 class Display(tk.Tk):
@@ -87,41 +90,42 @@ class Display(tk.Tk):
         self.canvas = tk.Canvas(self, background='white', height=720, width=1024)
         self.canvas.pack()
 
+        # Read styles for plotting.
         self.color = configparser.ConfigParser()
         self.color.read('static.cfg')
 
-        self.white = configparser.ConfigParser()
-        self.white.read('white.cfg')
-
-        self.tog = dict((tag, 1) for tag in self.white.sections())
-        self.taglist = self.white.sections()
+        # Dictionary to store state of plot elements.
+        self.tog = dict((key, 1) for key in self.color.sections() if key.startswith('1'))
 
         if not forceoutput:
+            logging.info('Create overall frame to hold all buttons')
             frm = tk.Frame(self)
-            frm1 = tk.Frame(frm)
-            frm11 = tk.Frame(frm1)
-            frm12 = tk.Frame(frm1)
-            cbprops = {'font': LABFONT, 'width': 15, 'indicatoron': False}
-            for key in self.taglist:
-                pnt = self.color[key]
-                if not 'type' in pnt.keys() or pnt['type'] == 'specified':
-                    f = frm11
-                else:
-                    f = frm12
-                if 'type' in pnt.keys():
-                    del pnt['type']
-                if 'mark' in pnt.keys():
-                    txt = pnt['mark']
-                    del pnt['mark']
-                else:
-                    txt = key
-                cb = tk.Checkbutton(f, text=txt,
-                    command=lambda tag=key: self.toggle(tag=tag), **cbprops)
-                    
-                cb.pack(padx=1, side=tk.LEFT)
+            # Create 'QUIT' and (if required) 'SAVE' buttons.
             tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.RIGHT, fill=tk.Y)
             if self.output is not None:
                 tk.Button(frm, text="Save", command=self.save, font=LABFONT, fg="dark green").pack(padx=60, side=tk.RIGHT, fill=tk.Y)
+            logging.info('Create frames to hold buttons to control plot elements.')
+            frm1 = tk.Frame(frm)
+            frm11 = tk.Frame(frm1)
+            frm12 = tk.Frame(frm1)
+            # Generic style choices (can this be moved to 'static.cfg'?)
+            cbprops = {'font': LABFONT, 'width': 15, 'indicatoron': False}
+            # Create buttons to toggle raising / lowering of plot elements.
+            for key in self.color.sections():
+                logging.info('Processing %s' % key)
+                index, tag = key.split('-',1)
+                if index == '0':
+                    continue
+                elif index == '11':
+                    f = frm11
+                elif index == '12':
+                    f = frm12
+                else:
+                    raise BadKeyError(key)
+                logging.info('Creating Checkbutton for %s' % key)
+                cb = tk.Checkbutton(f, text=tag, **cbprops,
+                    command=lambda key=key: self.toggle(key=key))       
+                cb.pack(padx=1, side=tk.LEFT)
             frm11.pack(side=tk.TOP, fill=tk.X)
             frm12.pack(side=tk.TOP, fill=tk.X)
             frm1.pack(side=tk.LEFT, fill=tk.X)
@@ -132,53 +136,47 @@ class Display(tk.Tk):
         self.w, self.h = width, height
         self.setup(T, pop)
 
-    def toggle(self, tag=None):
-        tog = self.tog[tag] = not self.tog[tag]
-        self.paint(tag, self.cfg[tog])
+    def toggle(self, key=None):
+        tog = self.tog[key] = not self.tog[key]
+        # self.paint(key, self.cfg[tog])
         if tog:
-            self.canvas.lift(tag)
+            self.canvas.lift(key)
         else:
-            self.canvas.lower(tag)
+            self.canvas.lower(key)
 
     def setup(self, T, pop):
         "Set up the basic elements of the canvas"
-        logging.info('Display frame')
-        self.segment(0, 0, T, 0, tag='frame')
-        self.segment(0, pop - 1, T, pop - 1, tag='frame')
-        self.segment(0, 0, 0, pop - 1, tag='frame')
-        self.segment(T, 0, T, pop - 1, tag='frame')
+        logging.info('Display base and frame')
+        self.base(0, 0, T, pop, tag='0-base')
+        self.segment(0, 0, T, 0, tag='0-frame')
+        self.segment(0, pop - 1, T, pop - 1, tag='0-frame')
+        self.segment(0, 0, 0, pop - 1, tag='0-frame')
+        self.segment(T, 0, T, pop - 1, tag='0-frame')
 
         logging.info('Display time axis')
         yneg, ydel = -0.01 * pop, -0.005 * pop
-        self.segment(0, yneg, T, yneg, tag='axis')
+        self.segment(0, yneg, T, yneg, tag='0-axis')
         tx = 0
         while tx <= 10 * T:
             tic = 0.1 * tx
             if tx % 5 != 0:
-                self.segment(tic, yneg, tic, yneg + ydel, tag='axis')
+                self.segment(tic, yneg, tic, yneg + ydel, tag='0-axis')
             elif tx % 10 !=0:
-                self.segment(tic, yneg, tic, yneg + 2 * ydel, tag='axis')
+                self.segment(tic, yneg, tic, yneg + 2 * ydel, tag='0-axis')
             else:
-                self.segment(tic, yneg, tic, yneg + 3 * ydel, tag='axis')
-                self.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='text')
+                self.segment(tic, yneg, tic, yneg + 3 * ydel, tag='0-axis')
+                self.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='0-xlabel')
             tx += 1
 
         logging.info('Display time-lines')
         for i in range(pop):
-            self.segment(0, i, T, i, tag='timeline')
+            self.insert_text(- 0.02 * T, i, text=str(i + 1), tag='0-ylabel')
+            self.segment(0, i, T, i, tag='0-timeline')
 
     def style(self):
         "Format the graphical elements of the canvas and read white options"
         for tag in self.color.sections():
-            self.paint(tag, self.color)
-
-        self.cfg = [self.white, self.color]
-        for tag in self.color.sections():
-            self.tog[tag] = 1
-
-    def paint(self, tag, paintpot):
-        "Paint tag using paintpot"
-        self.canvas.itemconfig(tag, **dict(paintpot.items(tag)))
+            self.canvas.itemconfig(tag, **dict(self.color.items(tag)))
 
     def save(self):
         "Save canvas as PNG file."
@@ -196,6 +194,15 @@ class Display(tk.Tk):
         "Produce line segment."
         self.canvas.create_line(self.pixel(x0, y0), \
                          self.pixel(x1, y1), tag=tag)
+
+    def base(self, x0, y0, x1, y1, tag='null'):
+        "Produce graphics base."
+        u0, v0 = self.pixel(x0, y0)
+        u1, v1 = self.pixel(x1, y1)
+        eu = 0.1 * (u1 - u0)
+        ev = 0.1 * (v1 - v0)
+        self.canvas.create_rectangle(u0 - eu, v0 - ev, \
+                                     u1 + eu, v1 + ev, tag=tag)
 
     def disk(self, x, y, r=1, tag='null'):
         "Produce disk."
@@ -300,13 +307,13 @@ def main(opt, arguments):
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                app.disk(t, i + 1, r=6, tag='Infect')
-                app.infection(t, j, i + 1, tag='Infect-P')
+                app.disk(t, i + 1, r=6, tag='11-pI')
+                app.infection(t, j, i + 1, tag='11-pI-lo')
 
     logging.info('Display potential removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            app.removal(t, i, tag='Remove-P')
+            app.removal(t, i, tag='11-pR')
 
     logging.info('Compute infectious portions of time-lines')
     I = traj[0][1][1]
@@ -319,19 +326,19 @@ def main(opt, arguments):
         removal.extend([T + 0.001] * (len(infection) - len(removal))) # Not quite right!
     for i, t0, t1 in zip(count(), infection, removal):
         logging.info((i, t0, t1))
-        app.segment(t0, i, t1, i, tag='Infectious')
+        app.segment(t0, i, t1, i, tag='12-Infectious')
         if t1 <= T:
-            app.removal(t1, i, tag='Remove') 
+            app.removal(t1, i, tag='12-R') 
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
     for t, sir in traj:
         i = sir[1] + sir[2] - 1
-        app.segment(told, iold, t, iold, tag='Epidemic')
-        app.segment(t, iold, t, i, tag='Epidemic')
+        app.segment(told, iold, t, iold, tag='12-Epidemic')
+        app.segment(t, iold, t, i, tag='12-Epidemic')
         told, iold = t, i
     if sir[1] != 0:
-        app.segment(t, i, T, i, tag='Epidemic')
+        app.segment(t, i, T, i, tag='12-Epidemic')
 
     logging.info('Format the graphical elements')
     app.style()

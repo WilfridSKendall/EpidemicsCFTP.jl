@@ -82,8 +82,8 @@ And now we present the results of three further tests.
      >>> rem = [[1.1, 2.0], [1.5], [1.3], [1.2], [1.0]]
      >>> ill = [[[0.1]], 
      ...        [[0.9], [1.8]],
-     ...        [[], [], []], 
-     ...        [[0.5], [0.6], [0.7], [1.2]]]
+     ...        [[], [1.25], []], 
+     ...        [[0.5], [0.6], [0.7, 1.15], [1.2]]]
      >>> iv =Innovations(remove=rem, infect=ill)
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(iv)
@@ -97,11 +97,11 @@ And now we present the results of three further tests.
      Target row
           (Origin)     List of proposed potential infections
        5:   (4)        1.20
-            (3)        0.70
+            (3)        0.70 1.15
             (2)        0.60
             (1)        0.50
        4:   (3)        
-            (2)        
+            (2)        1.25
             (1)        
        3:   (2)        1.80
             (1)        0.90
@@ -113,7 +113,8 @@ And now we present the results of three further tests.
      0.10   (3, 2, 0)
      0.90   (2, 3, 0)
      1.10   (2, 2, 1)
-     1.30   (2, 1, 2)
+     1.25   (1, 3, 1)
+     1.30   (1, 2, 2)
 
 
 ![Yet another example of a free SIR epidemic](image/figure3.png "Free epidemic")

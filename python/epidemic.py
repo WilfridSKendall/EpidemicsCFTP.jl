@@ -52,7 +52,7 @@ class Innovations(object):
     the randomness needed to generate SIR epidemics. At least
     initially, we assume the innovations are provided
     deterministically, so the class requires only sanity
-    checks and a printing method:
+    checks and a printing method::
 
      >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
@@ -62,7 +62,8 @@ class Innovations(object):
      >>> len(innov)
      3
 
-    The innovation list structure is to be interpreted as follows:
+    The innovation list structure is to be interpreted as follows::
+
      >>> print(innov)
      Innovations for SIR epidemic on 3 individuals:
      Row               List of proposed potential removals
@@ -75,20 +76,20 @@ class Innovations(object):
             (1)        0.40 0.90
        2:   (1)        0.20 1.10 1.50
 
-    Note the data format. An #Innovations# instance is effectively
-    a list of two sub-lists. The first sub-list is the #remove#
-    list, containing `n` sub-sub-lists, one for each timeline row,
-    working from row `1` up to row `n` as per algorithm described
+    Note the data format. An 'Innovations' instance is effectively
+    a list of two sub-lists. The first sub-list is the 'remove'
+    list, containing 'n' sub-sub-lists, one for each timeline row,
+    working from row '1' up to row 'n' as per algorithm described
     in the paper. Each such sub-sub-list is an ordered list of potential
     removal times, the mark for each of these removals being implied by
     the row corresponding to the sub-sub-list.
 
-    The second sub-list is the `infect` sub-list, containing `n-1`
+    The second sub-list is the 'infect' sub-list, containing 'n-1'
     sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
-    row starting at row `2` and working up to row `n`, and contains
-    sub-sub-sub-lists of potential infection times, one sub-sub-sub-list
-    corresponding to each row _below_ the timeline row corresponding to
-    the relevant sub-sub-list.
+    row starting at row '2' and working up to row 'n', and contains
+    sub-sub-sub-lists of infection times of infections incoming to that
+    row, one sub-sub-sub-list corresponding to each row *at* or 
+    *below* the timeline row corresponding to the relevant sub-sub-list.
     """
     def __init__(self, remove=None, infect=None):
         self.remove, self.infect = remove, infect
@@ -96,10 +97,11 @@ class Innovations(object):
 
         # Sanity checks. We require:
         #
-        # 1. `self.infect` to be made up of one list of lists of potential infections
+        # 1. #self.infect# to be made up of one list of lists of potential infections
         #    for each row except for the first row,
-        # 2. and each sub-list in `self.infect` to be made up of one list of potential
-        #    infections for each sub-list located above current sub-list.
+        #
+        # 2. and each sub-list in #self.infect# to be made up of one list of potential
+        #    infections for each sub-list located at or below current sub-list.
         if len(self.infect) != len(self) - 1:
             raise BadDataError("infection and removal data structure lengths do not agree")
         for i, llst in enumerate(self.infect):
@@ -129,7 +131,8 @@ class Innovations(object):
 
 class FreeEpidemic(object):
     """
-    This class computes a (free) SIR epidemic, given an `Innovation` instance:
+    This class computes a (free) SIR epidemic, given an 
+    'Innovation' instance::
 
      >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
@@ -145,7 +148,7 @@ class FreeEpidemic(object):
 
     Now we calculate the epidemic evolution as a list of changes, each change
     summarised by time of change, and then a tuple giving numbers of Susceptibles,
-    Infectives, and Removals.
+    Infectives, and Removals::
 
      >>> pprint(epidemic())
      [(0, (2, 1, 0)),
@@ -186,8 +189,6 @@ class FreeEpidemic(object):
         rem = zip(chain(*self.innov.remove), chain(*res))
 
         # List of lists of pairs of row levels, one pair for each infection time.
-        # ins = chain(*[chain(*[[(i + 2, j + 1)]*len(y) for j, y in enumerate(x)]) \
-        #                                    for i, x, in enumerate(infect)])
         ins = [[[(i + 2, j + 1)]*len(y) for j, y in enumerate(x)] for i, x, in infect]
         # List of lists of incoming infections for each row.
         in1 = chain(*[chain(*x) for x in self.innov.infect])
@@ -211,10 +212,11 @@ class FreeEpidemic(object):
             if len(incident) == 3:
                 # The incident is a potential infection.
                 ttt, i, j = incident
-                # The infection terminates at row `i` and starts at row `j`.
+                # The infection terminates at row 'i'
+                # and starts at row 'j'.
                 if i == infe + remo + 1 and remo < j and j <= infe + remo:
-                    # Row `i` is lowest susceptible, while row `j`
-                    # is infected.
+                    # Row 'i' is lowest susceptible, 
+                    # while row 'j' is infected.
                     logging.info(legend, ttt, remo, i, infe+remo, j)
                     infe += 1
                     susc -= 1

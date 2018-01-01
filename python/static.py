@@ -62,10 +62,6 @@ try:
 except ImportError:
     import Tkinter as tk
 
-
-LABFONT = ("Times", 12, "bold")
-
-
 #\section{Exceptions}
 class Error(Exception):
     """
@@ -94,22 +90,22 @@ class Display(tk.Tk):
         self.color = configparser.ConfigParser()
         self.color.read('static.cfg')
 
+        # Button style.
+        bprops = self.color['0-button']        
         # Dictionary to store state of plot elements.
         self.tog = dict((key, 1) for key in self.color.sections() if key.startswith('1'))
 
         if not forceoutput:
             logging.info('Create overall frame to hold all buttons')
             frm = tk.Frame(self)
-            # Create 'QUIT' and (if required) 'SAVE' buttons.
-            tk.Button(frm, text="QUIT", command=self.destroy, font=LABFONT, fg="red").pack(side=tk.RIGHT, fill=tk.Y)
+            # Create #QUIT# and (if required) #SAVE# buttons.
+            tk.Button(frm, text="QUIT", command=self.destroy, **bprops, fg="red").pack(side=tk.RIGHT, fill=tk.Y)
             if self.output is not None:
-                tk.Button(frm, text="Save", command=self.save, font=LABFONT, fg="dark green").pack(padx=60, side=tk.RIGHT, fill=tk.Y)
+                tk.Button(frm, text="Save", command=self.save, **bprops, fg="dark green").pack(padx=60, side=tk.RIGHT, fill=tk.Y)
             logging.info('Create frames to hold buttons to control plot elements.')
             frm1 = tk.Frame(frm)
             frm11 = tk.Frame(frm1)
             frm12 = tk.Frame(frm1)
-            # Generic style choices (can this be moved to 'static.cfg'?)
-            cbprops = {'font': LABFONT, 'width': 15, 'indicatoron': False}
             # Create buttons to toggle raising / lowering of plot elements.
             for key in self.color.sections():
                 logging.info('Processing %s' % key)
@@ -123,8 +119,8 @@ class Display(tk.Tk):
                 else:
                     raise BadKeyError(key)
                 logging.info('Creating Checkbutton for %s' % key)
-                cb = tk.Checkbutton(f, text=tag, **cbprops,
-                    command=lambda key=key: self.toggle(key=key))       
+                cb = tk.Checkbutton(f, text=tag, **bprops,
+                    command=lambda key=key: self.toggle(key=key), indicatoron=False)       
                 cb.pack(padx=1, side=tk.LEFT)
             frm11.pack(side=tk.TOP, fill=tk.X)
             frm12.pack(side=tk.TOP, fill=tk.X)
@@ -138,7 +134,6 @@ class Display(tk.Tk):
 
     def toggle(self, key=None):
         tog = self.tog[key] = not self.tog[key]
-        # self.paint(key, self.cfg[tog])
         if tog:
             self.canvas.lift(key)
         else:
@@ -167,11 +162,14 @@ class Display(tk.Tk):
                 self.segment(tic, yneg, tic, yneg + 3 * ydel, tag='0-axis')
                 self.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='0-xlabel')
             tx += 1
+        self.insert_text(0.25 * T, 5 * yneg, text=str("Elapsed time"), tag='0-xlabel')
 
         logging.info('Display time-lines')
+        xneg = - 0.02 * T
         for i in range(pop):
-            self.insert_text(- 0.02 * T, i, text=str(i + 1), tag='0-ylabel')
+            self.insert_text(xneg, i, text=str(i + 1), tag='0-ylabel')
             self.segment(0, i, T, i, tag='0-timeline')
+        self.insert_text(3 * xneg, 0.25 * pop, text=str("Timelines"), angle=90, tag='0-xlabel')
 
     def style(self):
         "Format the graphical elements of the canvas and read white options"
@@ -217,10 +215,10 @@ class Display(tk.Tk):
         "Indicate removal using 'error' bitmap."
         self.canvas.create_bitmap(self.pixel(x, y), bitmap='error', tag=tag)
 
-    def insert_text(self, x, y, text='', tag='null'):
+    def insert_text(self, x, y, text='', angle=0, tag='null'):
         "Insert text at specified position."
         # Need to specify font properly if this is to be printed to a file.
-        self.canvas.create_text(self.pixel(x, y), text=text, tag=tag)
+        self.canvas.create_text(self.pixel(x, y), text=text, angle=angle, tag=tag)
 
 
 # \section{Functions}
@@ -340,7 +338,7 @@ def main(opt, arguments):
     if sir[1] != 0:
         app.segment(t, i, T, i, tag='12-Epidemic')
 
-    logging.info('Format the graphical elements')
+    # logging.info('Format the graphical elements')
     app.style()
 
     logging.info('Tkinter main loop')

@@ -6,7 +6,7 @@
 
 `11-pI`: locates potential infection (as a yellow circle with orange boundary on row that would be infected).
 
-`11-pI-lo`: potential infection (wide lightgreen arrow, running from putative infecting row to row that would be infected).
+`11-pI-lo`: potential infection (thin pale green arrow, running from putative infecting row to row that would be infected).
 
 For this infection actually to happen, the putative infecting row must be infected at the time of the
 infection, and the row to be infected must be the lowest row susceptible at time of infection.

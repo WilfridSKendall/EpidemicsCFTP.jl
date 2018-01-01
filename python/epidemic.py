@@ -6,8 +6,8 @@ of innovation incidents to allow simulation of an SIR epidemic.
 Metadata:
 
   - Author:    W.S.Kendall
-  - Copyright: opensource (c) W.S.Kendall 2014
-  - Date:      2014-04-26, revised 2017-12-12
+  - Copyright: opensource (c) W.S.Kendall 2014, 2018
+  - Date:      2014-04-26, revised 2018-01-01
   - URL:       http://www.wilfridkendall.co.uk
   - Generator: '/home/wilfrid/lib/python/generate.py' version 1.27.
 

@@ -81,7 +81,7 @@ Other examples can be found in `Makefile`.
 
 ![Screenshot of a version of `static.py`](image/static.jpg "static.jpg")
 
-Depress one of the group of six buttons at the bottom left of the window
+Depress one of the buttons in the two rows at the bottom left of the window
 in order to toggle disappearance (and then appearance) of the corresponding
 elements in the image. This is useful for checking the image against the
 commandline specification, as well as clarifying the elements of more complicated images.

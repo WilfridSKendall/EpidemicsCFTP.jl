@@ -151,12 +151,15 @@ class FreeEpidemic(object):
     Infectives, and Removals::
 
      >>> pprint(epidemic())
-     [(0, (2, 1, 0)),
-      (0.2, (1, 2, 0)),
-      (0.4, (0, 3, 0)),
-      (0.5, (0, 2, 1)),
-      (1.3, (0, 1, 2)),
-      (2, (0, 0, 3))]
+     ([(0, (2, 1, 0)),
+       (0.2, (1, 2, 0)),
+       (0.4, (0, 3, 0)),
+       (0.5, (0, 2, 1)),
+       (1.3, (0, 1, 2)),
+       (2, (0, 0, 3))],
+      [0, 0.2, 0.4],
+      [0.5, 1.3, 2])
+
      >>> print(epidemic(pretty=True))
      Time    S, I, R
      0.00   (2, 1, 0)
@@ -165,6 +168,10 @@ class FreeEpidemic(object):
      0.50   (0, 2, 1)
      1.30   (0, 1, 2)
      2.00   (0, 0, 3)
+     Infections at:
+     [0, 0.2, 0.4]
+     Removals at:
+     [0.5, 1.3, 2]
 
     """
     def __init__(self, innovations=None):
@@ -199,6 +206,19 @@ class FreeEpidemic(object):
         # Return list of incidents sorted by time.
         return sorted(list(chain(rem, inf)))
 
+    def _infectious_periods(self, trajectory):
+        """
+        Returns two lists of start-times and (if known) end-times of infectious periods.
+        """
+        logging.info("Compute initial number of infectives in trajectory")
+        I = trajectory[0][1][1]
+        infections, removals = [0] * I, []
+        for t, x in trajectory[1:]:
+            infections.extend([t] * (x[1] - I))
+            removals.extend([t] * (I - x[1]))
+            I = x[1]
+        return infections, removals
+
     def __call__(self, infe=1, pretty=False):
         """
         Returns a sequence of changes of state of an SIR epidemic driven by
@@ -231,12 +251,15 @@ class FreeEpidemic(object):
                     infe -= 1
                     remo += 1
                     trajectory.append((ttt, (susc, infe, remo)))
+        infections, removals = self._infectious_periods(trajectory)
         if pretty:
             summary = ["Time    S, I, R"]
             summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in trajectory])
+            summary.append("Infections at:\n%s" % str(infections))
+            summary.append("Removals at:\n%s" % str(removals))
             return '\n'.join(summary)
         else:
-            return trajectory
+            return trajectory, infections, removals
 
 
 # \section{Functions}

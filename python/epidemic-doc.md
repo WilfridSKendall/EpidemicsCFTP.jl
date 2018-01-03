@@ -35,6 +35,11 @@ Note the form of the `Innovations` structure:
      0.50   (0, 2, 1)
      1.30   (0, 1, 2)
      2.00   (0, 0, 3)
+     Infections at:
+     [0, 0.2, 0.4]
+     Removals at:
+     [0.5, 1.3, 2]
+
 
 ![A graphical illustration of the resulting free SIR epidemic](image/figure1.png "Free epidemic")
 
@@ -76,6 +81,11 @@ And now we present the results of three further tests.
      Time    S, I, R
      0.00   (4, 1, 0)
      1.10   (4, 0, 1)
+     Infections at:
+     [0]
+     Removals at:
+     [1.1]
+
 
 ![Another example of a free SIR epidemic](image/figure2.png "Free epidemic")
 
@@ -115,6 +125,10 @@ And now we present the results of three further tests.
      1.10   (2, 2, 1)
      1.25   (1, 3, 1)
      1.30   (1, 2, 2)
+     Infections at:
+     [0, 0.1, 0.9, 1.25]
+     Removals at:
+     [1.1, 1.3]
 
 
 ![Yet another example of a free SIR epidemic](image/figure3.png "Free epidemic")

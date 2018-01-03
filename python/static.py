@@ -52,7 +52,7 @@ from pprint import pformat # only needed when logging!
 from random import expovariate, random, seed
 
 from PIL import Image
-from itertools import combinations, count, chain
+from itertools import combinations, count, chain, zip_longest
 
 from epidemic import Innovations, FreeEpidemic
 
@@ -119,8 +119,8 @@ class Display(tk.Tk):
                 else:
                     raise BadKeyError(key)
                 logging.info('Creating Checkbutton for %s' % key)
-                cb = tk.Checkbutton(f, text=tag, **bprops,
-                    command=lambda key=key: self.toggle(key=key), indicatoron=False)       
+                cb = tk.Checkbutton(f, text=tag, **bprops, indicatoron=False,
+                    command=lambda key=key: self.toggle(key=key))       
                 cb.pack(padx=1, side=tk.LEFT)
             frm11.pack(side=tk.TOP, fill=tk.X)
             frm12.pack(side=tk.TOP, fill=tk.X)
@@ -255,32 +255,33 @@ def main(opt, arguments):
         rel = literal_eval(opt.remove)
         ill = literal_eval(opt.infect)
         T = max(max(chain(*rel)), max(chain(*[chain(*x) for x in ill])))
+        pop = len(rel)
     else:
         logging.info('Create data using rng seeded by %s', int(opt.seed))
         seed(int(opt.seed))
-        num = int(opt.n)
+        pop = int(opt.n)
         T = float(opt.T)
         alfa = float(opt.alfa)
         beta = float(opt.beta)
         if opt.consistent is None:
             # Note that the simulations here do not couple well over varying #T#.
             # This could be arranged if we used a marked point process.
-            rel = [poisson(beta * T, 0, T) for i in range(num)]
-            ill = [[poisson(alfa * T, 0, T) for j in range(i + 1)] for i in range(num - 1)]
+            rel = [poisson(beta * T, 0, T) for i in range(pop)]
+            ill = [[poisson(alfa * (pop - i) * T, 0, T) for j in range(i)] for i in range(1, pop)]
         else:
             # WARNING: This code as yet untested.
             logging.info('Create consistent data using rng')
-            gam = (num * (num - 1) / 2) * alfa + num * beta
-            divide = (num * (num - 1) / 2) * alfa / gam
-            rel = [[] for dummy in range(num)]
-            ill = [[[] for dummy in range(r)] for r in range(num - 1, 0, -1)]
-            idx = list(combinations(range(num),2))
+            gam = (pop * (pop - 1) / 2) * alfa + pop * beta
+            divide = (pop * (pop - 1) / 2) * alfa / gam
+            rel = [[] for dummy in range(pop)]
+            ill = [[[] for dummy in range(r)] for r in range(pop - 1, 0, -1)]
+            idx = list(combinations(range(pop),2))
             for t, u in marked_poisson(gam, 0, T):
                 if u > divide:
-                    ix = floor(num * (u - divide) / (1 - divide))
+                    ix = floor(pop * (u - divide) / (1 - divide))
                     rel[ix].append(t)
                 else:
-                    a, b = idx[floor((num * (num - 1) / 2) * u /divide)]
+                    a, b = idx[floor((pop * (pop - 1) / 2) * u /divide)]
                     ill[a][b - a - 1].append(t)
 
     logging.info('Set-up innovations structure')
@@ -288,45 +289,49 @@ def main(opt, arguments):
     logging.info('r: %s' % pformat(innov.remove))
     logging.info('i: %s' % pformat(innov.infect))
 
-    logging.info('Compute epidemic')
-    epidemic = FreeEpidemic(innovations=innov)
-    traj = epidemic()
-    logging.info('t: %s' % str(traj))
-
     logging.info('Set-up Tk root and canvas')
-    pop = len(epidemic)
     app = Display(T, pop, background='white', height=720, width=1024, \
                 output=opt.output, forceoutput=opt.forceoutput)
     app.title(opt.title)
     logging.info('Display Canvas')
     c = app.canvas
 
-    logging.info('Display potential infections')
+    logging.info('Display putative infections')
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                app.disk(t, i + 1, r=6, tag='11-pI')
                 app.infection(t, j, i + 1, tag='11-pI-lo')
 
-    logging.info('Display potential removals')
+    logging.info('Display putative removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
             app.removal(t, i, tag='11-pR')
 
-    logging.info('Compute infectious portions of time-lines')
-    I = traj[0][1][1]
-    infection, removal = [0] * I, []
-    for t, x in traj[1:]:
-        infection.extend([t] * (x[1] - I))
-        removal.extend([t] * (I - x[1]))
-        I = x[1]
-    if len(removal) < len(infection):
-        removal.extend([T + 0.001] * (len(infection) - len(removal))) # Not quite right!
-    for i, t0, t1 in zip(count(), infection, removal):
-        logging.info((i, t0, t1))
-        app.segment(t0, i, t1, i, tag='12-Infectious')
-        if t1 <= T:
+    logging.info('Compute and display epidemic')
+    epidemic = FreeEpidemic(innovations=innov)
+    assert(pop == len(epidemic))
+    traj, infections, removals = epidemic()
+    logging.info('t: %s' % str(traj))
+
+    logging.info('Display latent infections')
+    for i, lll in enumerate(innov.infect):
+        for j, ll in enumerate(lll):
+            for t in ll:
+                if j >= len(removals) or t <= removals[j]:
+                    app.disk(t, i + 1, r=6, tag='12-lI')
+                    app.infection(t, i, i + 1, tag='12-lIc')
+
+    logging.info('Display infectious portions of time-lines')
+    for i, (t0, t1) in zip(count(), zip_longest(infections, removals, fillvalue='-')):
+        logging.info((i, (t0, t1)))
+        try:
+            app.segment(t0, i, t1, i, tag='12-Infectious')
             app.removal(t1, i, tag='12-R') 
+        except TypeError:
+            app.segment(t0, i, T, i, tag='12-Infectious')
+    logging.info('Also display activated infections')
+    for i, t in zip(count(), infections[1:]):
+        app.infection(t, i, i + 1, tag='12-aI')
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0

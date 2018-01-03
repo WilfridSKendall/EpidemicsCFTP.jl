@@ -46,6 +46,10 @@ Note the form of the `Innovations` structure:
      0.50   (0, 2, 1)
      1.30   (0, 1, 2)
      2.00   (0, 0, 3)
+     Infections at:
+     [0, 0.2, 0.4]
+     Removals at:
+     [0.5, 1.3, 2]
 
 ![A graphical illustration of the resulting free SIR epidemic](image/figure1.png "Free epidemic")
 
@@ -88,4 +92,4 @@ commandline specification, as well as clarifying the elements of more complicate
 Note that reinstated elements are placed at the top layer of the image; this means that
 a double-click will make the relevant elements more prominent.
 
-The colour coding in the screenshot is described in `static.cfg`:
+The colour coding in the screenshot is described in `static.cfg` as follows:

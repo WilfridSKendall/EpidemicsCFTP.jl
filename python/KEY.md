@@ -4,9 +4,19 @@
 
 
 
-`11-pI`: locates potential infection (as a yellow circle with orange boundary on row that would be infected).
+`11-pI-lo`: putative infection circumstances (thin pale green arrow, running from putative infecting row to row that would be infected).
 
-`11-pI-lo`: potential infection (thin pale green arrow, running from putative infecting row to row that would be infected).
+For this infection actually to happen, the putative infecting row must be infected at the time of the
+infection, and the row to be infected must be the lowest row susceptible at time of infection.
+
+`12-lI`: locates latent infection (as a yellow circle with orange boundary on row that would be infected).
+
+`12-lIc`: latent infection circumstances (thin dark green arrow, running from latent previously highest infected to new latent highest infected).
+
+For this infection actually to happen, the putative infecting row must be infected at the time of the
+infection, and the row to be infected must be the lowest row susceptible at time of infection.
+
+`12-aI`: activated infection (thick dark green arrow, running from previously highest infected to new highest infected).
 
 For this infection actually to happen, the putative infecting row must be infected at the time of the
 infection, and the row to be infected must be the lowest row susceptible at time of infection.
@@ -15,7 +25,7 @@ infection, and the row to be infected must be the lowest row susceptible at time
 
 `12-Epidemic`: traces most recently infected individual that is currently infected (as a thin red line).
 
-`11-pR`: potential removal (blue no-way sign).
+`11-pR`: putative removal (blue no-way sign).
 
 For this removal actually to take effect, the row on which it sits must be infected at the relevant time.
 The lowest row currently infected will then suffer a removal.

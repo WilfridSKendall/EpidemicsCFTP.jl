@@ -10,7 +10,7 @@ Still to be done
  - More general compartment models?
 
 ### Coding:
- - Colour-code potential infections according to whether or not they are active.
+ - **DONE:** Colour-code potential infections according to whether or not they are active.
  - Introduce conditioned observed removals(!).
  - Compute Mordor, no-fly zone, and last feasible infections.
  - Produce a dynamic version, which updates according to our algorithm using a new `Innovations` instance.

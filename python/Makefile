@@ -25,7 +25,7 @@ f3: ; python3 static.py --title="Figure 3: an example of a Free SIR Epidemic" \
 f4: ; python3 static.py --title="Figure 4: a random example of a Free SIR Epidemic" \
 		--logging=INFO \
 		--output=figure4a.png \
-		--seed=1 --T=8 --beta=0.025 --n=10
+		--seed=1 --T=4 --beta=0.2 --n=10
 
 
 figure1: image/figure1.png

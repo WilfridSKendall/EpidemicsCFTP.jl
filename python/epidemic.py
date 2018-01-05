@@ -158,7 +158,8 @@ class FreeEpidemic(object):
        (1.3, (0, 1, 2)),
        (2, (0, 0, 3))],
       [0, 0.2, 0.4],
-      [0.5, 1.3, 2])
+      [0.5, 1.3, 2],
+      [0, 0, 0])
 
      >>> print(epidemic(pretty=True))
      Time    S, I, R
@@ -198,13 +199,15 @@ class FreeEpidemic(object):
         # List of lists of pairs of row levels, one pair for each infection time.
         ins = [[[(i + 2, j + 1)]*len(y) for j, y in enumerate(x)] for i, x, in infect]
         # List of lists of incoming infections for each row.
-        in1 = chain(*[chain(*x) for x in self.innov.infect])
-        in2 = chain(*[chain(*x) for x in ins])
+        in1 = [x for ll in self.innov.infect for y in ll for x in y]
+        in2 = [x for ll in ins for y in ll for x in y]
+        logging.info(in1)
+        logging.info(in2)
         # List of (infection time, outgoing row, incoming row)
         inf = [(x, y[0], y[1]) for x, y in  zip(in1, in2)]
 
         # Return list of incidents sorted by time.
-        return sorted(list(chain(rem, inf)))
+        return sorted(list(chain(inf, rem)))
 
     def _infectious_periods(self, trajectory):
         """

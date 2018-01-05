@@ -348,19 +348,20 @@ def main(opt, arguments):
         if t0 > 0:
             app.segment(0, i, t0, i, tag='12-Mordor')
 
-    # logging.info('Display no-fly zone')
-    # current = 0
-    # for i, lll in reversed(list(enumerate(innov.infect))[:-1]):
-    #     nofly = max(current, mordor[i + 1])
-    #     current = 0
-    #     for ll in lll:
-    #         try:
-    #             t = max([s for s in ll if s <= nofly])
-    #             current = max(current, t)
-    #         except ValueError:
-    #             pass
-    #     if current > mordor[i]:
-    #         app.segment(mordor[i], i, current, i, tag='12-nofly')
+    logging.info('Display no-fly zone')
+    nofly = mordor[pop - 1]
+    for i, lll in reversed(list(enumerate(innov.infect))):
+        # Need to do better pruning of infections1
+        ill = [t for j, ll in enumerate(lll) for t in ll \
+            if j >= len(removals) or t <= removals[j]]
+        try:
+            nofly = max([t for t in ill if t < nofly])
+        except ValueError:
+            nofly = 0
+        logging.info("%d: %s versus %s", i + 1, nofly, mordor[i])
+        if nofly > mordor[i]:
+            app.segment(mordor[i], i, nofly, i, tag='12-nofly')
+        nofly = max(nofly, mordor[i])
 
     logging.info('Format the graphical elements')
     app.style()

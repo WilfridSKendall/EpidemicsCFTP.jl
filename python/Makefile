@@ -16,12 +16,12 @@ f2: ; python3 static.py --title="Figure 2: an example of a Free SIR Epidemic" \
 		--logging=INFO \
 		--output=figure2a.png  \
 		--remove="[[1.1, 2.0], [0.3], [0.2], [0.1], [1.0]]" \
-		--infect="[[[1.9]], [[0.9], [1.8]], [[], [], []], [[0.5], [0.6], [0.7], [1.2]]]"
+		--infect="[[[1.9]], [[0.9], [0.1, 1.8]], [[], [], [0.3]], [[0.5], [0.6], [0.7], [1.2]]]"
 f3: ; python3 static.py --title="Figure 3: an example of a Free SIR Epidemic" \
 		--logging=INFO \
 		--output=figure3a.png  \
 		--remove="[[1.1, 2.0], [1.5], [1.3], [1.2], [1.0]]" \
-		--infect="[[[0.1]],  [[0.9], [1.8]], [[], [1.25], []], [[0.5], [0.6, 1.4], [0.7, 1.15], [1.2]]]"
+		--infect="[[[0.1]],  [[0.9], [0.1, 1.8]], [[], [1.25], [0.3]], [[0.5], [0.6, 1.4], [0.7, 1.15], [1.2]]]"
 f4: ; python3 static.py --title="Figure 4: a random example of a Free SIR Epidemic" \
 		--logging=INFO \
 		--output=figure4a.png \
@@ -53,13 +53,13 @@ image/figure2.png: $(graphicsprogs) epidemic.py Makefile
 	-python3 static.py --title="Figure 2: an example of a Free SIR Epidemic" \
 		--output=$@ --forceoutput  \
 		--remove="[[1.1, 2.0], [0.3], [0.2], [0.1], [1.0]]" \
-		--infect="[[[1.9]], [[0.9], [1.8]], [[], [], []], [[0.5], [0.6], [0.7], [1.2]]]"
+		--infect="[[[1.9]], [[0.9], [0.1, 1.8]], [[], [], [0.3]], [[0.5], [0.6], [0.7], [1.2]]]"
 
 image/figure3.png: $(graphicsprogs) epidemic.py Makefile
 	-python3 static.py --title="Figure 3: an example of a Free SIR Epidemic" \
 		--output=$@ --forceoutput  \
 		--remove="[[1.1, 2.0], [1.5], [1.3], [1.2], [1.0]]" \
-		--infect="[[[0.1]],  [[0.9], [1.8]], [[], [1.25], []], [[0.5], [0.6, 1,4], [0.7, 1.15], [1.2]]]"
+		--infect="[[[0.1]],  [[0.9], [0.1, 1.8]], [[], [1.25], [0.3]], [[0.5], [0.6, 1,4], [0.7, 1.15], [1.2]]]"
 
 image/randomfigure.png: $(graphicsprogs) epidemic.py Makefile
 	-python3 static.py --title="Figure 4: a random example of a Free SIR Epidemic" \

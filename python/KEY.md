@@ -36,3 +36,7 @@ This sits on the lowest row currently infected, which then suffers a removal;
 it sits below the corresponding potential removal. Note that sometimes potential and
 implemented removals coincide, in which case in the initial configuration of `static.py`
 only the implemented removal is visible.
+
+`12-Mordor`: to avoid premature removal, these black portions of rows should not be infected.
+
+`12-nofly`: to avoid premature removal, these grey portions of rows should not be infected.

@@ -310,7 +310,7 @@ def main(opt, arguments):
     logging.info('Compute and display epidemic')
     epidemic = FreeEpidemic(innovations=innov)
     assert(pop == len(epidemic))
-    traj, infections, removals = epidemic()
+    traj, infections, removals, mordor = epidemic()
     logging.info('t: %s' % str(traj))
 
     logging.info('Display latent infections')
@@ -343,7 +343,26 @@ def main(opt, arguments):
     if sir[1] != 0:
         app.segment(t, i, T, i, tag='12-Epidemic')
 
-    # logging.info('Format the graphical elements')
+    logging.info('Display Mordor')
+    for i, t0 in enumerate(mordor):
+        if t0 > 0:
+            app.segment(0, i, t0, i, tag='12-Mordor')
+
+    # logging.info('Display no-fly zone')
+    # current = 0
+    # for i, lll in reversed(list(enumerate(innov.infect))[:-1]):
+    #     nofly = max(current, mordor[i + 1])
+    #     current = 0
+    #     for ll in lll:
+    #         try:
+    #             t = max([s for s in ll if s <= nofly])
+    #             current = max(current, t)
+    #         except ValueError:
+    #             pass
+    #     if current > mordor[i]:
+    #         app.segment(mordor[i], i, current, i, tag='12-nofly')
+
+    logging.info('Format the graphical elements')
     app.style()
 
     logging.info('Tkinter main loop')

@@ -31,7 +31,7 @@ import logging
 import os
 import sys
 
-from itertools import chain
+from itertools import chain, count
 
 
 #\section{Exceptions}
@@ -252,6 +252,21 @@ class FreeEpidemic(object):
                     remo += 1
                     trajectory.append((ttt, (susc, infe, remo)))
         infections, removals = self._infectious_periods(trajectory)
+        logging.info('Compute Mordor')
+        mordor = []
+        for i, t1 in zip(count(), infections):
+            try:
+                t0 = max([t for t in self.innov.remove[i] if t < t1])
+                mordor.append(t0)
+            except ValueError:
+                mordor.append(0)
+        for i in range(len(infections), len(self)):
+            try:
+                t0 = max([t for t in self.innov.remove[i]])
+                mordor.append(t0)
+            except ValueError:
+                mordor.append(0)
+
         if pretty:
             summary = ["Time    S, I, R"]
             summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in trajectory])
@@ -259,7 +274,7 @@ class FreeEpidemic(object):
             summary.append("Removals at:\n%s" % str(removals))
             return '\n'.join(summary)
         else:
-            return trajectory, infections, removals
+            return trajectory, infections, removals, mordor
 
 
 # \section{Functions}

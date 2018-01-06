@@ -54,7 +54,6 @@ class Innovations(object):
     deterministically, so the class requires only sanity
     checks and a printing method::
 
-     >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                     infect=[[[0.2, 1.1, 1.5]],
      ...                             [[0.4, 0.9], [0.6, 1.4]]
@@ -129,12 +128,33 @@ class Innovations(object):
     def __len__(self):
         return len(self.remove)
 
+class Results(object):
+    """
+    This class prvides a data record structure to capture results from 'FreeEpidemic'.
+    Doctests are implied by the 'FreeEpidemic' doctests.
+    """
+    def __init__(self, trajectory, infection_times, removal_times):
+        self.trajectory = trajectory
+        self.infection_times = infection_times
+        self.removal_times = removal_times
+        self.latent_infections = []
+        self.latent_removals = []
+        self.mordor = []
+
+    def __str__(self):
+        summary = ["Time    S, I, R"]
+        summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in self.trajectory])
+        summary.append("Infections at:\n%s" % str(self.infection_times))
+        summary.append("Removals at:\n%s" % str(self.removal_times))
+        summary.append("Mordor ends at:\n%s" % str(self.mordor))
+        return '\n'.join(summary)
+
+
 class FreeEpidemic(object):
     """
     This class computes a (free) SIR epidemic, given an 
     'Innovation' instance::
 
-     >>> from pprint import pprint
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                     infect=[[[0.2, 1.1, 1.5]],
      ...                             [[0.4, 0.9], [0.6, 1.4]]
@@ -150,18 +170,7 @@ class FreeEpidemic(object):
     summarised by time of change, and then a tuple giving numbers of Susceptibles,
     Infectives, and Removals::
 
-     >>> pprint(epidemic())
-     ([(0, (2, 1, 0)),
-       (0.2, (1, 2, 0)),
-       (0.4, (0, 3, 0)),
-       (0.5, (0, 2, 1)),
-       (1.3, (0, 1, 2)),
-       (2, (0, 0, 3))],
-      [0, 0.2, 0.4],
-      [0.5, 1.3, 2],
-      [0, 0, 0])
-
-     >>> print(epidemic(pretty=True))
+     >>> print(epidemic())
      Time    S, I, R
      0.00   (2, 1, 0)
      0.20   (1, 2, 0)
@@ -173,6 +182,8 @@ class FreeEpidemic(object):
      [0, 0.2, 0.4]
      Removals at:
      [0.5, 1.3, 2]
+     Mordor ends at:
+     [0, 0, 0]
 
     """
     def __init__(self, innovations=None):
@@ -254,30 +265,27 @@ class FreeEpidemic(object):
                     infe -= 1
                     remo += 1
                     trajectory.append((ttt, (susc, infe, remo)))
-        infections, removals = self._infectious_periods(trajectory)
+        
+        infection_times, removal_times = self._infectious_periods(trajectory)
+        self.results = Results(trajectory, infection_times, removal_times)
+
         logging.info('Compute Mordor')
-        mordor = []
-        for i, t1 in zip(count(), infections):
+        # mordor = []
+        for i, t1 in zip(count(), infection_times):
             try:
                 t0 = max([t for t in self.innov.remove[i] if t < t1])
-                mordor.append(t0)
+                self.results.mordor.append(t0)
             except ValueError:
-                mordor.append(0)
-        for i in range(len(infections), len(self)):
+                self.results.mordor.append(0)
+        for i in range(len(infection_times), len(self)):
             try:
                 t0 = max([t for t in self.innov.remove[i]])
-                mordor.append(t0)
+                self.results.mordor.append(t0)
             except ValueError:
-                mordor.append(0)
-
-        if pretty:
-            summary = ["Time    S, I, R"]
-            summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in trajectory])
-            summary.append("Infections at:\n%s" % str(infections))
-            summary.append("Removals at:\n%s" % str(removals))
-            return '\n'.join(summary)
-        else:
-            return trajectory, infections, removals, mordor
+                self.results.mordor.append(0)
+        
+        logging.info("Return results as data record object")
+        return self.results
 
 
 # \section{Functions}

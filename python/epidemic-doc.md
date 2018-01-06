@@ -39,6 +39,8 @@ Note the form of the `Innovations` structure:
      [0, 0.2, 0.4]
      Removals at:
      [0.5, 1.3, 2]
+     Mordor ends at:
+     [0, 0, 0]
 
 
 ![A graphical illustration of the resulting free SIR epidemic](image/figure1.png "Free epidemic")
@@ -85,6 +87,8 @@ And now we present the results of three further tests.
      [0]
      Removals at:
      [1.1]
+     Mordor ends at:
+     [0, 0.3, 0.2, 0.1, 1.0]
 
 
 ![Another example of a free SIR epidemic](image/figure2.png "Free epidemic")
@@ -129,7 +133,8 @@ And now we present the results of three further tests.
      [0, 0.1, 0.9, 1.25]
      Removals at:
      [1.1, 1.3]
-
+     Mordor ends at:
+     [0, 0, 0, 1.2, 1.0]
 
 ![Yet another example of a free SIR epidemic](image/figure3.png "Free epidemic")
 

@@ -310,7 +310,8 @@ def main(opt, arguments):
     logging.info('Compute and display epidemic')
     epidemic = FreeEpidemic(innovations=innov)
     assert(pop == len(epidemic))
-    traj, infections, removals, mordor = epidemic()
+    results = epidemic()
+    traj, infections, removals, mordor = results.trajectory, results.infection_times, results.removal_times, results.mordor
     logging.info('t: %s' % str(traj))
 
     logging.info('Display latent infections')

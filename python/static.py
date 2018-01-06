@@ -311,19 +311,16 @@ def main(opt, arguments):
     epidemic = FreeEpidemic(innovations=innov)
     assert(pop == len(epidemic))
     results = epidemic()
-    traj, infections, removals, mordor = results.trajectory, results.infection_times, results.removal_times, results.mordor
-    logging.info('t: %s' % str(traj))
+    logging.info('t: %s' % str(results.trajectory))
 
     logging.info('Display latent infections')
-    for i, lll in enumerate(innov.infect):
-        for j, ll in enumerate(lll):
-            for t in ll:
-                if j >= len(removals) or t <= removals[j]:
-                    app.disk(t, i + 1, r=6, tag='12-lI')
-                    app.infection(t, i, i + 1, tag='12-lIc')
+    for t, i in results.latent_infections:
+        app.disk(t, i, r=6, tag='12-lI')
+        app.infection(t, i - 1, i, tag='12-lIc')
 
     logging.info('Display infectious portions of time-lines')
-    for i, (t0, t1) in zip(count(), zip_longest(infections, removals, fillvalue='-')):
+    itl, rtl = results.infection_times, results.removal_times
+    for i, (t0, t1) in zip(count(), zip_longest(itl, rtl, fillvalue='-')):
         logging.info((i, (t0, t1)))
         try:
             app.segment(t0, i, t1, i, tag='12-Infectious')
@@ -331,12 +328,12 @@ def main(opt, arguments):
         except TypeError:
             app.segment(t0, i, T, i, tag='12-Infectious')
     logging.info('Also display activated infections')
-    for i, t in zip(count(), infections[1:]):
+    for i, t in zip(count(), itl[1:]):
         app.infection(t, i, i + 1, tag='12-aI')
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
-    for t, sir in traj:
+    for t, sir in results.trajectory:
         i = sir[1] + sir[2] - 1
         app.segment(told, iold, t, iold, tag='12-Epidemic')
         app.segment(t, iold, t, i, tag='12-Epidemic')
@@ -345,24 +342,26 @@ def main(opt, arguments):
         app.segment(t, i, T, i, tag='12-Epidemic')
 
     logging.info('Display Mordor')
-    for i, t0 in enumerate(mordor):
+    for i, t0 in enumerate(results.mordor):
         if t0 > 0:
             app.segment(0, i, t0, i, tag='12-Mordor')
 
+    # Computation in the following paragraph still needs to be delegated away!
     logging.info('Display no-fly zone')
-    nofly = mordor[pop - 1]
+    rtl, mtl = results.removal_times, results.mordor
+    nofly = mtl[pop - 1]
     for i, lll in reversed(list(enumerate(innov.infect))):
         # Need to do better pruning of infections1
         ill = [t for j, ll in enumerate(lll) for t in ll \
-            if j >= len(removals) or t <= removals[j]]
+            if j >= len(rtl) or t <= rtl[j]]
         try:
             nofly = max([t for t in ill if t < nofly])
         except ValueError:
             nofly = 0
-        logging.info("%d: %s versus %s", i + 1, nofly, mordor[i])
-        if nofly > mordor[i]:
-            app.segment(mordor[i], i, nofly, i, tag='12-nofly')
-        nofly = max(nofly, mordor[i])
+        logging.info("%d: %s versus %s", i + 1, nofly, mtl[i])
+        if nofly > mtl[i]:
+            app.segment(mtl[i], i, nofly, i, tag='12-nofly')
+        nofly = max(nofly, mtl[i])
 
     logging.info('Format the graphical elements')
     app.style()

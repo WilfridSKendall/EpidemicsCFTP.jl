@@ -130,14 +130,16 @@ class Innovations(object):
 
 class Results(object):
     """
-    This class prvides a data record structure to capture results from 'FreeEpidemic'.
+    This class provides a data record structure to capture results from 'FreeEpidemic'.
     Doctests are implied by the 'FreeEpidemic' doctests.
     """
-    def __init__(self, trajectory, infection_times, removal_times):
+    def __init__(self, trajectory, infection_times, removal_times, latent_infections):
+        logging.info('Import trajectory, infection times, removal times, and latent infections')
         self.trajectory = trajectory
         self.infection_times = infection_times
         self.removal_times = removal_times
-        self.latent_infections = []
+        self.latent_infections = latent_infections
+
         self.latent_removals = []
         self.mordor = []
 
@@ -267,7 +269,16 @@ class FreeEpidemic(object):
                     trajectory.append((ttt, (susc, infe, remo)))
         
         infection_times, removal_times = self._infectious_periods(trajectory)
-        self.results = Results(trajectory, infection_times, removal_times)
+
+        logging.info('Compute latent infections, ie those infections initiated before removal.')
+        latent_infections = []
+        for i, lll in enumerate(self.innov.infect):
+            for j, ll in enumerate(lll):
+                for t in ll:
+                    if j >= len(removal_times) or t <= removal_times[j]:
+                        latent_infections.append((t, i + 1))
+
+        self.results = Results(trajectory, infection_times, removal_times, latent_infections)
 
         logging.info('Compute Mordor')
         # mordor = []

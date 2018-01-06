@@ -101,7 +101,7 @@ class Display(tk.Tk):
             # Create #QUIT# and (if required) #SAVE# buttons.
             tk.Button(frm, text="QUIT", command=self.destroy, **bprops, fg="red").pack(side=tk.RIGHT, fill=tk.Y)
             if self.output is not None:
-                tk.Button(frm, text="Save", command=self.save, **bprops, fg="dark green").pack(padx=60, side=tk.RIGHT, fill=tk.Y)
+                tk.Button(frm, text="Save", command=self.save, **bprops, fg="dark green").pack(padx=5, side=tk.RIGHT, fill=tk.Y)
             logging.info('Create frames to hold buttons to control plot elements.')
             frm1 = tk.Frame(frm)
             frm11 = tk.Frame(frm1)

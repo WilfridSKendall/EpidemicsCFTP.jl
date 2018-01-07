@@ -140,6 +140,8 @@ class Results(object):
         self.removal_times = removal_times
         self.latent_infections = latent_infections
 
+        self.nofly_zone = []
+
         self.latent_removals = []
         self.mordor = []
 
@@ -268,33 +270,53 @@ class FreeEpidemic(object):
                     remo += 1
                     trajectory.append((ttt, (susc, infe, remo)))
         
-        infection_times, removal_times = self._infectious_periods(trajectory)
+        itl, rtl = self._infectious_periods(trajectory)
 
-        logging.info('Compute latent infections, ie those infections initiated before removal.')
+        logging.info('Compute latent infections, namely those infections initiated before removal.')
         latent_infections = []
         for i, lll in enumerate(self.innov.infect):
-            for j, ll in enumerate(lll):
-                for t in ll:
-                    if j >= len(removal_times) or t <= removal_times[j]:
-                        latent_infections.append((t, i + 1))
+            temp = [t for j, ll in enumerate(lll) \
+                for t in ll if j >= len(rtl) or t <= rtl[j]]
+            latent_infections.append(temp)
+        # for i, lll in enumerate(self.innov.infect):
+        #     for j, ll in enumerate(lll):
+        #         for t in ll:
+        #             if j >= len(rtl) or t <= rtl[j]:
+        #                 latent_infections.append((t, i + 1))
 
-        self.results = Results(trajectory, infection_times, removal_times, latent_infections)
+        self.results = Results(trajectory, itl, rtl, latent_infections)
 
         logging.info('Compute Mordor')
-        # mordor = []
-        for i, t1 in zip(count(), infection_times):
+        mtl = self.results.mordor
+        for i, t1 in zip(count(), itl):
+            rmvl = self.innov.remove[i]
             try:
-                t0 = max([t for t in self.innov.remove[i] if t < t1])
-                self.results.mordor.append(t0)
+                t0 = max([t for t in rmvl if t < t1])
+                mtl.append(t0)
             except ValueError:
-                self.results.mordor.append(0)
-        for i in range(len(infection_times), len(self)):
+                mtl.append(0)
+        for i in range(len(itl), len(self)):
+            rmvl = self.innov.remove[i]
             try:
-                t0 = max([t for t in self.innov.remove[i]])
-                self.results.mordor.append(t0)
+                t0 = max([t for t in rmvl])
+                mtl.append(t0)
             except ValueError:
-                self.results.mordor.append(0)
+                mtl.append(0)
         
+        logging.info('Compute no-fly zone, working down from top.')
+        self.results.nofly_zone = [0] * len(self)
+        nofly = mtl[len(self) - 1]
+        for i, lll in reversed(list(enumerate(self.innov.infect))):
+            # Is it sensible to do better pruning of infections here?
+            ill = [t for j, ll in enumerate(lll) for t in ll \
+                if j >= len(rtl) or t <= rtl[j]]
+            try:
+                nofly = max([t for t in ill if t < nofly])
+            except ValueError:
+                nofly = 0
+            nofly = max(nofly, mtl[i])
+            self.results.nofly_zone[i] = nofly
+
         logging.info("Return results as data record object")
         return self.results
 

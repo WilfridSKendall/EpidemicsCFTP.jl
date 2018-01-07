@@ -19,9 +19,13 @@ recipe3 := --title="Figure 3: an example of a Free SIR Epidemic" --logging=INFO 
 recipe4 := --title="Figure 4: a random example of a Free SIR Epidemic" --logging=INFO --output=figure4a.png \
 		--seed=3 --T=4 --beta=0.2 --n=10
 
-inline := --logging=INFO --height=512 --width=360 --T=1.5 \
-		--remove="[[1, 1.6], [1.3], [0.5, 2]]" \
-		--infect="[[[0.2, 1.1, 1.5]], [[0.4, 0.9], [0.6, 1.4]]]"
+inlineBIG := --logging=INFO --height=720 --width=1024 --T=1.5 \
+		--remove="[[], [], [0.1, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
+		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
+		
+inline := --logging=INFO --height=180 --width=256 --T=1.5 \
+		--remove="[[], [], [0.1, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
+		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
 		
 		
 f1: ; python3 static.py $(recipe1)
@@ -29,7 +33,21 @@ f2: ; python3 static.py $(recipe2)
 f3: ; python3 static.py $(recipe3)
 f4: ; python3 static.py $(recipe4)
 
-inline1: ; python3 static.py $(inline) --output=inline1.png --on='Infectious,Epidemic'
+inlineimages: $(wildcard image/inline-*.png)
+
+$(wildcard image/inline-*.png): static.py static.cfg 
+
+image/inline-1.png: ; python3 static.py $(inlineBIG)          --title="All graphics elements together" --output=$@ 
+image/inline-pI-lo.png: ; python3 static.py $(inline)      --title="pI-lo graphics elements" --output=$@ --on='pI-lo' 
+image/inline-pR.png: ; python3 static.py $(inline)         --title="pR graphics elements" --output=$@ --on='pR' 
+image/inline-lI.png: ; python3 static.py $(inline)         --title="lI graphics elements" --output=$@ --on='lI' 
+image/inline-lIc.png: ; python3 static.py $(inline)        --title="lIc graphics elements" --output=$@ --on='lIc' 
+image/inline-aI.png: ; python3 static.py $(inline)         --title="sI graphics elements" --output=$@ --on='aI' 
+image/inline-Epidemic.png: ; python3 static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Epidemic' 
+image/inline-Infectious.png: ; python3 static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Infectious' 
+image/inline-R.png: ; python3 static.py $(inline)          --title="R graphics elements" --output=$@ --on='R' 
+image/inline-Mordor.png: ; python3 static.py $(inline)     --title="Mordor graphics elements" --output=$@ --on='Mordor'
+image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --output=$@ --on='nofly' 
 
 figure1: image/figure1.png
 figure2: image/figure2.png
@@ -42,9 +60,13 @@ epidemic-doc.pdf: epidemic-doc.md $(figures)
 README.pdf: README.md $(figure1) KEY.md TODO.md
 	pandoc README.md KEY.md TODO.md -o README.pdf
 
-KEY.md: static.cfg
+KEY.md: static.cfg Makefile
 	sed -e'1d' -e'2d'  -e'/^[^#\[]/d' -e's/^# *//' -e's/ ; /: /' \
-	-e'/\]$$/d' -e's/\[/`/'  -e's/\]/`/' static.cfg > KEY.md
+	-e'/\]$$/d' -e's/\[..-\(.*\)\]/!\[\1\](image\/inline-\1.png "\1")_____\`\1\`/' static.cfg > KEY.md
+
+# KEY.md: static.cfg
+# 	sed -e'1d' -e'2d'  -e'/^[^#\[]/d' -e's/^# *//' -e's/ ; /: /' \
+# 	-e'/\]$$/d' -e's/\[/`/'  -e's/\]/`/' static.cfg > KEY.md
 	
 image/figure1.png: $(graphicsprogs) epidemic.py Makefile
 	-python3 static.py $(recipe1) --output=$@ --forceoutput

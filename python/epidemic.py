@@ -278,11 +278,6 @@ class FreeEpidemic(object):
             temp = [t for j, ll in enumerate(lll) \
                 for t in ll if j >= len(rtl) or t <= rtl[j]]
             latent_infections.append(temp)
-        # for i, lll in enumerate(self.innov.infect):
-        #     for j, ll in enumerate(lll):
-        #         for t in ll:
-        #             if j >= len(rtl) or t <= rtl[j]:
-        #                 latent_infections.append((t, i + 1))
 
         self.results = Results(trajectory, itl, rtl, latent_infections)
 
@@ -306,10 +301,7 @@ class FreeEpidemic(object):
         logging.info('Compute no-fly zone, working down from top.')
         self.results.nofly_zone = [0] * len(self)
         nofly = mtl[len(self) - 1]
-        for i, lll in reversed(list(enumerate(self.innov.infect))):
-            # Is it sensible to do better pruning of infections here?
-            ill = [t for j, ll in enumerate(lll) for t in ll \
-                if j >= len(rtl) or t <= rtl[j]]
+        for i, ill in reversed(list(enumerate(latent_infections))):
             try:
                 nofly = max([t for t in ill if t < nofly])
             except ValueError:

@@ -356,9 +356,9 @@ def main(opt, arguments):
     app.update_idletasks()
     if opt.forceoutput:
         app.save()
-    app.mainloop()
-
-
+        app.destroy()
+    else:
+        app.mainloop()
 
 
 # \section{Main script}

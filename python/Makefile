@@ -19,10 +19,17 @@ recipe3 := --title="Figure 3: an example of a Free SIR Epidemic" --logging=INFO 
 recipe4 := --title="Figure 4: a random example of a Free SIR Epidemic" --logging=INFO --output=figure4a.png \
 		--seed=3 --T=4 --beta=0.2 --n=10
 
+inline := --logging=INFO --height=512 --width=360 --T=1.5 \
+		--remove="[[1, 1.6], [1.3], [0.5, 2]]" \
+		--infect="[[[0.2, 1.1, 1.5]], [[0.4, 0.9], [0.6, 1.4]]]"
+		
+		
 f1: ; python3 static.py $(recipe1)
 f2: ; python3 static.py $(recipe2)
 f3: ; python3 static.py $(recipe3)
 f4: ; python3 static.py $(recipe4)
+
+inline1: ; python3 static.py $(inline) --output=inline1.png --on='Infectious,Epidemic'
 
 figure1: image/figure1.png
 figure2: image/figure2.png

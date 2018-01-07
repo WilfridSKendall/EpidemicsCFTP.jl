@@ -22,6 +22,9 @@ Command-line options::
     --n=N:                 number of individuals;
     --T=T:                 plot over time range [0, T];
     --title=title:         title for figure;
+    --on=ON:               CSV string of plot elements to be shown (default is all); 
+    --height=HEIGHT:       screen height in pixels (default 720);
+    --width=WIDTH:         screen width in pixels (default 1024);
     --output=output:       produce postscript output and save in this file;
     --forceoutput:         do above without prompting;
     --consistent:          allow consistent extensions over time;
@@ -78,12 +81,13 @@ class Display(tk.Tk):
     Frame for various buttons and Canvas, includes high-level drawing routines
     and printing.
     """
-    def __init__(self, T, pop, background='white', height=720, width=1024, \
-                 output=None, forceoutput=False):
+    def __init__(self, T, pop, background='white', \
+                 height=720, width=1024, \
+                 output=None, forceoutput=False, opt=None):
         tk.Tk.__init__(self)
         self.output = output
         self.line_start = None
-        self.canvas = tk.Canvas(self, background='white', height=720, width=1024)
+        self.canvas = tk.Canvas(self, background='white', height=height, width=width)
         self.canvas.pack()
 
         # Read styles for plotting.
@@ -93,7 +97,7 @@ class Display(tk.Tk):
         # Button style.
         bprops = self.color['0-button']        
         # Dictionary to store state of plot elements.
-        self.tog = dict((key, 1) for key in self.color.sections() if key.startswith('1'))
+        self.tog = {}
 
         if not forceoutput:
             logging.info('Create overall frame to hold all buttons')
@@ -120,8 +124,15 @@ class Display(tk.Tk):
                     raise BadKeyError(key)
                 logging.info('Creating Checkbutton for %s' % key)
                 cb = tk.Checkbutton(f, text=tag, **bprops, indicatoron=False,
-                    command=lambda key=key: self.toggle(key=key))       
-                cb.pack(padx=1, side=tk.LEFT)
+                    command=lambda tag=tag: self.toggle(tag=tag)) 
+                # Set state of tag and Checkbutton using "on" option.
+                state = (opt.on is None or tag in opt.on)
+                self.tog[tag] = state
+                if not state:
+                    cb.toggle()
+                # Display Checkbutton unless the aim is to produce specified output.
+                if opt.output is None:
+                    cb.pack(padx=1, side=tk.LEFT)
             frm11.pack(side=tk.TOP, fill=tk.X)
             frm12.pack(side=tk.TOP, fill=tk.X)
             frm1.pack(side=tk.LEFT, fill=tk.X)
@@ -132,49 +143,50 @@ class Display(tk.Tk):
         self.w, self.h = width, height
         self.setup(T, pop)
 
-    def toggle(self, key=None):
-        tog = self.tog[key] = not self.tog[key]
+    def toggle(self, tag=None):
+        tog = self.tog[tag] = not self.tog[tag]
         if tog:
-            self.canvas.lift(key)
+            self.canvas.lift(tag)
         else:
-            self.canvas.lower(key)
+            self.canvas.lower(tag)
 
     def setup(self, T, pop):
         "Set up the basic elements of the canvas"
         logging.info('Display base and frame')
-        self.base(0, 0, T, pop, tag='0-base')
-        self.segment(0, 0, T, 0, tag='0-frame')
-        self.segment(0, pop - 1, T, pop - 1, tag='0-frame')
-        self.segment(0, 0, 0, pop - 1, tag='0-frame')
-        self.segment(T, 0, T, pop - 1, tag='0-frame')
+        self.base(0, 0, T, pop, tag='base')
+        self.segment(0, 0, T, 0, tag='frame')
+        self.segment(0, pop - 1, T, pop - 1, tag='frame')
+        self.segment(0, 0, 0, pop - 1, tag='frame')
+        self.segment(T, 0, T, pop - 1, tag='frame')
 
         logging.info('Display time axis')
         yneg, ydel = -0.01 * pop, -0.005 * pop
-        self.segment(0, yneg, T, yneg, tag='0-axis')
+        self.segment(0, yneg, T, yneg, tag='axis')
         tx = 0
         while tx <= 10 * T:
             tic = 0.1 * tx
             if tx % 5 != 0:
-                self.segment(tic, yneg, tic, yneg + ydel, tag='0-axis')
+                self.segment(tic, yneg, tic, yneg + ydel, tag='axis')
             elif tx % 10 !=0:
-                self.segment(tic, yneg, tic, yneg + 2 * ydel, tag='0-axis')
+                self.segment(tic, yneg, tic, yneg + 2 * ydel, tag='axis')
             else:
-                self.segment(tic, yneg, tic, yneg + 3 * ydel, tag='0-axis')
-                self.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='0-xlabel')
+                self.segment(tic, yneg, tic, yneg + 3 * ydel, tag='axis')
+                self.insert_text(tic, yneg + 3 * ydel, text=str(tic), tag='xlabel')
             tx += 1
-        self.insert_text(0.25 * T, 5 * yneg, text=str("Elapsed time"), tag='0-xlabel')
+        self.insert_text(0.25 * T, 5 * yneg, text=str("Elapsed time"), tag='xlabel')
 
         logging.info('Display time-lines')
         xneg = - 0.02 * T
         for i in range(pop):
-            self.insert_text(xneg, i, text=str(i + 1), tag='0-ylabel')
-            self.segment(0, i, T, i, tag='0-timeline')
-        self.insert_text(3 * xneg, 0.25 * pop, text=str("Timelines"), angle=90, tag='0-xlabel')
+            self.insert_text(xneg, i, text=str(i + 1), tag='ylabel')
+            self.segment(0, i, T, i, tag='timeline')
+        self.insert_text(3 * xneg, 0.25 * pop, text=str("Timelines"), angle=90, tag='xlabel')
 
     def style(self):
         "Format the graphical elements of the canvas and read white options"
-        for tag in self.color.sections():
-            self.canvas.itemconfig(tag, **dict(self.color.items(tag)))
+        for key in self.color.sections():
+            index, tag = key.split('-',1)
+            self.canvas.itemconfig(tag, **dict(self.color.items(key)))
 
     def save(self):
         "Save canvas as PNG file."
@@ -288,8 +300,9 @@ def main(opt, arguments):
     innov = Innovations(remove=rel, infect=ill)
 
     logging.info('Set-up Tk root and canvas')
-    app = Display(T, pop, background='white', height=720, width=1024, \
-                output=opt.output, forceoutput=opt.forceoutput)
+    app = Display(T, pop, background='white', \
+                output=opt.output, forceoutput=opt.forceoutput, \
+                width=opt.width, height=opt.height, opt=opt)
     app.title(opt.title)
     logging.info('Display Canvas')
     c = app.canvas
@@ -298,12 +311,12 @@ def main(opt, arguments):
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                app.infection(t, j, i + 1, tag='11-pI-lo')
+                app.infection(t, j, i + 1, tag='pI-lo')
 
     logging.info('Display putative removals')
     for i, ll in enumerate(innov.remove):
         for t in ll:
-            app.removal(t, i, tag='11-pR')
+            app.removal(t, i, tag='pR')
 
     logging.info('Compute and display epidemic')
     epidemic = FreeEpidemic(innovations=innov)
@@ -313,44 +326,47 @@ def main(opt, arguments):
     logging.info('Display latent infections')
     for i, ll in enumerate(results.latent_infections):
         for t in ll:
-            app.disk(t, i + 1, r=6, tag='12-lI')
-            app.infection(t, i, i + 1, tag='12-lIc')
+            app.disk(t, i + 1, r=6, tag='lI')
+            app.infection(t, i, i + 1, tag='lIc')
 
     logging.info('Display infectious portions of time-lines')
     itl, rtl = results.infection_times, results.removal_times
     for i, (t0, t1) in zip(count(), zip_longest(itl, rtl, fillvalue='-')):
         try:
-            app.segment(t0, i, t1, i, tag='12-Infectious')
-            app.removal(t1, i, tag='12-R') 
+            app.segment(t0, i, t1, i, tag='Infectious')
+            app.removal(t1, i, tag='R') 
         except TypeError:
-            app.segment(t0, i, T, i, tag='12-Infectious')
+            app.segment(t0, i, T, i, tag='Infectious')
     logging.info('Also display activated infections')
     for i, t in zip(count(), itl[1:]):
-        app.infection(t, i, i + 1, tag='12-aI')
+        app.infection(t, i, i + 1, tag='aI')
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
     for t, sir in results.trajectory:
         i = sir[1] + sir[2] - 1
-        app.segment(told, iold, t, iold, tag='12-Epidemic')
-        app.segment(t, iold, t, i, tag='12-Epidemic')
+        app.segment(told, iold, t, iold, tag='Epidemic')
+        app.segment(t, iold, t, i, tag='Epidemic')
         told, iold = t, i
     if sir[1] != 0:
-        app.segment(t, i, T, i, tag='12-Epidemic')
+        app.segment(t, i, T, i, tag='Epidemic')
 
     logging.info('Display Mordor')
     for i, t0 in enumerate(results.mordor):
         if t0 > 0:
-            app.segment(0, i, t0, i, tag='12-Mordor')
+            app.segment(0, i, t0, i, tag='Mordor')
 
     logging.info('Display no-fly zone')
     for i, nfy in enumerate(results.nofly_zone):
         mdr = results.mordor[i]
         if nfy > mdr:
-            app.segment(mdr, i, nfy, i, tag='12-nofly')
+            app.segment(mdr, i, nfy, i, tag='nofly')
 
-    logging.info('Format the graphical elements')
+    logging.info('Format the graphical elements according to "on" option')
     app.style()
+    for tag in app.tog.keys():
+        if not app.tog[tag]:
+            app.canvas.lower(tag)
 
     logging.info('Tkinter main loop')
     app.update_idletasks()
@@ -369,6 +385,16 @@ if __name__ == '__main__':
     if option.logging is not None:
         logging.basicConfig(level=logging.__dict__[option.logging])
         logging.info('Logging level %s' % option.logging)
+
+    if option.width is None:
+        option.width = 1024
+    else:
+        option.width = int(option.width)
+
+    if option.height is None:
+        option.height = 720
+    else:
+        option.height = int(option.height)
 
     if option.alfa is None:
         option.alfa = 0.1
@@ -389,6 +415,10 @@ if __name__ == '__main__':
         option.T = 10
     else:
         option.T = float(option.T)
+
+    if option.on is not None:
+        option.on = option.on.split(',')
+        logging.info('Display %s', option.on)
 
     if option.title is None:
         option.title = "Free SIR Epidemics: Figure"

@@ -25,6 +25,7 @@ Command-line options::
     --on=ON:               CSV string of plot elements to be shown (default is all); 
     --height=HEIGHT:       screen height in pixels (default 720);
     --width=WIDTH:         screen width in pixels (default 1024);
+    --notext:              do not draw any text;
     --output=output:       produce postscript output and save in this file;
     --forceoutput:         do above without prompting;
     --consistent:          allow consistent extensions over time;
@@ -86,6 +87,7 @@ class Display(tk.Tk):
                  output=None, forceoutput=False, opt=None):
         tk.Tk.__init__(self)
         self.output = output
+        self.notext = opt.notext
         self.line_start = None
         self.canvas = tk.Canvas(self, background='white', height=height, width=width)
         self.canvas.pack()
@@ -98,6 +100,13 @@ class Display(tk.Tk):
         bprops = self.color['0-button']        
         # Dictionary to store state of plot elements.
         self.tog = {}
+        for key in self.color.sections():
+            index, tag = key.split('-',1)
+            if index == '0':
+                continue
+            state = (opt.on is None or tag in opt.on)
+            # Set state of tag using "on" option.
+            self.tog[tag] = state
 
         if not forceoutput:
             logging.info('Create overall frame to hold all buttons')
@@ -125,11 +134,10 @@ class Display(tk.Tk):
                 logging.info('Creating Checkbutton for %s' % key)
                 cb = tk.Checkbutton(f, text=tag, **bprops, indicatoron=False,
                     command=lambda tag=tag: self.toggle(tag=tag)) 
-                # Set state of tag and Checkbutton using "on" option.
+                # Set state of Checkbutton using "on" option.
                 state = (opt.on is None or tag in opt.on)
-                self.tog[tag] = state
-                if not state:
-                    cb.toggle()
+                # if not state:
+                cb.toggle()
                 # Display Checkbutton unless the aim is to produce specified output.
                 if opt.output is None:
                     cb.pack(padx=1, side=tk.LEFT)
@@ -228,7 +236,9 @@ class Display(tk.Tk):
         self.canvas.create_bitmap(self.pixel(x, y), bitmap='error', tag=tag)
 
     def insert_text(self, x, y, text='', angle=0, tag='null'):
-        "Insert text at specified position."
+        "Insert text at specified position unless #notext# attribute is set."
+        if self.notext:
+            return
         # Need to specify font properly if this is to be printed to a file.
         self.canvas.create_text(self.pixel(x, y), text=text, angle=angle, tag=tag)
 
@@ -367,6 +377,9 @@ def main(opt, arguments):
     for tag in app.tog.keys():
         if not app.tog[tag]:
             app.canvas.lower(tag)
+            logging.info("Hide %s" % tag)
+        else:
+            logging.info("Retain %s" % tag)
 
     logging.info('Tkinter main loop')
     app.update_idletasks()
@@ -374,6 +387,7 @@ def main(opt, arguments):
         app.save()
         app.destroy()
     else:
+        print(app.tog)
         app.mainloop()
 
 

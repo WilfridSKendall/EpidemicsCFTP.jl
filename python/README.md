@@ -93,8 +93,9 @@ Note that reinstated elements are placed at the top layer of the image; this mea
 a double-click will make the relevant elements more prominent.
 
 The colour coding in the screenshot is described in `static.cfg` as follows,
-illustrated by selecting the relevant graphical elements from the following stylized epidemic:
+illustrated by selecting the relevant graphical elements from the stylized epidemic
+given in Figure \ref{fig:stylized}.
 
-![Stylized epidemic](image/inline-1.png "inline-1.png")
+![Stylized epidemic \label{fig:stylized}](image/inline-1.png "Stylized epidemic")
 
 

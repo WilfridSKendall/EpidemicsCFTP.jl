@@ -20,11 +20,11 @@ recipe4 := --title="Figure 4: a random example of a Free SIR Epidemic" --logging
 		--seed=3 --T=4 --beta=0.2 --n=10
 
 inlineBIG := --logging=INFO --height=720 --width=1024 --T=1.5 \
-		--remove="[[], [], [0.1, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
+		--remove="[[], [], [0.02, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
 		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
 		
 inline := --logging=INFO --height=180 --width=256 --T=1.5 \
-		--remove="[[], [], [0.1, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
+		--remove="[[], [], [0.02, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
 		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
 		
 		
@@ -37,17 +37,17 @@ inlineimages: $(wildcard image/inline-*.png)
 
 $(wildcard image/inline-*.png): static.py static.cfg 
 
-image/inline-1.png: ; python3 static.py $(inlineBIG)          --title="All graphics elements together" --output=$@ 
-image/inline-pI-lo.png: ; python3 static.py $(inline)      --title="pI-lo graphics elements" --output=$@ --on='pI-lo' 
-image/inline-pR.png: ; python3 static.py $(inline)         --title="pR graphics elements" --output=$@ --on='pR' 
-image/inline-lI.png: ; python3 static.py $(inline)         --title="lI graphics elements" --output=$@ --on='lI' 
-image/inline-lIc.png: ; python3 static.py $(inline)        --title="lIc graphics elements" --output=$@ --on='lIc' 
-image/inline-aI.png: ; python3 static.py $(inline)         --title="sI graphics elements" --output=$@ --on='aI' 
-image/inline-Epidemic.png: ; python3 static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Epidemic' 
-image/inline-Infectious.png: ; python3 static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Infectious' 
-image/inline-R.png: ; python3 static.py $(inline)          --title="R graphics elements" --output=$@ --on='R' 
-image/inline-Mordor.png: ; python3 static.py $(inline)     --title="Mordor graphics elements" --output=$@ --on='Mordor'
-image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --output=$@ --on='nofly' 
+image/inline-1.png: ; python3 static.py $(inlineBIG)       --title="All graphics elements together" --output=$@ --forceoutput
+image/inline-pI-lo.png: ; python3 static.py $(inline)      --title="pI-lo graphics elements" --output=$@ --on='pI-lo' --notext --forceoutput 
+image/inline-pR.png: ; python3 static.py $(inline)         --title="pR graphics elements" --output=$@ --on='pR' --notext --forceoutput 
+image/inline-lI.png: ; python3 static.py $(inline)         --title="lI graphics elements" --output=$@ --on='lI' --notext --forceoutput 
+image/inline-lIc.png: ; python3 static.py $(inline)        --title="lIc graphics elements" --output=$@ --on='lIc' --notext --forceoutput 
+image/inline-aI.png: ; python3 static.py $(inline)         --title="sI graphics elements" --output=$@ --on='aI' --notext --forceoutput 
+image/inline-Epidemic.png: ; python3 static.py $(inline)   --title="Infectious graphics elements" --output=$@ --on='Epidemic' --notext --forceoutput 
+image/inline-Infectious.png: ; python3 static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Infectious' --notext --forceoutput 
+image/inline-R.png: ; python3 static.py $(inline)          --title="R graphics elements" --output=$@ --on='R' --notext --forceoutput
+image/inline-Mordor.png: ; python3 static.py $(inline)     --title="Mordor graphics elements" --output=$@ --on='Mordor' --notext --forceoutput
+image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
 
 figure1: image/figure1.png
 figure2: image/figure2.png
@@ -62,7 +62,7 @@ README.pdf: README.md $(figure1) KEY.md TODO.md
 
 KEY.md: static.cfg Makefile
 	sed -e'1d' -e'2d'  -e'/^[^#\[]/d' -e's/^# *//' -e's/ ; /: /' \
-	-e'/\]$$/d' -e's/\[..-\(.*\)\]/!\[\1\](image\/inline-\1.png "\1")_____\`\1\`/' static.cfg > KEY.md
+	-e'/\]$$/d' -e's/\[..-\(.*\)\]/----\n\n!\[\1\](image\/inline-\1.png){width=100} is produced by tag ending \`\1\`/' static.cfg > KEY.md
 
 # KEY.md: static.cfg
 # 	sed -e'1d' -e'2d'  -e'/^[^#\[]/d' -e's/^# *//' -e's/ ; /: /' \

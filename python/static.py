@@ -19,6 +19,7 @@ Command-line options::
     --seed=SEED:           integer seed for random number generator;
     --alfa=ALFA:           rate of infection;
     --beta=BETA:           rate of removal;
+    --initial=INITIAL:     initial number of infectives;
     --n=N:                 number of individuals;
     --T=T:                 plot over time range [0, T];
     --title=title:         title for figure;
@@ -331,7 +332,7 @@ def main(opt, arguments):
     logging.info('Compute and display epidemic')
     epidemic = FreeEpidemic(innovations=innov)
     assert(pop == len(epidemic))
-    results = epidemic()
+    results = epidemic(infe=opt.initial)
 
     logging.info('Display latent infections')
     for i, ll in enumerate(results.latent_infections):
@@ -387,7 +388,6 @@ def main(opt, arguments):
         app.save()
         app.destroy()
     else:
-        print(app.tog)
         app.mainloop()
 
 
@@ -424,6 +424,11 @@ if __name__ == '__main__':
         option.n = 5
     else:
         option.n = int(option.n)
+
+    if option.initial is None:
+        option.initial = 1
+    else:
+        option.initial = int(option.initial)
 
     if option.T is None:
         option.T = 10

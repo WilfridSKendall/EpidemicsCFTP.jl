@@ -244,7 +244,8 @@ class FreeEpidemic(object):
         """
         ttt, susc, remo = 0, len(self) - infe, 0
         trajectory = [(0, (susc, infe, remo))]
-        legend = '[%f]: R=%d, i=%d, I+R=%d, j=%d'
+        legend1 = '[%f]: R=%d, i=%d, I+R=%d, j=%d'
+        legend2 = '[%f]: R=%d, i=%d, I+R=%d'
         logging.info('[%f]: R=%d, i= , I+R=%d, j= ', ttt, remo, infe+remo)
         for incident in self._build_time_line():
             if len(incident) == 3:
@@ -255,17 +256,17 @@ class FreeEpidemic(object):
                 if i == infe + remo + 1 and remo < j and j <= infe + remo:
                     # Row 'i' is lowest susceptible, 
                     # while row 'j' is infected.
-                    logging.info(legend, ttt, remo, i, infe+remo, j)
+                    logging.info(legend1, ttt, remo, i, infe+remo, j)
                     infe += 1
                     susc -= 1
                     trajectory.append((ttt, (susc, infe, remo)))
             if len(incident) == 2:
                 # The incident is a potential removal.
                 ttt, i = incident
-                # The removal occupies row `i`.
+                # The potential removal occupies row `i`.
                 if remo < i and i <= infe + remo:
-                    # Row `i` is infected.
-                    logging.info(legend, ttt, remo, i, infe+remo, j)
+                    # Row `i` is removed.
+                    logging.info(legend2, ttt, remo, i, infe+remo)
                     infe -= 1
                     remo += 1
                     trajectory.append((ttt, (susc, infe, remo)))

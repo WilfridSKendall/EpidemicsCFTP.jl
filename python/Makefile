@@ -32,6 +32,7 @@ f1: ; python3 static.py $(recipe1)
 f2: ; python3 static.py $(recipe2)
 f3: ; python3 static.py $(recipe3)
 f4: ; python3 static.py $(recipe4)
+f5: ; python3 static.py $(recipe4) --initial=3
 
 inlineimages: $(wildcard image/inline-*.png)
 
@@ -52,7 +53,8 @@ image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --out
 figure1: image/figure1.png
 figure2: image/figure2.png
 figure3: image/figure3.png
-figure4: image/randomfigure.png
+figure4: image/randomfigure1.png
+figure5: image/randomfigure2.png
 
 epidemic-doc.pdf: epidemic-doc.md $(figures)
 	pandoc epidemic-doc.md -o epidemic-doc.pdf
@@ -62,7 +64,7 @@ README.pdf: README.md $(figure1) KEY.md TODO.md
 
 KEY.md: static.cfg Makefile
 	sed -e'1d' -e'2d'  -e'/^[^#\[]/d' -e's/^# *//' -e's/ ; /: /' \
-	-e'/\]$$/d' -e's/\[..-\(.*\)\]/----\n\n!\[\1\](image\/inline-\1.png){width=100} is produced by tag ending \`\1\`/' static.cfg > KEY.md
+	-e'/\]$$/d' -e's/\[..-\(.*\)\]/----\n\n!\[\1\](image\/inline-\1.png){width=100} illustrates tag ending \`\1\`/' static.cfg > KEY.md
 
 # KEY.md: static.cfg
 # 	sed -e'1d' -e'2d'  -e'/^[^#\[]/d' -e's/^# *//' -e's/ ; /: /' \
@@ -74,8 +76,10 @@ image/figure2.png: $(graphicsprogs) epidemic.py Makefile
 	-python3 static.py $(recipe2) --output=$@ --forceoutput
 image/figure3.png: $(graphicsprogs) epidemic.py Makefile
 	-python3 static.py $(recipe3) --output=$@ --forceoutput
-image/randomfigure.png: $(graphicsprogs) epidemic.py Makefile
+image/randomfigure1.png: $(graphicsprogs) epidemic.py Makefile
 	-python3 static.py $(recipe4) --output=$@ --forceoutput
+image/randomfigure2.png: $(graphicsprogs) epidemic.py Makefile
+	-python3 static.py $(recipe4) --initial=3 --output=$@ --forceoutput
 
 DOC/epidemic.py.doctested: epidemic.py epidemic-doc.md
 	python3 epidemic.py --doctest --logging=INFO

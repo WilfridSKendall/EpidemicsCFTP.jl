@@ -139,4 +139,11 @@ And now we present the results of three further tests.
 ![Yet another example of a free SIR epidemic](image/figure3.png "Free epidemic")
 
 
-![Larger free SIR epidemic generated at random](image/randomfigure.png "Larger free epidemic generated at random")
+
+![Larger free SIR epidemic generated at random](image/randomfigure1.png "Larger free epidemic generated at random")
+
+
+![Larger free SIR epidemic generated at random with three initial infectives](image/randomfigure2.png "Larger free epidemic generated at random with three initial infectives") 
+
+
+

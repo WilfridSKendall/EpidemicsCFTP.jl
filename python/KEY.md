@@ -60,3 +60,8 @@ only the implemented removal is visible.
 ----
 
 ![nofly](image/inline-nofly.png){width=100} illustrates tag ending `nofly`: to avoid premature removal, these grey portions of rows should not be infected.
+
+----
+
+![West](image/inline-West.png){width=100} illustrates tag ending `West`: infection must occur before these orange portions of rows if removals are to be unchanged.
+

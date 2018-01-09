@@ -144,6 +144,7 @@ class Results(object):
 
         self.latent_removals = []
         self.mordor = []
+        self.West = []
 
     def __str__(self):
         summary = ["Time    S, I, R"]
@@ -270,6 +271,8 @@ class FreeEpidemic(object):
                     infe -= 1
                     remo += 1
                     trajectory.append((ttt, (susc, infe, remo)))
+                    # Note we will need to use the final value of 
+                    # #remo# when computing #West# below!
         
         itl, rtl = self._infectious_periods(trajectory)
 
@@ -284,7 +287,8 @@ class FreeEpidemic(object):
 
         logging.info('Compute Mordor')
         mtl = self.results.mordor
-        for i, t1 in zip(count(), itl):
+        # for i, t1 in zip(count(), itl):
+        for i, t1 in enumerate(itl):
             rmvl = self.innov.remove[i]
             try:
                 t0 = max([t for t in rmvl if t < t1])
@@ -310,6 +314,19 @@ class FreeEpidemic(object):
             nofly = max(nofly, mtl[i])
             self.results.nofly_zone[i] = nofly
 
+        logging.info('Compute West')
+        wtl = self.results.West
+        for i, (t0, t1) in enumerate(zip(itl, rtl)):
+            if i >= remo:
+                break
+            rmvl = self.innov.remove[i]
+            try:
+                # I think removals should follow infections!
+                t = min([u for u in rmvl if t0 <= u and u <= t1])
+                wtl.append((t, t1))
+            except ValueError:
+                wtl.append(("Infinity", "Infinity"))
+        
         logging.info("Return results as data record object")
         return self.results
 

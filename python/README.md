@@ -88,7 +88,7 @@ Other examples can be found in `Makefile`.
 Depress one of the buttons in the two rows at the bottom left of the window
 in order to toggle disappearance (and then appearance) of the corresponding
 elements in the image. This is useful for checking the image against the
-commandline specification, as well as clarifying the elements of more complicated images.
+command-line specification, as well as clarifying the elements of more complicated images.
 Note that reinstated elements are placed at the top layer of the image; this means that
 a double-click will make the relevant elements more prominent.
 

@@ -49,6 +49,7 @@ image/inline-Infectious.png: ; python3 static.py $(inline) --title="Infectious g
 image/inline-R.png: ; python3 static.py $(inline)          --title="R graphics elements" --output=$@ --on='R' --notext --forceoutput
 image/inline-Mordor.png: ; python3 static.py $(inline)     --title="Mordor graphics elements" --output=$@ --on='Mordor' --notext --forceoutput
 image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
+image/inline-West.png: ; python3 static.py $(inline)       --title="West" --output=$@ --on='West' --notext --forceoutput
 
 figure1: image/figure1.png
 figure2: image/figure2.png

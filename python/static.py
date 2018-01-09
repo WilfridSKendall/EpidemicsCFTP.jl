@@ -140,8 +140,8 @@ class Display(tk.Tk):
                 # if not state:
                 cb.toggle()
                 # Display Checkbutton unless the aim is to produce specified output.
-                if opt.output is None:
-                    cb.pack(padx=1, side=tk.LEFT)
+                print(opt.output)
+                cb.pack(padx=1, side=tk.LEFT)
             frm11.pack(side=tk.TOP, fill=tk.X)
             frm12.pack(side=tk.TOP, fill=tk.X)
             frm1.pack(side=tk.LEFT, fill=tk.X)
@@ -372,6 +372,13 @@ def main(opt, arguments):
         mdr = results.mordor[i]
         if nfy > mdr:
             app.segment(mdr, i, nfy, i, tag='nofly')
+
+    logging.info('Display West')
+    print(list(enumerate(results.West)))
+    for i, (t0, t1) in enumerate(results.West):
+        if t0 != "Infinity":
+            app.segment(t0, i, t1, i, tag='West')
+            app.disk(t1, i, r=6, tag='West')
 
     logging.info('Format the graphical elements according to "on" option')
     app.style()

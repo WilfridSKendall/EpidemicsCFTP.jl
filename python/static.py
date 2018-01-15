@@ -59,7 +59,7 @@ from random import expovariate, random, seed
 from PIL import Image
 from itertools import combinations, count, chain, zip_longest
 
-from epidemic import Innovations, FreeEpidemic
+from epidemic import Innovations, FreeEpidemic, INFINITY
 
 # Under python3 in Ubuntu it is necessary to install python3-tk!
 try:
@@ -113,9 +113,9 @@ class Display(tk.Tk):
             logging.info('Create overall frame to hold all buttons')
             frm = tk.Frame(self)
             # Create #QUIT# and (if required) #SAVE# buttons.
-            tk.Button(frm, text="QUIT", command=self.destroy, **bprops, fg="red").pack(side=tk.RIGHT, fill=tk.Y)
+            tk.Button(frm, text="QUIT", command=self.destroy, fg="red", **bprops).pack(side=tk.RIGHT, fill=tk.Y)
             if self.output is not None:
-                tk.Button(frm, text="Save", command=self.save, **bprops, fg="dark green").pack(padx=5, side=tk.RIGHT, fill=tk.Y)
+                tk.Button(frm, text="Save", command=self.save, fg="dark green", **bprops).pack(padx=5, side=tk.RIGHT, fill=tk.Y)
             logging.info('Create frames to hold buttons to control plot elements.')
             frm1 = tk.Frame(frm)
             frm11 = tk.Frame(frm1)
@@ -133,14 +133,14 @@ class Display(tk.Tk):
                 else:
                     raise BadKeyError(key)
                 logging.info('Creating Checkbutton for %s' % key)
-                cb = tk.Checkbutton(f, text=tag, **bprops, indicatoron=False,
-                    command=lambda tag=tag: self.toggle(tag=tag)) 
+                cb = tk.Checkbutton(f, text=tag, indicatoron=False,
+                    command=lambda tag=tag: self.toggle(tag=tag), **bprops) 
                 # Set state of Checkbutton using "on" option.
                 state = (opt.on is None or tag in opt.on)
                 # if not state:
                 cb.toggle()
                 # Display Checkbutton unless the aim is to produce specified output.
-                print(opt.output)
+                # print(opt.output)
                 cb.pack(padx=1, side=tk.LEFT)
             frm11.pack(side=tk.TOP, fill=tk.X)
             frm12.pack(side=tk.TOP, fill=tk.X)
@@ -342,7 +342,7 @@ def main(opt, arguments):
 
     logging.info('Display infectious portions of time-lines')
     itl, rtl = results.infection_times, results.removal_times
-    for i, (t0, t1) in zip(count(), zip_longest(itl, rtl, fillvalue='-')):
+    for i, (t0, t1) in zip(count(), zip_longest(itl, rtl, fillvalue=INFINITY)):
         try:
             app.segment(t0, i, t1, i, tag='Infectious')
             app.removal(t1, i, tag='R') 
@@ -374,11 +374,19 @@ def main(opt, arguments):
             app.segment(mdr, i, nfy, i, tag='nofly')
 
     logging.info('Display West')
-    print(list(enumerate(results.West)))
     for i, (t0, t1) in enumerate(results.West):
-        if t0 != "Infinity":
-            app.segment(t0, i, t1, i, tag='West')
-            app.disk(t1, i, r=6, tag='West')
+        if t0 != INFINITY:
+            if t1 != INFINITY:
+                app.segment(t0, i, t1, i, tag='West')
+                app.disk(t1, i, r=6, tag='West')
+            else:
+                app.segment(t0, i, T, i, tag='West')
+
+    logging.info('Display last viable infections')
+    # print(list(enumerate(results.last_viable)))
+    for i, t in enumerate(results.last_viable):
+        if t != INFINITY:
+            app.segment(t, i, t, i + 1, tag='lvI')
 
     logging.info('Format the graphical elements according to "on" option')
     app.style()

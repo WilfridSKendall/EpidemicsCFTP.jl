@@ -31,7 +31,10 @@ import logging
 import os
 import sys
 
-from itertools import chain, count
+from itertools import chain, count, zip_longest
+
+
+INFINITY = "Infinity"
 
 
 #\section{Exceptions}
@@ -145,6 +148,7 @@ class Results(object):
         self.latent_removals = []
         self.mordor = []
         self.West = []
+        self.viable = []
 
     def __str__(self):
         summary = ["Time    S, I, R"]
@@ -316,17 +320,56 @@ class FreeEpidemic(object):
 
         logging.info('Compute West')
         wtl = self.results.West
-        for i, (t0, t1) in enumerate(zip(itl, rtl)):
-            if i >= remo:
-                break
+        eventl = list(zip_longest(itl, rtl, fillvalue=INFINITY))
+        for i, (t0, t1) in enumerate(eventl):
+            # if i >= remo:
+            #     break
             rmvl = self.innov.remove[i]
-            try:
+            if t0 == INFINITY:
+                t = INFINITY
+            elif t1 == INFINITY:
                 # I think removals should follow infections!
-                t = min([u for u in rmvl if t0 <= u and u <= t1])
-                wtl.append((t, t1))
-            except ValueError:
-                wtl.append(("Infinity", "Infinity"))
-        
+                try:
+                    t = min([u for u in rmvl if t0 <= u])
+                except ValueError:
+                    t = t0
+            else:
+                # I think removals should follow infections!
+                try:
+                    t = min([u for u in rmvl if t0 <= u and u <= t1])
+                except ValueError:
+                    t = t0
+            wtl.append((t, t1))
+
+        logging.info('Compute last viable infections')
+        wtl = self.results.West
+        lil = self.results.latent_infections
+        liv = self.results.last_viable = []
+
+        li = INFINITY
+        for i, (t0, t1) in reversed(list(enumerate(wtl))):
+            if li == INFINITY:
+                li = t0
+            elif t0 != INFINITY:
+                li = min(t0, li)
+            # No need to do anything if #t0 == INFINITY#.
+            if i > 0 and t0 != INFINITY:
+                preinfect = self.results.infection_times[i]
+                if li == INFINITY:
+                    lil1 = lil[i - 1]
+                else:
+                    lil1 = [s for s in lil[i - 1] if preinfect <= s and s < li]
+
+                if self.results.infection_times[i] == 0:
+                    li = self.results.infection_times[i]
+                elif lil1:
+                    li = max(lil1)
+                else:
+                    li = self.results.infection_times[i]
+                
+                liv.append(li)
+        liv.reverse()
+
         logging.info("Return results as data record object")
         return self.results
 

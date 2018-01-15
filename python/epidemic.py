@@ -317,6 +317,11 @@ class FreeEpidemic(object):
                 nofly = 0
             nofly = max(nofly, mtl[i])
             self.results.nofly_zone[i] = nofly
+        # Now adjust to ensure #nofly_zone# is non-decreasing.
+        nofly = self.results.nofly_zone[0]
+        for i in range(len(self.results.nofly_zone)):
+            nofly = max(nofly, self.results.nofly_zone[i])
+            self.results.nofly_zone[i] = nofly
 
         logging.info('Compute West')
         wtl = self.results.West

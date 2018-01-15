@@ -65,3 +65,7 @@ only the implemented removal is visible.
 
 ![West](image/inline-West.png){width=100} illustrates tag ending `West`: infection must occur before these orange portions of rows if removals are to be unchanged.
 
+----
+
+![lvI](image/inline-lvI.png){width=100} illustrates tag ending `lvI`: last viable infection times are indicated by pink arrows. Note that in case infection occurs at time `0`, then this is deemed to be the last viable infection time!
+

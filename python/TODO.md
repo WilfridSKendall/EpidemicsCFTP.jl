@@ -13,7 +13,7 @@ Still to be done
  - **DONE:** Colour-code potential infections according to whether or not they are active.
  - Introduce conditioned observed removals(!).
  - **DONE:** Compute Mordor, no-fly zone
- - Compute last feasible infections.
+ - **DONE:** Compute last feasible infections.
  - Produce a dynamic version, which updates according to our algorithm using a new `Innovations` instance which possesses an `update` method.
  - Check monotonicity using many random runs.
  - Implement _CFTP_.

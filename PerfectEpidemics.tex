@@ -14,22 +14,23 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Bibtex
-\usepackage[longnamesfirst]{natbib}
-\setcitestyle{round}
+% \usepackage{natbib}
+% \usepackage[longnamesfirst]{natbib}
+% \setcitestyle{round}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Font selection
-\usepackage{times}
-\usepackage[T1]{fontenc}
-% \usepackage[utf8x]{inputenc}
-% \usepackage{ccfonts,eulervm}
-% \usepackage[expert,altbullet,seriftt]{lucidabr}
+% \usepackage{times}
+% \usepackage[T1]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage{ccfonts,eulervm}
+\usepackage[expert,altbullet,seriftt]{lucidabr}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Tracking queries (NB also loads colours!)
 % \RequirePackage[no-comment]{WSKtracking}  %% Colour and Graphics
 \usepackage{graphicx}
-\graphicspath{{./image/}}
+\graphicspath{{image/}}
 \RequirePackage{WSKtracking}  %% Colour and Graphics
 
 \definecolor{linkcolor}{named}{Maroon}
@@ -68,7 +69,7 @@
  \hypersetup{
  pdfauthor={Stephen B. Connor and Wilfrid S. Kendall},
  pdftitle={\Title},
-% pdfsubject={Coupling for Brownian motions augmented with local times},
+ pdfsubject={Construction of CFTP simulations for epidemics},
  }
  \hypersetup{pdfstartview=FitH}
  \hypersetup{citecolor=citecolor}
@@ -92,20 +93,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Document
  \begin{document}
- \TrackingPreamble
+%  \TrackingPreamble
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Title page
  \title{\Title}
  \author{%
 \href{http://maths.york.ac.uk/www/sbc502}{Stephen B. Connor}% 
-\footnote{\href{mailto:stephen.connor@york.ac.uk}%
-{\scriptsize stephen.connor@york.ac.uk}}
+% \footnote{\href{mailto:stephen.connor@york.ac.uk}%
+% {\scriptsize stephen.connor@york.ac.uk}}
 \ and
 \href{http://warwick.ac.uk/wsk}{Wilfrid S. Kendall}%
-\footnote{\href{mailto:w.s.kendall@warwick.ac.uk}%
-{\scriptsize w.s.kendall@warwick.ac.uk}}
- \footnote{WSK supported by EPSRC Research Grant EP/K013939.}
+% \footnote{\href{mailto:w.s.kendall@warwick.ac.uk}%
+% {\scriptsize w.s.kendall@warwick.ac.uk}}
+%  \footnote{WSK supported by EPSRC Research Grant EP/K013939.}
 }
  \date{\Date}
  \maketitle

@@ -22,9 +22,9 @@
 %% Font selection
 \usepackage{times}
 \usepackage[T1]{fontenc}
-\usepackage[utf8x]{inputenc}
-\usepackage{ccfonts,eulervm}
-\usepackage[expert,altbullet,seriftt]{lucidabr}
+% \usepackage[utf8x]{inputenc}
+% \usepackage{ccfonts,eulervm}
+% \usepackage[expert,altbullet,seriftt]{lucidabr}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Tracking queries (NB also loads colours!)
@@ -154,7 +154,7 @@ work by Frank Ball and others on coupling for epidemics, also
 
 The aim of this paper is to show how to conduct a perfect simulation of an \SIR epidemic, 
 conditional on a given infection rate of \(\alpha\) per ordered pair of infected and susceptible individuals and a given removal rate of \(\beta\) per infected individual, 
-and also conditioned on observation of the removals, presuming that all individuals are eventually infected and then removed from the population.%
+and also conditioned on observation of the removals, presuming that all individuals are eventually infected and then removed from the population.
 \NB[WSK2]{Need to consider partial epidemics too, in which not all individuals are infected (and we may not know the true population size!}
 Thus we seek to sample perfectly from the conditional distribution of infection incidents.
 
@@ -176,7 +176,8 @@ the purpose is to map out the general flow of the argument leading to perfect si
  \section{Poisson processes and \SIR epidemics}\label{sec:SIR}
 % Use Poisson streams of potential incidents to generate S-I-R processes.
 %
-We begin by describing how to build \SIR epidemics using Poisson streams of potential incidents.
+We begin by rehearsing how to build \SIR epidemics using Poisson streams of potential incidents
+in the simplest possible fashion.
 
 Suppose that the total population comprises \(n\) individuals.
 Using the terminology of interacting particle systems (see for example \citealp[Section III.6]{Liggett-1985}), an unconditioned \SIR epidemic can be realized using a \emph{graphical representation}.
@@ -190,26 +191,32 @@ one copy of the process time-axis \([0,\infty)\) for each individual in the popu
     \item and by using \(\tbinom{n}{2}\) independent Poisson processes of potential infections 
     (one Poisson (\(\alpha\)) process per unordered pair of time-lines of two individuals, producing a stream of potentially infectious contacts).
    \end{enumerate}
- These streams of potential infection and removal incidents allow us to simulate \SIR epidemics from all possible sets of initial conditions simultaneously,%
+ These streams of potential infection and removal incidents allow us to simulate \SIR epidemics from all possible sets of initial conditions simultaneously,
 \NB[WSK2]{Note possibility of omnithermal simulation?}
  using the two following natural rules: 
  \newline
- (1) potential removal incidents are realized as actual removals if and only if the corresponding individual is actually infected just before the incident,
- and in this case the individual changes from infected to removed at the time of the incident;
+ (1) potential removal incidents are realized as actual removals if and only if the corresponding individual 
+ has not yet been removed before the time of the incident,
+ and at that time the individual is infected.
+ In this case the individual changes from infected to removed at the time of the incident;
  \newline
  (2)
- potential infections are realized as actual infections if one of the two corresponding individuals is actually infected just before the incident
- and the other is susceptible, and in this case the susceptible individual changes from susceptible to infected at the time of the incident.
- In theory we could carry out such simulations running over the complete process time-scale \([0,\infty)\),
- though in practice we will restrict attention to some bounded time-interval \([0,T]\).%
-\NB[WSK2]{Hence $T$, the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic, recurs throughout this exposition!}
+ potential infections are realized as actual infections if the two corresponding individuals have neither been removed before the time of the incident,
+ and at that time one is infected
+ and the other is susceptible.
+ In this case the susceptible individual changes from susceptible to infected at the time of the incident.
+ 
+ In theory such simulations can be continued over the complete process time-scale \([0,\infty)\),
+ though in practice we will restrict attention to some bounded time-interval \([0,T]\).
+\NB[WSK2]{Throughout this exposition $T$ will denote the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic.}
 
- To enable precise statements about transitions, we adopt the convention that the trajectories of the states of individuals all possess the ``c\`adl\`ag'' property. 
+ To facilitate precise statements about transitions, we adopt the convention that the trajectories of the states of individuals all possess the ``c\`adl\`ag'' property. 
  This is to say, the trajectories are continuous from the right (``continue \`a droite'') and have limits from the left (``limites \`a gauche'').
  
- The above construction of an SIR epidemic uses the simplest graphical representation.
- For purposes of perfect simulation we will need to consider a slightly more complicated variant;
- however for the purposes of exposition we first make some remarks about the simpler case.
+ The above construction of an SIR epidemic uses the simplest possible graphical representation.
+ For purposes of perfect simulation,
+ we will need to consider a more complicated variant.
+ However for the purposes of exposition we first make some remarks about the simpler case.
  
  % =========================================   
  \section{Algorithmic time and simulation of stochastic dynamics}\label{sec:algorithmic}

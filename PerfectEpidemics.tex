@@ -22,9 +22,9 @@
 %% Font selection
 \usepackage{times}
 \usepackage[T1]{fontenc}
-\usepackage[utf8x]{inputenc}
-\usepackage{ccfonts,eulervm}
-\usepackage[expert,altbullet,seriftt]{lucidabr}
+% \usepackage[utf8x]{inputenc}
+% \usepackage{ccfonts,eulervm}
+% \usepackage[expert,altbullet,seriftt]{lucidabr}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Tracking queries (NB also loads colours!)
@@ -224,13 +224,14 @@ one copy of the process time-axis \([0,\infty)\) for each individual in the popu
  The spatial immigration-death processes being stationary, the spatial patterns formed by these immigration-death processes at any specific algorithmic time \(\tau\) then constitute
  independent Poisson streams of potential incidents (viewed in process time) as required by the graphical representation described in the first step above.
  Thus at a given algorithmic time \(\tau\) the pattern of potential infections and potential removals can be used to construct an entire trajectory of an \SIR epidemic evolving in process time.
- One can visualize algorithmic time as running orthogonal to the process time axis \([0,\infty)\).
+ Algorithmic time is conveniently visualised
+ as running orthogonal to the process time axis \([0,\infty)\).
  (Compare the use of algorithmic time to construct a simple but efficient non-Markovian coupling in \citealp{BanerjeeKendall-2015}.)
 
 By construction, this trajectory-valued Markov chain running in algorithmic time has the \SIR epidemic as invariant distribution.
 Renewal-theoretic arguments using small-set theory can 
 be used to
-show that the Markov chain converges to the \SIR epidemic as a unique statistical equilibrium.%
+show that the Markov chain converges to the \SIR epidemic as a unique statistical equilibrium.
 \NB[WSK2]{Give details about the renewal-theoretic arguments using small-set theory showing that the free Markov chain converges to a unique statistical equilibrium}
 Moreover this construction allows us to simulate the evolution in algorithmic time of simultaneous coupled realizations of \SIR epidemics from all possible sets of initial conditions.
  We will say that the stochastic dynamics of a given realization is that of the \emph{free} Markov chain.
@@ -245,7 +246,7 @@ This is somewhat related to an ongoing programme investigating immersion couplin
  If the algorithmic-time process is in equilibrium at time \(\tau\), then the trajectory \((\widetilde{S}, \widetilde{I}, \widetilde{R})\), viewed in process time, forms an \SIR epidemic.
 \end{thm}
 \begin{proof}[Sketch proof]
- Show that the process \((\widetilde{S}, \widetilde{I}, \widetilde{R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
+ One shows that the process \((\widetilde{S}, \widetilde{I}, \widetilde{R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
  citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
  \NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-1}.}
 \end{proof}

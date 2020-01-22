@@ -292,23 +292,45 @@ visualize algorithmic time as running orthogonal to the process time axis \([0,\
 
 By construction, this trajectory-valued Markov chain (running in algorithmic time) has the \SIR epidemic as invariant distribution.
 We focus on the chain formed by observing trajectories 
-over the process time-tange \([0,T]\) only.
+over the process time-range \([0,T]\) only.
 Renewal-theoretic arguments using small-set theory can 
 be used to
-show that the Markov chain  
-converges to the \SIR epidemic as a unique statistical equilibrium.%
-\NB[WSK2]{Give details about the renewal-theoretic arguments using small-set theory showing that the free Markov chain converges to a unique statistical equilibrium}
-Moreover this construction allows us to simulate the evolution in algorithmic time of simultaneous coupled realizations of \SIR epidemics from all possible sets of initial conditions.
- We will say that the stochastic dynamics of a given realization is that of the \emph{free} Markov chain.
+show that the Markov chain of trajectories over \([0,T]\)  
+converges to the \SIR epidemic as a unique statistical equilibrium: a convenient small set
+(actually a regenerative atom)
+is given by the state in which none of
+the \(n+\tbinom{n}{2}\) 
+ independent stationary 
+ spatial immigration-death processes place 
+ any incidents at all in the time interval \([0,T]\).
+ Since each of the spatial immigration-death processes
+ is positive recurrent when restricted to the range 
+ \([0,T]\), it follows that this regenerative 
+ atom will almost surely be visited by the ensemble of
+ these processes, from which the existence
+ and uniqueness of the statistical equilibrium 
+ follow by classical coupling arguments.
+\xNB[WSK2]{Give details about the renewal-theoretic arguments using small-set theory showing that the free Markov chain converges to a unique statistical equilibrium}
+% Moreover this construction allows us to simulate the evolution in algorithmic time of simultaneous coupled realizations of \SIR epidemics from all possible sets of initial conditions.
+ 
+ We refer to the stochastic dynamics of a given realization is that of the \emph{free} 
+ (trajectory-valued) Markov chain.
   We will seek coupling methods which are useful to analyze the process \((X, F(X))\), 
 where \(F\) is a given measurable function of an \SIR-realization-valued Markov chain \(X\). 
-This is somewhat related to an ongoing programme investigating immersion coupling for nilpotent diffusions (for recent overviews, see \citealp{Kendall-2009d,Kendall-2013a}).
+This is somewhat related to an ongoing programme investigating immersion coupling for nilpotent diffusions,
+since nilpotent diffusion coupling corresponds 
+to coupling of a base-level process 
+together with some of its
+functionals (for recent overviews, see \citealp{Kendall-2009d,Kendall-2013a}).
  
 
  \begin{thm}\label{thm:SIR-epidemic-1}
  Suppose \(\widetilde{S}_t\), \(\widetilde{I}_t\), \(\widetilde{R}_t\) measure the susceptibles, infectives, and removals 
  arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process described above.
- If the algorithmic-time process is in equilibrium at time \(\tau\), then the trajectory \((\widetilde{S}, \widetilde{I}, \widetilde{R})\), viewed in process time, forms an \SIR epidemic.
+ If the algorithmic-time process is in equilibrium at  algorithmic time \(\tau\), 
+ then the trajectory \((\widetilde{S}, \widetilde{I}, \widetilde{R})\), viewed as process time varies
+ for fixed
+ \(\tau\), forms an \SIR epidemic.
 \end{thm}
 \begin{proof}[Sketch proof]
  Show that the process \((\widetilde{S}, \widetilde{I}, \widetilde{R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  

@@ -364,7 +364,7 @@ the \(n+\tbinom{n}{2}\)
 \xNB[WSK2]{Give details about the renewal-theoretic arguments using small-set theory showing that the free Markov chain converges to a unique statistical equilibrium}
 % Moreover this construction allows us to simulate the evolution in algorithmic time of simultaneous coupled realizations of \SIR epidemics from all possible sets of initial conditions.
  
- We refer to the stochastic dynamics of a given realization is that of the \emph{free} 
+ We refer to the stochastic dynamics of a given realization as those of the \emph{free} 
  (trajectory-valued) Markov chain.
   We will seek coupling methods which are useful to analyze the process \((X, F(X))\), 
 where \(F\) is a given measurable function of an \SIR-realization-valued Markov chain \(X\). 
@@ -419,7 +419,7 @@ Accordingly we can deduce that
 solves the martingale problem \citep{StroockVaradhan-1979}
 for an \SIR epidemic
 in process time when sampled in equilibrium in algorithmic time.
- \xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-1}.}
+\xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-1}.}
 \end{proof}
 
 
@@ -428,15 +428,22 @@ in process time when sampled in equilibrium in algorithmic time.
  \section{Restrictions, conditioning and a modified construction}\label{sec:restrictions}
 % Implementing conditioning on removals by fixing actual times of removal for the dynamic process evolving in algorithmic time.
 %
- The independent immigration-death processes,
- as described in Section \ref{sec:algorithmic} above, are reversible in time, 
+ Immigration-death processes in equilibrium are time-reversible, 
  and the resulting evolution of the \SIR trajectory realization therefore inherits the time-reversibility property. 
- This facilitates the task of sampling from \emph{conditioned} realizations: 
+ This makes it much easier to sample from \emph{conditioned} realizations of the \SIR trajectory: 
  suppose that our target is to draw from the \SIR distribution with trajectory conditioned to lie in a fixed subset \(A\) of the space of possible trajectories.
- So long as irreducibility\NB[WSK2]{Better to talk about Harris property rather than irreducibility?!} is preserved, 
- we can obtain this conditional distribution as the statistical equilibrium of a Metropolis-Hastings sampler: 
+ So long as 
+ the conditioned trajectory process
+ (evolving in algorithmic time) remains
+ irreducible,
+\xNB[WSK2]{Better to talk about Harris property rather than irreducibility?!} 
+ we can obtain the conditional distribution as the statistical equilibrium of a Metropolis-Hastings sampler restricted to an irreducible subset \(A\) of 
+ trajectory state space: 
  view each birth or death of a potential incident as a Metropolis-Hastings proposal, 
- to be accepted if the trajectory remains in \(A\) and rejected otherwise. We say this modified Markov chain is the \emph{constrained} Markov chain.
+ to be accepted if the trajectory remains 
+ confined to \(A\) and otherwise rejected. We say this modified Markov chain is the \emph{constrained} 
+ (trajectory-valued)
+ Markov chain.
 
 
 % \TBC{
@@ -453,18 +460,26 @@ in process time when sampled in equilibrium in algorithmic time.
 % so long as the modified Markov chain is irreducible then it can be shown that the modified chain will automatically converge in distribution to an equilibrium which is the target conditional distribution.
 
 
- If we wish to condition on actual times of removal then this convergence result is not applicable in the form prescribed above.
- Suppose we consider the case when there is just one initial infective and we condition on \(n-1\) specified times of removal (almost surely there then will be \(n-1\) such times).
+ If we wish to condition on actual times of removals
+ of specific individuals
+ then irreducibility is violated 
+ and we cannot apply the above arguments.
+ To see why, consider the case when there is just one initial infective and we condition on \(n-1\) specified times of actual
+ removal of specific individuals (almost surely there then will be \(n-1\) such times).
  The resulting subset \(A\) of trajectory space produces a \emph{reducible} constrained Markov chain, since it is not possible to alter which individual is removed at the first removal time, \emph{et cetera}.
  This could perhaps be overcome using symmetry considerations;
  however it also appears to be difficult to discover any monotonicity structure, given the exchangeability of the \(n\) individuals involved.
- These considerations motivate the introduction of a variant graphical representation of the free Markov chain 
- (and consequently of a variant constrained Markov chain in algorithmic time).
+ Monotonicity considerations are vastly important 
+ for \CFTP implementation, so this
+ motivates the introduction of a variation
+ on the graphical representation of the free Markov chain 
+ (and consequently of the resulting 
+ constrained Markov chain).
 
  The first component of the variation is to observe that we can require that the initial configuration of \(R_0\) removed, \(I_0\) infected, and \(S_0\) susceptible individuals must be arranged in index order, 
  with individuals \(1, \ldots, R_0\) being initially removed, \(R_0+1, ..., R_0+I_0\) initially infected, and \(R_0+I_0+1, \ldots, R_0+I_0+S_0=n\) initially susceptible.
  There is no loss of generality in setting \(R_0=0\)
- (since removed individuals have no further effect on the stochastic evolution of the trajectory).
+ (since individuals once removed have no further effect on the evolution of the trajectory in process time).
 
  We now change the dynamics of the algorithmic time evolution so that for all algorithmic times \(\tau\) 
  the removals, infectives and susceptibles represent three contiguous ranges partitioning \(\{1, \ldots, n\}\): 
@@ -512,7 +527,7 @@ removal incidents.)
 %  \item Exactly at time \((m-1)T\) we re-sample the uniform marks corresponding to the various removal incidents. 
 %  (This step will prove to be crucial if we are to ensure that the result of restricting actual realized removals to specific nominated times still leads to an irreducible Markov chain.)
   \item Over the algorithmic time interval \(((2k-1)T, 2kT]\),%
-  \xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $2kT$! Almost surely this will never happen.}
+\xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $2kT$! Almost surely this will never happen.}
   we re-sample all the potential infections as follows: create a new sample of potential infections over process time interval \([0,T]\),
   by algorithmic time \((2k-1)T+t\) (for \(0\leq t< T\))
   by replacing old potential infection incidents in process time interval \([T-t,T]\) by the corresponding new potential infection incidents in process time interval \([T-t,T]\).
@@ -532,7 +547,7 @@ and further arguments assure us that this is the unique equilibrium distribution
  Verify detailed (perhaps dynamic) balance is satisfied.
  Show that the process \(({S}, {I}, {R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
  citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
- \NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
+\NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
  Establish convergence to equilibrium.
 \end{proof}
 
@@ -557,7 +572,7 @@ and further arguments assure us that this is the unique equilibrium distribution
 
  Suppose the state-space is restricted by fixing all \(n\) observed removal times as \(0<\rho_1<\rho_2<\ldots<\rho_n\).
  The resulting restrictions on the Markov chain in algorithmic time are as follows:%
- \NB[WSK1]{Check the list of relevant restrictions on the Markov chain in algorithmic time.}
+\NB[WSK1]{Check the list of relevant restrictions on the Markov chain in algorithmic time.}
  \begin{enumerate}
   \item Any proposal to introduce a potential removal (other than conditioned removals) is refused if it would result in the introduction of a new \emph{active} removal 
   (equivalently, the introduction of potential removals occurring on infected parts of timelines is always refused). 
@@ -623,7 +638,7 @@ Figure \ref{fig:graphical} illustrates this construction.\NB[SBC]{Need to change
 \begin{proof}[Sketch proof]
  Again we will appeal to detailed (perhaps dynamic) balance.
  Note that the simulation in algorithmic time of this conditioned \SIR epidemic is in this case irreducible, hence allowing the convergence result.%
- \NB[WSK2]{Need to explain carefully the irreducibility required for Theorem \ref{thm:conditioned-SIR-epidemic}, arising because here we count numbers not individuals.}
+\NB[WSK2]{Need to explain carefully the irreducibility required for Theorem \ref{thm:conditioned-SIR-epidemic}, arising because here we count numbers not individuals.}
 \end{proof}
  
  
@@ -701,7 +716,7 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
 %   \end{cases}
  \end{align}
  That is, timeline \(m\) becomes infected at the time of the earliest infection occurring after timeline \(m-1\) is infected, and which avoids the no-fly zone.
- \NB[SBC]{I've added reference to the no-fly zone into this definition. Poss not needed under conditioning, but I think that it makes the proof of monotonicity clearer later on.}
+\NB[SBC]{I've added reference to the no-fly zone into this definition. Poss not needed under conditioning, but I think that it makes the proof of monotonicity clearer later on.}
  Note that \(\phi_m=\infty\) cannot be allowed to occur for any \(m\) if we condition on all individuals eventually being removed.%
 \xNB[WSK2]{Reformulate (\ref{eq:epidemic}) in a manner similar to that of (\ref{eq:last-epidemic}): avoid the case of $\infty$ by noting this won't happen under conditioning.}
  Necessarily the epidemic must avoid the no-fly zone. Figure \ref{fig:epidemic} illustrates this construction.
@@ -753,7 +768,7 @@ However it is always possible for \(\Removals_m=\emptyset\) for some or all \(m\
  \end{Figure}
 
  The fourth region
- \NB[SBC]{Not sure that we need 4th and 5th zones now?}
+\NB[SBC]{Not sure that we need 4th and 5th zones now?}
  (\emph{``post-infection'' zone}) is made up of those parts of infected timelines from which it would not be possible for an epidemic to proceed to completion,
  while the fifth region (the \emph{``dead zone''}) is made up of those parts of timelines which correspond to individuals removed from the epidemic (Figure \ref{fig:fourth-and-fifth}).
  Note that the total of infected portions of timelines is made up of
@@ -794,7 +809,7 @@ not infected at time \(\rho\).
  
  It is always possible to delete a potential infection.
  An active infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last viable epidemic; 
- \NB[SBC]{When working right-to-left in algorithmic time, updating the
+\NB[SBC]{When working right-to-left in algorithmic time, updating the
  	values of $\phi_m$ and $\eta_m$ as we go. This might need to be clarified!}
  if it \emph{does} belong to both these epidemics then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
  In other words, if \(\phi_m=\eta_m\) for some \(m\), the (necessarily

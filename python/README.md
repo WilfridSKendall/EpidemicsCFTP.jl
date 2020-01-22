@@ -7,7 +7,7 @@ In `Ubuntu` use the following on the command-line:
 
     sudo apt-get install pandoc python3-tk python3-pil
 
-I belive these are all that is required.
+I believe these are all that is required.
  
 Testing FreeEpidemic
 ====================

@@ -138,7 +138,7 @@ spatial immigration-death process;
 
 % =========================================   
  \section{Introduction}\label{sec:introduction}
-\TBC{  Long-ago previous work, from which we can eventually build up a historical account (no particular need to look at this right now!):\\
+\TBC{  Review the following long-ago previous work, from which we can eventually build up a historical account (no particular need to look at this right now!):\\
 work by Frank Ball and others on coupling for epidemics, also
    \cite{KendallSaunders-1983},
    \cite{Kendall-1998d},
@@ -156,7 +156,7 @@ work by Frank Ball and others on coupling for epidemics, also
  \\
  \cite{ONeill-2003} discusses perfect simulation
  for Reed-Frost epidemics (no removals, discrete-time)
- given final size of the epidemic.
+ given fixed final size of the epidemic.
  \\
  We have a less ambitious objective to start with (to make inferences about the actual pattern of infections conditional on \(\alpha\) and \(\beta\) as well as observed removals, working up to a fixed time horizon, with known total population,
  based on a perfect simulation method).
@@ -237,6 +237,8 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  and the other is susceptible.
  In this case the susceptible individual changes from susceptible to infected at the time of the incident.
  \end{enumerate}
+ 
+ \TBC{Add a figure here}
  
  To facilitate precise statements about transitions, 
  we adopt the convention that 
@@ -321,19 +323,21 @@ In theory such simulations can be continued over the complete process time-scale
 %  the spatial patterns formed by
  these immigration-death processes form spatial patterns which correspond to
  independent Poisson streams of potential incidents (viewed in \emph{process} time),
- as required by the graphical representation described in the first step above.
+ as required by the graphical representation described in 
+ Section \ref{sec:SIR}.
+%  the first step above.
  Thus at a given algorithmic time \(\tau\) the pattern of potential infections and potential removals can be used to construct an entire trajectory of an \SIR epidemic evolving in process time.
 
  
 It can be helpful to
-visualize algorithmic time \(\Reals\)
+visualize the algorithmic time axis \(\Reals\)
 as running orthogonal to the process time axis \([0,\infty)\): incidents can then be viewed as
 produced by Poisson marked segment processes
 in \(\Reals\times[0,\infty)\) for which all segments
 run parallel to the first coordinate.
 The Poisson process of potential removal incidents
 \([a,b]\times \{t\}\) for individual \(i\)
-has intensity measure \(e^{-(b-a)}\Indicator{a<b}{\d}a{\d}b{\d}t\), with incidents marked by integer \(i\).
+has intensity measure \(e^{-(b-a)}\Indicator{a<b}{\d}a{\d}b{\d}t\), with incidents marked by the integer \(i\).
 The Poisson process of potential infection incidents
 \([a,b]\times \{t\}\) for individuals \(i\)
 and \(j\)
@@ -357,37 +361,47 @@ the \(n+\tbinom{n}{2}\)
  Since each of the spatial immigration-death processes
  is positive recurrent when restricted to the range 
  \([0,T]\), it follows that this regenerative 
- atom will almost surely be visited by the ensemble of
- these processes, from which the existence
+ atom will almost surely be visited by the ensemble
+\NB[WSK3]{``ensemble of these processes'': is there a better way to describe this?}
+ of
+ these processes.
+%  , from which the 
+ The existence
  and uniqueness of the statistical equilibrium 
- follow by classical coupling arguments.
+ follow 
+ from these observations
+ by classical coupling arguments.
 \xNB[WSK2]{Give details about the renewal-theoretic arguments using small-set theory showing that the free Markov chain converges to a unique statistical equilibrium}
 % Moreover this construction allows us to simulate the evolution in algorithmic time of simultaneous coupled realizations of \SIR epidemics from all possible sets of initial conditions.
  
  We refer to the stochastic dynamics of a given realization as those of the \emph{free} 
  (trajectory-valued) Markov chain.
-  We will seek coupling methods which are useful to analyze the process \((X, F(X))\), 
-where \(F\) is a given measurable function of an \SIR-realization-valued Markov chain \(X\). 
-This is somewhat related to an ongoing programme investigating immersion coupling for nilpotent diffusions,
-since nilpotent diffusion coupling corresponds 
-to coupling of a base-level process 
-together with some of its
-functionals (for recent overviews, see \citealp{Kendall-2009d,Kendall-2013a}).
+%   We will seek coupling methods which are useful to analyze the process \((X, F(X))\), 
+% where \(F\) is a given measurable function of an \SIR-realization-valued Markov chain \(X\). 
+% This is somewhat related to an ongoing programme investigating immersion coupling for nilpotent diffusions,
+% since nilpotent diffusion coupling corresponds 
+% to coupling of a base-level process 
+% together with some of its
+% functionals (for recent overviews, see \citealp{Kendall-2009d,Kendall-2013a}).
  
 
  \begin{thm}\label{thm:SIR-epidemic-1}
  Suppose \(\widetilde{S}_t\), \(\widetilde{I}_t\), \(\widetilde{R}_t\) measure the susceptibles, infectives, and removals 
- arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process described above.
- If the algorithmic-time process is in equilibrium at  algorithmic time \(\tau\), 
- then the trajectory \((\widetilde{S}, \widetilde{I}, \widetilde{R})\), viewed as process time varies
- for fixed
- \(\tau\), forms an \SIR epidemic.
+ arising at process time \(t\)
+ in stochastic equilibrium for the algorithmic-time process described above.
+ If the algorithmic-time process is in equilibrium at  algorithmic time 
+ \(\tau_0\), 
+ then the trajectory \((\widetilde{S}_t, \widetilde{I}_t, \widetilde{R}_t)\),
+ viewed as process time \(t\) varies
+ for fixed algorithmic time
+ \(\tau_0\), forms an \SIR epidemic.
 \end{thm}
 \begin{proof}[Sketch proof]
 Fixing algorithmic time \(\tau_0\),
-we view the incidents as produced by Poisson
+we view the incidents as produced by marked Poisson
 segment processes in the \((\tau,t)\) plane as above.
-The process \((\widetilde{S}, \widetilde{I}, \widetilde{R})\) is produced from incident segments
+The process \(\{(\widetilde{S}_t, \widetilde{I}_t, \widetilde{R}_t):t\geq0\}\) 
+is produced from incident segments
 intersecting the line \(\tau=\tau_0\),
 and is adapted to the filtration \(\Filtration\),
 where the \(\sigma\)-algebra
@@ -399,7 +413,7 @@ Consider the actual transitions (both infection
 and removal) resulting in changes of state 
 \((\widetilde{S}, \widetilde{I}, \widetilde{R})\).
 It is immediate from Poisson process theory
-that the conditional probability 
+that the conditional probability
 (given \(\Filter_t\))
 of two or more incidents
 occurring in the time interval \([t,t+s]\)
@@ -437,7 +451,7 @@ in process time when sampled in equilibrium in algorithmic time.
  (evolving in algorithmic time) remains
  irreducible,
 \xNB[WSK2]{Better to talk about Harris property rather than irreducibility?!} 
- we can obtain the conditional distribution as the statistical equilibrium of a Metropolis-Hastings sampler restricted to an irreducible subset \(A\) of 
+ we can obtain the conditional distribution as the statistical equilibrium of a Metropolis-Hastings sampler restricted to a given subset \(A\) of 
  trajectory state space: 
  view each birth or death of a potential incident as a Metropolis-Hastings proposal, 
  to be accepted if the trajectory remains 
@@ -464,31 +478,43 @@ in process time when sampled in equilibrium in algorithmic time.
  of specific individuals
  then irreducibility is violated 
  and we cannot apply the above arguments.
- To see why, consider the case when there is just one initial infective and we condition on \(n-1\) specified times of actual
- removal of specific individuals (almost surely there then will be \(n-1\) such times).
- The resulting subset \(A\) of trajectory space produces a \emph{reducible} constrained Markov chain, since it is not possible to alter which individual is removed at the first removal time, \emph{et cetera}.
+ To see why, consider the case when there is just one initial infective and we condition on there being precisely \(n>0\) specified times of actual
+ removal of specific individuals.
+%  (almost surely there then will be \(n-1\) such times).
+ The resulting subset \(A\) of trajectory space produces a \emph{reducible} constrained Markov chain, since 
+ the free trajectory-valued Markov chain cannot in one transition
+ alter which individual is removed at the first removal time, \emph{et cetera}.
  This could perhaps be overcome using symmetry considerations;
- however it also appears to be difficult to discover any monotonicity structure, given the exchangeability of the \(n\) individuals involved.
+ however it also appears to be difficult to discover any monotonicity structure, given the exchangeability of the \(n\) individuals involved
+ in the conditioned removals.
  Monotonicity considerations are vastly important 
  for \CFTP implementation, so this
- motivates the introduction of a variation
- on the graphical representation of the free Markov chain 
+ motivates the introduction of a 
+ variant of
+ the graphical representation of the free Markov chain 
  (and consequently of the resulting 
  constrained Markov chain).
 
- The first component of the variation is to observe that we can require that the initial configuration of \(R_0\) removed, \(I_0\) infected, and \(S_0\) susceptible individuals must be arranged in index order, 
+First observe that we can label
+individuals so that the initial configuration of \(R_0\) removed, \(I_0\) infected, and \(S_0\) susceptible individuals occurs in index order, 
  with individuals \(1, \ldots, R_0\) being initially removed, \(R_0+1, ..., R_0+I_0\) initially infected, and \(R_0+I_0+1, \ldots, R_0+I_0+S_0=n\) initially susceptible.
  There is no loss of generality in setting \(R_0=0\)
  (since individuals once removed have no further effect on the evolution of the trajectory in process time).
 
  We now change the dynamics of the algorithmic time evolution so that for all algorithmic times \(\tau\) 
- the removals, infectives and susceptibles represent three contiguous ranges partitioning \(\{1, \ldots, n\}\): 
- we obtain this by working with the following Poisson streams of potential incidents.
+ the removals, infectives and susceptibles 
+ continue to be represented by three contiguous ranges partitioning \(\{1, \ldots, n\}\): 
+ we obtain this by 
+ defining a new trajectory-valued Markov chain based on
+ the following Poisson streams of potential incidents.
  Potential removals form a Poisson (\(n\beta\)) point process \(\Lambda^R\) of incidents in algorithmic time, 
  independently marked by draws from a Uniform (\(\{1, \ldots, n\}\))
  distribution: these marks are used to assign potential removals to timelines. 
  A potential removal at process time \(t\) only becomes active if the corresponding mark lies in the interval
- \([R_{t-}+1,R_{t-}+I_{t-}]\). (Equivalently, if the potential removal
+ \([R_{t-}+1,R_{t-}+I_{t-}]\).
+\NB[WSK3]{Construction of new trajectory-valued Markov chain: differentiate between $\tau-$ and $\tau$?}
+ (This is equivalent to the requirement that
+ the potential removal
  is marked by the index of a timeline that is infected at time \(t-\).) In that
  case, the infected individual of \emph{lowest} index at time \(t-\) is switched from infective to removed at time \(t\), so \(R_t=R_{t-}+1\), \(I_t=I_{t-}-1\). 
 \xNB[WSK2]{Need to remark somewhere that all our random processes have \emph{c\`adl\`ag} trajectories.}

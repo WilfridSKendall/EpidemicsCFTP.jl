@@ -211,7 +211,6 @@ but its description usefully sets the scene.
 
 Suppose that the total population is comprised of \(n\) individuals.
 Using the terminology of interacting particle systems (see for example \citealp[Section III.6]{Liggett-1985}), an unconditioned \SIR epidemic can be realized using a \emph{graphical representation}.
-% <<<<<<< HEAD
 The simplest approach is to realize
 the evolution of an \SIR epidemic for this population of \(n\) individuals 
 using a set of \(n\) time-lines: 
@@ -254,35 +253,6 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  and ``an individual is in the removed state 
  at time \(t\)'' (the second statement
  includes the possibility of removal precisely at time \(t\)).
-% =======
-% Here is a simple example:
-% the evolution of an \SIR epidemic for this population of \(n\) individuals can be realized using a set of \(n\) time-lines: 
-% one copy of the process time-axis \([0,\infty)\) for each individual in the population.
-%  Potential infection and removal incidents can be simulated by using independent Poisson streams of the different kinds of potential incidents, namely:
-%    \begin{enumerate}
-%     \item by using \(n\) independent Poisson processes of potential removals 
-%     (one Poisson \((\beta\)) process per time-line of individual);
-%     \item and by using \(\tbinom{n}{2}\) independent Poisson processes of potential infections 
-%     (one Poisson (\(\alpha\)) process per unordered pair of time-lines of two individuals, producing a stream of potentially infectious contacts).
-%    \end{enumerate}
-%  These streams of potential infection and removal incidents allow us to simulate \SIR epidemics from all possible sets of initial conditions simultaneously,%
-% \NB[WSK2]{Note possibility of omnithermal simulation?}
-%  using the two following natural rules: 
-%  \newline
-%  (1) potential removal incidents are realized as actual removals if and only if the corresponding individual is actually infected just before the incident,
-%  and in this case the individual changes from infected to removed at the time of the incident;
-%  \newline
-%  (2)
-%  potential infections are realized as actual infections if one of the two corresponding individuals is actually infected just before the incident
-%  and the other is susceptible, and in this case the susceptible individual changes from susceptible to infected at the time of the incident.
-%  In theory we could carry out such simulations running over the complete process time-scale \([0,\infty)\),
-%  though in practice we will restrict attention to some bounded time-interval \([0,T]\).%
-% \NB[WSK2]{Hence $T$, the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic, recurs throughout this exposition!}
-% 
-%  If a potential removal or infection is realized as an actual incident, then from that point on we shall refer to the incident as \emph{active}\NB[SBC]{or `activated'?} rather than potential.
-%  To enable precise statements about transitions, we adopt the convention that the trajectories of the states of individuals all possess the ``c\`adl\`ag'' property. 
-%  This is to say, the trajectories are continuous from the right (``continue \`a droite'') and have limits from the left (``limites \`a gauche'').
-% >>>>>>> master
  
 In theory such simulations can be continued over the complete process time-scale \([0,\infty)\),
  though in practice we will restrict attention to some bounded time-interval \([0,T]\), for a fixed time horizon \(T\).
@@ -825,16 +795,12 @@ we denote this point-set by \(\Removals_m\).\NB[SBC]{Is this notation potentiall
 Similarly, we denote the point-set of \emph{conditioned} removals
 assigned to timeline \(m\) by \(\Conditioned_m\). We shall write 
 \[ \Conditioned_{m;n} = \bigcup_{s=m}^n \Conditioned_s \,, \quad\text{and}\quad \Removals_{1;m} = \bigcup_{s=1}^m \Removals_s \,. \]
-% <<<<<<< HEAD
 \xNB[SBC]{Possibly simplify notation by replacing $\Conditioned_{m+}$ with $\Conditioned_{m;n}$ and $\Removals_{m-}$ with $\Removals_{1;m}$?}
 % \xNB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
 % Finally we denote by  \(\mu_m\) the mark for the realized removal on time-line \(m\) (occurring at process-time \(\rho_m\)).
 % \xNB[SBC]{Possibly simplify notation by replacing $\Conditioned_{m+}$ with $\Conditioned_m$ and $\Removals_{m-}$ with $\Removals_m$?}
 % \xNB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
 % % Finally we denote by  \(\mu_m\) the mark for the realized removal on time-line \(m\) (occurring at process-time \(\rho_m\)).
-% >>>>>>> master
-% Note that \(\mu_m\geq m\) is required in order to ensure removal of individual \(m\) at time \(\rho_m\), per conditioning.%
-% \NB[WSK2]{We must have $\mu_m\geq m$ because we are running an \SIR epidemic conditioned so that individual $m$ is removed at time $\mu_m$.}
 
 %Note here that we have suppressed the implicit dependence of
 %\(\Infections_m\), \(\Removals_m\) and \(\Conditioned_m\) on the algorithmic time \(\tau\).

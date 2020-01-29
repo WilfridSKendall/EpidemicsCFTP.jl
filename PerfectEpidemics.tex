@@ -248,7 +248,9 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  
  To facilitate precise statements about transitions, 
  we require that 
- individual trajectories of states possess the ``c\`adl\`ag'' property. 
+ individual state trajectories 
+ (trajectories corresponding to evolution in process time)
+ possess the ``c\`adl\`ag'' property. 
  This is to say, epidemic trajectories are continuous 
  from the right (``continue \`a droite'')
  and have limits from the left (``limites \`a gauche'').
@@ -323,8 +325,9 @@ potential removal incidents
 % for individual \(i\)
 has intensity measure \(e^{-(b-a)}\Indicator{a<b}{\d}a{\d}b{\d}t\), with each 
 incident independently marked by 
-a random integer \(i\) drawn uniformly from 
-\(\{1, \ldots, n\}\), denoting the corresponding time-line (hence, individual to be removed).
+a draw from
+% random integer \(i\) drawn uniformly from 
+Uniform(\(\{1, \ldots, n\}\)) denoting the corresponding time-line (hence, individual to be removed).
 The Poisson process of 
 segments corresponding to potential infection incidents
 \([a,b]\times \{t\}\)
@@ -438,7 +441,7 @@ in process time when sampled in equilibrium in algorithmic time.
 %
  Immigration-death processes in equilibrium are time-reversible, 
  and the resulting evolution of the \SIR trajectory realization therefore inherits the time-reversibility property. 
- This makes it much easier to sample from \emph{conditioned} realizations of the \SIR trajectory: 
+ This property facilitates sampling from \emph{conditioned} realizations of the \SIR trajectory: 
  suppose that our target is to draw from the \SIR distribution with trajectory conditioned to lie in a fixed subset \(A\) of the space of possible trajectories.
  So long as 
  the conditioned trajectory process
@@ -475,8 +478,9 @@ in process time when sampled in equilibrium in algorithmic time.
  To see why, consider the case when there is just one initial infective and we condition on there being precisely \(n>0\) specified times of actual
  removal of specific individuals.
 %  (almost surely there then will be \(n-1\) such times).
- The resulting subset \(A\) of trajectory space produces a \emph{reducible} constrained Markov chain, since 
- the free trajectory-valued Markov chain cannot in one transition
+ The resulting subset \(A\) of trajectory space produces a \emph{reducible} constrained Markov chain, since
+ none of the permitted transitions of
+ the free trajectory-valued Markov chain can
  alter which individual is removed at the first removal time, \emph{et cetera}.
  This could perhaps be overcome using symmetry considerations;
  however it also appears to be difficult to discover any monotonicity structure, given the exchangeability of the \(n\) individuals involved
@@ -495,40 +499,110 @@ individuals so that the initial configuration of \(R_0\) removed, \(I_0\) infect
  There is no loss of generality in setting \(R_0=0\)
  (since individuals once removed have no further effect on the evolution of the trajectory in process time).
 
- We now change the dynamics of the algorithmic time evolution so that for all algorithmic times \(\tau\) 
+ We now change the dynamics of the algorithmic time evolution.
+ Firstly, we will work now in discrete
+ algorithmic time \(\Integers\) rather than continuous
+ algorithmic time \(\Reals\).
+ We will arrange matters 
+ so that for all algorithmic times \(\tau\) 
  the removals, infectives and susceptibles 
- continue to be represented by three contiguous ranges partitioning \(\{1, \ldots, n\}\): 
- we obtain this by 
- defining a new trajectory-valued Markov chain based on
- the following Poisson streams of potential incidents.
- Potential removals 
- are taken to constitute
- a Poisson (\(n\beta\)) point process \(\Poisson^R\) of incidents in algorithmic time, 
- independently marked by draws from a Uniform (\(\{1, \ldots, n\}\))
+ continue to be represented by three contiguous ranges partitioning \(\{1, \ldots, n\}\).
+ The new trajectory-valued Markov chain 
+ will based on streams of independent
+ Poisson point processes (with respect to process time) as follows:
+%  the following Poisson streams of potential incidents.
+\begin{enumerate}
+ \item potential removals at algorithmic time
+\(\tau\) form
+ a Poisson (\(n\beta\)) point process 
+ for which points are independently
+ marked by draws from a Uniform (\(\{1, \ldots, n\}\))
  distribution: these marks are used to assign potential removals to time-lines. 
- A potential removal at process time \(t\) only becomes active if the corresponding mark lies in the interval
- \([R_{t-}+1,R_{t-}+I_{t-}]\).
-\NB[WSK3]{Construction of new trajectory-valued Markov chain: differentiate between $\tau-$ and $\tau$?}
- (This is to say,
- the mark of the potential removal
- is the index of a time-line that is infected at time \(t-\).) In that
- case, the infected individual of \emph{lowest} index at time \(t-\) is switched from infected to removed at time \(t\), so \(R_t=R_{t-}+1\), \(I_t=I_{t-}-1\). 
-\xNB[WSK2]{Need to remark somewhere that all our random processes have \emph{c\`adl\`ag} trajectories.}
+ \\
+ A potential removal at process time \(t\) 
+ will only become active
+ if the corresponding mark lies in the interval
+ \([R_{t-}+1,R_{t-}+I_{t-}]\)
+ (corresponding to whether or not
+the mark of the potential removal
+ is the index of a time-line that is infected at time \(t-\)).
+ In this case \(I_t = I_{t-}-1\)
+ while
+ \(R_t = R_{t-}+1\).
 
-Similarly, potential infections arising from an individual \(m\) are taken to constitute
-a Poisson (\(m (n-m)\alpha\)) point process \(\Poisson^I\) of incidents in algorithmic time,  independently marked by draws from a Uniform (\(\{1, \ldots, m\}\)) distribution.
+ \item
+ potential infections at algorithmic time
+ \(\tau\)
+ which arise from an individual \(m\) 
+ form
+a Poisson (\(m (n-m)\alpha\)) point process for which points are independently
+ marked by draws from a Uniform (\(\{1, \ldots, m\}\)) distribution.
+ \\
 A potential infection at process time \(t\) arising from the \(m^\text{th}\) individual only becomes active if (a) individual \(m\) is currently (at time \(t-\)) the infected individual of \emph{highest} index, and 
  (b) the corresponding mark exceeds \(R_{t-}\).
  In that case, individual \(m+1\) is switched from susceptible to infected at time \(t\), so \(I_t=I_{t-}+1\), \(S_t=S_{t-}-1\).
+\end{enumerate}
+
+%  Potential removals 
+%  are taken to constitute
+%  a Poisson (\(n\beta\)) point process 
+% %  \(\Poisson^R\) 
+%  of incidents in algorithmic time, 
+%  independently marked by draws from a Uniform (\(\{1, \ldots, n\}\))
+%  distribution: these marks are used to assign potential removals to time-lines. 
+%  A potential removal at process time \(t\) 
+%  will only become active
+%  if the corresponding mark lies in the interval
+%  \([R_{t-}+1,R_{t-}+I_{t-}]\).
+% \xNB[WSK3]{Construction of new trajectory-valued Markov chain: differentiate between $\tau-$ and $\tau$?}
+%  (This is to say, if
+%  the mark of the potential removal
+%  is the index of a time-line that is infected at time \(t-\).) In that
+%  case, the infected individual of \emph{lowest} index at time \(t-\) is switched from infected to removed at time \(t\), so \(R_t=R_{t-}+1\), \(I_t=I_{t-}-1\). 
+% \xNB[WSK2]{Need to remark somewhere that all our random processes have \emph{c\`adl\`ag} trajectories.}
+% 
+% Similarly, potential infections arising from an individual \(m\) are taken to constitute
+% a Poisson (\(m (n-m)\alpha\)) point process \(\Poisson^I\) of incidents in algorithmic time,  independently marked by draws from a Uniform (\(\{1, \ldots, m\}\)) distribution.
+% A potential infection at process time \(t\) arising from the \(m^\text{th}\) individual only becomes active if (a) individual \(m\) is currently (at time \(t-\)) the infected individual of \emph{highest} index, and 
+%  (b) the corresponding mark exceeds \(R_{t-}\).
+%  In that case, individual \(m+1\) is switched from susceptible to infected at time \(t\), so \(I_t=I_{t-}+1\), \(S_t=S_{t-}-1\).
  
-All these marked Poisson point processes are independent of each
-other, and for both potential removal and infection incidents the Uniform marks are used to thin out
+% All these marked Poisson point processes are independent of each
+% other, and for 
+For 
+potential removal and infection incidents the Uniform marks are used to thin out
 the number of proposed incidents to match the correct rates for the \SIR epidemic. 
-It follows immediately
-from the construction, 
-using a simple induction over the time-ordered set of potential incidents, that at process time \(t\)
+% It follows immediately
+% from the construction, 
+A simple induction argument
+over the time-ordered set of potential incidents
+shows that at process time \(t\)
  the individuals \(1, \ldots, R_t\) are removed, \(R_t+1, ..., R_t+I_t\) are infected, and \(R_t+I_t+1, \ldots, R_t+I_t+S_t=n\) are susceptible.
 
+It is convenient to collect together all the
+potential removal and infection incidents
+at algorithmic time \(\tau\) in a single 
+Poisson point process \(\Poisson_\tau\)
+(viewed in process time)
+of total rate
+\(n\beta + \binom{n}{2}\alpha\):
+each incident at process
+time \(t\) is independently marked
+\begin{enumerate}
+ \item 
+with probability \(n\beta/(n\beta + \binom{n}{2}\alpha)\)
+by a draw \(k\) from a Uniform (\(\{1, \ldots, n\}\))
+ distribution 
+ (denoting the incident by \([t;k]\));
+\item
+with probability \(\binom{n}{2}\alpha/(n\beta + \binom{n}{2}\alpha)\)
+by a draw \(j\) from a Uniform (\(\{1, \ldots, n\}\))
+distribution followed by a draw \(k\)
+ from a Uniform (\(\{j+1, \ldots, n\}\))
+  (denoting the incident by \([t;j,k]\));
+ \end{enumerate}
+
+ 
 %  The second change is to 
  Secondly, observe that
  one can

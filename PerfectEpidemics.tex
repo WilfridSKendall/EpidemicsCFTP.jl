@@ -486,7 +486,7 @@ in process time when sampled in equilibrium in algorithmic time.
  however it also appears to be difficult to discover any monotonicity structure, given the exchangeability of the \(n\) individuals involved
  in the conditioned removals.
  Monotonicity considerations are vastly important 
- for \CFTP implementation, so this
+ for effective implementation of \CFTP, so this
  motivates the introduction of a 
  variant of
  the graphical representation of the free Markov chain 
@@ -499,21 +499,25 @@ individuals so that the initial configuration of \(R_0\) removed, \(I_0\) infect
  There is no loss of generality in setting \(R_0=0\)
  (since individuals once removed have no further effect on the evolution of the trajectory in process time).
 
- We now change the dynamics of the algorithmic time evolution.
- Firstly, we will work now in discrete
- algorithmic time \(\Integers\) rather than continuous
- algorithmic time \(\Reals\).
- We will arrange matters 
- so that for all algorithmic times \(\tau\) 
- the removals, infectives and susceptibles 
- continue to be represented by three contiguous ranges partitioning \(\{1, \ldots, n\}\).
+ We now change the dynamics of the algorithmic time evolution to produce persistence of
+ this pattern of division
+ into three contiguous blocks.
+%  Firstly, we will work now in discrete
+%  algorithmic time \(\Integers\) rather than continuous
+%  algorithmic time \(\Reals\).
+%  We will arrange matters 
+%  so that for all algorithmic times \(\tau\) 
+%  the removals, infectives and susceptibles 
+%  continue to be represented by three contiguous ranges partitioning \(\{1, \ldots, n\}\).
  The new trajectory-valued Markov chain 
- will based on streams of independent
- Poisson point processes (with respect to process time) as follows:
+ will be based on an independent sequence
+ of collections of independent
+ Poisson point processes (with respect to process time) as follows: for \(k\in\Integers\),
+ at time \(\tau=2(k-1)T\), we generate
 %  the following Poisson streams of potential incidents.
 \begin{enumerate}
- \item potential removals at algorithmic time
-\(\tau\) form
+ \item potential removals
+ in the form of
  a Poisson (\(n\beta\)) point process 
  for which points are independently
  marked by draws from a Uniform (\(\{1, \ldots, n\}\))
@@ -532,15 +536,16 @@ the mark of the potential removal
 
  \item
  potential infections at algorithmic time
- \(\tau\)
- which arise from an individual \(m\) 
+ \(\tau\),
+ and arising from a specified individual \(i\), 
  form
-a Poisson (\(m (n-m)\alpha\)) point process for which points are independently
- marked by draws from a Uniform (\(\{1, \ldots, m\}\)) distribution.
+a Poisson (\(i (n-i)\alpha\)) point process for which points are independently
+ marked by \(i\) together with a draw \(j\) from a Uniform (\(\{1, \ldots, i\}\)) distribution.
  \\
-A potential infection at process time \(t\) arising from the \(m^\text{th}\) individual only becomes active if (a) individual \(m\) is currently (at time \(t-\)) the infected individual of \emph{highest} index, and 
- (b) the corresponding mark exceeds \(R_{t-}\).
- In that case, individual \(m+1\) is switched from susceptible to infected at time \(t\), so \(I_t=I_{t-}+1\), \(S_t=S_{t-}-1\).
+A potential infection at process time \(t\) arising from the \(i^\text{th}\) individual only becomes active if (a) individual \(i\) is currently (at time \(t-\)) the infected individual of \emph{highest} index, and 
+ (b) the corresponding mark \(j\) 
+ exceeds \(R_{t-}\).
+ In that case, individual \(i+1\) is switched from susceptible to infected at time \(t\), so \(I_t=I_{t-}+1\), \(S_t=S_{t-}-1\).
 \end{enumerate}
 
 %  Potential removals 
@@ -581,27 +586,43 @@ shows that at process time \(t\)
 
 It is convenient to collect together all the
 potential removal and infection incidents
-at algorithmic time \(\tau\) in a single 
-Poisson point process \(\Poisson_\tau\)
-(viewed in process time)
+at algorithmic time \(\tau=2(k-1)T\) in a single 
+Poisson point process \(\Poisson_k\)
 of total rate
-\(n\beta + \binom{n}{2}\alpha\):
+(viewed in process time)
+\(\kappa_{n}(\alpha,\beta)=n\beta + \sum_{i=1}^{n-1}i(n-i)=n\beta + \tfrac{(n+1)n(n-1)}{6}\alpha\):
 each incident at process
-time \(t\) is independently marked
+time \(t\) is independently marked as follows:
 \begin{enumerate}
  \item 
-with probability \(n\beta/(n\beta + \binom{n}{2}\alpha)\)
-by a draw \(k\) from a Uniform (\(\{1, \ldots, n\}\))
+with probability \(n\beta/\kappa_{n}(\alpha,\beta)\)
+by a draw \(i\) from a Uniform (\(\{1, \ldots, n\}\))
  distribution 
- (denoting the incident by \([t;k]\));
+ (denoting the incident by \([t;i]\));
 \item
-with probability \(\binom{n}{2}\alpha/(n\beta + \binom{n}{2}\alpha)\)
-by a draw \(j\) from a Uniform (\(\{1, \ldots, n\}\))
-distribution followed by a draw \(k\)
- from a Uniform (\(\{j+1, \ldots, n\}\))
-  (denoting the incident by \([t;j,k]\));
+for \(i=1, \ldots, n-1\),
+with probability \(i(n-i)\alpha/\kappa_{n}(\alpha,\beta)\)
+by \(i\) together with a draw \(j\)
+ from a Uniform (\(\{1, \ldots, i\}\))
+  (denoting the incident by \([t;i,j]\)).
  \end{enumerate}
+\begin{NoteThis2}
+ Rationale for \(\kappa_n(\alpha,\beta)\):
+ \begin{multline*}
+  \sum_{i=1}^{n-1} i(n-i)\quad=\quad
+  \sum_{i=1}^{n-1} i(n-1) -\sum_{i=1}^{n-1} i(i-1)
+  \quad=\quad
+  (n-1)\frac{(n+1)n}{2}
+  - \frac{(n+1)n(n-1)}{3}  
+\\
+\quad=\quad
+ \frac{(n+1)n}{6}(3n-3 - 2n+2)
+ \quad=\quad
+ \frac{(n+1)n(n-1)}{6}
+ \end{multline*}
+\end{NoteThis2}
 
+ 
  
 %  The second change is to 
  Secondly, observe that
@@ -622,12 +643,10 @@ distribution followed by a draw \(k\)
 \xNB[WSK2]{Here we update using a vertical line moving forwards (for removals) then backwards (for infections) in process time, as opposed to the original TV-scan.}
 \begin{enumerate}
 \item\label{item:removals}
-At algorithmic time \(2(k-1)T\)
-generate an entire set of new removals
+At algorithmic time \(2(k-1)T\),
+collect the entire set of new removals
  (whether potential or active)
-for the process time range \([0,T]\),
-independently marked by time-lines drawn
-uniformly from \(\{1,\ldots,n\}\).
+\(\{[t;i]: [t;i]\in\Poisson_k\}\).
 Use these progressively to replace
 the old removal incidents 
 (whether potential or active)
@@ -642,29 +661,48 @@ so that
 % we progressively create a new sample of potential removals over process time interval \([0,T]\) as follows:
 % by
 at algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\))
-we have replaced all the old removal incidents in process time interval \([0,t]\) by the corresponding new removal incidents in process time interval \([0,t]\).
-
-Thus
-by algorithmic time \((2k-1)T\) all old
+we have replaced all the old removal incidents in the process time interval \([0,t]\) by the corresponding new removal incidents in the same time interval, while retaining the old removal incidents in the process time interval 
+\((t,T)\).
+Thus at algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\)) the set of potential removal incidents is
+\[
+ \{[s;i]: 0\leq s\leq t \text{ and }[s;i]\in\Poisson_k\}
+ \cup
+ \{[s;i]: t<s\leq T \text{ and }[s;i]\in\Poisson_{k-1}\}
+ \,.
+\]
+At algorithmic time \((2k-1)T-\), all old
 removal incidents will have been replaced by a new set of
 removal incidents, 
 all
 % All these removal incidents will be 
 independently marked by time-lines.
+\NB[WSK3]{No need to worry about whether a potential removal incident occurs exactly at time $T$! Almost surely this will never happen.}
 
 \item\label{item:re-mark-removals}
-At algorithmic time \((2k-1)T\)
-we re-sample the time-line marks of
-all removal incidents
-(independently generating a new time-line
-mark for each removal, 
-chosen uniformly from the set \(\{1,\dots,n\}\)).
+At algorithmic time \((2k-1)T\),
+re-sample the time-line marks of
+\emph{all} removal incidents
+(independently drawing a new time-line
+mark for each removal from 
+Uniform(\(\{1,\dots,n\}\))).
 % \end{enumerate}
 %  \item Exactly at time \((m-1)T\) we re-sample the uniform marks corresponding to the various removal incidents. 
 %  (This step will prove to be crucial if we are to ensure that the result of restricting actual realized removals to specific nominated times still leads to an irreducible Markov chain.)
 
 \item\label{item:infections}
-At algorithmic time \((2k-1)T\)
+At algorithmic time \((2k-1)T+\),
+collect the entire set of new infections
+ (whether potential or active)
+\(\{[t;i,j]: [t;i,j]\in\Poisson_k\}\).
+Use these progressively to replace
+the old infection incidents 
+(whether potential or active)
+so that  
+at algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\))
+we have replaced all the old infection incidents in the process time interval \([T-t,T]\) by the corresponding new infection incidents in the same time interval, while retaining the old infection incidents in the process time interval 
+\((0,T-t)\).
+
+
 generate an entire set of new infection incidents
 (whether potential or active)
 for the process time range \([0,T]\),
@@ -678,12 +716,19 @@ to replace
 the old infection incidents 
 (whether potential or active)
 so that at algorithmic time \((2k-1)T+t\) (for \(0\leq t\leq T)\)
+\NB[WSK3]{No need to worry about whether a potential infection incident occurs exactly at time $T$! Almost surely this will never happen.}
 \xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $T$! Almost surely this will never happen.}
 we have replaced all the old infection incidents 
 in process time interval \([T-t,T)\) 
 by the corresponding new infection incidents
 in process time interval \([T-t,T)\).
-
+Thus at algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\)) the set of potential removal incidents is
+\[
+ \{[s;i]: 0\leq s\leq t \text{ and }[s;i]\in\Poisson_k\}
+ \cup
+ \{[s;i]: t<s\leq T \text{ and }[s;i]\in\Poisson_{k-1}\}
+ \,.
+\]
 Thus
 by algorithmic time \(2kT\) all old
 infection incidents will have been replaced by a new set of

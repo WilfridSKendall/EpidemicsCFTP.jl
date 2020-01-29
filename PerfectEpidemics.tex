@@ -207,63 +207,71 @@ the purpose is to map out the general flow of the argument leading to perfect si
 We begin by rehearsing how to build \SIR epidemics using Poisson streams of potential incidents
 in the simplest possible fashion.
 We shall need to modify this simple model later,
-but its description usefully sets the scene.
+but its description is useful in setting the scene.
 
-Suppose that the total population is comprised of \(n\) individuals.
+Suppose that the total population is composed of \(n\) individuals.
 Using the terminology of interacting particle systems (see for example \citealp[Section III.6]{Liggett-1985}), an unconditioned \SIR epidemic can be realized using a \emph{graphical representation}.
-The simplest approach is to realize
+The simplest approach realizes
 the evolution of an \SIR epidemic for this population of \(n\) individuals 
 using a set of \(n\) time-lines: 
 one copy of the process time-axis \([0,\infty)\) per each population member.
  Potential infection and removal incidents are simulated using independent Poisson streams of the different kinds of potential incidents, namely:
    \begin{itemize}
-    \item \(n\) independent Poisson processes of potential removals 
+    \item[(\emph{removals})] \(n\) independent Poisson processes of potential removals 
     (one Poisson \((\beta\)) process per time-line of individual);
-    \item \(\tbinom{n}{2}\) independent Poisson processes of potential infections 
+    \item[(\emph{infections})] \(\tbinom{n}{2}\) independent Poisson processes of potential infections 
     (one Poisson (\(\alpha\)) process per unordered pair of time-lines of two individuals, producing a stream of potentially infectious contacts between these two individuals).
    \end{itemize}
- These streams of potential infection and removal incidents produce simulations of \SIR epidemics from all possible sets of initial conditions simultaneously,
+ These streams of potential infection and removal incidents 
+ can be used to
+ produce simulations of \SIR epidemics from all possible sets of initial conditions simultaneously,
 \xNB[WSK2]{Note possibility of omnithermal simulation?}
  using the two following natural rules: 
  \begin{enumerate}[(1)]
  \item
- potential removal incidents are realized as actual removals if and only if (a) the corresponding individual 
- has not yet been removed before the time of the incident,
- and (b) at that time the individual is infected.
+ potential removal incidents are realized as actual removals if and only if, before the time of the incident, (a) the corresponding individual 
+ has not yet been removed,
+ and (b) the individual has already been infected.
+ \\
  In this case the individual changes from infected to removed at the time of the incident;
  \item
- potential infections are realized as actual infections if (a) the two corresponding individuals have neither been removed before the time of the incident,
- and (b) at that time one is infected
- and the other is susceptible.
+ potential infections are realized as actual infections if and only if,
+  before the time of the incident,
+ (a) neither of the two corresponding individuals have been removed,
+ and (b) one has already been infected
+ while the other has not (and therefore is susceptible).
+ \\
  In this case the susceptible individual changes from susceptible to infected at the time of the incident.
  \end{enumerate}
  
  \TBC{Add a figure here}
  
  To facilitate precise statements about transitions, 
- we adopt the convention that 
- the trajectories of the states of 
- individuals all possess the ``c\`adl\`ag'' property. 
+ we require that 
+ individual trajectories of states possess the ``c\`adl\`ag'' property. 
  This is to say, epidemic trajectories are continuous 
  from the right (``continue \`a droite'')
  and have limits from the left (``limites \`a gauche'').
- This is helpful, since we will
- need to differentiate between
+ This allows us to differentiate between
+ the statements
  ``removal of an individual has occurred before time \(t\)''
  and ``an individual is in the removed state 
- at time \(t\)'' (the second statement
+ at time \(t\)'' (the second statement also
  includes the possibility of removal precisely at time \(t\)).
  
-In theory such simulations can be continued over the complete process time-scale \([0,\infty)\),
- though in practice we will restrict attention to some bounded time-interval \([0,T]\), for a fixed time horizon \(T\).
+In theory such simulations can be extended to cover the complete process time-scale \([0,\infty)\),
+ though we restrict attention to some bounded time-interval \([0,T]\), for a fixed 
+ finite time horizon \(T<\infty\).
 \xNB[WSK2]{Throughout this exposition $T$ will denote the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic.}
 
-  As we have noted, for purposes of perfect simulation
-  we will need to consider a more complicated variant
+  As mentioned above, 
+  it will prove necessary 
+  for purposes of perfect simulation
+  to consider a more complicated variant
   on the
-  above very simple
-  construction of an \SIR epidemic uses the simplest possible graphical representation.
- However for the purposes of exposition we first make some remarks about this simpler case.
+  above simple
+  construction of an \SIR epidemic.
+ However for the purposes of exposition we now make some remarks about the above simpler case.
  
  % =========================================   
  \section{Algorithmic time and simulation of stochastic dynamics}\label{sec:algorithmic}
@@ -619,6 +627,9 @@ conditioned version.
  It is tempting to try to use notions of 
  dynamic balance here. However this notion
  turns out not to work well with conditioning.
+ 
+ First recall the way in which detailed balance
+ works well with conditioning.
  Suppose \(p_{ab}\) is a transition probability
  matrix with equilibrium distribution given
  by \(\pi_a\). If it is reversible then
@@ -663,7 +674,13 @@ hence the additional requirement
 \sum_{b\not\in R}p_{\widetilde{a}b}
 \,.
 \]
-So we must be able to argue using classic reversibility arguments.
+This further requirement is necessary if the classic reversibility connection with conditioning
+is to extend to this case.
+
+Here is a simple example.
+Consider six states \(a_\pm\), \(b_\pm\), \(c_\pm\)
+with involution \(x_\pm\leftrightarrow x_\mp\).
+We suppose transition probability \(2/3\)
 \end{NoteThis2}
 
 

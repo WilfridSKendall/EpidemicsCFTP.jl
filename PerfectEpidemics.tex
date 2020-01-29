@@ -963,8 +963,10 @@ not infected at time \(\rho\).
   time-line ordering, as in ``a potential infection earlier than the
   epidemic''.}
 
+We need to say somewhere that during the phase of algorithmic time \((2kT, 2(k+1)T]\), we use a marked Poisson process \(\Pi_k \) which comprises two types of points: \emph{potential removals} \([t;r]\) are generated at rate \(\beta\) over the process time interval \([0,T]\) and marked with a uniformly random timeline; and \emph{potential infections} \([t;m,m']\) are generated at rate \(\alpha\)\NB[SBC]{check rates etc!} and marked with a uniform pair of timelines. 
+
   \begin{lem}\label{lem:removal1}
-	Consider the phase of algorithmic time \((2(k-1)T, (2k-1)T] = (\tau,\tau+T]\) during
+	Consider the phase of algorithmic time  \((2kT, (2k+1)T]\) during
 	which the set of removal times is updated.
 	This can be implemented very directly as follows:
 	\begin{enumerate}

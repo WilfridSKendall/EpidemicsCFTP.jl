@@ -737,23 +737,6 @@ of time-lines.
 %   (So almost surely by algorithmic time \(2kT\) all old potential infection incidents will have been replaced by new potential infection incidents.)
 \end{enumerate}
 
-At any particular time \(t\in (2(k-1)T, 2kT]\)
-the set of removal and infections patterns
-at time \(2(k-1)T\) will have been partly replaced
-by independent replacements. 
-By the independence
-property of the Poisson procxess
-this amounts to a sequence of up to 3 
-Gibbs sampler steps, each individually reversible.
-Thus the distribution of the set of
-removal and infections patterns
-(and hence of the resulting \SIR epidemic)
-remains invariant.
-Thus the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution.
-Irreducibility / positive-recurrence
-arguments assure us that this is the unique equilibrium distribution to which the chain converges in distribution.%
-\NB[WSK2]{Add details about the reversibility argument for the specified time-inhomogeneous Markov chain?}
-
 Step \ref{item:re-mark-removals}
 of this procedure
 is apparently redundant. However it will later 
@@ -764,6 +747,43 @@ The reversal of flow of time in step
 \ref{item:infections} will turn out to be important
 when easing computation for the 
 conditioned version.
+
+
+At any particular time \(t\in (2(k-1)T, 2kT]\)
+the set of removal and infections patterns
+at time \(2(k-1)T\) will have been partly replaced
+by independent replacements. 
+By the independence
+property of the Poisson procxess
+this amounts to taking a sequence of up to 3 
+Gibbs sampler steps, each individually reversible.
+Thus the distribution of the set of
+removal and infections patterns
+(and hence of the resulting \SIR epidemic)
+remains invariant.
+Thus the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution.
+Irreducibility / positive-recurrence
+arguments assure us that this is the unique equilibrium distribution to which the chain converges in distribution.%
+\xNB[WSK2]{Add details about the reversibility argument for the specified time-inhomogeneous Markov chain?}
+We state this as a theorem.
+\xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
+
+
+ \begin{thm}\label{thm:SIR-epidemic-2}
+ Suppose \({S}_t\), \({I}_t\), \({R}_t\) measure the susceptibles, infectives, and removals 
+ arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process given by the modified construction described above.
+ The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic in equilibrium
+ and more generally converges to this \SIR epidemic in distribution as algorithmic time tends to infinity.
+\end{thm}
+% \begin{proof}[]
+% \TBC[Sketch proof]{
+% Verify detailed (perhaps dynamic) balance is satisfied.
+%  Show that the process \(({S}, {I}, {R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
+%  citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
+% \xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
+%  Establish convergence to equilibrium.
+% \end{proof}
+
 
 \begin{NoteThis2}[Detailed balance]
  It is tempting to try to use notions of 
@@ -822,26 +842,42 @@ is to extend to this case.
 Here is a simple example.
 Consider six states \(a_\pm\), \(b_\pm\), \(c_\pm\)
 with involution \(x_\pm\leftrightarrow x_\mp\).
-We suppose transition probability \(2/3\)
+We suppose transition probability \(2/3\) of moving
+\(a_+\to b_+\),
+\(b_+\to c_+\),
+\(c_+\to a_+\),
+and
+\(a_-\to c_-\),
+\(c_-\to b_-\),
+\(b_-\to a_-\).
+Reverse transitions have probability \(1/6\)
+as do the ``crossover'' transitions
+\(a_\pm\to a_\mp\),
+\(b_\pm\to b_\mp\),
+\(c_\pm\to c_\mp\).
+Evidently dynamical detailed balance
+is satisfied with invariant probability \(1/6\)
+for all of the \(6\) states.
+
+Now suppose we reject all proposals to leave 
+\(R=\{a_\pm, b_\pm\}\).
+The surviving dynamical detailed balance
+relationships between distinct states
+would lead to the same
+invariant probability \(1/4\) for each of the \(4\) surviving states in \(R\).
+However we now have perturbed dynamical
+detailed balance relationships,
+for example
+in the perturbed case we need
+\(\pi_{a_+} p_{a_+,a_+}=\pi_{a_-} p_{a_-,a_-}\);
+and since we require
+\(\pi_{a_+}=\pi_{a_-}\)
+together with perturbed \(p_{a_+,a_+}=1/6\)
+and perturbed \(p_{a_-,a_-}=2/3\)
+we end up with an inconsistent set of equations
+with no non-trivial solution.
 \end{NoteThis2}
 
-
-
- \begin{thm}\label{thm:SIR-epidemic-2}
- Suppose \({S}_t\), \({I}_t\), \({R}_t\) measure the susceptibles, infectives, and removals 
- arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process given by the modified construction described above.
- The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic in equilibrium
- and more generally converges to this \SIR epidemic in distribution as algorithmic time tends to infinity.
-\end{thm}
-\begin{proof}[]
-\TBC[Sketch proof]{
-Verify detailed (perhaps dynamic) balance is satisfied.
- Show that the process \(({S}, {I}, {R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
- citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
-\NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
- Establish convergence to equilibrium.
-}
-\end{proof}
 
 
 % \TBC{

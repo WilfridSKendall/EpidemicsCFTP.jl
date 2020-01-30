@@ -470,7 +470,6 @@ the algorithmic-time
 
 % =========================================   
  \subsection{Construction of the variant process}\label{sec:variant}
-
  If we wish to condition on actual times of removals
  of specific individuals
  then irreducibility 
@@ -593,7 +592,7 @@ at algorithmic time \(\tau=2(k-1)T\) in a single
 Poisson point process \(\Poisson_k\)
 of total rate
 (viewed in process time)
-\(\kappa_{n}(\alpha,\beta)=n\beta + \sum_{i=1}^{n-1}i(n-i)\alpha=n\beta + \tfrac{(n+1)n(n-1)}{6}\alpha\):
+\(\kappa_{n}(\alpha,\beta)=n\beta + \sum_{i=1}^{n-1}i(n-i)\alpha=n\beta + \tbinom{n+1}{3}\alpha\):
 each incident at process
 time \(t\) is independently marked as follows:
 \begin{enumerate}[1:]
@@ -622,6 +621,8 @@ by \(i\) together with a draw \(j\)
  \frac{(n+1)n}{6}(3n-3 - 2n+2)
  \quad=\quad
  \frac{(n+1)n(n-1)}{6}
+ \quad=\quad
+ \binom{n+1}{3}\,.
  \end{multline*}
 \end{NoteThis2}
 
@@ -770,15 +771,15 @@ We state this as a theorem.
  The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic in equilibrium
  and more generally converges to this \SIR epidemic in distribution as algorithmic time tends to infinity.
 \end{thm}
-% \begin{proof}[]
-% \TBC[Sketch proof]{
-% Verify detailed (perhaps dynamic) balance is satisfied.
-%  Show that the process \(({S}, {I}, {R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
-%  citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
-% \xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
-%  Establish convergence to equilibrium.
-% \end{proof}
+\begin{proof}
+ See discussion before theorem.
+\end{proof}
 
+
+
+
+% =========================================   
+ \subsection{Restrictions on the variant process}\label{sec:restrictions}
 
 \begin{NoteThis2}[Detailed balance]
  It is tempting to try to use notions of 

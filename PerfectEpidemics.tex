@@ -121,7 +121,7 @@
  \date{\Date}
  \maketitle
 
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
 \begin{abstract}\noindent
 \TBC{(abstract)}
 \end{abstract}
@@ -140,7 +140,7 @@ Susceptible-Infect\-ive-Removal (\SIR) epidemic;
 spatial immigration-death process;
 }
 
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Introduction}\label{sec:introduction}
 \TBC{  Review the following long-ago previous work, from which we can eventually build up a historical account (no particular need to look at this right now!):\\
 work by Frank Ball and others on coupling for epidemics, also
@@ -203,7 +203,7 @@ Presently this paper is drafted in a verbose, repetitive and often imprecise way
 the purpose is to map out the general flow of the argument leading to perfect simulation of \SIR epidemics given complete observation of the removals.
 }
 
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Poisson processes and \SIR epidemics}\label{sec:SIR}
 % Use Poisson streams of potential incidents to generate S-I-R processes.
 %
@@ -278,7 +278,7 @@ In theory such simulations can be extended to cover the complete process time-sc
   construction of an \SIR epidemic.
  However it is first useful to make some further remarks about the above simpler case.
  
- % =========================================   
+ % = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Algorithmic time and simulation of epidemic trajectories}\label{sec:algorithmic}
 % Constructing S-I-R epidemic trajectories using a trajectory-valued process driven by spatial immigration-death processes.
 %
@@ -442,7 +442,7 @@ in process time when sampled in equilibrium in algorithmic time.
 
 
  
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
 \section{A variant construction, restrictions, and conditioning}\label{sec:restrictions}
 % Implementing conditioning on removals by fixing actual times of removal for the dynamic process evolving in algorithmic time.
 %
@@ -470,8 +470,8 @@ refer to this modified Markov chain as the \emph{constrained} variant
 Markov chain.
 
 
-% =========================================   
-\subsection{Construction of the variant process}\label{sec:variant}
+% = = = = = = = = = = = = = = = = = = = = = = =   
+\subsection{Construction of the variant process}\label{ssec:variant}
 If we wish to condition on actual times of removals
 of specific individuals
 then irreducibility 
@@ -785,8 +785,8 @@ See discussion before theorem.
 
 
 
-% =========================================   
-\subsection{Restrictions on the variant process}\label{sec:restrictions-variant}
+% = = = = = = = = = = = = = = = = = = = = = = =   
+\subsection{Restrictions on the variant process}\label{ssec:restrictions-variant}
 
 We now wish to consider the above variant process,
 but constrained by requiring
@@ -848,9 +848,21 @@ on a subsequent time-line.
 %   Note that perpetuated infections must therefore previously (in algorithmic time) be actual infections.
 \end{enumerate}
 
-\textbf{\textcolor{red}{*** TO HERE ***}}
+The continuous formulation of the
+variant process is not a reversible process,
+nor even the (locally finite) composition 
+of reversible steps, so we cannot directly use 
+reversibility to deduce the proposition
+that the constrained
+variant process will have the corresponding conditional distribution as equilibrium.
+(Note that the connection between reversibility,
+constraints, and conditional distributions
+ceases to apply even for the simple generalization
+to dynamical reversibility.)
+However we \emph{can} prove the proposition
+using limiting arguments.
 
-\TBC{Moving into restrictions on state-space, now need new Lemma which shows that updates can be viewed as limit of reversible Gibbs sampler steps.}
+% \TBC{Moving into restrictions on state-space, now need new Lemma which shows that updates can be viewed as limit of reversible Gibbs sampler steps.}
 
 \begin{NoteThis2}[Detailed balance]
 It is tempting to try to use notions of 
@@ -949,43 +961,6 @@ with no non-trivial solution.
 
 
 
-Because we have conditioned on all observed removal times, the process of active removals \(\{R_t:t\geq0\}\) can now be treated as deterministic.
-%  If the removal of individual \(m\) is conditioned to occur at time \(t=\rho^m\)
-%  (thus \(R_t=m\))
-%  then the associated Uniform (\(\{m, \ldots, n\}\)) mark \(\mu_m\) must also be conditioned to be no greater than \(R_{t-}+I_{t-}=m+I_{t-}-1\).
-% %  ,
-% %  with conditional distribution Uniform (\(\{m, \ldots, m+I_{t-}-1\}\)).
-%  Thus the mark of a conditioned removal serves to define a threshold for the number of infectives, which must be exceeded at the time of removal.
-%  Actual removal times being subject to conditioning, w
-Potential removals are thinned using their associated marks, so the 
-%  (time-varying) 
-%  rate of 
-introduction of potential removals at time \(t\) is of rate \(\beta I_t\).%
-\NB[WSK2]{I worry that there may be confusion between (a) the rates of introduction of various incidents in algorithmic time, and (b) the rates of introduction of various incidents in process time. Vary nomenclature?}
-These potential removals will be influential on the algorithmic-time evolution of the epidemic only if they occur on the un-removed portion of a  time-line \(m\).
-In order that the conditioning on observed removals be respected,
-the introduction of a removal must be forbidden if it will immediately become an active removal not specified by the conditioning.%
-\NB[WSK2]{Repetition of need to forbid introduction of potential removals that destroy conditioning.}
-
-
-Similarly potential infections are thinned using their associated marks: 
-consider a potential infection originating from individual \(m\) at time \(t\) with Uniform(\(\{1, \ldots, m\}\)) mark.
-This potential infection is censored if the mark does not exceed \(R_t\). 
-Thus the (time-varying) rate of introduction of potential infections arising from individual \(m\) at time \(t\) is given by \((m-R_t)(n-m)\alpha\);
-recall that this infection will become active if and only if the individual concerned is the highest-indexed infected individual at the relevant time (i.e. \(m=R_t+I_t\)) so that the overall infection rate will be \(I_t S_t\alpha\) as required.
-Again, the introduction of a potential infection must be forbidden if it would become active and lead to a removal not specified by the conditioning.
-Moreover the removal of an active infection (in the course of algorithmic time as specified above) must be forbidden if thereby one would fail to produce a complete epidemic with removals as specified by the conditioning.
-%  , and the mark conditional on removals is Uniform (\(\{R_t+1, \ldots, m\}\)).
-\NB[WSK3]{Confusing to talk about rates here?}
-
-
-Figure \ref{fig:graphical} illustrates this construction.\NB[SBC]{Need to change key, if stick with `active' terminology.}
-\begin{Figure}
-\includegraphics[width=3in]{Timelines1.pdf}
-\caption{Modified graphical representation of \SIR epidemic, conditioned on removals.\label{fig:graphical}}
-\end{Figure}
-
-
 \begin{thm}\label{thm:conditioned-SIR-epidemic}
 Suppose \({S}_t\), \({I}_t\), \({R}_t\) measure the susceptibles, infectives, and removals 
 arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process given by the modified construction described above,
@@ -993,16 +968,97 @@ but conditioned on the \(n\) individuals being removed at removal times \(\rho^1
 The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic conditioned on these removals taking place
 and more generally converges to this conditioned \SIR epidemic in distribution as algorithmic time tends to infinity..
 \end{thm}
-\begin{proof}[Sketch proof]
-Again we will appeal to detailed (perhaps dynamic) balance.
-Note that the simulation in algorithmic time of this conditioned \SIR epidemic is in this case irreducible, hence allowing the convergence result.%
-\NB[WSK2]{Need to explain carefully the irreducibility required for Theorem \ref{thm:conditioned-SIR-epidemic}, arising because here we count numbers not individuals.}
-\end{proof}
- 
- 
-%  \TBC{Describe the above in terms of epidemic trajectory, boundary of ``no-fly zone'', and trajectory of last viable epidemic.}
+\begin{proof}
+Begin by observing that we can obtain
+an \(n^\text{th}\) order discrete approximation
+to the continuous formulation for the variant process by breaking up each of \ref{item:removals}
+and \ref{item:infections} into \(2^n\) sequential
+sub-proposals concerning removals, respectively
+infections, in process-time intervals
+\(((r-1)2^{-n}T, r 2^{-n}T)\),
+and include also sub-proposals concerning the re-marking of removals. 
+Each of the sub-proposals is a reversible move.
+We can therefore assert the following:
+if we accept or reject a 
+particular sub-proposal based on whether the relevant changes to potential
+incidents (taken together) violate the constraint
+on observed removals, then the
+\(n^\text{th}\)-order constrained process derived
+from the sequence of accepted sub-proposals
+must have as equilibrium the required
+conditional probability distribution.
 
+However, local finiteness of Poisson point processes implies that as \(n\to\infty\)
+the \(n^\text{th}\)-order constrained process will converge almost surely to the constrained version
+of the continuous formulation (which is to say,
+the continuous formulation but forbidding introduction, re-marking or removal of potential incidents
+according to \ref{item:refuse-new-removal}-\ref{item:perpetuate-old-infection}).
+
+It follows directly that the constrained version
+of the continuous formulation must also have as equilibrium the required
+conditional probability distribution.
+
+Finally we deduce convergence to this
+equilibrium based on existence of a 
+positive-recurrent small set. 
+The relevant small set can be derived by consideration of trajectories such that each timeline is infected once only, 
+very shortly after time \(0\), with no potential removals other than observed removals, so that time-line 
+and subsequent time-lines are all infected before their observed removal times.
+\NB[WSK3]{Need to explain more carfefully the positive-recurrent small set in proof of Theorem \ref{thm:conditioned-SIR-epidemic}.}
+\xNB[WSK2]{Need to explain carefully the irreducibility required for Theorem \ref{thm:conditioned-SIR-epidemic}, arising because here we count numbers not individuals.}\end{proof}
+
+Figure \ref{fig:graphical} illustrates the
+construction of the constrained variant process.\NB[SBC]{Need to change key for Figure \ref{fig:graphical}, to confirm to current terminology of ``potential incident'' \emph{etc}.}
+\begin{Figure}
+\includegraphics[width=3in]{Timelines1.pdf}
+\caption{Modified graphical representation of \SIR epidemic, conditioned on removals.\label{fig:graphical}}
+\end{Figure}
+
+
+Note that, 
+because we condition on all 
+observed removal times, 
+the process of active removals \(\{R_t:t\geq0\}\)
+can be treated as deterministic.
+
+Note also that potential removals 
+(marked by \(i\) say)
+and infections 
+(marked by \(i<j\) say)
+will be influential on the algorithmic-time evolution of the epidemic
+only if they occur prior to 
+the observed removal for the 
+relevant time-line \(i\).
+Additionally such potential removals and
+infections can be introduced without constraint
+if originating on time-line \(i\) prior to
+actual infection of that time-line.
+
+
+
+
+% Potential removals are thinned using their associated marks, so the 
+% introduction of potential removals at time \(t\) is of rate \(\beta I_t\).%
+% \NB[WSK2]{I worry that there may be confusion between (a) the rates of introduction of various incidents in algorithmic time, and (b) the rates of introduction of various incidents in process time. Vary nomenclature?}
+% These potential removals will be influential on the algorithmic-time evolution of the epidemic only if they occur on the un-removed portion of a  time-line \(m\).
+% In order that the conditioning on observed removals be respected,
+% the introduction of a removal must be forbidden if it will immediately become an active removal not specified by the conditioning.%
+% \NB[WSK2]{Repetition of need to forbid introduction of potential removals that destroy conditioning.}
+% 
+% 
+% Similarly potential infections are thinned using their associated marks: 
+% consider a potential infection originating from individual \(m\) at time \(t\) with Uniform(\(\{1, \ldots, m\}\)) mark.
+% This potential infection is censored if the mark does not exceed \(R_t\). 
+% Thus the (time-varying) rate of introduction of potential infections arising from individual \(m\) at time \(t\) is given by \((m-R_t)(n-m)\alpha\);
+% recall that this infection will become active if and only if the individual concerned is the highest-indexed infected individual at the relevant time (i.e. \(m=R_t+I_t\)) so that the overall infection rate will be \(I_t S_t\alpha\) as required.
+% Again, the introduction of a potential infection must be forbidden if it would become active and lead to a removal not specified by the conditioning.
+% Moreover the removal of an active infection (in the course of algorithmic time as specified above) must be forbidden if thereby one would fail to produce a complete epidemic with removals as specified by the conditioning.
+% %  , and the mark conditional on removals is Uniform (\(\{R_t+1, \ldots, m\}\)).
+% \NB[WSK3]{Confusing to talk about rates here?}
+
+% = = = = = = = = = = = = = = = = = = = = = = =  
 \subsection{Evolution of the constrained Markov chain}\label{ssec:evolution}
+\NB[WSK3]{Better and more expressive title for Section \ref{ssec:evolution}?}
 
 It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time. For \(m=1\),\ldots, \(n\) and \(k\in\Integers\), at algorithmic time \(\tau=2kT\) we denote by \(\Infections^m_k\) the point-set of active or potential infections originating from time-line \(m\) occurring before removal time \(\rho^m\).%
 \xNB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
@@ -1354,7 +1410,7 @@ Note that equation~\eqref{eq:update_no-fly_direct} permits us to update the no-f
 % \end{proof}
 
  
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Monotonicity and \CFTP}\label{sec:cftp}
 \TBC{
 Simulation 
@@ -1543,12 +1599,12 @@ At this stage we thus have sets of potential and conditioned removals satisfying
 
 
 
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Examples}\label{sec:examples}
 \TBC{Simulation output. Applications to a real dataset?}
 %
 
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Conclusion}\label{sec:conclusion}
 \TBC{
 \begin{enumerate}
@@ -1565,7 +1621,7 @@ WSK supported by the UK EPSRC under grants EP/K013939, EP/R022100, and also
 the Alan Turing Institute under EPSRC grant EP/N510129.
 
 This is a theoretical research paper and, as such, no new data were created during this study. 
-% =========================================   
+% = = = = = = = = = = = = = = = = = = = = = = =   
 %   \scriptsize \input hyperbib
 %   \label{sec:bibliography}
    \bibliographystyle{chicago}

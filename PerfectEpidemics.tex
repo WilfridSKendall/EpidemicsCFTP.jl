@@ -598,7 +598,7 @@ at algorithmic time \(\tau=2(k-1)T\) in a single
 Poisson point process \(\Poisson_k\)
 of total rate
 (viewed in process time)
-\(\kappa_{n}(\alpha,\beta)=n\beta + \sum_{i=1}^{n-1}i(n-i)=n\beta + \tfrac{(n+1)n(n-1)}{6}\alpha\):
+\(\kappa_{n}(\alpha,\beta)=n\beta + \sum_{i=1}^{n-1}i(n-i)\alpha=n\beta + \tfrac{(n+1)n(n-1)}{6}\alpha\):
 each incident at process
 time \(t\) is independently marked as follows:
 \begin{enumerate}[1:]
@@ -716,11 +716,11 @@ we have replaced all the old infection incidents in the process time interval \(
 % in process time interval \([T-t,T)\) 
 % by the corresponding new infection incidents
 % in process time interval \([T-t,T)\).
-Thus at algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\)) the set of potential removal incidents is
+Thus at algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\)) the set of potential infection incidents is
 \[
- \{[s;i]: 0\leq s\leq t \text{ and }[s;i]\in\Poisson_k\}
+ \{[s;i,j]: 0\leq s< T- t \text{ and }[s;i,j]\in\Poisson_{k-1}\}
  \cup
- \{[s;i]: t<s\leq T \text{ and }[s;i]\in\Poisson_{k-1}\}
+ \{[s;i,j]: T-t<s\leq T \text{ and }[s;i,j]\in\Poisson_k\}
  \,.
 \]
 By algorithmic time \(2kT\) all old
@@ -754,7 +754,7 @@ the set of removal and infections patterns
 at time \(2(k-1)T\) will have been partly replaced
 by independent replacements. 
 By the independence
-property of the Poisson procxess
+property of the Poisson process
 this amounts to taking a sequence of up to 3 
 Gibbs sampler steps, each individually reversible.
 Thus the distribution of the set of

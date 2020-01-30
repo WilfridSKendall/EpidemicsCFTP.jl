@@ -982,7 +982,7 @@ Consider
 the point-set of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\);
 we denote this point-set by \(\Removals^m\).\NB[SBC]{Is this notation potentially confusing, when we're using $R_t$ for removal process?} %
 Similarly, we denote the point-set of \emph{conditioned} removals
-assigned to timeline \(m\) by \(\Conditioned^m\). We shall write 
+assigned to time-line \(m\) by \(\Conditioned^m\). We shall write 
 \[ \Conditioned^{m:n} = \bigcup_{s=m}^n \Conditioned^s \,, \quad\text{and}\quad \Removals^{1:m} = \bigcup_{s=1}^m \Removals^s \,. \]
 \xNB[SBC]{Possibly simplify notation by replacing $\Conditioned^{m+}$ with $\Conditioned^{m:n}$ and $\Removals^{m-}$ with $\Removals^{1:m}$?}
 % \xNB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
@@ -1005,7 +1005,7 @@ However it is always possible for \(\Removals^m=\emptyset\) for some or all \(m\
  The boundary of the no-fly zone is located at process time \(\xi^m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:boundary-time}
  \xi^n \quad=&\quad \sup \Removals^{1:n}\,,  
- &\text{ the last unrealized removal on or below timeline }n\,,
+ &\text{ the last unrealized removal on or below time-line }n\,,
  \nonumber\\
  \xi^m \quad=&\quad \sup \Removals^{1:m} \vee \sup\left\{\Infections^m\cap[0,\xi^{m+1}\right)\}
  &\text{ if }1<m<n\,.
@@ -1157,9 +1157,9 @@ not infected at time \(\rho\).
 	This can be implemented very directly as follows:
 	\begin{enumerate}
 		\item delete all current potential removals;
-		\item for each timeline \(m\), introduce a new set of potential removals \(\Removals^m(\tau+T)\)
+		\item for each time-line \(m\), introduce a new set of potential removals \(\Removals^m(\tau+T)\)
 		according to a Poisson process \(\Poisson^R_m(\tau+T)\) of intensity \(\beta\) over the range
-		\([0,\phi^m(\tau))\), where \(\phi^m(\tau)\) is (as above) the process time when the timeline \(m\) currently becomes infected;
+		\([0,\phi^m(\tau))\), where \(\phi^m(\tau)\) is (as above) the process time when the time-line \(m\) currently becomes infected;
 		%\item update the mark for each potential removal time \(r\) as follows:
 		%suppose that \(r\) is currently assigned to time-line \(m\)
 		%(equivalently, \(r\in\Removals^m(\tau+T)\)); sample
@@ -1204,7 +1204,7 @@ not infected at time \(\rho\).
 \end{lem}
 
 \begin{proof}
-	This follows from a similar argument to the rationale behind equation~\eqref{eq:last-epidemic}. The last viable epidemic must infect timeline \(m\) before any conditioned removals currently assigned to that  timeline or any timeline of greater index (i.e. by time \(\inf\Conditioned^{m:n}(\tau+T)\)), and also no later than the time at which the last viable epidemic reaches the line above (time \(\eta^{m+1}(\tau+2T)\)). Given the value of \(\eta^{m+1}(\tau+2T)\), if \(\Poisson_{m-1}^I(\tau+2T)\) contains at least one new potential infection event in the interval 
+	This follows from a similar argument to the rationale behind equation~\eqref{eq:last-epidemic}. The last viable epidemic must infect time-line \(m\) before any conditioned removals currently assigned to that  time-line or any time-line of greater index (i.e. by time \(\inf\Conditioned^{m:n}(\tau+T)\)), and also no later than the time at which the last viable epidemic reaches the line above (time \(\eta^{m+1}(\tau+2T)\)). Given the value of \(\eta^{m+1}(\tau+2T)\), if \(\Poisson_{m-1}^I(\tau+2T)\) contains at least one new potential infection event in the interval 
 	\[(\phi^m(\tau+T),\eta^{m+1}(\tau+2T) \wedge  \inf\Conditioned^{m:n}(\tau+T)) \]
 	then \(\eta^m(\tau+2T)\) will be the supremum of these; if not, the active infection at time \(\phi^m(\tau+T)\) will be perpetuated, in which case we arrive at \(\eta^m(\tau+2T) = \phi^m(\tau+T)\).
 \end{proof}
@@ -1219,7 +1219,7 @@ not infected at time \(\rho\).
  	% 	\item
  	% 	\begin{enumerate}
  	% 		\item update the no-fly zone boundary at level \(m\), i.e. calculate \(\xi^m(\tau+T) \)
- 	%	 	\item introduce new potential infections for timeline \(m\) according to a Poisson process \(\Poisson^I_{m-1} \) of (time-varying) intensity \((m-R_t)(n-m)\alpha \) over the range \([0, \rho^{m-1}]\);
+ 	%	 	\item introduce new potential infections for time-line \(m\) according to a Poisson process \(\Poisson^I_{m-1} \) of (time-varying) intensity \((m-R_t)(n-m)\alpha \) over the range \([0, \rho^{m-1}]\);
  	%	 	\item set 
  	%	 	\[ \Infections^{m-1}(\tau+T) = \left( \Poisson^I_{m-1} \setminus (\phi^{m-1}(\tau), \xi^m(\tau+T)) \right) \cup \,\max \left\{\phi^m(\tau)\cup \left(\Poisson^I_{m-1}\cap(\phi^m(\tau), \min \Conditioned^m(\tau)) \right)  \right\}
  	%	 	\]
@@ -1382,9 +1382,9 @@ The intuition here is that \(\early{\Epidemic}\) describes an epidemic that spre
 	\medskip
 	\textbf{Removals}
 	
-Recall the three steps of implementing the update of removals in Lemma~\ref{lem:removal1}. In steps 1--2, all potential removals are erased and a new set of potential removals is sampled on each timeline \(m\) as a Poisson process \(\Poisson^R_m(\tau+T)\) of rate \(\beta\) up to the current epidemic trajectory time.
-%First observe that neither the updating of the potential removals, nor the re-assignment of conditioned removals to timelines, will affect the epidemic trajectory \(\phi^m\). 
-%%(Steps 1 and 2 may change the boundary of the no-fly zone. However, even if this leads to some potential infection in \(\Infections^m(\tau+T)\) moving from the no-fly zone into the pre-epidemic zone, this will not affect the epidemic trajectory. For if this were to happen, there would need to be a path of infections joining the trajectory \(\phi^m(\tau+T)\) to the no-fly zone at time \(\tau+T\), and this is forbidden under our conditioning. Similarly, a conditioned removal \(\rho\) is only allowed to be re-assigned to a different timeline if that timeline is already infected at time \(\rho\), and so this update can have no effect on the epidemic trajectory.) 
+Recall the three steps of implementing the update of removals in Lemma~\ref{lem:removal1}. In steps 1--2, all potential removals are erased and a new set of potential removals is sampled on each time-line \(m\) as a Poisson process \(\Poisson^R_m(\tau+T)\) of rate \(\beta\) up to the current epidemic trajectory time.
+%First observe that neither the updating of the potential removals, nor the re-assignment of conditioned removals to time-lines, will affect the epidemic trajectory \(\phi^m\). 
+%%(Steps 1 and 2 may change the boundary of the no-fly zone. However, even if this leads to some potential infection in \(\Infections^m(\tau+T)\) moving from the no-fly zone into the pre-epidemic zone, this will not affect the epidemic trajectory. For if this were to happen, there would need to be a path of infections joining the trajectory \(\phi^m(\tau+T)\) to the no-fly zone at time \(\tau+T\), and this is forbidden under our conditioning. Similarly, a conditioned removal \(\rho\) is only allowed to be re-assigned to a different time-line if that time-line is already infected at time \(\rho\), and so this update can have no effect on the epidemic trajectory.) 
 %It follows that \(\phi^m(\tau+T)= \phi^m(\tau)\) and \(\early{\phi}_m(\tau+T)= \early{\phi}_m(\tau)\), and so \eqref{eq:trajectory_order} is trivially satisfied at algorithmic time \(\tau+T\).
 %\NB[SBC]{Needs notation fixing; and this should probably be pointed out earlier, when we describe the removal update process.}
 Using a common Poisson process when updating these sets in both epidemics, we observe that
@@ -1474,7 +1474,7 @@ At this stage we thus have sets of potential and conditioned removals satisfying
 	%	 \end{align*}\NB[SBC]{Should final inequality be an equality?}
 
 	
-	Now consider the evolution of the no-fly zone boundary, as described in Lemma~\ref{lem:infect4}. For timeline \(n\) we see that
+	Now consider the evolution of the no-fly zone boundary, as described in Lemma~\ref{lem:infect4}. For time-line \(n\) we see that
 	\[ \early{\xi}^n(\tau+2T) \quad = \quad  \sup \early{\Removals}^{1:n}(\tau+T)\quad  \leq \quad \sup \late{\Removals}^{1:n}(\tau+T) \quad =\quad  \late{\xi}^n(\tau+2T) \,. \]
 	We now proceed by induction. Suppose that \(\early{\xi}^{m+1}(\tau+2T) \le \late{\xi}^{m+1}(\tau+2T)\) for some \(m< n\).
 	Corollary~\ref{cor:update_no-fly_direct} says that 

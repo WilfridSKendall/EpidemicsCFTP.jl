@@ -859,7 +859,7 @@ Verify detailed (perhaps dynamic) balance is satisfied.
 % In the second case, one has to use notions of dynamic reversibility.
 % }
 
-
+\TBC{Moving into restrictions on state-space, now need new Lemma which shows that updates can be viewed as limit of reversible Gibbs sampler steps.}
 
  Suppose the state-space is restricted by fixing all \(n\) observed removal times as \(0<\rho^1<\rho^2<\ldots<\rho^n\).
  The resulting restrictions on the Markov chain in algorithmic time are as follows:%
@@ -1112,7 +1112,7 @@ not infected at time \(\rho\).
   time-line ordering, as in ``a potential infection earlier than the
   epidemic''.}
 
-We need to say somewhere that during the phase of algorithmic time \((2kT, 2(k+1)T]\), we use a marked Poisson process \(\Pi_k \) which comprises two types of points: \emph{potential removals} \([t;r]\) are generated at rate \(\beta\) over the process time interval \([0,T]\) and marked with a uniformly random timeline; and \emph{potential infections} \([t;m,m']\) are generated at rate \(\alpha\)\NB[SBC]{check rates etc!} and marked with a uniform pair of timelines. 
+
 
   \begin{lem}\label{lem:removal1}
 	Consider the phase of algorithmic time  \((2kT, (2k+1)T]\) during

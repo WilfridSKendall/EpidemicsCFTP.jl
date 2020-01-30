@@ -439,11 +439,15 @@ in process time when sampled in equilibrium in algorithmic time.
 
  
 % =========================================   
- \section{Restrictions, conditioning and a modified construction}\label{sec:restrictions}
+ \section{A variant construction, restrictions, and conditioning}\label{sec:restrictions}
 % Implementing conditioning on removals by fixing actual times of removal for the dynamic process evolving in algorithmic time.
 %
- Immigration-death processes in equilibrium are time-reversible, 
- and the resulting evolution of the \SIR trajectory realization therefore inherits the time-reversibility property. 
+ Immigration-death processes in equilibrium are time-reversible.
+ Consequently
+the algorithmic-time
+ evolution of \SIR trajectories
+ described above
+ inherits a time-reversibility property. 
  This property facilitates sampling from \emph{conditioned} realizations of the \SIR trajectory: 
  suppose that our target is to draw from the \SIR distribution with trajectory conditioned to lie in a fixed subset \(A\) of the space of possible trajectories.
  So long as 
@@ -502,7 +506,7 @@ individuals so that the initial configuration of \(R_0\) removed, \(I_0\) infect
  There is no loss of generality in setting \(R_0=0\)
  (since individuals once removed have no further effect on the evolution of the trajectory in process time).
 
- We now change the dynamics of the algorithmic time evolution to produce persistence of
+ We now change the dynamics of the algorithmic time evolution to ensure persistence of
  this pattern of division
  into three contiguous blocks.
 %  Firstly, we will work now in discrete
@@ -518,7 +522,7 @@ individuals so that the initial configuration of \(R_0\) removed, \(I_0\) infect
  Poisson point processes (with respect to process time) as follows: for \(k\in\Integers\),
  at time \(\tau=2(k-1)T\), we generate
 %  the following Poisson streams of potential incidents.
-\begin{enumerate}
+\begin{enumerate}[1:]
  \item potential removals
  in the form of
  a Poisson (\(n\beta\)) point process 
@@ -540,10 +544,11 @@ the mark of the potential removal
  \item
  potential infections at algorithmic time
  \(\tau\),
- and arising from a specified individual \(i\), 
- form
-a Poisson (\(i (n-i)\alpha\)) point process for which points are independently
- marked by \(i\) together with a draw \(j\) from a Uniform (\(\{1, \ldots, i\}\)) distribution.
+ and arising from specified individuals \(i\), 
+ in the form of
+Poisson (\(i (n-i)\alpha\)) point processes
+for which points are independently
+ marked by \(i\) together with draws \(j\) from a Uniform (\(\{1, \ldots, i\}\)) distribution.
  \\
 A potential infection at process time \(t\) arising from the \(i^\text{th}\) individual only becomes active if (a) individual \(i\) is currently (at time \(t-\)) the infected individual of \emph{highest} index, and 
  (b) the corresponding mark \(j\) 
@@ -596,7 +601,7 @@ of total rate
 \(\kappa_{n}(\alpha,\beta)=n\beta + \sum_{i=1}^{n-1}i(n-i)=n\beta + \tfrac{(n+1)n(n-1)}{6}\alpha\):
 each incident at process
 time \(t\) is independently marked as follows:
-\begin{enumerate}
+\begin{enumerate}[1:]
  \item 
 with probability \(n\beta/\kappa_{n}(\alpha,\beta)\)
 by a draw \(i\) from a Uniform (\(\{1, \ldots, n\}\))
@@ -633,7 +638,8 @@ by \(i\) together with a draw \(j\)
  separate
  out
  updates of potential removals and potential infections in algorithmic time.
- This is directly analogous to using a systematic scan for the heat-bath dynamics for the Ising model,
+ This is directly analogous to using a systematic scan Gibbs sampler
+ for the heat-bath dynamics for the Ising model,
  and is likewise justified by
  discussion of reversibility
  \citep[see for example][Section 1.4]{Geyer-1999}.
@@ -704,27 +710,12 @@ so that
 at algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\))
 we have replaced all the old infection incidents in the process time interval \([T-t,T]\) by the corresponding new infection incidents in the same time interval, while retaining the old infection incidents in the process time interval 
 \((0,T-t)\).
-
-
-generate an entire set of new infection incidents
-(whether potential or active)
-for the process time range \([0,T]\),
-independently marked by un-ordered pairs
-\((i,j)\) drawn uniformly from 
-the set of unordered pairs of integers in
-\(\{1, \ldots. n\}\).
-Use these progressively
-in reverse time
-to replace 
-the old infection incidents 
-(whether potential or active)
-so that at algorithmic time \((2k-1)T+t\) (for \(0\leq t\leq T)\)
 \NB[WSK3]{No need to worry about whether a potential infection incident occurs exactly at time $T$! Almost surely this will never happen.}
 \xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $T$! Almost surely this will never happen.}
-we have replaced all the old infection incidents 
-in process time interval \([T-t,T)\) 
-by the corresponding new infection incidents
-in process time interval \([T-t,T)\).
+% we have replaced all the old infection incidents 
+% in process time interval \([T-t,T)\) 
+% by the corresponding new infection incidents
+% in process time interval \([T-t,T)\).
 Thus at algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\)) the set of potential removal incidents is
 \[
  \{[s;i]: 0\leq s\leq t \text{ and }[s;i]\in\Poisson_k\}
@@ -732,8 +723,7 @@ Thus at algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\)) the set of potential 
  \{[s;i]: t<s\leq T \text{ and }[s;i]\in\Poisson_{k-1}\}
  \,.
 \]
-Thus
-by algorithmic time \(2kT\) all old
+By algorithmic time \(2kT\) all old
 infection incidents will have been replaced by a new set of
 infection incidents, 
 all
@@ -757,6 +747,43 @@ The reversal of flow of time in step
 \ref{item:infections} will turn out to be important
 when easing computation for the 
 conditioned version.
+
+
+At any particular time \(t\in (2(k-1)T, 2kT]\)
+the set of removal and infections patterns
+at time \(2(k-1)T\) will have been partly replaced
+by independent replacements. 
+By the independence
+property of the Poisson procxess
+this amounts to taking a sequence of up to 3 
+Gibbs sampler steps, each individually reversible.
+Thus the distribution of the set of
+removal and infections patterns
+(and hence of the resulting \SIR epidemic)
+remains invariant.
+Thus the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution.
+Irreducibility / positive-recurrence
+arguments assure us that this is the unique equilibrium distribution to which the chain converges in distribution.%
+\xNB[WSK2]{Add details about the reversibility argument for the specified time-inhomogeneous Markov chain?}
+We state this as a theorem.
+\xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
+
+
+ \begin{thm}\label{thm:SIR-epidemic-2}
+ Suppose \({S}_t\), \({I}_t\), \({R}_t\) measure the susceptibles, infectives, and removals 
+ arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process given by the modified construction described above.
+ The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic in equilibrium
+ and more generally converges to this \SIR epidemic in distribution as algorithmic time tends to infinity.
+\end{thm}
+% \begin{proof}[]
+% \TBC[Sketch proof]{
+% Verify detailed (perhaps dynamic) balance is satisfied.
+%  Show that the process \(({S}, {I}, {R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
+%  citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
+% \xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
+%  Establish convergence to equilibrium.
+% \end{proof}
+
 
 \begin{NoteThis2}[Detailed balance]
  It is tempting to try to use notions of 
@@ -815,32 +842,42 @@ is to extend to this case.
 Here is a simple example.
 Consider six states \(a_\pm\), \(b_\pm\), \(c_\pm\)
 with involution \(x_\pm\leftrightarrow x_\mp\).
-We suppose transition probability \(2/3\)
+We suppose transition probability \(2/3\) of moving
+\(a_+\to b_+\),
+\(b_+\to c_+\),
+\(c_+\to a_+\),
+and
+\(a_-\to c_-\),
+\(c_-\to b_-\),
+\(b_-\to a_-\).
+Reverse transitions have probability \(1/6\)
+as do the ``crossover'' transitions
+\(a_\pm\to a_\mp\),
+\(b_\pm\to b_\mp\),
+\(c_\pm\to c_\mp\).
+Evidently dynamical detailed balance
+is satisfied with invariant probability \(1/6\)
+for all of the \(6\) states.
+
+Now suppose we reject all proposals to leave 
+\(R=\{a_\pm, b_\pm\}\).
+The surviving dynamical detailed balance
+relationships between distinct states
+would lead to the same
+invariant probability \(1/4\) for each of the \(4\) surviving states in \(R\).
+However we now have perturbed dynamical
+detailed balance relationships,
+for example
+in the perturbed case we need
+\(\pi_{a_+} p_{a_+,a_+}=\pi_{a_-} p_{a_-,a_-}\);
+and since we require
+\(\pi_{a_+}=\pi_{a_-}\)
+together with perturbed \(p_{a_+,a_+}=1/6\)
+and perturbed \(p_{a_-,a_-}=2/3\)
+we end up with an inconsistent set of equations
+with no non-trivial solution.
 \end{NoteThis2}
 
-
-
-A 
-% dynamic 
-reversibility argument confirms that the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution,
-and irreducibility / positive-recurrence
-arguments assure us that this is the unique equilibrium distribution to which the chain converges in distribution.%
-\NB[WSK2]{Add details about the reversibility argument for the specified time-inhomogeneous Markov chain?}
- \begin{thm}\label{thm:SIR-epidemic-2}
- Suppose \({S}_t\), \({I}_t\), \({R}_t\) measure the susceptibles, infectives, and removals 
- arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process given by the modified construction described above.
- The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic in equilibrium
- and more generally converges to this \SIR epidemic in distribution as algorithmic time tends to infinity.
-\end{thm}
-\begin{proof}[]
-\TBC[Sketch proof]{
-Verify detailed (perhaps dynamic) balance is satisfied.
- Show that the process \(({S}, {I}, {R})\) solves the relevant martingale problem in process time when sampled in equilibrium in algorithmic time,  
- citing results on the well-posedness of the martingale problem from \citet{StroockVaradhan-1979}.%
-\NB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-2}.}
- Establish convergence to equilibrium.
-}
-\end{proof}
 
 
 % \TBC{

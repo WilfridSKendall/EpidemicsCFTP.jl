@@ -812,36 +812,39 @@ Markov chain based on its expression
 in continuous algorithmic time:%
 \xNB[WSK1]{Check the list of relevant restrictions on the Markov chain in algorithmic time.}
 \begin{enumerate}[(a)]
- \item At \ref{item:removals}, 
- any proposal to introduce a new potential removal is refused if it would result in the introduction of a new \emph{active} removal;
- equivalently, the introduction of a new potential removal is refused if it is located on an infected part of the relevant time-line. 
- \item At \ref{item:removals}, 
- a proposal to delete an old potential removal is refused if the removal in question is active. 
-\item At \ref{item:re-mark-removals}, 
+ \item \label{item:refuse-new-removal}
+At \ref{item:removals}, 
+any proposal to introduce a new potential removal is refused if it would result in the introduction of a new \emph{active} removal;
+equivalently, the introduction of a new potential removal is refused if it is located on an infected part of the relevant time-line. 
+ \item \label{item:perpetuate-old-removal} 
+At \ref{item:removals}, 
+a proposal to delete an old potential removal is refused if the removal in question is active. 
+\item  \label{item:re-sample-old-mark}
+At \ref{item:re-mark-removals}, 
 if a current removal is actually 
 an old removal at time \(\rho\) whose withdrawal has been
 refused because it has been observed,
 then we sample its time-lime mark
- \(m\) from a Uniform (\(\{1,\dots,n\}\)) distribution (effectively reassigning
- the removal to time-line \(m\))
- unless so doing would result in there
- not being an observed removal at the relevant time (equivalently, unless
- the newly proposed time-line
- \(m\) is not infected at process time \(\rho\)).%
-%   \item Proposals to change the marks of potential removals are refused if they would result in the introduction of new actual removals.
-%   \item Proposals to change the marks of actual (hence conditioned) removals are refused if they would result in there not being an observed removal at the relevant time.
- \item At \ref{item:infections},
- a proposal to introduce a potential infection is refused exactly when the infection would both immediately become active and then also
- lead directly or indirectly to infection of a
- further time-line in a way that leads
- to activation of 
- a potential (but inactive) removal on that further time-line.
- \item At \ref{item:infections},
- a proposal to delete an active infection is refused if it would result in 
- de-activation of a currently active removal
- on a subsequent time-line.
- \item[] \emph{(Terminology)} If a proposal to remove an active infection is refused
- at \ref{item:infections}, then we say that the retained infection is \emph{perpetuated}. 
+\(m\) from a Uniform (\(\{1,\dots,n\}\)) distribution (effectively reassigning
+the removal to time-line \(m\))
+unless so doing would result in there
+not being an observed removal at the relevant time (equivalently, unless
+the newly proposed time-line
+\(m\) is not infected at process time \(\rho\)).
+ \item  \label{item:refuse-new-infection}
+At \ref{item:infections},
+a proposal to introduce a potential infection is refused exactly when the infection would both immediately become active and then also
+lead directly or indirectly to infection of a
+further time-line in a way that leads
+to activation of 
+a potential (but inactive) removal on that further time-line.
+ \item  \label{item:perpetuate-old-infection}
+At \ref{item:infections},
+a proposal to delete an active infection is refused if it would result in 
+de-activation of a currently active removal
+on a subsequent time-line.
+ \item[] 
+\emph{(Terminology)} If a proposal to remove an active infection is refused at \ref{item:infections}, then we say that the retained infection is \emph{perpetuated}. 
 %   Note that perpetuated infections must therefore previously (in algorithmic time) be actual infections.
 \end{enumerate}
 

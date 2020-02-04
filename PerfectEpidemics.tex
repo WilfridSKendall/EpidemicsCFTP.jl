@@ -452,7 +452,9 @@ at an algorithmic time \(\tau_0\).
  
 % = = = = = = = = = = = = = = = = = = = = = = =   
 \section{A variant construction, restrictions, and conditioning}\label{sec:restrictions}
-% Implementing conditioning on removals by fixing actual times of removal for the dynamic process evolving in algorithmic time.
+% Section 4: Implementing conditioning on removals by
+% fixing actual times of removal for the 
+% dynamic process evolving in algorithmic time.
 %
 Immigration-death processes in equilibrium are time-reversible
 and
@@ -480,6 +482,8 @@ Markov chain.
 
 % = = = = = = = = = = = = = = = = = = = = = = =   
 \subsection{Construction of the variant process}\label{ssec:variant}
+% Subsection 4.1: Construction details for the 
+% variant process.
 If we wish to condition on actual times of removals
 of specific individuals
 then irreducibility 
@@ -795,7 +799,8 @@ See discussion before theorem.
 
 % = = = = = = = = = = = = = = = = = = = = = = =   
 \subsection{Restrictions on the variant process}\label{ssec:restrictions-variant}
-
+% Subsection 4.2: How we introduce conditioning
+% by imposing restrictions.
 We now wish to consider the above variant process,
 but constrained by requiring
 that the actual observed removal times
@@ -1067,6 +1072,10 @@ actual infection of that time-line.
 % = = = = = = = = = = = = = = = = = = = = = = =  
 \subsection{Evolution of the constrained Markov chain}\label{ssec:evolution}
 \NB[WSK3]{Better and more expressive title for Section \ref{ssec:evolution}?}
+% Subsection 4.3: discussion of the way in which
+% the constrained Markov chain evolves, simplifying
+% the algorithmic state to aid computation and
+% rigorous arguments.
 
 It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time. For \(m=1\),\ldots, \(n\) and \(k\in\Integers\), at algorithmic time \(\tau=2kT\) we denote by \(\Infections^m_k\) the point-set of active or potential infections originating from time-line \(m\) occurring before removal time \(\rho^m\).%
 \xNB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
@@ -1417,6 +1426,8 @@ Note that equation~\eqref{eq:update_no-fly_direct} permits us to update the no-f
  
 % = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Monotonicity and \CFTP}\label{sec:cftp}
+% Section 5: Discussing the monotonicity of the 
+% constrained evolution, and hence CFTP.
 \TBC{
 Simulation 
 \\
@@ -1607,10 +1618,12 @@ At this stage we thus have sets of potential and conditioned removals satisfying
 % = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Examples}\label{sec:examples}
 \TBC{Simulation output. Applications to a real dataset?}
-%
+% Section 6: this section should provide a number
+% of examples.
 
 % = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Conclusion}\label{sec:conclusion}
+% Section 7: Conclusions and possibilities for future work.
 \TBC{
 \begin{enumerate}
  \item Can perfect simulation include inference about parameters \(\alpha\) and \(\beta\)? (Omnithermal simulation?)
@@ -1622,10 +1635,12 @@ At this stage we thus have sets of potential and conditioned removals satisfying
 
 \bigskip
 \noindent \textbf{Acknowledgements.} 
+% Acknowledgements, per form required by sponsors.
 WSK supported by the UK EPSRC under grants EP/K013939, EP/R022100, and also
 the Alan Turing Institute under EPSRC grant EP/N510129.
+\NB[WSK3]{Stephen: do you require any particular acknowledgements?}
 
-This is a theoretical research paper and, as such, no new data were created during this study. 
+This is a theoretical research paper and, as such, no new data were created during this study.  
 % = = = = = = = = = = = = = = = = = = = = = = =   
 %   \scriptsize \input hyperbib
 %   \label{sec:bibliography}

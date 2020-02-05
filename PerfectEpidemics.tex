@@ -142,6 +142,9 @@ spatial immigration-death process;
 
 % = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Introduction}\label{sec:introduction}
+% Section 1: Introduction.
+% Plenty of historical stuff needs to be filled 
+% out here.
 \TBC{  Review the following long-ago previous work, from which we can eventually build up a historical account (no particular need to look at this right now!):\\
 work by Frank Ball and others on coupling for epidemics, also
    \cite{KendallSaunders-1983},
@@ -444,14 +447,14 @@ Accordingly we can deduce that
 solves the martingale problem \citep{StroockVaradhan-1979}
 for an \SIR epidemic
 in process time when sampled in equilibrium 
-at an algorithmic time \(\tau_0\).
+at a specific algorithmic time \(\tau_0\).
 \xNB[WSK1]{Need to complete the statement and proof of Theorem \ref{thm:SIR-epidemic-1}.}
 \end{proof}
 
 
  
 % = = = = = = = = = = = = = = = = = = = = = = =   
-\section{A variant construction, restrictions, and conditioning}\label{sec:restrictions}
+\section{Restrictions, conditioning, and a variant construction}\label{sec:restrictions}
 % Section 4: Implementing conditioning on removals by
 % fixing actual times of removal for the 
 % dynamic process evolving in algorithmic time.
@@ -459,10 +462,12 @@ at an algorithmic time \(\tau_0\).
 Immigration-death processes in equilibrium are time-reversible
 and
 consequently
+time-reversibility 
+is inherited by
 the algorithmic-time
 evolution of \SIR trajectories
-described above
-inherits a time-reversibility property. 
+described above.
+% inherits a time-reversibility property. 
 This facilitates sampling from \emph{conditioned} realizations of the \SIR trajectory: 
 suppose that our target is to draw from the \SIR distribution with trajectory conditioned to lie in a fixed subset \(A\) of the space of possible trajectories.
 So long as 
@@ -480,10 +485,6 @@ refer to this modified Markov chain as the \emph{constrained} variant
 (trajectory-valued)
 Markov chain.
 
-% = = = = = = = = = = = = = = = = = = = = = = =   
-\subsection{Construction of the variant process}\label{ssec:variant}
-% Subsection 4.1: Construction details for the 
-% variant process.
 If we wish to condition on actual times of removals
 of specific individuals
 then irreducibility 
@@ -509,11 +510,18 @@ the graphical representation of the free Markov chain
 (and consequently of the resulting 
 constrained Markov chain).
 
-First observe that we can label
+% = = = = = = = = = = = = = = = = = = = = = = =   
+\subsection{Construction of a variant process}\label{ssec:variant}
+% Subsection 4.1: Construction details for the 
+% variant process.
+
+To describe the variant process, first
+% First 
+observe that we can label
 individuals so that the initial configuration of \(R_0\) removed, \(I_0\) infected, and \(S_0\) susceptible individuals occurs in index order, 
 with individuals \(1, \ldots, R_0\) being initially removed, \(R_0+1, ..., R_0+I_0\) initially infected, and \(R_0+I_0+1, \ldots, R_0+I_0+S_0=n\) initially susceptible.
 There is no loss of generality in setting \(R_0=0\)
-(since individuals once removed have no further effect on the evolution of the trajectory in process time).
+(since once individuals are removed they can have no further effect on the evolution of the trajectory in process time).
 
 We now change the dynamics of the algorithmic time evolution to ensure persistence of
 this pattern of division
@@ -546,39 +554,59 @@ if the corresponding mark lies in the interval
 (corresponding to whether or not
 the mark of the potential removal
 is the index of a time-line that is infected at time \(t-\)).
-In this case \(I_t = I_{t-}-1\)
-while
+In this case the removal succeeds,
+and we put
+\(I_t = I_{t-}-1\)
+and
 \(R_t = R_{t-}+1\).
 
 \item[]
 \emph{potential infections} at algorithmic time
 \(\tau\),
-and arising from specified individuals \(i\), 
-in the form of
+connected with specified
+individuals \(i=1, \ldots, n-1\), 
+taking the form of
 Poisson (\(i (n-i)\alpha\)) point processes
-for which points are independently
-marked by \(i\) together with draws \(j\) from a Uniform (\(\{1, \ldots, i\}\)) distribution.
+for which points are
+marked by \(i\) together with
+independent draws \(j\) from a 
+Uniform (\(\{1, \ldots, i\}\)) distribution.
 \\
-A potential infection at process time \(t\) arising from the \(i^\text{th}\) individual only becomes active if (a) individual \(i\) is currently (at time \(t-\)) the infected individual of \emph{highest} index, and 
+A potential infection at process time \(t\) 
+connected with the \(i^\text{th}\) individual only becomes active if (a) individual \(i\) is currently (at time \(t-\)) the infected individual of \emph{highest} index (so \(I_{t-}=i\)), and 
 (b) the corresponding mark \(j\) 
 exceeds \(R_{t-}\).
-In that case, individual \(i+1\) is switched from susceptible to infected at time \(t\), so \(I_t=I_{t-}+1\), \(S_t=S_{t-}-1\).
+In that case the infection succeeds, 
+so that individual \(i+1\) is switched from
+susceptible to infected at time \(t\), 
+and \(I_t=I_{t-}+1\), \(S_t=S_{t-}-1\).
 \end{enumerate}
 
-
-For 
-potential removal and infection incidents the Uniform marks are used to thin out
-the number of proposed incidents to match the correct rates for the \SIR epidemic. 
+By these means 
+the Uniform marks are used to thin out
+% For 
+potential removal and infection incidents, 
+% the Uniform marks are used to thin out
+with the result that the rates of 
+% the number of proposed 
+successful
+incidents 
+% to 
+match the correct rates for the \SIR epidemic. 
 % It follows immediately
 % from the construction, 
-A simple induction argument
+An induction argument
 over the time-ordered set of potential incidents
+then
 shows that at process time \(t\)
-the individuals \(1, \ldots, R_t\) are removed, \(R_t+1, ..., R_t+I_t\) are infected, and \(R_t+I_t+1, \ldots, R_t+I_t+S_t=n\) are susceptible.
+the individuals \(1, \ldots, R_t\) are removed, \(R_t+1, ..., R_t+I_t\) are infected, and \(R_t+I_t+1, \ldots, R_t+I_t+S_t=n\) are susceptible,
+so the contiguous block structure is preserved.
 
 It is convenient to collect together all the
 potential removal and infection incidents
-at algorithmic time \(\tau=2(k-1)T\) in a single 
+at algorithmic time \(\tau=2(k-1)T\) 
+to form
+a single 
 Poisson point process \(\Poisson_k\)
 of total rate
 (viewed in process time)
@@ -591,17 +619,24 @@ with probability \(n\beta/\kappa_{n}(\alpha,\beta)\),
 the incident is marked
 by a draw \(i\) from a Uniform (\(\{1, \ldots, n\}\))
 distribution 
-(denoting the incident by \([t;i]\));
+(denoting the resulting 
+potential removal
+incident by \([t;i]\));
 \item
 for \(i=1, \ldots, n-1\),
 with probability \(i(n-i)\alpha/\kappa_{n}(\alpha,\beta)\),
 the incident is marked
 by \(i\) together with a draw \(j\)
 from a Uniform (\(\{1, \ldots, i\}\))
-(denoting the incident by \([t;i,j]\)).
+(denoting the resulting
+potential infection
+incident by \([t;i,j]\)).
 \end{enumerate}
-One can view \(\Poisson_k\) as the 
+One can view \(\Poisson_k\) as a 
 collection of innovations
+corresponding to 
+the pattern of
+potential removals and infections
 at algorithmic time \(\tau=2(k-1)T\).
 \begin{NoteThis2}
 Rationale for \(\kappa_n(\alpha,\beta)\):
@@ -628,7 +663,9 @@ Secondly, observe that
 one can
 separate
 out
-updates of potential removals and potential infections in algorithmic time.
+updates of potential removals 
+versus updates of
+potential infections in algorithmic time.
 This is directly analogous to using a systematic scan Gibbs sampler
 for the heat-bath dynamics for the Ising model,
 and is likewise justified by
@@ -639,14 +676,23 @@ discussion of reversibility
 Recall that we are simulating over a process time interval \([0,T]\) for some fixed deterministic time \(T\).
 Over a period \((2(k-1)T, 2kT]\) of algorithmic time we take the following steps,
 essentially corresponding
-to progressive updates using a vertical line moving forwards (for potential removals) then backwards (for potential infections) in process time:
+to progressively developing updates 
+first working forwards 
+in process time
+(for potential removals) then 
+working backwards (for potential infections):
+% in process time:
 \xNB[WSK2]{Here we update using a vertical line moving forwards (for removals) then backwards (for infections) in process time, as opposed to the original TV-scan.}
 \begin{enumerate}[\text{Stage} 1]
 \item\label{item:removals}
 At algorithmic time \(2(k-1)T\),
-collect the entire set of new removals
+collect the entire set 
+\(\{[t;i]: [t;i]\in\Poisson_k\}\)
+of new removals
 (whether potential or active)
-\(\{[t;i]: [t;i]\in\Poisson_k\}\).
+proposed \emph{via} \(\Pi_k\) at that 
+algorithmic
+time.
 Use these progressively to replace
 the old removal incidents 
 (whether potential or active)
@@ -676,7 +722,10 @@ potential removal incidents,
 all
 % All these removal incidents will be 
 independently marked by time-lines.
-\NB[WSK3]{No need to worry about whether a potential removal incident occurs exactly at time $T$! Almost surely this will never happen.}
+(Note that we can tacitly omit consideration 
+of removals at process time \(T\);
+almost surely in equilibrium these will not occur.)
+\xNB[WSK3]{No need to worry about whether a potential removal incident occurs exactly at time $T$! Almost surely this will never happen.}
 
 \item\label{item:re-mark-removals}
 At algorithmic time \((2k-1)T\),
@@ -691,9 +740,12 @@ Uniform(\(\{1,\dots,n\}\))).
 
 \item\label{item:infections}
 At algorithmic time \((2k-1)T+\),
-collect the entire set of new infections
+collect the entire set
+\(\{[t;i,j]: [t;i,j]\in\Poisson_k\}\)
+of new infections
 (whether potential or active)
-\(\{[t;i,j]: [t;i,j]\in\Poisson_k\}\).
+proposed \emph{via} \(\Pi_k\) at 
+algorithmic time \(2(k-1)T\).
 Use these progressively to replace
 the old infection incidents 
 (whether potential or active)
@@ -701,8 +753,6 @@ so that
 at algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\))
 we have replaced all the old infection incidents in the process time interval \([T-t,T]\) by the corresponding new potential infection incidents in the same time interval, while retaining the old potential infection incidents in the process time interval 
 \((0,T-t)\).
-\NB[WSK3]{No need to worry about whether a potential infection incident occurs exactly at time $T$! Almost surely this will never happen.}
-\xNB[WSK2]{No need to worry about whether a potential infection occurs exactly at time $T$! Almost surely this will never happen.}
 % we have replaced all the old infection incidents 
 % in process time interval \([T-t,T)\) 
 % by the corresponding new infection incidents
@@ -721,13 +771,17 @@ all
 % All these removal incidents will be 
 independently marked by unordered pairs 
 of time-lines.
+(Similarly we can tacitly omit consideration 
+of removals at process time \(0\);
+almost surely in equilibrium these will not occur.)
+\xNB[WSK3]{No need to worry about whether a potential infection incident occurs exactly at time $T$! Almost surely this will never happen.}
 \end{enumerate}
 
 
 At any particular time \(t\in (2(k-1)T, 2kT]\)
 the set of potential removal and infections patterns
 at time \(2(k-1)T\) will have been partly replaced
-by independent replacements. 
+by independent proposals. 
 As expressed above 
 in \ref{item:removals},
 over the algorithmic time interval
@@ -746,9 +800,12 @@ removing each old potential infection as it is encountered, and introducing each
 
 \ref{item:re-mark-removals}
 of this procedure
-is apparently redundant. However it will later 
+is essentially redundant for this unconstrained
+construction. 
+However it will later 
 be required in order to ensure convergence
-to an equilibrium for a conditioned version.
+to an equilibrium for a constrained version
+corresponding to conditioning on removals.
 Additionally,
 the reversal of flow of time in
 \ref{item:infections} will turn out to be important
@@ -758,13 +815,15 @@ conditioned version, while in practice
 with the continuous-time implementation of \ref{item:removals}.
 
 
-But the validity of the algorithm
+The validity of the algorithm
 depends on 
 whether at any algorithmic time \(\tau\)
 it delivers a trajectory sampled from the \SIR epidemic. This follows by noticing that the progression from \(\tau=2(k-1)T\) to 
-\(\tau=2(k-1)T+t\) (for \(t\in(0,2T]\))
+\(\tau=2(k-1)T+t\) (for any \(t\in(0,2T]\))
 can be viewed as taking a sequence of up to 3 
-Gibbs sampler steps, each individually reversible,
+Gibbs sampler steps (depending on 
+algorithmic time \(\tau\)), 
+each individually reversible,
 exploiting the
 the independence
 property of the Poisson processes involved:
@@ -777,7 +836,7 @@ Thus the distribution of the set of
 potential removal and infections patterns
 (and hence of the resulting \SIR epidemic)
 remains invariant.
-Thus the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution.
+Hence the time-inhomogeneous Markov chain resulting from this modified construction still has the \SIR epidemic as invariant distribution.
 Irreducibility / positive-recurrence
 arguments assure us that this is the unique equilibrium distribution to which the chain converges in distribution.%
 \xNB[WSK2]{Add details about the reversibility argument for the specified time-inhomogeneous Markov chain?}
@@ -792,7 +851,7 @@ The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic 
 and more generally converges to this \SIR epidemic in distribution as algorithmic time tends to infinity.
 \end{thm}
 \begin{proof}
-See discussion before theorem.
+See the discussion before the theorem statement.
 \end{proof}
 
 

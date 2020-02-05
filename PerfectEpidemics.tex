@@ -867,18 +867,18 @@ that the actual observed removal times
 should never change.
 (We do not explicitly specify which 
 individuals are removed at these times, though
-this can be deduced as a consquence
+this can be deduced as a consequence
 of the persistent separation of susceptibles,
 infectives, and removals as three disjoint intervals in \{1, \ldots, n\}.)
 In effect, we view the progressive introduction of the sets of new potential removals
 and infections, and the progressive
-withdrawal of the sets of previous potential removals and infections, as \emph{proposals}
+withdrawal of the sets of previous potential removals and infections, as \emph{Metropolis-Hastings proposals}
 each proposal is
 implemented only if the sequence of 
 actual observed removal times is left unchanged.
 
 %  Suppose the state-space is restricted by fixing all \(n\) observed removal times as \(0<\rho^1<\rho^2<\ldots<\rho^n\).
-We express the required restrictions on the 
+We list the required restrictions on the 
 evolution of the variant
 Markov chain based on its expression
 in continuous algorithmic time:%
@@ -896,20 +896,33 @@ At \ref{item:re-mark-removals},
 if a current removal is actually 
 an old removal at time \(\rho\) whose withdrawal has been
 refused because it has been observed,
-then we sample its time-lime mark
+then we propose to re-sample its time-lime mark
 \(m\) from a Uniform (\(\{1,\dots,n\}\)) distribution (effectively reassigning
-the removal to time-line \(m\))
-unless so doing would result in there
+the removal to time-line \(m\)).
+This re-sampling is allowed to proceed
+unless it would result in there
 not being an observed removal at the relevant time (equivalently, unless
 the newly proposed time-line
-\(m\) is not infected at process time \(\rho\)).
+\(m\) is not infected at process time \(\rho\) -- 
+\(R_{\rho-} < m \leq I_{\rho-}\)).
  \item  \label{item:refuse-new-infection}
 At \ref{item:infections},
 a proposal to introduce a potential infection is refused exactly when the infection would both immediately become active and then also
 lead directly or indirectly to infection of a
 further time-line in a way that leads
 to activation of 
-a potential (but inactive) removal on that further time-line.
+a potential (but currently inactive) removal on that further time-line.
+\\
+Re-sampling of the newly introduced
+potential removal marks
+can be absorbed into the procedure of generating 
+their marks in the first instance:
+for the re-sampling to proceed, it would have to be a draw from 
+\(\{1, \ldots, R_{\rho-}\}\cup\{I_{\rho-}+1,\ldots,n\}\). Since the epidemic trajectory is not actually affected by \ref{item:removals}, this re-sampling
+draws from the conditional distribution of the
+mark at the time of introduction of the potential
+infection and so has no statistical effect.
+\xNB[WSK3]{Go into more details about how we don't have to re-sample marks for potential but currently inactive removals.}
  \item  \label{item:perpetuate-old-infection}
 At \ref{item:infections},
 a proposal to delete an active infection is refused if it would result in 
@@ -922,7 +935,7 @@ on a subsequent time-line.
 
 The continuous formulation of the
 variant process is not a reversible process,
-nor even the (locally finite) composition 
+nor even arising from finite compositions 
 of reversible steps, so we cannot directly use 
 reversibility to deduce the proposition
 that the constrained
@@ -930,8 +943,8 @@ variant process will have the corresponding conditional distribution as equilibr
 (Note that the connection between reversibility,
 constraints, and conditional distributions
 ceases to apply even for the simple generalization
-to dynamical reversibility.)
-However we \emph{can} prove the proposition
+of detailed balance to dynamical reversibility.)
+However we \emph{can} prove the required proposition
 using limiting arguments.
 
 % \TBC{Moving into restrictions on state-space, now need new Lemma which shows that updates can be viewed as limit of reversible Gibbs sampler steps.}
@@ -961,6 +974,7 @@ distribution given by \(\pi\)
 Suppose \(p_{ab}\) only satisfies dynamical
 equilibrium for \(\pi\), using an
 involution \(a\leftrightarrow\widetilde{b}\):
+namely
 \begin{align*}
 \pi_a \quad&=\quad \pi_{\widetilde{a}}\,,
 \\
@@ -972,7 +986,8 @@ b}\widetilde{a}}
 Suppose the chain is now modified by rejecting 
 all proposals to leave \(R\)
 (which we can assume closed under involution).
-Detailed balance between distinct pairs of states
+Detailed dynamical
+balance between distinct pairs of states
 still holds. However we also need
 balance relating to the probabilities
 of holding at \(a\) and \(\widetilde{a}\);
@@ -981,7 +996,7 @@ of holding at \(a\) and \(\widetilde{a}\);
 \quad=\quad
 \pi_{\widetilde{a}} \left(p_{\widetilde{a}\widetilde{a}} + \sum_{b\not\in R}p_{\widetilde{a}b}\right)
 \]
-hence the additional requirement
+leading to the additional requirement
 \[
 \sum_{b\not\in R}p_{ab}
 \quad=\quad
@@ -989,12 +1004,13 @@ hence the additional requirement
 \,.
 \]
 This further requirement is necessary if the classic reversibility connection with conditioning
-is to extend to this case.
+is to extend to the case of dynamical detailed balance.
 
-Here is a simple example.
+Here is a simple example to show 
+that these considerations matter.
 Consider six states \(a_\pm\), \(b_\pm\), \(c_\pm\)
 with involution \(x_\pm\leftrightarrow x_\mp\).
-We suppose transition probability \(2/3\) of moving
+We suppose transition probability \(\tfrac{2}{3}\) of moving
 \(a_+\to b_+\),
 \(b_+\to c_+\),
 \(c_+\to a_+\),
@@ -1002,13 +1018,13 @@ and
 \(a_-\to c_-\),
 \(c_-\to b_-\),
 \(b_-\to a_-\).
-Reverse transitions have probability \(1/6\)
+Reverse transitions have probability \(\tfrac{1}{6}\)
 as do the ``crossover'' transitions
 \(a_\pm\to a_\mp\),
 \(b_\pm\to b_\mp\),
 \(c_\pm\to c_\mp\).
 Evidently dynamical detailed balance
-is satisfied with invariant probability \(1/6\)
+is satisfied with invariant probability \(\tfrac{1}{6}\)
 for all of the \(6\) states.
 
 Now suppose we reject all proposals to leave 
@@ -1016,16 +1032,16 @@ Now suppose we reject all proposals to leave
 The surviving dynamical detailed balance
 relationships between distinct states
 would lead to the same
-invariant probability \(1/4\) for each of the \(4\) surviving states in \(R\).
+invariant probability \(\tfrac{1}{4}\) for each of the \(4\) surviving states in \(R\).
 However we now have perturbed dynamical
 detailed balance relationships,
 for example
 in the perturbed case we need
-\(\pi_{a_+} p_{a_+,a_+}=\pi_{a_-} p_{a_-,a_-}\);
-and since we require
+\(\pi_{a_+} p_{a_+,a_+}=\pi_{a_-} p_{a_-,a_-}\).
+Since we require
 \(\pi_{a_+}=\pi_{a_-}\)
-together with perturbed \(p_{a_+,a_+}=1/6\)
-and perturbed \(p_{a_-,a_-}=2/3\)
+together with perturbed \(p_{a_+,a_+}=\tfrac{1}{6}\)
+and perturbed \(p_{a_-,a_-}=\tfrac{2}{3}\)
 we end up with an inconsistent set of equations
 with no non-trivial solution.
 \end{NoteThis2}
@@ -1037,13 +1053,17 @@ with no non-trivial solution.
 Suppose \({S}_t\), \({I}_t\), \({R}_t\) measure the susceptibles, infectives, and removals 
 arising at time \(\tau\) in stochastic equilibrium for the algorithmic-time process given by the modified construction described above,
 but conditioned on the \(n\) individuals being removed at removal times \(\rho^1<\rho^2<\ldots<\rho^n\).
-The process \(({S}, {I}, {R})\), viewed in process time, forms an \SIR epidemic conditioned on these removals taking place
-and more generally converges to this conditioned \SIR epidemic in distribution as algorithmic time tends to infinity..
+In equilibrium in algorithmic time,
+the process \(({S}, {I}, {R})\) (viewed in process time) forms an \SIR epidemic conditioned on these removals taking place.
+More generally
+the algorithmic-time process 
+converges to this formulation conditioned \SIR epidemic in distribution as algorithmic time tends to infinity..
 \end{thm}
 \begin{proof}
 Begin by observing that we can obtain
 an \(n^\text{th}\) order discrete approximation
-to the continuous formulation for the variant process by breaking up each of \ref{item:removals}
+to the continuous-algorithmic-time formulation 
+for the variant process by breaking up each of \ref{item:removals}
 and \ref{item:infections} into \(2^n\) sequential
 sub-proposals concerning removals, respectively
 infections, in process-time intervals
@@ -1052,8 +1072,9 @@ and include also sub-proposals concerning the re-marking of removals.
 Each of the sub-proposals is a reversible move.
 We can therefore assert the following:
 if we accept or reject a 
-particular sub-proposal based on whether the relevant changes to potential
-incidents (taken together) violate the constraint
+particular sub-proposal based on whether the changes to potential
+incidents in the relevant interval
+(taken together) violate the constraint
 on observed removals, then the
 \(n^\text{th}\)-order constrained process derived
 from the sequence of accepted sub-proposals
@@ -1062,12 +1083,15 @@ conditional probability distribution.
 
 However, local finiteness of Poisson point processes implies that as \(n\to\infty\)
 the \(n^\text{th}\)-order constrained process will converge almost surely to the constrained version
-of the continuous formulation (which is to say,
-the continuous formulation but forbidding introduction, re-marking or removal of potential incidents
+of the continuous-algorithmic-time formulation 
+(which is to say,
+the continuous-algorithmic-time formulation 
+but forbidding introduction, re-marking or removal of potential incidents
 according to \ref{item:refuse-new-removal}-\ref{item:perpetuate-old-infection}).
 
 It follows directly that the constrained version
-of the continuous formulation must also have as equilibrium the required
+of the continuous-algorithmic-time formulation 
+ must also have as equilibrium the required
 conditional probability distribution.
 
 Finally we deduce convergence to this
@@ -1076,13 +1100,15 @@ positive-recurrent small set.
 The relevant small set can be derived by consideration of trajectories such that each timeline is infected once only, 
 very shortly after time \(0\), with no potential removals other than observed removals, so that time-line 
 and subsequent time-lines are all infected before their observed removal times.
-\NB[WSK3]{Need to explain more carfefully the positive-recurrent small set in proof of Theorem \ref{thm:conditioned-SIR-epidemic}.}
+\NB[WSK3]{Need to explain more carefully the positive-recurrent small set in proof of Theorem \ref{thm:conditioned-SIR-epidemic}.}
 \xNB[WSK2]{Need to explain carefully the irreducibility required for Theorem \ref{thm:conditioned-SIR-epidemic}, arising because here we count numbers not individuals.}\end{proof}
 
 Figure \ref{fig:graphical} illustrates the
-construction of the constrained variant process.\NB[SBC]{Need to change key for Figure \ref{fig:graphical}, to confirm to current terminology of ``potential incident'' \emph{etc}.}
+construction of 
+the constrained variant process.
+\xNB[SBC]{Need to change key for Figure \ref{fig:graphical}, to confirm to current terminology of ``potential incident'' \emph{etc}.}
 \begin{Figure}
-\includegraphics[width=3in]{Timelines1.pdf}
+\includegraphics[width=3in]{TimelinesSBC1.pdf}
 \caption{Modified graphical representation of \SIR epidemic, conditioned on removals.\label{fig:graphical}}
 \end{Figure}
 

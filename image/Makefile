@@ -49,7 +49,7 @@ phonytargets := all checkin clean virgin help gui backup \
 # GUI STARTS HERE
 # ----------------------------------------------
 # ----------------------------------------------
-all: products ; echo $^ now up to date
+all: products Timelines4.pdf Timelines5.pdf ; echo $^ now up to date
 view: all ; $(START) $(title).pdf
 products: $(diafiles) $(productfiles) ; echo $^ now up to date
 

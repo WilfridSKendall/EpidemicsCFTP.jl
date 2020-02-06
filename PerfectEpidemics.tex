@@ -1108,8 +1108,36 @@ construction of
 the constrained variant process.
 \xNB[SBC]{Need to change key for Figure \ref{fig:graphical}, to confirm to current terminology of ``potential incident'' \emph{etc}.}
 \begin{Figure}
-\includegraphics[width=3in]{TimelinesSBC1.pdf}
-\caption{Modified graphical representation of \SIR epidemic, conditioned on removals.\label{fig:graphical}}
+\includegraphics[width=3in]{graphical}
+% \includegraphics[width=3in]{TimelinesSBC1.pdf}
+\caption{Modified graphical representation of \SIR epidemic, conditioned on removals.
+There are five time-lines. 
+\\
+Yellow time-line segments denote infectious portions of time-lines.
+Yellow arrows denote 
+actual infections with marks \(j < i\),
+starting at time-line with mark \(j\) and ending at time-line with mark \(i+1\).
+Green vertical arrows denote potential but unrealized infections with marks \(j < i\),
+starting at time-line with mark \(j\) and ending at time-line with mark \(i+1\).
+A potential infection with marks \(j < i\) 
+becomes actual only when 
+time-lines \(j\) and \(i\) are both infectious
+but time-line \(i+1\) is not yet infectious.
+\\
+Red circles denote action of realised removals
+on time-lines, which are
+conditioned / constraints;
+blue circles denote potential but unrealized removals, located
+at time-line with mark \(i\). 
+A potential removal on time-line \(i\) 
+becomes actual only when 
+time-line \(i\) is infectious at the potential removal time (and not yet removed), and then removes the currently infectious time-line of smallest index.
+A potential infection with arrow ending at \(i+1\) and 
+starting at \(j\) (\(j<i\))
+takes effect only when the time-line \(i\) is 
+the highest infected time-line and time-line \(j\)
+has not yet been removed.
+\label{fig:graphical}}
 \end{Figure}
 
 

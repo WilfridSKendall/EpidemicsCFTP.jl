@@ -26,8 +26,22 @@ inlineBIG := --logging=INFO --height=720 --width=1024 --T=1.5 \
 inline := --logging=INFO --height=180 --width=256 --T=1.5 \
 		--remove="[[], [], [0.02, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
 		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
-		
-		
+
+paper-figures: ../image/graphical.png
+
+../image/graphical.png: Makefile
+	python3 static.py --title="Variant graphical representation of SIR epidemic, conditioned on removals" \
+		--on=aI,Infectious,pI-lo,R,pR 				\
+		--remove="[[0.85, 1.6], 				\
+			   [0.5, 1.0, 1.7], [1.1], 				\
+			   [0.15, 0.45], 				\
+			   [0.9, 1.25, 1.9, 2.0]]" 				\
+		--infect="[[[0.19, 0.25, 1.1, 1.5]], 			\
+			   [[0.4, 0.9], [0.04, 0.8, 1.4]], 		\
+			   [[0.6], [0.75], [0.85, 1.53]], 		\
+			   [[0.1, 0.53], [1.3], [1.4], [1.2, 1.9]]]"	\
+		--forceoutput --output=$@
+
 f1: ; python3 static.py $(recipe1)
 f2: ; python3 static.py $(recipe2)
 f3: ; python3 static.py $(recipe3)
@@ -48,7 +62,8 @@ image/inline-Epidemic.png: ; python3 static.py $(inline)   --title="Infectious g
 image/inline-Infectious.png: ; python3 static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Infectious' --notext --forceoutput 
 image/inline-R.png: ; python3 static.py $(inline)          --title="R graphics elements" --output=$@ --on='R' --notext --forceoutput
 image/inline-Mordor.png: ; python3 static.py $(inline)     --title="Mordor graphics elements" --output=$@ --on='Mordor' --notext --forceoutput
-image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
+image/inline-nofly.png: ; python3 s
+	tatic.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
 image/inline-West.png: ; python3 static.py $(inline)       --title="West" --output=$@ --on='West' --notext --forceoutput
 image/inline-lvI.png: ; python3 static.py $(inline)       --title="West" --output=$@ --on='lvI' --notext --forceoutput
 

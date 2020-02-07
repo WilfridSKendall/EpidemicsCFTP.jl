@@ -36,18 +36,36 @@ running-example := --remove="[[0.85, 1.6], 				\
 			   [[0.6], [0.75], [0.3, 0.85, 1.53]], 		\
 			   [[0.1, 0.53], [1.3], [1.4], [1.2, 1.9]]]"	
 
-paper-figures: ../image/graphical.png ../image/no-fly.png
-
-../image/no-fly.png:
-	python3 static.py --title="Variant graphical representation of SIR epidemic, conditioned on removals" \
-	 	$(running-example) 				\
-		--on=aI,Infectious,pI-lo,R,pR,West,Mordor,nofly	\
-		$(running-example) --forceoutput --output=$@
+paper-figures: ../image/graphical.png ../image/no-fly.png ../image/epidemic.png ../image/last-epidemic.png ../image/fourth-and-fifth.png
 
 ../image/graphical.png: Makefile
-	python3 static.py --title="Variant graphical representation of SIR epidemic, conditioned on removals" \
+	python3 static.py --title="Variant graphical representation of SIR epidemic Figure 1, conditioned on removals" \
 	 	--on=aI,Infectious,pI-lo,R,pR 	\
 	 	$(running-example) --forceoutput --output=$@
+
+../image/no-fly.png: Makefile
+	python3 static.py --title="Variant graphical representation of SIR epidemic Figure 2, no-fly zone" \
+	 	$(running-example) 				\
+		--on=pI-lo,R,pR,West,nofly,Mordor	\
+		$(running-example) --forceoutput --output=$@
+
+../image/epidemic.png: Makefile
+	python3 static.py --title="Variant graphical representation of SIR epidemic Figure 3, pre-infection zone" \
+	 	$(running-example) 				\
+		--on=aI,Infectious,pI-lo,R,pR,nofly,Mordor	\
+		$(running-example) --forceoutput --output=$@
+
+../image/last-epidemic.png: Makefile
+	python3 static.py --title="Variant graphical representation of SIR epidemic Figure 4, infection window and last viable epidemic" \
+	 	$(running-example) 				\
+		--on=aI,Infectious,lvI,pI-lo,R,pR	\
+		$(running-example) --forceoutput --output=$@
+
+../image/fourth-and-fifth.png: Makefile
+	python3 static.py --title="Variant graphical representation of SIR epidemic Figure 5, post-infection and dead zones" \
+	 	$(running-example) 				\
+		--on=Infectious,pI-lo,R,pR,West,lvI	\
+		$(running-example) --forceoutput --output=$@
 
 f1: ; python3 static.py $(recipe1)
 f2: ; python3 static.py $(recipe2)

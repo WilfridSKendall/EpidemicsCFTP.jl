@@ -1115,11 +1115,11 @@ There are five time-lines.
 \\
 Yellow time-line segments denote infectious portions of time-lines.
 Yellow arrows denote 
-actual infections with marks \(j < i\),
+actual infections with marks \(j \leq i\),
 starting at time-line with mark \(j\) and ending at time-line with mark \(i+1\).
-Green vertical arrows denote potential but unrealized infections with marks \(j < i\),
+Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\),
 starting at time-line with mark \(j\) and ending at time-line with mark \(i+1\).
-A potential infection with marks \(j < i\) 
+A potential infection with marks \(j \leq i\) 
 becomes realized only when 
 time-lines \(j\) and \(i\) are both infectious
 but time-line \(i+1\) is not yet infectious.
@@ -1140,6 +1140,7 @@ time-line \(i\) is infectious at the potential removal time (and not yet removed
 The constraints on realized removals lead to constraints on birth/death of infections/removals in algorithmic time.
 \label{fig:graphical}}
 \end{Figure}
+\NB[WSK3]{Figure \ref{fig:graphical} needs graphical key!}
 
 
 Note that, 
@@ -1230,8 +1231,10 @@ However it is always possible for \(\Removals^m_k=\emptyset\) for some or all \(
  Proposals of potential infections of ``no-fly'' portions of time-lines must be forbidden.
  Figure \ref{fig:no-fly} illustrates this construction.
  \begin{Figure}
-  \includegraphics[width=3in]{TimelinesSBC2.pdf}
-  \caption{``No-fly'' zone and boundary for this graphical representation.\label{fig:no-fly}}
+  \includegraphics[width=3in]{no-fly}
+  \caption{Illustration of ``No-fly'' zone (heavy black / grey lines starting from left of figure along time-lines) for this graphical representation. Note also the
+  ``late zone'', composed of portions of time-lines \emph{after} actual removals.
+  \label{fig:no-fly}}
  \end{Figure}
  
  The second region  is the \emph{``pre-infection'' zone}: this lies

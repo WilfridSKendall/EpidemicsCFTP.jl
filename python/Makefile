@@ -27,20 +27,27 @@ inline := --logging=INFO --height=180 --width=256 --T=1.5 \
 		--remove="[[], [], [0.02, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
 		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
 
-paper-figures: ../image/graphical.png
+running-example := --remove="[[0.85, 1.6], 				\
+			   [0.5, 1.0, 1.7], [1.1], 			\
+			   [0.15, 0.45], 				\
+			   [0.9, 1.25, 1.9, 2.0]]" 			\
+		--infect="[[[0.19, 0.25, 1.1, 1.5]], 			\
+			   [[0.4, 0.9], [0.04, 0.8, 1.4]], 		\
+			   [[0.6], [0.75], [0.3, 0.85, 1.53]], 		\
+			   [[0.1, 0.53], [1.3], [1.4], [1.2, 1.9]]]"	
+
+paper-figures: ../image/graphical.png ../image/no-fly.png
+
+../image/no-fly.png:
+	python3 static.py --title="Variant graphical representation of SIR epidemic, conditioned on removals" \
+	 	$(running-example) 				\
+		--on=aI,Infectious,pI-lo,R,pR,West,Mordor,nofly	\
+		$(running-example) --forceoutput --output=$@
 
 ../image/graphical.png: Makefile
 	python3 static.py --title="Variant graphical representation of SIR epidemic, conditioned on removals" \
-		--on=aI,Infectious,pI-lo,R,pR 				\
-		--remove="[[0.85, 1.6], 				\
-			   [0.5, 1.0, 1.7], [1.1], 				\
-			   [0.15, 0.45], 				\
-			   [0.9, 1.25, 1.9, 2.0]]" 				\
-		--infect="[[[0.19, 0.25, 1.1, 1.5]], 			\
-			   [[0.4, 0.9], [0.04, 0.8, 1.4]], 		\
-			   [[0.6], [0.75], [0.85, 1.53]], 		\
-			   [[0.1, 0.53], [1.3], [1.4], [1.2, 1.9]]]"	\
-		--forceoutput --output=$@
+	 	--on=aI,Infectious,pI-lo,R,pR 	\
+	 	$(running-example) --forceoutput --output=$@
 
 f1: ; python3 static.py $(recipe1)
 f2: ; python3 static.py $(recipe2)

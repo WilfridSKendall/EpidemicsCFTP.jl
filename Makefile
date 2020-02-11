@@ -111,12 +111,11 @@ image/inline-Epidemic.png: ; python3 python/static.py $(inline)   --title="Infec
 image/inline-Infectious.png: ; python3 python/static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Infectious' --notext --forceoutput 
 image/inline-R.png: ; python3 python/static.py $(inline)          --title="R graphics elements" --output=$@ --on='R' --notext --forceoutput
 image/inline-Mordor.png: ; python3 python/static.py $(inline)     --title="Mordor graphics elements" --output=$@ --on='Mordor' --notext --forceoutput
-image/inline-nofly.png: ; python3 s
-	tatic.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
+image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
 image/inline-West.png: ; python3 python/static.py $(inline)       --title="West" --output=$@ --on='West' --notext --forceoutput
 image/inline-lvI.png: ; python3 python/static.py $(inline)       --title="West" --output=$@ --on='lvI' --notext --forceoutput
 $(title).pdf: $(imagefiles)
-
+$(imagefiles): python/static.py Makefile
 
 # ----------------------------------------------
 # Checkin targets:
@@ -134,7 +133,7 @@ biblio: $(title).bib
 clean: ; -rm \#*\# *~ *.log *.blg *.toc *.out *.synctex.gz
 # ----------------------------------------------
 # Remove temporary, auxiliary files AND pdf files:
-virgin: clean ; -rm *.aux *.bbl *.pdf *.cache
+virgin: clean ; -rm *.aux *.bbl *.pdf *.cacheimage/inline-aI.png
 
 # ===================
 # GUI ENDS HERE

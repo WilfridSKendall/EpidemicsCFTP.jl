@@ -22,7 +22,7 @@
 %% Font selection
 \usepackage{times}
 \usepackage[T1]{fontenc}
-% \usepackage[utf8x]{inputenc}
+% \usepackage[utf8x]{inputenc} 
 % \usepackage{ccfonts,eulervm}
 % \usepackage[expert,altbullet,seriftt]{lucidabr}
 
@@ -1132,13 +1132,13 @@ the constrained variant process.
 \end{subfigure}
 
 \begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-R}
-\caption{\label{subfig:inline-R}Actual removals}
+ \includegraphics[scale=0.3]{inline-pR}
+\caption{\label{subfig:inline-pR}Potential removals}
 \end{subfigure}
 \qquad
 \begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-pR}
-\caption{\label{subfig:inline-pR}Potential removals}
+ \includegraphics[scale=0.3]{inline-R}
+\caption{\label{subfig:inline-R}Conditioned removals}
 \end{subfigure}
 \end{minipage}
 
@@ -1162,31 +1162,33 @@ becomes realized only when
 time-lines \(j\) and \(i\) are both infectious
 but time-line \(i+1\) is not yet infectious.)
 \\
-(\ref{subfig:inline-R}): Red circles denote action of realised removals
-on time-lines.
-\\
-(\ref{subfig:inline-pR}): blue circles denote potential but unrealized removals, located
+(\ref{subfig:inline-pR}): Blue circles denote potential removals, located
 at time-line with mark \(i\). 
 \\
-(A potential removal on time-line \(i\) would
-become realized only when 
-time-line \(i\) is infectious at the potential removal time (and not yet removed), and would then remove the currently infectious time-line of smallest index.)
+(\ref{subfig:inline-R}): Red circles denote conditioned removals
+on the time-lines on which these removals happen. 
+\\
+(A conditioned removal on time-line \(i\) 
+has to be associated with a potential removal on
+time-line \(i\) or greater. such that the relevant time-line is
+actually
+infectious at the potential removal time.)
 % % A potential infection with arrow ending at \(i+1\) and 
 % % starting at \(j\) (\(j<i\))
 % % takes effect only when the time-line \(i\y) is 
 % % the highest infected time-line and time-line \(j\)
 % % has not yet been removed.
 \\
-Constraints on realized removals then lead to constraints on birth/death of infections/removals in algorithmic time.
+Constraints on realized removals thus lead to constraints on birth/death of infections/removals in algorithmic time.
 }
 \end{Figure}
 \xNB[WSK3]{Figure \ref{fig:graphical} needs graphical key!}
 
-
 Note that, 
 because we condition on all 
 observed removal times, 
-the process of active removals \(\{R_t:t\geq0\}\)
+the process of removals which actually occur,
+\(\{R_t:t\geq0\}\),
 can be treated as deterministic.
 
 Note also that potential removals 

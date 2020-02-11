@@ -1165,7 +1165,7 @@ but time-line \(i+1\) is not yet infectious.)
 (\ref{subfig:inline-R}): Red circles denote action of realised removals
 on time-lines.
 \\
-(\ref{subfig:inline-pR}): blue circles denote potential but unrealized removals, located
+(\ref{subfig:inline-pR}): Blue circles denote potential but unrealized removals, located
 at time-line with mark \(i\). 
 \\
 (A potential removal on time-line \(i\) would
@@ -1430,7 +1430,7 @@ conditioned removal assigned to that time-line or one of a higher index
  \end{Figure}
 
 
- We can now concisely summarize which introductions or deletions of potential removals and infections might be refused during the evolution of the variant Markov chain described in Section~\ref{ssec:restrictions-variant}.
+ We can now concisely summarize which introductions or deletions of potential removals and infections might be refused during the evolution in continuous algorithmic time of the variant Markov chain described in Section~\ref{ssec:restrictions-variant}.
 
   It is always possible to delete a potential removal without jeopardizing the conditioning;
  clearly deletion of a conditioned removal must be refused because its
@@ -1443,19 +1443,21 @@ not infected at time \(\rho\).
  
  It is always possible to delete a potential infection.
  An active infection can be deleted unless it simultaneously forms part of the epidemic trajectory and the last viable epidemic; 
-\NB[SBC]{When working right-to-left in algorithmic time, updating the
+\xNB[SBC]{When working right-to-left in algorithmic time, updating the
  values of $\phi^m$ and $\eta^m$ as we go. This might need to be clarified!}
  if it \emph{does} belong to both these epidemics then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
  In other words, if \(\phi^m=\eta^m\) for some \(m\), the (necessarily
  active) infection in \(\Infections^{m-1}\) occurring at time \(\phi^m\) must be perpetuated, and these are the only infections subject to perpetuation.
- Potential infections can be introduced unless they would currently connect the epidemic trajectory to the no-fly zone.
- So potential infections can be introduced (whether or not they become
- active) unless the introduction bridges the gap between epidemic and
- no-fly zone.
+ Potential infections can be introduced unless they would immediately connect the current epidemic trajectory to the no-fly zone.
+ %So potential infections can be introduced (whether or not they become
+ %active) unless the introduction bridges the gap between epidemic and
+ %no-fly zone.
  
+ 
+ So far we have described the evolution of the variant Markov chain as algorithmic time increases continuously from \(\tau=2(k-1)T\) to \(\tau = 2kT\), for \(k=1,2,\dots\). We now present a series of lemmas which permit us to \emph{directly} ascertain the state of the chain at time \(2kT\) using only the state at time \(2(k-1)T\) and the marked Poisson process \(\Pi_k\).
  
  We now formalize a number of these observations in the form of lemmas, which should be useful when establishing monotonicity of the epidemic trajectory.%
-\NB[WSK2]{Terminology: ``earlier'' and ``later'' often refer to the
+\xNB[WSK2]{Terminology: ``earlier'' and ``later'' often refer to the
   time-line ordering, as in ``a potential infection earlier than the
   epidemic''.}
 

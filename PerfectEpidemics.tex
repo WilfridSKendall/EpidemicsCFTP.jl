@@ -30,6 +30,7 @@
 %% Tracking queries (NB also loads colours!)
 % \RequirePackage[no-comment]{WSKtracking}  %% Colour and Graphics
 \usepackage{graphicx}
+\usepackage[font=scriptsize]{subcaption} % Needed for keys in Figure 1
 \graphicspath{{./image/}}
 \RequirePackage{WSKtracking}  %% Colour and Graphics
 
@@ -1108,19 +1109,52 @@ construction of
 the constrained variant process.
 \xNB[SBC]{Need to change key for Figure \ref{fig:graphical}, to confirm to current terminology of ``potential incident'' \emph{etc}.}
 \begin{Figure}
-\includegraphics[width=3in]{graphical}
+\begin{minipage}[t]{.6\linewidth}
+\begin{subfigure}{.6\linewidth}
+\includegraphics[width=4in]{graphical}
 % \includegraphics[width=3in]{TimelinesSBC1.pdf}
-\caption{Modified graphical representation of \SIR epidemic, conditioned on removals. 
+\end{subfigure}
+\end{minipage}
+\begin{minipage}[t]{.4\linewidth}
+\begin{subfigure}[t]{.20\linewidth}
+ \includegraphics[scale=0.3]{inline-Infectious}
+\caption{\label{subfig:Infectious}Infected time-line}
+\end{subfigure}
+\qquad
+\begin{subfigure}[t]{.20\linewidth}
+ \includegraphics[scale=0.3]{inline-aI}
+\caption{\label{subfig:Infections}Infection}
+\end{subfigure}
+\qquad
+\begin{subfigure}[t]{.20\linewidth}
+ \includegraphics[scale=0.3]{inline-pI-lo}
+\caption{\label{subfig:inline-pI-lo}Potential infections}
+\end{subfigure}
+
+\begin{subfigure}[t]{.20\linewidth}
+ \includegraphics[scale=0.3]{inline-R}
+\caption{\label{subfig:inline-R}Actual removals}
+\end{subfigure}
+\qquad
+\begin{subfigure}[t]{.20\linewidth}
+ \includegraphics[scale=0.3]{inline-pR}
+\caption{\label{subfig:inline-pR}Potential removals}
+\end{subfigure}
+\end{minipage}
+
+
+\caption{\label{fig:graphical}
+Modified graphical representation of \SIR epidemic, conditioned on removals. 
 There are five time-lines. 
 \\
-% \includegraphics[height=20]{inline-aI}
-Yellow time-line segments denote infectious portions of time-lines.
+(\ref{subfig:Infectious}): Yellow time-line segments denote infectious portions of time-lines.
 \\
+(\ref{subfig:Infections}): 
 Yellow arrows denote 
 actual infections with marks \(j \leq i\),
 starting at time-line \(j\) and ending at time-line \(i+1\).
 \\
-Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\),
+(\ref{subfig:inline-pI-lo}): Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\),
 starting at time-line \(j\) and ending at time-line \(i+1\).
 \\
 (A potential infection with marks \(j \leq i\) 
@@ -1128,10 +1162,10 @@ becomes realized only when
 time-lines \(j\) and \(i\) are both infectious
 but time-line \(i+1\) is not yet infectious.)
 \\
-Red circles denote action of realised removals
-on time-lines;
+(\ref{subfig:inline-R}): Red circles denote action of realised removals
+on time-lines.
 \\
-blue circles denote potential but unrealized removals, located
+(\ref{subfig:inline-pR}): blue circles denote potential but unrealized removals, located
 at time-line with mark \(i\). 
 \\
 (A potential removal on time-line \(i\) would
@@ -1143,8 +1177,8 @@ time-line \(i\) is infectious at the potential removal time (and not yet removed
 % % the highest infected time-line and time-line \(j\)
 % % has not yet been removed.
 \\
-The constraints on realized removals lead to constraints on birth/death of infections/removals in algorithmic time.
-\label{fig:graphical}}
+Constraints on realized removals then lead to constraints on birth/death of infections/removals in algorithmic time.
+}
 \end{Figure}
 \NB[WSK3]{Figure \ref{fig:graphical} needs graphical key!}
 

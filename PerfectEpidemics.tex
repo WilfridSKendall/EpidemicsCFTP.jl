@@ -573,7 +573,9 @@ independent draws \(j\) from a
 Uniform (\(\{1, \ldots, i\}\)) distribution.
 \\
 A potential infection at process time \(t\) 
-connected with the \(i^\text{th}\) individual only becomes active if (a) individual \(i\) is currently (at time \(t-\)) the infected individual of \emph{highest} index (so \(I_{t-}=i\)), and 
+connected with the \(i^\text{th}\) individual only becomes active if (a) individual \(i\) is currently (at time \(t-\)) the infected individual of \emph{highest} index (so \(R_{t-}+I_{t-}=i\))
+\NB[SBC]{Changed this (from $I_{t-}=i$) -- please check!}
+, and 
 (b) the corresponding mark \(j\) 
 exceeds \(R_{t-}\).
 In that case the infection succeeds, 
@@ -750,7 +752,7 @@ Use these progressively to replace
 the old infection incidents 
 (whether potential or active)
 so that  
-at algorithmic time \(2(k-1)T+t\) (for \(0\leq t<T\))
+at algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\))
 we have replaced all the old infection incidents in the process time interval \([T-t,T]\) by the corresponding new potential infection incidents in the same time interval, while retaining the old potential infection incidents in the process time interval 
 \((0,T-t)\).
 % we have replaced all the old infection incidents 
@@ -761,7 +763,7 @@ Thus at algorithmic time \((2k-1)T+t\) (for \(0\leq t<T\)) the set of potential 
 \[
 \{[s;i,j]: 0\leq s< T- t \text{ and }[s;i,j]\in\Poisson_{k-1}\}
 \cup
-\{[s;i,j]: T-t<s\leq T \text{ and }[s;i,j]\in\Poisson_k\}
+\{[s;i,j]: T-t \leq s\leq T \text{ and }[s;i,j]\in\Poisson_k\}
 \,.
 \]
 By algorithmic time \(2kT\) all old
@@ -787,7 +789,7 @@ in \ref{item:removals},
 over the algorithmic time interval
 \((2(k-1)T, (2k-1)T)\)
 the algorithm progresses continuously
-through the process time segment \((0,T\)
+through the process time segment \((0,T)\)
 removing each old potential removal as it is encountered, and introducing each new potential removal as it is encountered.
 At \ref{item:re-mark-removals}
 (algorithmic time \((2k-1)T\))
@@ -795,7 +797,7 @@ all current potential removals are re-marked.
 Then in \ref{item:infections}
 the algorithm progresses continuously
 \emph{backwards}
-through the process time segment \((0,T\)
+through the process time segment \((0,T)\)
 removing each old potential infection as it is encountered, and introducing each new potential infection as it is encountered.
 
 \ref{item:re-mark-removals}
@@ -896,15 +898,12 @@ At \ref{item:re-mark-removals},
 if a current removal is actually 
 an old removal at time \(\rho\) whose withdrawal has been
 refused because it has been observed,
-then we propose to re-sample its time-lime mark
+then we propose to re-sample its time-line mark
 \(m\) from a Uniform (\(\{1,\dots,n\}\)) distribution (effectively reassigning
 the removal to time-line \(m\)).
 This re-sampling is allowed to proceed
 unless it would result in there
-not being an observed removal at the relevant time (equivalently, unless
-the newly proposed time-line
-\(m\) is not infected at process time \(\rho\) -- 
-\(R_{\rho-} < m \leq I_{\rho-}\)).
+not being an observed removal at the relevant time (equivalently, the removal is reassigned to time-line \(m\) if and only if  that time-line is infected at process time \(\rho\): \(R_{\rho-} < m \leq I_{\rho-}\)).
  \item  \label{item:refuse-new-infection}
 At \ref{item:infections},
 a proposal to introduce a potential infection is refused exactly when the infection would both immediately become active and then also
@@ -916,7 +915,8 @@ a potential (but currently inactive) removal on that further time-line.
 Re-sampling of the newly introduced
 potential removal marks
 can be absorbed into the procedure of generating 
-their marks in the first instance:
+their marks in the first instance:%
+\NB[SBC]{Is this the right place for this paragraph? It concerns Stage 2 (removals) rather than Stage 3, and we haven't yet formally defined the epdidemic trajectory.}
 for the re-sampling to proceed, it would have to be a draw from 
 \(\{1, \ldots, R_{\rho-}\}\cup\{I_{\rho-}+1,\ldots,n\}\). Since the epidemic trajectory is not actually affected by \ref{item:removals}, this re-sampling
 draws from the conditional distribution of the
@@ -1116,9 +1116,9 @@ There are five time-lines.
 Yellow time-line segments denote infectious portions of time-lines.
 Yellow arrows denote 
 actual infections with marks \(j \leq i\),
-starting at time-line with mark \(j\) and ending at time-line with mark \(i+1\).
+starting at time-line \(j\) and ending at time-line \(i+1\).
 Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\),
-starting at time-line with mark \(j\) and ending at time-line with mark \(i+1\).
+starting at time-line \(j\) and ending at time-line \(i+1\).
 A potential infection with marks \(j \leq i\) 
 becomes realized only when 
 time-lines \(j\) and \(i\) are both infectious

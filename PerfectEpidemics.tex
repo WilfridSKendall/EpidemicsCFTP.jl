@@ -574,7 +574,7 @@ Uniform (\(\{1, \ldots, i\}\)) distribution.
 \\
 A potential infection at process time \(t\) 
 connected with the \(i^\text{th}\) individual only becomes active if (a) individual \(i\) is currently (at time \(t-\)) the infected individual of \emph{highest} index (so \(R_{t-}+I_{t-}=i\))
-\NB[SBC]{Changed this (from $I_{t-}=i$) -- please check!}
+\xNB[SBC]{Changed this (from $I_{t-}=i$) -- please check! \textbf{WSK:} yes this is OK.}
 , and 
 (b) the corresponding mark \(j\) 
 exceeds \(R_{t-}\).
@@ -911,17 +911,17 @@ lead directly or indirectly to infection of a
 further time-line in a way that leads
 to activation of 
 a potential (but currently inactive) removal on that further time-line.
-\\
-Re-sampling of the newly introduced
-potential removal marks
-can be absorbed into the procedure of generating 
-their marks in the first instance:%
-\NB[SBC]{Is this the right place for this paragraph? It concerns Stage 2 (removals) rather than Stage 3, and we haven't yet formally defined the epdidemic trajectory.}
-for the re-sampling to proceed, it would have to be a draw from 
-\(\{1, \ldots, R_{\rho-}\}\cup\{I_{\rho-}+1,\ldots,n\}\). Since the epidemic trajectory is not actually affected by \ref{item:removals}, this re-sampling
-draws from the conditional distribution of the
-mark at the time of introduction of the potential
-infection and so has no statistical effect.
+% \\
+% Re-sampling of the newly introduced
+% potential removal marks
+% can be absorbed into the procedure of generating 
+% their marks in the first instance:
+\xNB[SBC]{Is this the right place for this paragraph? It concerns Stage 2 (removals) rather than Stage 3, and we haven't yet formally defined the epdidemic trajectory. \textbf{WSK:} you're right, I've commented it out.}
+% for the re-sampling to proceed, it would have to be a draw from 
+% \(\{1, \ldots, R_{\rho-}\}\cup\{I_{\rho-}+1,\ldots,n\}\). Since the epidemic trajectory is not actually affected by \ref{item:removals}, this re-sampling
+% draws from the conditional distribution of the
+% mark at the time of introduction of the potential
+% infection and so has no statistical effect.
 \xNB[WSK3]{Go into more details about how we don't have to re-sample marks for potential but currently inactive removals.}
  \item  \label{item:perpetuate-old-infection}
 At \ref{item:infections},
@@ -1192,17 +1192,16 @@ actual infection of that time-line.
 % the algorithmic state to aid computation and
 % rigorous arguments.
 
-It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time. For \(m=1\),\ldots, \(n\) and \(k\in\Integers\), at algorithmic time \(\tau=2kT\) we denote by \(\Infections^m_k\) the point-set of active or potential infections originating from time-line \(m\) occurring before removal time \(\rho^m\).%
+It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time. For \(m=1\),\ldots, \(n\) and \(k\in\Integers\), at algorithmic time \(\tau=2kT\) we denote by \(\Infections^m_k\) the point-set of active or potential infections originating from time-line \(m\)
+and
+occurring before removal time \(\rho^m\).%
 \xNB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
 Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\).
 Thus
-\NB[WSK3]{SBC please check explicit definition of $\Infections^m_k$!}
+\xNB[WSK3]{SBC please check explicit definition of $\Infections^m_k$! \textbf{Commented out, based on SBC rejoinder.}}
 \xNB[SBC]{Is this notation potentially confusing, when we're using $R_t$ for removal process?} %
 \begin{align*}
- \Infections^m_k \quad&=\quad 
- \{t\,:\, [t;m,n] \in \Poisson_k, 
-     \text{with }  0\le t\le \rho^m \} \,,
- \\
+%  \Infect\
  \Removals^m_k   \quad&=\quad
  \{t\,:\, [t;m] \in \Poisson_k, 
      \text{with }  0\le t\le \rho^m \} \,.

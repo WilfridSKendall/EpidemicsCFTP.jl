@@ -1197,15 +1197,16 @@ and
 occurring before removal time \(\rho^m\).%
 \xNB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
 Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\).
-Thus
+%Thus
 \xNB[WSK3]{SBC please check explicit definition of $\Infections^m_k$! \textbf{Commented out, based on SBC rejoinder.}}
+\NB[SBC]{I've removed definition of $\Removals^m_k$ in terms of $\Pi_k$, since the latter includes censored removals!}
 \xNB[SBC]{Is this notation potentially confusing, when we're using $R_t$ for removal process?} %
-\begin{align*}
-%  \Infect\
- \Removals^m_k   \quad&=\quad
- \{t\,:\, [t;m] \in \Poisson_k, 
-     \text{with }  0\le t\le \rho^m \} \,.
-\end{align*}
+%\begin{align*}
+%%  \Infect\
+% \Removals^m_k   \quad&=\quad
+% \{t\,:\, [t;m] \in \Poisson_k, 
+%     \text{with }  0\le t\le \rho^m \} \,.
+%\end{align*}
 % \[ \Removals^m_k = \{t\,:\, [t;m] \in \Poisson_k, \text{with }  0\le t\le \rho^m \} \,.\]
 We denote the point-set of \emph{conditioned} removals
 assigned to time-line \(m\) at algorithmic time \(\tau=2kT\) by \(\Conditioned^m_k\). 
@@ -1367,11 +1368,8 @@ conditioned removal assigned to that time-line or one of a higher index
  \end{Figure}
 
 
+ We can now concisely summarize which introductions or deletions of potential removals and infections might be refused during the evolution of the variant Markov chain described in Section~\ref{ssec:restrictions-variant}.
 
-
- We can now concisely summarize which introductions or deletions of potential removals and infections might be refused.
-% Potential removals and infections lying strictly within the dead zone (emanating from a removed section of time-line) can be ignored, as they do not influence any possible trajectory.
-% More generally, it
   It is always possible to delete a potential removal without jeopardizing the conditioning;
  clearly deletion of a conditioned removal must be refused because its
  deletion would violate the conditioning restriction.
@@ -1393,7 +1391,6 @@ not infected at time \(\rho\).
  active) unless the introduction bridges the gap between epidemic and
  no-fly zone.
  
-% Note that this observation implies that the set of infections \(\Infections^m\) may be partitioned into two sets: those that are contained entirely within, and those that lie completely outside, the no-fly zone (since our conditioning forbids any infections to bridge the two). It will sometimes be convenient to write \(\Infections^m^1 = \Infections^m\cap [0,\xi^{m+1}]\) and \(\Infections^m^2 = \Infections^m\cap(\xi^m,T]\) for these two sets.
  
  We now formalize a number of these observations in the form of lemmas, which should be useful when establishing monotonicity of the epidemic trajectory.%
 \NB[WSK2]{Terminology: ``earlier'' and ``later'' often refer to the

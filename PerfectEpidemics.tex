@@ -1207,8 +1207,7 @@ Thus
      \text{with }  0\le t\le \rho^m \} \,.
 \end{align*}
 % \[ \Removals^m_k = \{t\,:\, [t;m] \in \Poisson_k, \text{with }  0\le t\le \rho^m \} \,.\]
-We denote the point-set of \emph{conditioned} removals
-assigned to time-line \(m\) at algorithmic time \(\tau=2kT\) by \(\Conditioned^m_k\). 
+We denote the point-set of \emph{conditioned} removal times assigned to time-line \(m\) at algorithmic time \(\tau=2kT\) by \(\Conditioned^m_k\). 
 Additionally,
 \xNB[SBC]{Possibly simplify notation by replacing $\Conditioned^{m+}$ with $\Conditioned^{m:n}$ and $\Removals^{m-}$ with $\Removals^{1:m}$?}
 % . We shall write 
@@ -1260,7 +1259,7 @@ However it is always possible for \(\Removals^m_k=\emptyset\) for some or all \(
  
  The second region  is the \emph{``pre-infection'' zone}: this lies
  between the no-fly
- zone and the \emph{(first) epidemic trajectory} . Here the {epidemic trajectory} is built using those potential infections that become active.
+ zone and the \emph{(first) epidemic trajectory}. Here the {epidemic trajectory} is built using those potential infections that become active.
  It is located at boundary time \(\phi^m_k\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:epidemic}
   \phi^m_k \quad=&\quad 0\,, 
@@ -1277,12 +1276,13 @@ However it is always possible for \(\Removals^m_k=\emptyset\) for some or all \(
 %    \min\{\sigma_{m-1}^j\;:\; \sigma_{m-1}^j>\phi^{m-1}\} & \text{ otherwise.}
 %   \end{cases}
  \end{align}
- That is, time-line \(m\) becomes infected at the time of the earliest infection occurring after time-line \(m-1\) is infected, and which avoids the no-fly zone.
-\NB[SBC]{I've added reference to the no-fly zone into this definition. Poss not needed under conditioning, but I think that it makes the proof of monotonicity clearer later on.}
- Note that \(\phi^m_k=\infty\) cannot be allowed to occur for any \(m\) if we condition on all individuals eventually being removed.%
+ That is, time-line \(m\) becomes infected at the time of the earliest potential infection in \(\Infections^{m-1}_k\) occurring after time-line \(m-1\) is infected (at time \(\phi^{m-1}\)), and which avoids the no-fly zone \([0,\xi^m]\).
+\xNB[SBC]{I've added reference to the no-fly zone into this definition. Poss not needed under conditioning, but I think that it makes the proof of monotonicity clearer later on.}
+ Note that \(\phi^m=\infty\) cannot be allowed to occur for any \(m\) if we condition on all individuals eventually being removed.%
 \xNB[WSK2]{Reformulate (\ref{eq:epidemic}) in a manner similar to that of (\ref{eq:last-epidemic}): avoid the case of $\infty$ by noting this won't happen under conditioning.}
- Necessarily the epidemic must avoid the no-fly zone. Figure \ref{fig:epidemic} illustrates the construction
- of the pre-infection zone. 
+% Necessarily the epidemic must avoid the no-fly zone. 
+Figure \ref{fig:epidemic} illustrates the construction
+ of the epidemic trajectory and pre-infection zone.
  \NB[WSK3]{Figure \ref{fig:epidemic}: worried that
  last viable infections have been missed out by the simulation!}
  \begin{Figure}
@@ -1349,15 +1349,15 @@ However it is always possible for \(\Removals^m_k=\emptyset\) for some or all \(
 Moreover, note that the following ordering must be obeyed by events on each
 time-line of a viable epidemic:
 \begin{equation}\label{eq:event-order}
-\sup\Removals^{1:m} \le \xi^m \le \phi^m \le \eta^m \le \inf\Conditioned^m \le
+\sup\Removals^{1:m} \le \xi^m \le \phi^m \le \eta^m \le \inf\Conditioned^{m:n} \le
 \sup\Conditioned^m \le \rho^m \,, \quad 1\le m\le n \,.
 \end{equation}
 That is, the time at which time-line \(m\) becomes infected
 (\(\phi^m\)) must lie outside of the no-fly zone (with boundary
 \(\xi^m\)), and occur no later than the last-viable epidemic time
 (\(\eta^m\)); this in turn must occur before the first
-conditioned removal assigned to that time-line
-(\(\inf\Conditioned^m\)), and all such removals must occur before
+conditioned removal assigned to that or a higher indexed time-line
+(\(\inf\Conditioned^{m:n}\)), and all such conditioned removals assigned to time-line \(m\) must occur before
 individual \(m\) is removed (at time \(\rho^m\)).
 \xNB[WSK2]{Good names for second, third, fourth and fifth regions?} 
 \NB[WSK3]{Figure \ref{fig:fourth-and-fifth}: suspect last-viable epidemic is sometimes wrong here.}

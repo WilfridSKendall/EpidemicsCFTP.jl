@@ -59,6 +59,8 @@ from random import expovariate, random, seed
 from PIL import Image
 from itertools import combinations, count, chain, zip_longest
 
+from path3 import Path
+
 from epidemic import Innovations, FreeEpidemic, INFINITY
 
 # Under python3 in Ubuntu it is necessary to install python3-tk!
@@ -95,7 +97,7 @@ class Display(tk.Tk):
 
         # Read styles for plotting.
         self.color = configparser.ConfigParser()
-        self.color.read('static.cfg')
+        self.color.read(Path(__file__).dirname()/'static.cfg')
 
         # Button style.
         bprops = self.color['0-button']        

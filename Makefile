@@ -20,9 +20,10 @@ title := PerfectEpidemics
 latexfiles := $(title).tex
 bibtexfiles := $(wildcard *.bib)
 diafiles := $(wildcard image/*.dia)
-#svgfiles := $(wildcard image/*.svg)
-#imagefiles := $(subst .svg,.pdf, $(svgfiles))
-imagefiles := $(addsuffix .pdf, $(addprefix image/Timelines,1 2 3 4 5 6 7 8 9 10))
+# svgfiles := $(wildcard image/*.svg)
+# imagefiles := $(subst .svg,.pdf, $(svgfiles))
+# imagefiles := $(addsuffix .pdf, $(addprefix image/Timelines,1 2 3 4 5 6 7 8 9 10))
+imagefiles := $(wildcard image/*.png)
 
 # ----------------------------------------------
 # Internal variables:
@@ -41,6 +42,16 @@ SCP := '/bin/scp'
 START := '/usr/bin/xdg-open'
 DIA := '/usr/bin/dia'
 INKSCAPE := '/usr/bin/inkscape'
+
+# ----------------------------------------------
+# Graphics specifications:
+inlineBIG := --logging=INFO --height=720 --width=1024 --T=1.5 \
+		--remove="[[], [], [0.02, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
+		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
+		
+inline := --logging=INFO --height=180 --width=256 --T=1.5 \
+		--remove="[[], [], [0.02, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
+		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
 
 # ----------------------------------------------
 # Special targets:
@@ -65,31 +76,45 @@ print: $(imagefiles) $(productfiles)
 
 # ----------------------------------------------
 # graphics conversions:
-image/Timelines1.svg: image/Timelines_SBC3.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections --export=$@ $< 
-image/Timelines2.svg: image/Timelines_SBC3.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,NoFlyZoneB --export=$@ $< 
-image/Timelines3.svg: image/Timelines_SBC3.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,EpidemicB --export=$@ $< 
-image/Timelines4.svg: image/Timelines_SBC3.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,LastViableB --export=$@ $< 
-image/Timelines5.svg: image/Timelines_SBC3.dia
-	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,IncidentalB,RemovedB --export=$@ $< 
-$(title).pdf: $(imagefiles)
-image/Timelines6.svg: image/Timelines_SBC3b.dia
-	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB0,Infections0,Epidemic0,LastViable0 --export=$@ $< 
-$(title).pdf: $(imagefiles)
-image/Timelines7.svg: image/Timelines_SBC3b.dia
-	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB1,Infections1,Epidemic1,LastViable1 --export=$@ $< 
-$(title).pdf: $(imagefiles)
-image/Timelines8.svg: image/Timelines_SBC3b.dia
-	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB1,Infections2,Epidemic2,LastViable2 --export=$@ $< 
-$(title).pdf: $(imagefiles)
-image/Timelines9.svg: image/Timelines_SBC3b.dia
-	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB3,Infections3,Epidemic2,LastViable3 --export=$@ $< 
-$(title).pdf: $(imagefiles)
-image/Timelines10.svg: image/Timelines_SBC3b.dia
-	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB3,Infections4,Epidemic4,LastViable4 --export=$@ $< 
+# image/Timelines1.svg: image/Timelines_SBC3.dia
+# 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections --export=$@ $< 
+# image/Timelines2.svg: image/Timelines_SBC3.dia
+# 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,NoFlyZoneB --export=$@ $< 
+# image/Timelines3.svg: image/Timelines_SBC3.dia
+# 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,EpidemicB --export=$@ $< 
+# image/Timelines4.svg: image/Timelines_SBC3.dia
+# 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,LastViableB --export=$@ $< 
+# image/Timelines5.svg: image/Timelines_SBC3.dia
+# 	dia --filter=svg --show-layers=Background,ConditionedRemovals,UnrealizedRemovals,Infections,NoFlyZone,Epidemic,LastViable,IncidentalB,RemovedB --export=$@ $< 
+# $(title).pdf: $(imagefiles)
+# image/Timelines6.svg: image/Timelines_SBC3b.dia
+# 	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB0,Infections0,Epidemic0,LastViable0 --export=$@ $< 
+# $(title).pdf: $(imagefiles)
+# image/Timelines7.svg: image/Timelines_SBC3b.dia
+# 	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB1,Infections1,Epidemic1,LastViable1 --export=$@ $< 
+# $(title).pdf: $(imagefiles)
+# image/Timelines8.svg: image/Timelines_SBC3b.dia
+# 	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB1,Infections2,Epidemic2,LastViable2 --export=$@ $< 
+# $(title).pdf: $(imagefiles)
+# image/Timelines9.svg: image/Timelines_SBC3b.dia
+# 	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB3,Infections3,Epidemic2,LastViable3 --export=$@ $< 
+# $(title).pdf: $(imagefiles)
+# image/Timelines10.svg: image/Timelines_SBC3b.dia
+# 	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB3,Infections4,Epidemic4,LastViable4 --export=$@ $< 
+image/inline-1.png: ; python3 python/static.py $(inlineBIG)       --title="All graphics elements together" --output=$@ --forceoutput
+image/inline-pI-lo.png: ; python3 python/static.py $(inline)      --title="pI-lo graphics elements" --output=$@ --on='pI-lo' --notext --forceoutput 
+image/inline-pR.png: ; python3 python/static.py $(inline)         --title="pR graphics elements" --output=$@ --on='pR' --notext --forceoutput 
+image/inline-lI.png: ; python3 python/static.py $(inline)         --title="lI graphics elements" --output=$@ --on='lI' --notext --forceoutput 
+image/inline-lIc.png: ; python3 python/static.py $(inline)        --title="lIc graphics elements" --output=$@ --on='lIc' --notext --forceoutput 
+image/inline-aI.png: ; python3 python/static.py $(inline)         --title="sI graphics elements" --output=$@ --on='aI' --notext --forceoutput 
+image/inline-Epidemic.png: ; python3 python/static.py $(inline)   --title="Infectious graphics elements" --output=$@ --on='Epidemic' --notext --forceoutput 
+image/inline-Infectious.png: ; python3 python/static.py $(inline) --title="Infectious graphics elements" --output=$@ --on='Infectious' --notext --forceoutput 
+image/inline-R.png: ; python3 python/static.py $(inline)          --title="R graphics elements" --output=$@ --on='R' --notext --forceoutput
+image/inline-Mordor.png: ; python3 python/static.py $(inline)     --title="Mordor graphics elements" --output=$@ --on='Mordor' --notext --forceoutput
+image/inline-nofly.png: ; python3 s
+	tatic.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
+image/inline-West.png: ; python3 python/static.py $(inline)       --title="West" --output=$@ --on='West' --notext --forceoutput
+image/inline-lvI.png: ; python3 python/static.py $(inline)       --title="West" --output=$@ --on='lvI' --notext --forceoutput
 $(title).pdf: $(imagefiles)
 
 

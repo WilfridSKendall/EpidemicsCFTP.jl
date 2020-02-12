@@ -232,6 +232,7 @@ class Display(tk.Tk):
 
     def infection(self, t, i, j, tag='null'):
         "Indicate infection using segment."
+        #self.segment(t, i, t, j, tag=tag)
         self.segment(t, i, t, j, tag=tag)
 
     def removal(self, x, y, tag='null'):
@@ -324,7 +325,7 @@ def main(opt, arguments):
     for i, lll in enumerate(innov.infect):
         for j, ll in enumerate(lll):
             for t in ll:
-                app.infection(t, j, i + 1, tag='pI-lo')
+                app.infection(t, j, i + 0.25, tag='pI-lo')
 
     logging.info('Display putative removals')
     for i, ll in enumerate(innov.remove):
@@ -340,7 +341,7 @@ def main(opt, arguments):
     for i, ll in enumerate(results.latent_infections):
         for t in ll:
             app.disk(t, i + 1, r=6, tag='lI')
-            app.infection(t, i, i + 1, tag='lIc')
+            app.infection(t, i, i + 0.75, tag='lIc')
 
     logging.info('Display infectious portions of time-lines')
     itl, rtl = results.infection_times, results.removal_times
@@ -352,7 +353,7 @@ def main(opt, arguments):
             app.segment(t0, i, T, i, tag='Infectious')
     logging.info('Also display activated infections')
     for i, t in zip(count(), itl[1:]):
-        app.infection(t, i, i + 1, tag='aI')
+        app.infection(t, i, i + 0.75, tag='aI')
 
     logging.info('Display epidemic trajectory')
     told, iold = 0, 0
@@ -388,7 +389,7 @@ def main(opt, arguments):
     # print(list(enumerate(results.last_viable)))
     for i, t in enumerate(results.last_viable):
         if t != INFINITY:
-            app.segment(t, i, t, i + 1, tag='lvI')
+            app.segment(t, i, t, i + 0.75, tag='lvI')
 
     logging.info('Format the graphical elements according to "on" option')
     app.style()

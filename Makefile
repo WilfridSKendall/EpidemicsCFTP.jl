@@ -19,7 +19,7 @@ title := PerfectEpidemics
 # Source and control files:
 latexfiles := $(title).tex
 bibtexfiles := $(wildcard *.bib)
-diafiles := $(wildcard image/*.dia)
+# diafiles := $(wildcard image/*.dia)
 # svgfiles := $(wildcard image/*.svg)
 # imagefiles := $(subst .svg,.pdf, $(svgfiles))
 # imagefiles := $(addsuffix .pdf, $(addprefix image/Timelines,1 2 3 4 5 6 7 8 9 10))
@@ -52,6 +52,14 @@ inlineBIG := --logging=INFO --height=720 --width=1024 --T=1.5 \
 inline := --logging=INFO --height=180 --width=256 --T=1.5 \
 		--remove="[[], [], [0.02, 0.6, 0.7, 1.3], [0.4], [1.0, 1.2, 1.3, 1.4]]" \
 		--infect="[[[0.2]], [[], [0.5]], [[0.15, 0.45], [], [0.8]], [[], [], [], [1.1]]]"
+running-example := --remove="[[0.85, 1.6], 				\
+			   [0.5, 1.0, 1.7], [1.1], 			\
+			   [0.15, 0.45], 				\
+			   [0.9, 1.25, 1.9, 2.0]]" 			\
+		--infect="[[[0.19, 0.25, 1.1, 1.5]], 			\
+			   [[0.4, 0.9], [0.04, 0.8, 1.4]], 		\
+			   [[0.6], [0.75], [0.3, 0.85, 1.53]], 		\
+			   [[0.1, 0.53], [1.3], [1.4], [1.2, 1.9]]]"	
 
 # ----------------------------------------------
 # Special targets:
@@ -101,6 +109,11 @@ print: $(imagefiles) $(productfiles)
 # $(title).pdf: $(imagefiles)
 # image/Timelines10.svg: image/Timelines_SBC3b.dia
 # 	dia --filter=svg --show-layers=Background,ResampledUnRemovals,ResampledCondRemovals,RemovedB,NoFlyB3,Infections4,Epidemic4,LastViable4 --export=$@ $< 
+image/graphical.png: ; python3 python/static.py --on=aI,Infectious,pI-lo,R,pR 			$(running-example) --forceoutput --output=$@
+image/no-fly.png: ; python3 python/static.py --on=pI-lo,R,pR,West,nofly,Mordor 			$(running-example) --forceoutput --output=$@
+image/epidemic.png: ; python3 python/static.py --on=aI,Infectious,pI-lo,R,pR,nofly,Mordor 	$(running-example) --forceoutput --output=$@
+image/last-epidemic.png: ; python3 python/static.py --on=aI,Infectious,lvI,pI-lo,R,pR 		$(running-example) --forceoutput --output=$@
+image/fourth-and-fifth.png: ; python3 python/static.py --on=Infectious,pI-lo,R,pR,West,lvI 	$(running-example) --forceoutput --output=$@
 image/inline-1.png: ; python3 python/static.py $(inlineBIG)       --title="All graphics elements together" --output=$@ --forceoutput
 image/inline-pI-lo.png: ; python3 python/static.py $(inline)      --title="pI-lo graphics elements" --output=$@ --on='pI-lo' --notext --forceoutput 
 image/inline-pR.png: ; python3 python/static.py $(inline)         --title="pR graphics elements" --output=$@ --on='pR' --notext --forceoutput 
@@ -114,6 +127,7 @@ image/inline-Mordor.png: ; python3 python/static.py $(inline)     --title="Mordo
 image/inline-nofly.png: ; python3 static.py $(inline)      --title="nofly" --output=$@ --on='nofly' --notext --forceoutput
 image/inline-West.png: ; python3 python/static.py $(inline)       --title="West" --output=$@ --on='West' --notext --forceoutput
 image/inline-lvI.png: ; python3 python/static.py $(inline)       --title="West" --output=$@ --on='lvI' --notext --forceoutput
+
 $(title).pdf: $(imagefiles)
 $(imagefiles): python/static.py Makefile
 

@@ -129,7 +129,7 @@ image/inline-West.png: ; python3 python/static.py $(inline)       --title="West"
 image/inline-lvI.png: ; python3 python/static.py $(inline)       --title="West" --output=$@ --on='lvI' --notext --forceoutput
 
 $(title).pdf: $(imagefiles)
-$(imagefiles): python/static.py Makefile
+$(imagefiles): python/static.py python/static.cfg Makefile 
 
 # ----------------------------------------------
 # Checkin targets:

@@ -1147,10 +1147,11 @@ the constrained variant process.
 Modified graphical representation of \SIR epidemic, conditioned on removals. 
 There are five time-lines. 
 \\
-(\ref{subfig:Infectious}): Yellow time-line segments denote infectious portions of time-lines.
+(\ref{subfig:Infectious}): 
+Orange time-line segments denote infectious portions of time-lines.
 \\
 (\ref{subfig:Infections}): 
-Yellow arrows denote instances where a potential infection 
+Orange arrows denote instances where a potential infection 
 (with marks \(j \leq i\))
 results in an actual infection:
 the arrow
@@ -1172,11 +1173,14 @@ at time-line with mark \(i\).
 (\ref{subfig:inline-R}): Red circles denote conditioned removals, located
 on the time-lines on which these removals happen. 
 \\
-(A conditioned removal on time-line \(i\) 
-has to be associated with a potential removal on
-time-line \(i\) or greater. such that the relevant time-line is
-actually
-infectious at the potential removal time.)
+(A conditioned removal on time-line \(j\) 
+has to be associated with a potential removal located on
+time-line \(i\geq j\), such that the time-line \(i\)
+and \(j\)
+is
+actually infectious,
+and the time-line \(j\) is the infectious time-line of lowest index,
+at the potential removal time.)
 % % A potential infection with arrow ending at \(i+1\) and 
 % % starting at \(j\) (\(j<i\))
 % % takes effect only when the time-line \(i\y) is 
@@ -1243,10 +1247,10 @@ It is helpful to develop a vocabulary describing the boundaries of five regions 
 and
 occurring before removal time \(\rho^m\).%
 \xNB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
-Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\).
+Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\). 
 %Thus
 \xNB[WSK3]{SBC please check explicit definition of $\Infections^m_k$! \textbf{Commented out, based on SBC rejoinder.}}
-\NB[SBC]{I've removed definition of $\Removals^m_k$ in terms of $\Pi_k$, since the latter includes censored removals!}
+\xNB[SBC]{I've removed definition of $\Removals^m_k$ in terms of $\Pi_k$, since the latter includes censored removals!}
 \xNB[SBC]{Is this notation potentially confusing, when we're using $R_t$ for removal process?} %
 %\begin{align*}
 %%  \Infect\
@@ -1255,7 +1259,11 @@ Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals
 %     \text{with }  0\le t\le \rho^m \} \,.
 %\end{align*}
 % \[ \Removals^m_k = \{t\,:\, [t;m] \in \Poisson_k, \text{with }  0\le t\le \rho^m \} \,.\]
-We denote the point-set of \emph{conditioned} removal times assigned to time-line \(m\) at algorithmic time \(\tau=2kT\) by \(\Conditioned^m_k\). 
+We denote the 
+(singleton)
+point-set of \emph{conditioned} removal times assigned to time-line \(m\) at algorithmic time \(\tau=2kT\) by \(\Conditioned^m_k\). 
+\NB[WSK3]{Distinguish explicitly between $\Removals^m_k$ (set of marked times at which removals might happen, not necessarily on time-line $m$, and depending on state of time-line given by mark at that particular process time) and $\Conditioned^m_k$ (set of process times at which removals are conditioned actually to happen on time-line $m$, hence singleton set).}
+\NB[WSK3]{I cannot recall whether the time in $\Conditioned^m_k$ must always be one of the the times involved in $\Removals^m_k$ -- a sign that this needs to be made clear here!}
 Additionally,
 \xNB[SBC]{Possibly simplify notation by replacing $\Conditioned^{m+}$ with $\Conditioned^{m:n}$ and $\Removals^{m-}$ with $\Removals^{1:m}$?}
 % . We shall write 

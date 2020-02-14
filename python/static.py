@@ -236,8 +236,14 @@ class Display(tk.Tk):
         self.segment(t, i, t, j, tag=tag)
 
     def removal(self, x, y, tag='null'):
-        "Indicate removal using 'error' bitmap."
-        self.canvas.create_bitmap(self.pixel(x, y), bitmap='error', tag=tag)
+        "Indicate removal using coloured disk."
+        #"Indicate removal using 'error' bitmap."
+        #self.canvas.create_bitmap(self.pixel(x, y), bitmap='error', tag=tag)
+        if tag.startswith('p'):
+            r=10
+        else:
+            r=6
+        self.disk(x, y, r=r, tag=tag)
 
     def insert_text(self, x, y, text='', angle=0, tag='null'):
         "Insert text at specified position unless #notext# attribute is set."

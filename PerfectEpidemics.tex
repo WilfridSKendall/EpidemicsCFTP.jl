@@ -1122,13 +1122,13 @@ the constrained variant process.
 \end{subfigure}
 \qquad
 \begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-aI}
-\caption{\label{subfig:Infections}Infection}
+ \includegraphics[scale=0.3]{inline-pI-lo}
+\caption{\label{subfig:inline-pI-lo}Potential infections}
 \end{subfigure}
 \qquad
 \begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-pI-lo}
-\caption{\label{subfig:inline-pI-lo}Potential infections}
+ \includegraphics[scale=0.3]{inline-aI}
+\caption{\label{subfig:Infections}Infection}
 \end{subfigure}
 
 \begin{subfigure}[t]{.20\linewidth}
@@ -1150,28 +1150,27 @@ There are five time-lines.
 (\ref{subfig:Infectious}): 
 Orange time-line segments denote infectious portions of time-lines.
 \\
-(\ref{subfig:Infections}): 
-Orange arrows denote instances where a potential infection 
-(with marks \(j \leq i\))
-results in an actual infection:
-the arrow
-begins at time-line \(i\) and rises to 
-just below time-line \(i+1\).
+(\ref{subfig:inline-pI-lo}): Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\).
 \\
-(\ref{subfig:inline-pI-lo}): Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\),
-starting at time-line \(j\) and ending 
+The arrow begins
+at time-line \(j\) and rises to 
 just above time-line \(i\).
 \\
-(A potential infection with marks \(j \leq i\) 
-becomes realized only when 
+(\ref{subfig:Infections}): 
+Orange arrows denote instances where a potential infection
+(with marks \(j \leq i\))
+becomes realized: this occurs only when
 time-lines \(j\) and \(i\) are both infectious
-but time-line \(i+1\) is not yet infectious.)
+but time-line \(i+1\) is not yet infectious.\\
+The arrow
+begins at time-line \(i\) and rises to
+just below time-line \(i+1\).
 \\
 (\ref{subfig:inline-pR}): Large blue disks denote potential removals, located
 at time-line with mark \(i\). 
 \\
 (\ref{subfig:inline-R}): Small red disks denote conditioned removals, located
-on the time-lines on which these removals happen. 
+on the time-lines on which these removals happen.
 \\
 (A conditioned removal on time-line \(j\) 
 has to be associated with a potential removal located on

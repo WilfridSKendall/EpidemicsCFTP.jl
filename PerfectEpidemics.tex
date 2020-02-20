@@ -1468,8 +1468,8 @@ not infected at time \(\rho\).
  %no-fly zone.
  
  
- All five regions of time-line space are completely determined by the no-fly zone boundary, the epidemic trajectory, the last-viable epidemic and the sets of potential and conditioned removals. Thus we may represent the state of the epidemic at algorithmic time \(2kT\) by \(\Epidemic_k\), where
- \[ \Epidemic_k = \bigcup_{m=1}^n \left\{\xi^m_k, \phi^m_k, \eta^m_k, \Conditioned^m_k, \Removals^m_k \right\} \,. \]
+ All five regions of time-line space are completely determined by the no-fly zone boundary, the epidemic trajectory, the last-viable epidemic and the sets of potential and conditioned removals. We denote this collection at algorithmic time \(2kT\) by \(\Epidemic_k\):
+ \[ \Epidemic_k = (\xi^m_k, \phi^m_k, \eta^m_k, \Conditioned^m_k, \Removals^m_k)_{m=1}^n \,. \]
 
  So far we have described the evolution of the variant Markov chain as algorithmic time increases continuously from \(\tau=2(k-1)T\) to \(\tau = 2kT\), for \(k=1,2,\dots\). We now present a series of lemmas which permit us to \emph{directly} ascertain the state of the chain at time \(2kT\) using only the state at time \(2(k-1)T\) and the marked Poisson process \(\Pi_k\).
  

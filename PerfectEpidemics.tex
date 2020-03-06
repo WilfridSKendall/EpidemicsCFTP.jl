@@ -1244,15 +1244,22 @@ actual infection of that time-line.
 % the algorithmic state to aid computation and
 % rigorous arguments.
 
-It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time. For \(m=1\),\ldots, \(n\) and \(k\in\Integers\), at algorithmic time \(\tau=2kT\) we denote by \(\Infections^m_k\) the point-set of active or potential infection times originating from time-line \(m\)
-and
-occurring before removal time \(\rho^m\).%
+Given sets of infection and removal incidents, it is helpful to develop a vocabulary describing the boundaries of five regions of time-line space. To that end, let \(\Infections\) denote some (for now, arbitrary) set of marked potential infections: recall that these take the form \([t;i,j]\), where \(0\le t\le T\) and \(1\le j\le i<n\). Similarly, for \(m=1,\dots,n\) let \(\Removals^m\) denote some set of potential removal times assigned to time-line \(m\), and let \(\Conditioned^m\) denote some set of conditioned removal times assigned to time-line \(m\).
+%
 \xNB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
-Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\). 
+%Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\). 
 %Thus
 \xNB[WSK3]{SBC please check explicit definition of $\Infections^m_k$! \textbf{Commented out, based on SBC rejoinder.}}
 \xNB[SBC]{I've removed definition of $\Removals^m_k$ in terms of $\Pi_k$, since the latter includes censored removals!}
 \xNB[SBC]{Is this notation potentially confusing, when we're using $R_t$ for removal process?} %
+%It is helpful to develop a vocabulary describing the boundaries of five regions of time-line space, depending implicitly on the algorithmic time. For \(m=1\),\ldots, \(n\) and \(k\in\Integers\), at algorithmic time \(\tau=2kT\) we denote by \(\Infections^m_k\) the point-set of active or potential infection times originating from time-line \(m\)
+%and occurring before removal time \(\rho^m\).%
+%\xNB[WSK2]{Is ``realized'' the opposite of ``potential''? I think the use of this terminology needs careful checking: I suspect it is used carelessly in the present text.}
+%Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals assigned to time-line \(m\) occurring before removal time \(\rho^m\). 
+%%Thus
+%\xNB[WSK3]{SBC please check explicit definition of $\Infections^m_k$! \textbf{Commented out, based on SBC rejoinder.}}
+%\xNB[SBC]{I've removed definition of $\Removals^m_k$ in terms of $\Pi_k$, since the latter includes censored removals!}
+%\xNB[SBC]{Is this notation potentially confusing, when we're using $R_t$ for removal process?} %
 %\begin{align*}
 %%  \Infect\
 % \Removals^m_k   \quad&=\quad
@@ -1260,15 +1267,15 @@ Similarly, we may consider the point-set \(\Removals^m_k\) of potential removals
 %     \text{with }  0\le t\le \rho^m \} \,.
 %\end{align*}
 % \[ \Removals^m_k = \{t\,:\, [t;m] \in \Poisson_k, \text{with }  0\le t\le \rho^m \} \,.\]
-We denote the 
-(singleton)
-point-set of \emph{conditioned} removal times assigned to time-line \(m\) at algorithmic time \(\tau=2kT\) by \(\Conditioned^m_k\). 
+%We denote the 
+%(singleton)
+%point-set of \emph{conditioned} removal times assigned to time-line \(m\) at algorithmic time \(\tau=2kT\) by \(\Conditioned^m_k\). 
 \NB[WSK3]{Distinguish explicitly between $\Removals^m_k$ (set of marked times at which removals might happen, not necessarily on time-line $m$, and depending on state of time-line given by mark at that particular process time) and $\Conditioned^m_k$ (set of process times at which removals are conditioned actually to happen on time-line $m$, hence singleton set).}
 \NB[WSK3]{I cannot recall whether the time in $\Conditioned^m_k$ must always be one of the the times involved in $\Removals^m_k$ -- a sign that this needs to be made clear here!}
-Additionally,
+%Additionally,
 \xNB[SBC]{Possibly simplify notation by replacing $\Conditioned^{m+}$ with $\Conditioned^{m:n}$ and $\Removals^{m-}$ with $\Removals^{1:m}$?}
-% . We shall write 
-\[ \Conditioned^{m:n}_k = \bigcup_{s=m}^n \Conditioned^s_k \,, \quad\text{and}\quad \Removals^{1:m}_k = \bigcup_{s=1}^m \Removals^s_k \,. \]
+We shall write 
+\[ \Conditioned^{m:n} = \bigcup_{s=m}^n \Conditioned^s \,, \quad\text{and}\quad \Removals^{1:m} = \bigcup_{s=1}^m \Removals^s \,. \]
 % \xNB[WSK2]{Consider avoiding superscripting by referring to (process-time) point-sets rather than individual incidents.}
 % Finally we denote by  \(\mu_m\) the mark for the realized removal on time-line \(m\) (occurring at process-time \(\rho^m\)).
 % \xNB[SBC]{Possibly simplify notation by replacing $\Conditioned^{m+}$ with $\Conditioned^m$ and $\Removals^{m-}$ with $\Removals^m$?}
@@ -1279,30 +1286,33 @@ Additionally,
 %\(\Infections_m\), \(\Removals^m\) and \(\Conditioned^m\) on the algorithmic time \(\tau\).
 % and note also that \(j_m=0\), \(k_m=0\) are both possible;
 % for convenience we write \(\sigma_m^0=0\), \(\rho^m^0=0\).
-Note that if the \SIR epidemic is to be total (if all \(n\) individuals are to be infected) then \(\Infections^m_k \neq\emptyset\) for all \(m<n\).
-(It is always true that \(\Infections^n_k=\emptyset\).)
-However it is always possible for \(\Removals^m_k=\emptyset\) for some or all \(m\). 
+%Note that if the \SIR epidemic is to be total (if all \(n\) individuals are to be infected) then \(\Infections^m \neq\emptyset\) for all \(m<n\).
+%(It is always true that \(\Infections^n=\emptyset\).)
+%However it is always possible for \(\Removals^m=\emptyset\) for some or all \(m\). 
+\NB[SBC]{Commented out remark about $\Infections^m$ being non-empty if the epidemic is total, etc, since no longer seems easy to work with $\Infections^m$.}
 
  The first region is the \emph{``no-fly'' zone}.%
 \xNB[WSK2]{Do we need specifically to define the no-fly zone boundary? SBC: yes, I think so.}
  This is made up of initial portions of time-lines defined by the property, if a time-line point in this region is infected then there will result an unconditioned removal.
- At algorithmic time \(\tau=2kT\), the 
+% At algorithmic time \(\tau=2kT\), the 
 %  boundary of the 
- no-fly zone is 
- given by \([0,\xi^m_k]\)
+ The no-fly zone is 
+ given by \([0,\xi^m]\)
 %  located at process time \(\xi^m_k\) 
  for time-line \(m\), 
- where \(\xi^m_k\) is
+ where \(\xi^m\) is
  defined inductively by 
  \begin{align}\label{eq:boundary-time}
- \xi^n_k \quad=&\quad \sup \Removals^{1:n}_k\,,  
+ \xi^n \quad=&\quad \sup \Removals^{1:n}\,,  
  &\text{ the last potential removal on or below time-line }n\,,
  \nonumber\\
- \xi^m_k \quad=&\quad \sup \Removals^{1:m}_k \vee \sup\left\{\Infections^m_k\cap[0,\xi^{m+1}_k\right)\}
- &\text{ if }1<m<n\,.
+% \xi^m_k \quad=&\quad \sup \Removals^{1:m}_k \vee \sup\left\{\Infections^m_k\cap[0,\xi^{m+1}_k\right)\}
+% &\text{ if }1<m<n\,.
+ \xi^m \quad=&\quad \sup \Removals^{1:m} \vee \sup\left\{s\,:\,[s;m,j]\in\Infections[0,\xi^{m+1}],\, 1\le j\le m\right\}
+&\text{ if }1<m<n\,.
  \end{align}
  (Here and throughout we use the convention that \(\sup\emptyset=-\infty\)
- and \(\inf\emptyset=\infty\).) Thus by construction \(\xi^m_k\) must be increasing in \(m\).
+ and \(\inf\emptyset=\infty\).) Thus by construction \(\xi^m\) must be increasing in \(m\).
  Proposals of potential infections of no-fly portions of time-lines must be forbidden.
  Figure \ref{fig:no-fly} illustrates the construction
  of the no-fly zone.
@@ -1317,14 +1327,16 @@ However it is always possible for \(\Removals^m_k=\emptyset\) for some or all \(
  The second region  is the \emph{``pre-infection'' zone}: this lies
  between the no-fly
  zone and the \emph{(first) epidemic trajectory}. Here the {epidemic trajectory} is built using those potential infections that become active.
- It is located at boundary time \(\phi^m_k\) for time-line \(m\), defined inductively by
+ It is located at boundary time \(\phi^m\) for time-line \(m\), defined inductively by
  \begin{align}\label{eq:epidemic}
-  \phi^m_k \quad=&\quad 0\,, 
+  \phi^m \quad=&\quad 0\,, 
   &\text{ if \(m\leq R_0+I_0=I_0\)}\,,
   \nonumber\\
-  \phi^m_k \quad=&\quad
-  \inf\left\{\Infections^{m-1}_k\cap[\phi^{m-1}_k\vee \xi^m_k,\rho^{m-1}_k)\right\} 
-  & \text{ if } I_0 < m \le n \,.
+  \phi^m \quad=&\quad
+%  \inf\left\{\Infections^{m-1}_k\cap[\phi^{m-1}_k\vee \xi^m_k,\rho^{m-1}_k)\right\} 
+%  & \text{ if } I_0 < m \le n \,.
+  \inf\left\{s\,:\,[s;m-1,j]\in\Infections[\phi^{m-1}\vee \xi^m,\rho^j),\,1\le j< m\right\} 
+& \text{ if } I_0 < m \le n \,.
 %   \begin{cases}
 %    \infty                                                    & \text{ if \(m> R_0+I_0=I_0\) and no potential infection} 
 %    \\
@@ -1342,9 +1354,9 @@ However it is always possible for \(\Removals^m_k=\emptyset\) for some or all \(
 % Figure \ref{fig:epidemic} illustrates the construction
 %  of the epidemic trajectory and pre-infection zone.
 % =======
- That is, time-line \(m\) becomes infected at the time of the earliest infection in \(\Infections^{m-1}_k\) occurring after time-line \(m-1\) is infected, and which avoids the no-fly zone \([0,\xi^m_k]\).
+ That is, time-line \(m\) becomes infected at the time of the earliest infection in \(\Infections\) of the form \([s;m-1,j]\), which avoids the no-fly zone \([0,\xi^m]\), and which occurs in the interval \([\phi^{m-1},\rho^j)\) during which both time-lines \(j\) and \(m-1\) are infectious.
 \xNB[SBC]{I've added reference to the no-fly zone into this definition. Poss not needed under conditioning, but I think that it makes the proof of monotonicity clearer later on.}
- Note that \(\phi^m_k=\infty\) cannot be allowed to occur for any \(m\) if we condition on all individuals eventually being removed.%
+ Note that \(\phi^m=\infty\) cannot be allowed to occur for any \(m\) if we condition on the \SIR epidemic being total (if all \(n\) individuals are eventually to be removed).%
 \xNB[WSK2]{Reformulate (\ref{eq:epidemic}) in a manner similar to that of (\ref{eq:last-epidemic}): avoid the case of $\infty$ by noting this won't happen under conditioning.}
 % Necessarily the epidemic must avoid the no-fly zone. 
 Figure \ref{fig:epidemic} illustrates the construction
@@ -1361,7 +1373,7 @@ Figure \ref{fig:epidemic} illustrates the construction
  The \emph{last viable epidemic} is the last
  feasible epidemic trajectory which 
  would avoid activating
- any unconditioned removals and 
+ any potential removals and 
  would produce all conditioned removals.
  Together with the epidemic trajectory, it delimits the third region
  -- the \emph{``infection window''} -- within which it is possible for an epidemic to proceed to completion.
@@ -1384,13 +1396,16 @@ Figure \ref{fig:epidemic} illustrates the construction
 %                \wedge \eta^{m+1})\right\} 
 %\qquad \text{ if }1<m<n \\
 %\eta^1 \quad=&\quad 0 \,. \nonumber
- \eta^{n+1}_k \quad=&\quad \rho^n \nonumber \\
- \eta^m_k \quad=&\quad
- \sup\left\{\Infections^{m-1}_k\cap[0, \eta^{m+1}_k\wedge \inf\Conditioned^{m:n}_k)\right\} 
- \qquad \text{ if }1<m\le n\,. \label{eq:last-epidemic}
+ \eta^{n+1} \quad=&\quad \rho^n \nonumber \\
+% \eta^m_k \quad=&\quad
+% \sup\left\{\Infections^{m-1}_k\cap[0, \eta^{m+1}_k\wedge \inf\Conditioned^{m:n}_k)\right\} 
+% \qquad \text{ if }1<m\le n\,. \label{eq:last-epidemic}
+ \eta^m \quad=&\quad
+\sup\left\{s\,:\,[s;m-1,j]\in\Infections[0, \eta^{m+1} \wedge \inf\Conditioned^{m:n}\wedge \rho^j ),\,1\le j< m\right\} 
+\qquad \text{ if }1<m\le n\,. \label{eq:last-epidemic}
  \end{align}
- The rationale for the definition of \(\eta^m_k\) is that the last viable infection time of time-line \(m\) must certainly occur before the time at which the last viable epidemic reaches time-line \(m+1\),
- and must also occur before any conditioned removals currently assigned to any of the time-lines \(m,m+1,\dots,n\).
+ The rationale for the definition of \(\eta^m\) is that the last viable infection time of time-line \(m\) must certainly occur before the time at which the last viable epidemic reaches time-line \(m+1\),
+ and must also occur before any conditioned removals currently assigned to any of the time-lines \(m,m+1,\dots,n\); moreover, since the infection incident is marked by time-lines \(m-1\) and \(j\), it must take place before the \(j^\text{th}\) removal time, \(\rho^j\).
  Note that, under the conditioning, the supremum in \eqref{eq:last-epidemic} must be taken over a non-empty set. 
 %It will be convenient for monotonicity arguments later on to replace the set \(\Conditioned^m\) in \eqref{eq:last-epidemic} by the larger set
 % \[ \Conditioned^{m:n} \quad = \quad \bigcup_{s=m}^n \Conditioned^s \,. \]
@@ -1412,7 +1427,7 @@ Figure \ref{fig:epidemic} illustrates the construction
  Note that the total of infected portions of time-lines is made up of
  the union of the infection-window and post-infection zone. %
 Moreover, note that the following ordering must be obeyed by events on each
-time-line of a viable epidemic:
+time-line of a viable epidemic (one in which all individuals are to be infected, and with removals only at the conditioned times):
 \begin{equation}\label{eq:event-order}
 % <<<<<<< HEAD
 % \sup\Removals^{1:m} \le \xi^m \le \phi^m \le \eta^m \le \inf\Conditioned^{m:n} \le
@@ -1426,15 +1441,15 @@ time-line of a viable epidemic:
 % (\(\inf\Conditioned^{m:n}\)), and all such conditioned removals assigned to time-line \(m\) must occur before
 % individual \(m\) is removed (at time \(\rho^m\)).
 % =======
-\sup\Removals^{1:m}_k \le \xi^m_k \le \phi^m_k \le \eta^m_k \le \inf\Conditioned^{m:n}_k \le
-\sup\Conditioned^m_k \le \rho^m \,, \quad 1\le m\le n \,.
+\sup\Removals^{1:m} \le \xi^m \le \phi^m \le \eta^m \le \inf\Conditioned^{m:n} \le
+\sup\Conditioned^m \le \rho^m \,, \quad 1\le m\le n \,.
 \end{equation}
 That is, the time at which time-line \(m\) becomes infected
-(\(\phi^m_k\)) must lie outside of the no-fly zone (with boundary
-\(\xi^m_k\)), and occur no later than the last-viable epidemic time
-(\(\eta^m_k\)); this in turn must occur before the first
+(\(\phi^m\)) must lie outside of the no-fly zone (with boundary
+\(\xi^m\)), and occur no later than the last-viable epidemic time
+(\(\eta^m\)); this in turn must occur before the first
 conditioned removal assigned to that time-line or one of a higher index 
-(\(\inf\Conditioned^{m:n}_k\)), and all conditioned removals assigned to time-line \(m\) must occur before that individual is removed at time \(\rho^m\).
+(\(\inf\Conditioned^{m:n}\)), and all conditioned removals assigned to time-line \(m\) must occur before that individual is removed at time \(\rho^m\).
 % >>>>>>> stephen
 \xNB[WSK2]{Good names for second, third, fourth and fifth regions?} 
 \NB[WSK3]{Figure \ref{fig:fourth-and-fifth}: suspect last-viable epidemic is sometimes wrong here.}
@@ -1463,7 +1478,7 @@ not infected at time \(\rho\).
  values of $\phi^m$ and $\eta^m$ as we go. This might need to be clarified!}
  if it \emph{does} belong to both these epidemics then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
  In other words, if \(\phi^m=\eta^m\) for some \(m\), the (necessarily
- active) infection in \(\Infections^{m-1}\) occurring at time \(\phi^m\) must be perpetuated, and these are the only infections subject to perpetuation.
+ active) infection occurring at time \(\phi^m\) must be perpetuated, and these are the only infections subject to perpetuation.
  Potential infections can be introduced unless they would immediately connect the current epidemic trajectory to the no-fly zone.
  %So potential infections can be introduced (whether or not they become
  %active) unless the introduction bridges the gap between epidemic and
@@ -1525,10 +1540,10 @@ Note that although the boundary of the no-fly zone (\(\xi)\) and the last viable
 Consider the phase of algorithmic time \(((2k-1)T, 2kT]\) during
 which the set of infection times is updated.
 \xNB[SBC]{The definition of $\Poisson^I$ (and $\Poisson^R$) probably need clarifying earlier on, to make clear the difference between process and algorithmic times.} 
-The last viable epidemic $\eta$ at time \(2kT\) satisfies the following equations: 
+The last viable epidemic $\eta_k$ at time \(2kT\) satisfies the following equations: 
 \begin{align}
 \eta^{n+1}_k \quad&=\quad \rho^n  \nonumber \\
- \eta^m_k \quad&=\quad \phi^m_{k-1} \vee \sup \{s\,:\, [s;m-1,j] \in \Poisson_k [0, \eta^{m+1}_k\wedge \inf\Conditioned^{m:n}_k),\,1\le j\le m-1 \text{ and }\phi^j_{k-1}\le s<\rho^j  \}\,, \nonumber \\ 
+ \eta^m_k \quad&=\quad \phi^m_{k-1} \vee \sup \{s\,:\, [s;m-1,j] \in \Poisson_k [0, \eta^{m+1}_k\wedge \inf\Conditioned^{m:n}_k \wedge \rho^j),\,1\le j< m \}\,, \nonumber \\ 
  & \qquad \qquad \text{ if }1<m\le n \label{eq:update_last-viable} \,.
 %  \eta^m(\tau+2T) \quad&=\quad \phi^m(\tau+T)\vee \sup \left\{\Poisson^I_{m-1}(\tau+2T) \cap [0, \eta^{m+1}(\tau+2T)\wedge \inf\Conditioned^{m:n}(\tau+T)) \right\}\,, \quad \text{ if }1<m\le n \label{eq:update_last-viable} \,.
  \end{align}
@@ -1536,16 +1551,15 @@ The last viable epidemic $\eta$ at time \(2kT\) satisfies the following equation
 
 \begin{proof}
 This follows from a similar argument to the rationale behind equation~\eqref{eq:last-epidemic}. The last viable epidemic must infect time-line \(m\) before any conditioned removals currently assigned to that  time-line or any time-line of greater index (i.e. by time \(\inf\Conditioned^{m:n}_k\)), and also no later than the time at which the last viable epidemic reaches the line above (time \(\eta^{m+1}_k\)). Given the value of \(\eta^{m+1}_k\), if \(\Poisson_k\) contains at least one new potential infection incident of the form \([s;m-1,j]\) with \(s\) in the set 
-\[(\phi^m_{k-1},\eta^{m+1}_k \wedge  \inf\Conditioned^{m:n}_k) \cap [\phi^j_{k-1},\rho^j) \]
-(with the latter interval ensuring that time-line \(j\) is also infected at process time \(s\))
+\[(\phi^m_{k-1},\eta^{m+1}_k \wedge  \inf\Conditioned^{m:n}_k\wedge \rho^j)  \]
 then \(\eta^m_k\) will be the supremum of these; if not, the active infection at process time \(\phi^m_{k-1}\) will be perpetuated as we move from algorithmic time \(2(k-1)T\) to \(2kT\), in which case we arrive at \(\eta^m_k = \phi^m_{k-1}\).
 \end{proof}
 
 
 
  \begin{lem}\label{lem:infect4}
- 	Consider the phase of algorithmic time \(((2k-1)T, 2kT] =(\tau+T, \tau+2T] \) during
- 	which the set of infection times is updated. The no-fly zone boundary \(\xi\) and infection times \(\Infections\) at time \(\tau+2T\) satisfy the following equations:
+ 	Consider the phase of algorithmic time \(((2k-1)T, 2kT]\) during
+ 	which the set of infection times is updated. The no-fly zone boundary \(\xi_k\) and infection times \(\Infections_k\) at time \(2kT\) satisfy the following equations:
  	% \begin{enumerate}
  	% 	\item set \(m=n\)
  	% 	\item
@@ -1563,16 +1577,16 @@ then \(\eta^m_k\) will be the supremum of these; if not, the active infection at
 % 	\intertext{and for \(1\le m<n\),}
 % 	\Infections^m(\tau+T) \quad &= \quad \left( \Poisson^I_m \setminus (\phi^m(\tau), \xi^{m+1}(\tau+T)) \right) \cup \,\left\{\phi^{m+1}(\tau)\vee\max \left\{\Poisson^I_m\cap(\phi^{m+1}(\tau),  \eta^{m+2}(\tau+T)\wedge \min \Conditioned^{m+1}(\tau))  \right\}\right\} \\
 % 	\xi^m(\tau+T) \quad&=\quad \max\left\{\bigcup_{s=1}^m \Removals^s(\tau)\right\} \vee \max\left\{\Infections^m(\tau+T)\cap[0,\xi^{m+1}(\tau+T)\right)\}\,.
-	\xi^n(\tau+2T)\quad &= \quad \sup \Removals^{1:n}(\tau+T)
+	\xi^n_k\quad &= \quad \sup \Removals^{1:n}_k
 	\intertext{and for \(1\le m<n\),}
-	\Infections^m(\tau+2T) \quad &= \quad \left( \Poisson^I_m(\tau+2T) \setminus [\phi^m(\tau+T), \xi^{m+1}(\tau+2T)] \right) \cup \{\eta^{m+1}(\tau+2T)\} \\
-	\xi^m(\tau+2T) \quad&=\quad \sup \Removals^{1:m}(\tau+T) \vee \sup\left\{\Infections^m(\tau+2T)\cap[0,\xi^{m+1}(\tau+2T)\right)\}\,.
+	\Infections^m(\tau+2T) \quad &= \quad \left( \Poisson^I_m(\tau+2T) \setminus [\phi^m_{k-1}, \xi^{m+1}_k] \right) \cup \{\eta^{m+1}_k\} \\
+	\xi^m_k \quad&=\quad \sup \Removals^{1:m}_k \vee \sup\left\{\Infections^m_k\cap[0,\xi^{m+1}_k\right)\}\,.
  	\end{align*} 	
  \end{lem}
  \begin{proof}
- 	The equation for \(\xi^n(\tau+2T)\) follows immediately from the definition of the no-fly zone boundary on time-line \(n\). Simiarly, for \(1\le m<n\), given the set \(\Infections^m(\tau+2T)\), the equation for \(\xi^m(\tau+2T)\) follows directly from equation~\eqref{eq:boundary-time}.
+ 	The equation for \(\xi^n_k\) follows immediately from the definition of the no-fly zone boundary on time-line \(n\). Similarly, for \(1\le m<n\), given the set \(\Infections^m_k\), the equation for \(\xi^m_k\) follows directly from equation~\eqref{eq:boundary-time}.
  	
- 	It therefore remains to establish exactly which potential infections belong to the set \(\Infections^m(\tau+2T)\). This set is produced from the realisation \(\Poisson^I_m(\tau+2T)\) by censoring any proposed infection that would cause the gap between the current epidemic trajectory and the no-fly zone to be bridged; that is, we censor any infection belonging to the (possibly empty) time interval \([\phi^m(\tau+T), \xi^{m+1}(\tau+2T)]\). In addition, the set \(\Infections^m(\tau+2T)\) may include a single perpetuated infection: if this occurs then the perpetuated infection occurs at process time \(\phi^{m+1}(\tau+T)\), and by Lemma~\ref{lem:update_last-viable} this is equal to \(\eta^{m+1}(\tau+2T)\); alternatively, if this infection is not perpetuated then \(\eta^{m+1}(\tau+2T)\) is already a (non-censored) member of the point-set \(\Poisson^I_m(\tau+2T)\), and so taking the union in this case has no effect.
+ 	It therefore remains to establish exactly which potential infections belong to the set \(\Infections^m(\tau+2T)\). This set is produced from the realisation \(\Poisson^I_m(\tau+2T)\) by censoring any proposed infection that would cause the gap between the current epidemic trajectory and the no-fly zone to be bridged; that is, we censor any infection belonging to the (possibly empty) time interval \([\phi^m_{k-1}, \xi^{m+1}_k]\). In addition, the set \(\Infections^m(\tau+2T)\) may include a single perpetuated infection: if this occurs then the perpetuated infection occurs at process time \(\phi^{m+1}_{k-1}\), and by Lemma~\ref{lem:update_last-viable} this is equal to \(\eta^{m+1}_k\); alternatively, if this infection is not perpetuated then \(\eta^{m+1}_k\) is already a (non-censored) member of the point-set \(\Poisson^I_m(\tau+2T)\), and so taking the union in this case has no effect.
  \end{proof}
 
 \begin{cor}\label{cor:update_no-fly_direct}

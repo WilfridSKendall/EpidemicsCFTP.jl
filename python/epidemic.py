@@ -173,12 +173,11 @@ class Innovations(object):
         if self.n - len(self.infect) != 1:
             raise PopulationError(self.n, self.infect)
 
-        llst = list(map(len, self.infect))
-        rnge = list(range(1, self.n))
+        llst, rnge = list(map(len, self.infect)), list(range(1, self.n))
         if llst != rnge:
             raise InfectionStructureError(llst, rnge)
 
-        
+# \needspace{.2\textheight}        
 
 class Results(object):
     """
@@ -207,6 +206,8 @@ class Results(object):
         summary.append("Mordor ends at:\n%s" % str(self.mordor))
         return '\n'.join(summary)
 
+
+# \needspace{.2\textheight}        
 
 class FreeEpidemic(object):
     """

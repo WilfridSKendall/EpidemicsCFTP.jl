@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-A python module with logging, doctest to construct a set
-of innovation incidents to allow simulation of an SIR epidemic.
+A 'python3' module with logging, doctest, This is designed to construct a set
+of innovation incidents in preparation for simulation of an SIR epidemic.
 
 Metadata:
 
   - Author:    W.S.Kendall
-  - Copyright: opensource (c) W.S.Kendall 2014, 2018
-  - Date:      2014-04-26, revised 2018-01-01
+  - Copyright: opensource (c) W.S.Kendall 2014, 2018, 2020
+  - Date:      2014-04-26, revised 2020-03-10
   - URL:       http://www.wilfridkendall.co.uk
   - Generator: '/home/wilfrid/lib/python/generate.py' version 1.27.
 
@@ -33,7 +33,6 @@ import sys
 
 from itertools import chain, count, zip_longest
 
-
 INFINITY = "Infinity"
 
 
@@ -42,29 +41,65 @@ class Error(Exception):
     """
     Generic exception to be raised by this module.
     """
+    
 class BadDataError(Error):
     """
     Raised when bad data is supplied.
     """
+    
+class PopulationError(BadDataError):
+    """
+    Raised when population (from 'remove') is inconsistent with length of 'infect'.
+    """
+    def __init__(self, n, infect):
+        self.message = f"population {n} minus infection structure length {len(infect)} != 1"
+    def __str__(self):
+        return self.message
+    
+class InfectionStructureError(BadDataError):
+    """
+    Raised when population (from 'remove') is inconsistent with structure of 'infect'.
+    """
+    def __init__(self, llst, rnge):
+        self.message = f"infection data sub-structure is {llst} not {rnge}"
+    def __str__(self):
+        return self.message
 
+
+# \needspace{.5\textheight}
 # \section{Classes}
 class Innovations(object):
     """
     This class captures innovation incidents related to
     construction of an SIR epidemic trajectory, thus providing
-    the randomness needed to generate SIR epidemics. At least
-    initially, we assume the innovations are provided
-    deterministically, so the class requires only sanity
-    checks and a printing method::
+    the randomness needed to generate SIR epidemics. 
+    The innovations are provided deterministically via
+    keyword arguments on initialization.
+    The class provides sanity checks and a printing method.
+    Here is an example of creation of an instance::
 
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                     infect=[[[0.2, 1.1, 1.5]],
      ...                             [[0.4, 0.9], [0.6, 1.4]]
      ...                            ])
-     >>> len(innov)
-     3
 
-    The innovation list structure is to be interpreted as follows::
+    An 'Innovations' instance is effectively
+    a list composed of two sub-lists, one for potential removals and
+    one for potential infections. The first sub-list is the 'remove'
+    list, containing 'n' sub-sub-lists, one for each timeline row,
+    working from row '1' to row 'n' as per algorithm described
+    in the paper. Each such sub-sub-list is an ordered list of potential
+    removal times, the mark for each of these removals being implied by
+    the row corresponding to the sub-sub-list.
+
+    The second sub-list is the 'infect' sub-list, containing 'n-1'
+    sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
+    row starting at row '1' and working up to row 'n-1', and contains
+    sub-sub-sub-lists of infection times of infections incoming to that
+    row, one sub-sub-sub-list corresponding to each row *at* or 
+    *below* the timeline row corresponding to the relevant sub-sub-list.
+    
+    The innovation list structure is printed as follows::
 
      >>> print(innov)
      Innovations for SIR epidemic on 3 individuals:
@@ -72,64 +107,78 @@ class Innovations(object):
        3:              0.50 2.00
        2:              1.30
        1:              1.00 1.60
-     Target row
-          (Origin)     List of proposed potential infections
-       3:   (2)        0.60 1.40
+     Active timeline (infection works if top of infectives)
+          (Mark)       List of proposed potential infections
+       2:   (2)        0.60 1.40
             (1)        0.40 0.90
-       2:   (1)        0.20 1.10 1.50
+       1:   (1)        0.20 1.10 1.50
 
-    Note the data format. An 'Innovations' instance is effectively
-    a list of two sub-lists. The first sub-list is the 'remove'
-    list, containing 'n' sub-sub-lists, one for each timeline row,
-    working from row '1' up to row 'n' as per algorithm described
-    in the paper. Each such sub-sub-list is an ordered list of potential
-    removal times, the mark for each of these removals being implied by
-    the row corresponding to the sub-sub-list.
-
-    The second sub-list is the 'infect' sub-list, containing 'n-1'
-    sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
-    row starting at row '2' and working up to row 'n', and contains
-    sub-sub-sub-lists of infection times of infections incoming to that
-    row, one sub-sub-sub-list corresponding to each row *at* or 
-    *below* the timeline row corresponding to the relevant sub-sub-list.
+    It is possible directly to access the number of individuals in the epidemic 
+    corresponding to the 'Innovations' instance::
+    
+     >>> innov.n
+     3
     """
+    # Output template
+    output_template = '\n'.join(["Innovations for SIR epidemic on {} individuals:",
+     "{}", "{}"])
+
     def __init__(self, remove=None, infect=None):
         self.remove, self.infect = remove, infect
-        # self.n = len(remove)
-
-        # Sanity checks. We require:
-        #
-        # 1. #self.infect# to be made up of one list of lists of potential infections
-        #    for each row except for the first row,
-        #
-        # 2. and each sub-list in #self.infect# to be made up of one list of potential
-        #    infections for each sub-list located at or below current sub-list.
-        if len(self.infect) != len(self) - 1:
-            raise BadDataError("infection and removal data structure lengths do not agree")
-        for i, llst in enumerate(self.infect):
-            if len(llst) != i + 1:
-                raise BadDataError("infection data sub-structure is inconsistent")
+        self.n = len(self)
+        self.sanity_check()
+        
     def __repr__(self):
         return "%s\n%s" % (self.remove, self.infect)
+    
     def __str__(self):
-        pop = len(self)
-        def lstr(lst):
-            "Temporary function to convert list of floats into string of space-separated floats"
-            return ' '.join('%4.2f' % e for e in lst)
-        # Enumerate reversed lists of removals and infections so that printed result looks like graphics.
-        rem = enumerate(reversed(self.remove))
-        inf = enumerate(reversed(self.infect))
-        legend1 = "Innovations for SIR epidemic on %d individuals:" % len(self)
-        legend2 = "Row               List of proposed potential removals"
-        removals = '\n'.join(" %2d:              %s" % (pop - i, lstr(x)) for i, x in rem)
-        legend3 = "Target row"
-        infections = '\n'.join([" %2d: %s" % \
-           (pop - i,'\n     '.join(reversed(['  (%1d)        %s' % (j + 1, lstr(y)) \
-               for j, y in enumerate(x)]))) for i, x in inf])
-        legend4 = "     (Origin)     List of proposed potential infections"
-        return '\n'.join([legend1, legend2, removals, legend3, legend4, infections])
+        return self.output_template.format(self.n, self.removal_str(), self.infection_str())
+    
     def __len__(self):
         return len(self.remove)
+    
+    # Some methods which may be separately useful.
+    def removal_str(self):
+        """
+        Structure reversed list of removals.
+        """
+        rem = enumerate(reversed(self.remove))
+        return '\n'.join(["Row               List of proposed potential removals",
+            '\n'.join(" %2d:              %s" % (self.n - i, lstr(x)) for i, x in rem)
+            ])
+    
+    def infection_str(self):
+        """
+        Structure reversed list of infections.
+        """
+        inf = enumerate(reversed(self.infect))
+        return '\n'.join(["Active timeline (infection works if top of infectives)",
+            "     (Mark)       List of proposed potential infections",
+            '\n'.join([" %2d: %s" % \
+                (self.n - i - 1,
+                 '\n     '.join(reversed(['  (%1d)        %s' % (j + 1, lstr(y)) \
+                     for j, y in enumerate(x)]))) for i, x in inf])
+                 ])
+    
+    def sanity_check(self):
+        """
+        Sanity checks. We require:
+        
+         1. 'self.infect' to be made up of one list of lists of potential infections
+            for each row except for the first row::
+            
+         2. and each sub-list in 'self.infect' to be made up of one list of potential
+            infections for each sub-list located at or below current sub-list.
+        """
+        if self.n - len(self.infect) != 1:
+            raise PopulationError(self.n, self.infect)
+
+        llst = list(map(len, self.infect))
+        rnge = list(range(1, self.n))
+        if llst != rnge:
+            raise InfectionStructureError(llst, rnge)
+
+        
 
 class Results(object):
     """
@@ -380,6 +429,12 @@ class FreeEpidemic(object):
 
 
 # \section{Functions}
+def lstr(lst):
+    """
+    Utility function to convert list of floats into string of space-separated floats.
+    """
+    return ' '.join('%4.2f' % e for e in lst)
+
 def main(opt, arguments):
     """
     The action of the module as script should be concentrated here!

@@ -20,11 +20,11 @@ Note the form of the `Innovations` structure:
        3:              0.50 2.00
        2:              1.30
        1:              1.00 1.60
-     Target row
-          (Origin)     List of proposed potential infections
-       3:   (2)        0.60 1.40
+     Active timeline (infection works if top of infectives)
+          (Mark)       List of proposed potential infections
+       2:   (2)        0.60 1.40
             (1)        0.40 0.90
-       2:   (1)        0.20 1.10 1.50
+       1:   (1)        0.20 1.10 1.50
 
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(epidemic(pretty=True))  
@@ -41,7 +41,6 @@ Note the form of the `Innovations` structure:
      [0.5, 1.3, 2]
      Mordor ends at:
      [0, 0, 0]
-
 
 ![A graphical illustration of the resulting free SIR epidemic](image/figure1.png "Free epidemic")
 
@@ -66,18 +65,18 @@ And now we present the results of three further tests.
        3:              0.20
        2:              0.30
        1:              1.10 2.00
-     Target row
-          (Origin)     List of proposed potential infections
-       5:   (4)        1.20
+     Active timeline (infection works if top of infectives)
+          (Mark)       List of proposed potential infections
+       4:   (4)        1.20
             (3)        0.70
             (2)        0.60
             (1)        0.50
-       4:   (3)        
+       3:   (3)        
             (2)        
             (1)        
-       3:   (2)        1.80
+       2:   (2)        1.80
             (1)        0.90
-       2:   (1)        1.90
+       1:   (1)        1.90
 
      >>> print(epidemic(pretty=True))   
      Time    S, I, R
@@ -108,18 +107,18 @@ And now we present the results of three further tests.
        3:              1.30
        2:              1.50
        1:              1.10 2.00
-     Target row
-          (Origin)     List of proposed potential infections
-       5:   (4)        1.20
+     Active timeline (infection works if top of infectives)
+          (Mark)       List of proposed potential infections
+       4:   (4)        1.20
             (3)        0.70 1.15
             (2)        0.60
             (1)        0.50
-       4:   (3)        
+       3:   (3)        
             (2)        1.25
             (1)        
-       3:   (2)        1.80
+       2:   (2)        1.80
             (1)        0.90
-       2:   (1)        0.10
+       1:   (1)        0.10
 
      >>> print(epidemic(pretty=True))   
      Time    S, I, R
@@ -146,4 +145,40 @@ And now we present the results of three further tests.
 ![Larger free SIR epidemic generated at random with three initial infectives](image/randomfigure2.png "Larger free epidemic generated at random with three initial infectives") 
 
 
+Exceptions
+----------
+Three examples of exceptions raised by `sanity_check` method.
+
+     >>> rem = [[1.1, 2.0], [1.5], [1.3], [1.2]]
+     >>> ill = [[[0.1]], 
+     ...        [[0.9], [1.8]],
+     ...        [[], [1.25], []], 
+     ...        [[0.5], [0.6], [0.7, 1.15], [1.2]]]
+     >>> iv =Innovations(remove=rem, infect=ill)
+     Traceback (most recent call last):
+     ...
+     epidemic.PopulationError: population 4 minus infection structure length 4 != 1
+
+     >>> rem = [[1.1, 2.0], [0.3], [0.2], [0.1], [1.0]]
+     >>> ill = [
+     ...        [[0.9], [1.8]],
+     ...        [[], [], []], 
+     ...        [[0.5], [0.6], [0.7], [1.2]]
+     ...       ]
+     >>> iv =Innovations(remove=rem, infect=ill)
+     Traceback (most recent call last):
+     ...
+     epidemic.PopulationError: population 5 minus infection structure length 3 != 1
+
+     
+     >>> rem = [[1.1, 2.0], [0.3], [0.2], [0.1], [1.0]]
+     >>> ill = [[[1.9]], 
+     ...        [[0.9],      ],
+     ...        [[], [], []], 
+     ...        [[0.5], [0.6], [0.7], [1.2]]
+     ...       ]
+     >>> iv =Innovations(remove=rem, infect=ill)
+     Traceback (most recent call last):
+     ...
+     epidemic.InfectionStructureError: infection data sub-structure is [1, 1, 3, 4] not [1, 2, 3, 4]
 

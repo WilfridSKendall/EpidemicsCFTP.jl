@@ -41,11 +41,15 @@ class Error(Exception):
     """
     Generic exception to be raised by this module.
     """
+    message = "Generic error raised"
+    def __str__(self):
+        return self.message
     
 class BadDataError(Error):
     """
     Raised when bad data is supplied.
     """
+    message = "Data error raised"
     
 class PopulationError(BadDataError):
     """
@@ -53,8 +57,6 @@ class PopulationError(BadDataError):
     """
     def __init__(self, n, infect):
         self.message = f"population {n} minus infection structure length {len(infect)} != 1"
-    def __str__(self):
-        return self.message
     
 class InfectionStructureError(BadDataError):
     """
@@ -62,8 +64,6 @@ class InfectionStructureError(BadDataError):
     """
     def __init__(self, llst, rnge):
         self.message = f"infection data sub-structure is {llst} not {rnge}"
-    def __str__(self):
-        return self.message
 
 
 # \needspace{.5\textheight}
@@ -178,7 +178,6 @@ class Innovations(object):
             raise InfectionStructureError(llst, rnge)
 
 # \needspace{.2\textheight}        
-
 class Results(object):
     """
     This class provides a data record structure to capture results from 'FreeEpidemic'.
@@ -208,7 +207,6 @@ class Results(object):
 
 
 # \needspace{.2\textheight}        
-
 class FreeEpidemic(object):
     """
     This class computes a (free) SIR epidemic, given an 
@@ -377,8 +375,6 @@ class FreeEpidemic(object):
         wtl = self.results.West
         eventl = list(zip_longest(itl, rtl, fillvalue=INFINITY))
         for i, (t0, t1) in enumerate(eventl):
-            # if i >= remo:
-            #     break
             rmvl = self.innov.remove[i]
             if t0 == INFINITY:
                 t = INFINITY
@@ -429,6 +425,7 @@ class FreeEpidemic(object):
         return self.results
 
 
+# \needspace{.2\textheight}        
 # \section{Functions}
 def lstr(lst):
     """

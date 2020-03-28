@@ -14,6 +14,7 @@ export DISPLAY=:0.0
 # ----------------------------------------------
 # Title:
 title := PerfectEpidemics
+bibliography := $(HOME)/Reading/bibliography/$(title).bib
 
 # ----------------------------------------------
 # Source and control files:
@@ -164,8 +165,8 @@ products.txt: Makefile
 
 # ----------------------------------------------
 # Bibliography:
-$(title).bib: $(HOME)/Reading/bibliography/$(title).bib
-	sed -e's/\\o /{\\o}/' -e's/∞/$$\\infty$$/' $< > $(title).bib
+$(title).bib: $(bibliography)
+	sed -e's/\\o /{\\o}/' -e's/∞/$$\\infty$$/' $< > $@
 
 # ----------------------------------------------
 # Automatic help (textual):

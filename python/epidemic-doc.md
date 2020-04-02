@@ -16,12 +16,12 @@ Note the form of the `Innovations` structure:
 
      >>> print(iv)
      Innovations for SIR epidemic on 3 individuals:
-     Row               List of proposed potential removals
+     TLine             List of proposed potential removals
        3:              0.50 2.00
        2:              1.30
        1:              1.00 1.60
      Active timeline (infection works if top of infectives)
-          (Mark)       List of proposed potential infections
+     TLine  (Mark)     List of proposed potential infections
        2:   (2)        0.60 1.40
             (1)        0.40 0.90
        1:   (1)        0.20 1.10 1.50
@@ -59,14 +59,14 @@ And now we present the results of three further tests.
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(iv)
      Innovations for SIR epidemic on 5 individuals:
-     Row               List of proposed potential removals
+     TLine             List of proposed potential removals
        5:              1.00
        4:              0.10
        3:              0.20
        2:              0.30
        1:              1.10 2.00
      Active timeline (infection works if top of infectives)
-          (Mark)       List of proposed potential infections
+     TLine  (Mark)     List of proposed potential infections
        4:   (4)        1.20
             (3)        0.70
             (2)        0.60
@@ -101,14 +101,14 @@ And now we present the results of three further tests.
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(iv)
      Innovations for SIR epidemic on 5 individuals:
-     Row               List of proposed potential removals
+     TLine             List of proposed potential removals
        5:              1.00
        4:              1.20
        3:              1.30
        2:              1.50
        1:              1.10 2.00
      Active timeline (infection works if top of infectives)
-          (Mark)       List of proposed potential infections
+     TLine  (Mark)     List of proposed potential infections
        4:   (4)        1.20
             (3)        0.70 1.15
             (2)        0.60

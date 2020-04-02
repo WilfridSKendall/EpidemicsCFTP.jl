@@ -70,56 +70,57 @@ class InfectionStructureError(BadDataError):
 # \section{Classes}
 class Innovations(object):
     """
-    This class captures innovation incidents related to
+    This class implements innovations related to
     construction of an SIR epidemic trajectory, thus providing
-    the randomness needed to generate SIR epidemics. 
-    The innovations are provided deterministically via
-    keyword arguments on initialization.
-    The class provides sanity checks and a printing method.
-    Here is an example of creation of an instance::
+    reproducible generation of SIR epidemics. 
+    The innovations are defined on initialization _via_
+    keyword arguments.
+    Here we create such an instance, print it, and check number of individuals::
 
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                     infect=[[[0.2, 1.1, 1.5]],
      ...                             [[0.4, 0.9], [0.6, 1.4]]
      ...                            ])
-
-    An 'Innovations' instance is effectively
-    a list composed of two sub-lists, one for potential removals and
-    one for potential infections. The first sub-list is the 'remove'
-    list, containing 'n' sub-sub-lists, one for each timeline row,
-    working from row '1' to row 'n' as per algorithm described
-    in the paper. Each such sub-sub-list is an ordered list of potential
-    removal times, the mark for each of these removals being implied by
-    the row corresponding to the sub-sub-list.
-
-    The second sub-list is the 'infect' sub-list, containing 'n-1'
-    sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline
-    row starting at row '1' and working up to row 'n-1', and contains
-    sub-sub-sub-lists of infection times of infections incoming to that
-    row, one sub-sub-sub-list corresponding to each row *at* or 
-    *below* the timeline row corresponding to the relevant sub-sub-list.
-    
-    The innovation list structure is printed as follows::
-
      >>> print(innov)
      Innovations for SIR epidemic on 3 individuals:
-     Row               List of proposed potential removals
+     TLine             List of proposed potential removals
        3:              0.50 2.00
        2:              1.30
        1:              1.00 1.60
      Active timeline (infection works if top of infectives)
-          (Mark)       List of proposed potential infections
+     TLine  (Mark)     List of proposed potential infections
        2:   (2)        0.60 1.40
             (1)        0.40 0.90
        1:   (1)        0.20 1.10 1.50
-
-    It is possible directly to access the number of individuals in the epidemic 
-    corresponding to the 'Innovations' instance::
-    
      >>> innov.n
      3
+
+    An 'Innovations' instance is effectively
+    a list composed of two sub-lists, one for potential removals and
+    one for potential infections. Let the total number
+    of individuals (equivalently, timelines) be 'n'. 
+    Here 'n=3'.
+    The first sub-list is the 'remove'
+    list, containing 'n' sub-sub-lists, one for each timeline,
+    working from timeline '1' up to timeline 'n' according to the
+    algorithm description
+    in the paper. Each such sub-sub-list is an ordered list of potential
+    removal times, the mark for each of these removals being implied by
+    the timeline corresponding to the sub-sub-list.
+
+    The second sub-list is the 'infect' sub-list, containing 'n-1'
+    sub-sub-lists. Each of these sub-sub-lists corresponds to a timeline 'A'
+    starting at timeline '1' and working up to timeline 'n-1', and contains
+    sub-sub-sub-lists of potential infection times of infections acting on the
+    timeline immediately above 'A'. The sub-sub-sub-lists correspond 
+    to timelines 'B' *at* or *below* the timeline 'A'.
+    An potential infection is not effective unless timelines 'A' and 'B' 
+    are infective at the relevant time, and the timeline immediately
+    above timeline 'A' is susceptible.
+    
+    The class runs sanity checks and provides a printing method.
     """
-    # Output template
+
     output_template = '\n'.join(["Innovations for SIR epidemic on {} individuals:",
      "{}", "{}"])
 
@@ -143,7 +144,7 @@ class Innovations(object):
         Structure reversed list of removals.
         """
         rem = enumerate(reversed(self.remove))
-        return '\n'.join(["Row               List of proposed potential removals",
+        return '\n'.join(["TLine             List of proposed potential removals",
             '\n'.join(" %2d:              %s" % (self.n - i, lstr(x)) for i, x in rem)
             ])
     
@@ -153,7 +154,7 @@ class Innovations(object):
         """
         inf = enumerate(reversed(self.infect))
         return '\n'.join(["Active timeline (infection works if top of infectives)",
-            "     (Mark)       List of proposed potential infections",
+            "TLine  (Mark)     List of proposed potential infections",
             '\n'.join([" %2d: %s" % \
                 (self.n - i - 1,
                  '\n     '.join(reversed(['  (%1d)        %s' % (j + 1, lstr(y)) \
@@ -162,13 +163,14 @@ class Innovations(object):
     
     def sanity_check(self):
         """
-        Sanity checks. We require:
+        Sanity checks. We require **CHECK THIS**:
         
-         1. 'self.infect' to be made up of one list of lists of potential infections
-            for each row except for the first row::
+         1. 'self.infect' to be made up of one list of sub-lists of potential infections
+            for each row except for the first row (first row is presumed to _begin_
+            as infected)::
             
-         2. and each sub-list in 'self.infect' to be made up of one list of potential
-            infections for each sub-list located at or below current sub-list.
+         2. and each sub-list in 'self.infect' to be made up of further sub-lists of potential
+            infections, one for every row located at or below current row.
         """
         if self.n - len(self.infect) != 1:
             raise PopulationError(self.n, self.infect)

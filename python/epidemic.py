@@ -6,7 +6,7 @@ Metadata:
 
   - Author:    W.S.Kendall
   - Copyright: opensource (c) W.S.Kendall 2014, 2018, 2020
-  - Date:      2014-04-26, revised 2020-03-10
+  - Date:      2014-04-26, revised 2020-04-03
   - URL:       http://www.wilfridkendall.co.uk
   - Generator: '/home/wilfrid/lib/python/generate.py' version 1.27.
 
@@ -37,27 +37,35 @@ class Error(Exception):
     def __str__(self):
         return self.message
     
-class BadDataError(Error):
+class BadInnovationsError(Error):
     """
-    Raised when bad data is supplied.
+    Raised when issue with 'Innovations' arises.
     """
-    message = "Data error raised"
+    def __init__(self, msg):
+        self.message = msg
 
-class PopulationVersusRemovalsError(BadDataError):
+class BadFreeEpidemicError(Error):
+    """
+    Raised when issue with 'FreeEpidemic' arises.
+    """
+    def __init__(self, msg):
+        self.message = msg
+
+class PopulationVersusRemovalsError(BadInnovationsError):
     """
     Raised when population (from 'n') is inconsistent with length of 'infect'.
     """
     def __init__(self, n, remove):
         self.message = f"population ({n}) != removal structure length ({len(remove)})"
 
-class PopulationVersusInfectionsError(BadDataError):
+class PopulationVersusInfectionsError(BadInnovationsError):
     """
     Raised when population (from 'n') is inconsistent with length of 'infect'.
     """
     def __init__(self, n, infect):
         self.message = f"population ({n}) != 1 + infection structure length ({len(infect)})"
     
-class InfectionStructureError(BadDataError):
+class InfectionStructureError(BadInnovationsError):
     """
     Raised when population (from 'remove') is inconsistent with structure of 'infect'.
     """
@@ -72,8 +80,7 @@ class Innovations(object):
     This class implements innovations related to
     construction of an SIR epidemic trajectory, thus providing
     reproducible generation of SIR epidemics. 
-    The innovations are defined on initialization _via_
-    keyword arguments.
+    The innovations are defined on initialization *via* keyword arguments.
     Here we create such an instance, print it, and check number of individuals::
 
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2], [1.9]],
@@ -137,17 +144,14 @@ class Innovations(object):
 
     def __init__(self, remove=None, infect=None):
         self.remove, self.infect = remove, infect
-        self.n = len(self)
-        self._sanity_check()
+        self.n = len(self.remove)
+        self.sanity_check()
         
     def __repr__(self):
         return "%s\n%s" % (self.remove, self.infect)
     
     def __str__(self):
         return self._outstr.format(self.n, self.removal_str(), self.infection_str())
-    
-    def __len__(self):
-        return len(self.remove)
     
     def removal_str(self):
         """
@@ -168,7 +172,7 @@ class Innovations(object):
                  self._infstr2.join(reversed([self._infstr3 % (j + 1, lstr(y)) \
                      for j, y in enumerate(x)]))) for i, x in inf])])
     
-    def _sanity_check(self):
+    def sanity_check(self):
         """'remove' to be a list of length given by population 'n';  
 
         'infect' to be made up of one list of sub-lists of potential infections
@@ -187,39 +191,13 @@ class Innovations(object):
             raise InfectionStructureError(llst, rnge)
 
 # \needspace{.2\textheight}        
-class Results(object):
-    """
-    This class provides a data record structure to capture results from 'FreeEpidemic'.
-    Doctests are implied by the 'FreeEpidemic' doctests.
-    """
-    def __init__(self, trajectory, infection_times, removal_times, latent_infections):
-        logging.info('Import trajectory, infection times, removal times, and latent infections')
-        self.trajectory = trajectory
-        self.infection_times = infection_times
-        self.removal_times = removal_times
-        self.latent_infections = latent_infections
-
-        self.nofly_zone = []
-
-        self.latent_removals = []
-        self.mordor = []
-        self.West = []
-        self.viable = []
-
-    def __str__(self):
-        summary = ["Time    S, I, R"]
-        summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in self.trajectory])
-        summary.append("Infections at:\n%s" % str(self.infection_times))
-        summary.append("Removals at:\n%s" % str(self.removal_times))
-        summary.append("Mordor ends at:\n%s" % str(self.mordor))
-        return '\n'.join(summary)
-
-
-# \needspace{.2\textheight}        
 class FreeEpidemic(object):
     """
     This class computes a (free) SIR epidemic, given an 
-    'Innovation' instance::
+    'Innovation' instance. It is call-able, and returnCompute and ss
+    a list of changes, each change summarized by time of change, 
+    and then a tuple giving numbers of Susceptibles,
+    Infectives, and Removals::
 
      >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
      ...                     infect=[[[0.2, 1.1, 1.5]],
@@ -227,15 +205,8 @@ class FreeEpidemic(object):
      ...                            ])
 
      >>> epidemic = FreeEpidemic(innovations=innov)
-     >>> len(epidemic)
+     >>> epidemic.n
      3
-     >>> epidemic._build_time_line()[:4] # First 4 incidents.
-     [(0.2, 2, 1), (0.4, 3, 1), (0.5, 3), (0.6, 3, 2)]
-
-    Now we calculate the epidemic evolution as a list of changes, each change
-    summarised by time of change, and then a tuple giving numbers of Susceptibles,
-    Infectives, and Removals::
-
      >>> print(epidemic())
      Time    S, I, R
      0.00   (2, 1, 0)
@@ -250,41 +221,40 @@ class FreeEpidemic(object):
      [0.5, 1.3, 2]
      Mordor ends at:
      [0, 0, 0]
-
     """
     def __init__(self, innovations=None):
         if innovations is None:
-            raise BadDataError("No innovations supplied for FreeEpidemic object")
+            raise BadFreeEpidemicError("FreeEpidemic object without Innovations")
         self.innov = innovations
-
-    def __len__(self):
-        return len(self.innov)
+        self.n = self.innov.n
 
     def _build_time_line(self):
         """
-        Constructs indexed sequence of incidents.
+        Constructs time-ordered sequence of incidents. The evolution of the epidemic
+        can be determined entirely, and with great ease, from this list.
         """
-        # Compute and store number of rows, and removals list, infections list.
-        nnn = len(self)
-        remove = enumerate(self.innov.remove)
-        infect = enumerate(self.innov.infect)
-        # List of lists of row levels, one for each removal time.
+        logging.info("Store enumerations of removals list, infections list")
+        remove, infect = enumerate(self.innov.remove), enumerate(self.innov.infect)
+        logging.info("Create list of lists of row levels, one for each removal time")
         res = [[i + 1] * len(x) for i, x in remove]
-        # List of (removal time, row mark).
+        logging.info("Create list of (removal time, row mark) using zip and chain")
         rem = zip(chain(*self.innov.remove), chain(*res))
 
-        # List of lists of pairs of row levels, one pair for each infection time.
+        logging.info("Create list of lists of (in, out) pairs for each potential infection")
         ins = [[[(i + 2, j + 1)]*len(y) for j, y in enumerate(x)] for i, x, in infect]
-        # List of lists of incoming infections for each row.
+        logging.info("Create parallel lists of (in, out) and of times per potential infection")
         in1 = [x for ll in self.innov.infect for y in ll for x in y]
         in2 = [x for ll in ins for y in ll for x in y]
         logging.info(in1)
         logging.info(in2)
-        # List of (infection time, outgoing row, incoming row)
+        logging.info("Create list of (infection time, outgoing row, incoming row)")
         inf = [(x, y[0], y[1]) for x, y in  zip(in1, in2)]
 
-        # Return list of incidents sorted by time.
-        return sorted(list(chain(inf, rem)))
+        logging.info("Create list of incidents sorted by time")
+        result = sorted(list(chain(inf, rem)))
+        logging.info(result)
+        return result
+
 
     def _infectious_periods(self, trajectory):
         """
@@ -304,7 +274,7 @@ class FreeEpidemic(object):
         Returns a sequence of changes of state of an SIR epidemic driven by
         `FreeEpidemic` innovations. Note that no conditioning is imposed here!
         """
-        ttt, susc, remo = 0, len(self) - infe, 0
+        ttt, susc, remo = 0, self.n - infe, 0
         trajectory = [(0, (susc, infe, remo))]
         legend1 = '[%f]: R=%d, i=%d, I+R=%d, j=%d'
         legend2 = '[%f]: R=%d, i=%d, I+R=%d'
@@ -356,7 +326,7 @@ class FreeEpidemic(object):
                 mtl.append(t0)
             except ValueError:
                 mtl.append(0)
-        for i in range(len(itl), len(self)):
+        for i in range(len(itl), self.n):
             rmvl = self.innov.remove[i]
             try:
                 t0 = max([t for t in rmvl])
@@ -365,8 +335,8 @@ class FreeEpidemic(object):
                 mtl.append(0)
         
         logging.info('Compute no-fly zone, working down from top.')
-        self.results.nofly_zone = [0] * len(self)
-        nofly = mtl[len(self) - 1]
+        self.results.nofly_zone = [0] * self.n
+        nofly = mtl[self.n - 1]
         for i, ill in reversed(list(enumerate(latent_infections))):
             try:
                 nofly = max([t for t in ill if t < nofly])
@@ -432,6 +402,34 @@ class FreeEpidemic(object):
 
         logging.info("Return results as data record object")
         return self.results
+
+# \needspace{.2\textheight}        
+class Results(object):
+    """
+    This class provides a data record structure to capture results from 'FreeEpidemic'.
+    Doctests are implied by the 'FreeEpidemic' doctests.
+    """
+    def __init__(self, trajectory, infection_times, removal_times, latent_infections):
+        logging.info('Import trajectory, infection times, removal times, and latent infections')
+        self.trajectory = trajectory
+        self.infection_times = infection_times
+        self.removal_times = removal_times
+        self.latent_infections = latent_infections
+
+        self.nofly_zone = []
+
+        self.latent_removals = []
+        self.mordor = []
+        self.West = []
+        self.viable = []
+
+    def __str__(self):
+        summary = ["Time    S, I, R"]
+        summary.extend(["%4.2f   %s" % (ins, str(ev)) for ins, ev in self.trajectory])
+        summary.append("Infections at:\n%s" % str(self.infection_times))
+        summary.append("Removals at:\n%s" % str(self.removal_times))
+        summary.append("Mordor ends at:\n%s" % str(self.mordor))
+        return '\n'.join(summary)
 
 
 # \needspace{.2\textheight}        

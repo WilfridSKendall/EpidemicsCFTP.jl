@@ -26,6 +26,8 @@ Note the form of the `Innovations` structure:
             (1)        0.40 0.90
        1:   (1)        0.20 1.10 1.50
 
+Here is the epidemic driven by these 'Innovations':
+
      >>> epidemic = FreeEpidemic(innovations=iv)
      >>> print(epidemic(pretty=True))  
      Time    S, I, R
@@ -140,14 +142,14 @@ And now we present the results of three further tests.
 
 
 ![Larger free SIR epidemic generated at random](image/randomfigure1.png "Larger free epidemic generated at random")
-
+from
 
 ![Larger free SIR epidemic generated at random with three initial infectives](image/randomfigure2.png "Larger free epidemic generated at random with three initial infectives") 
 
 
 Accessor methods
 ----------------
-Testing 'removal_str' and infection_str' methods.
+Testing 'removal_str' and infection_str' methods for an 'Innovations' instance.
 
      >>> print(iv)
      Innovations for SIR epidemic on 5 individuals:
@@ -230,10 +232,17 @@ Tests of exceptions raised by `sanity_check` method.
      epidemic.InfectionStructureError: infection data sub--list lengths are [1, 1, 3, 4] not [1, 2, 3, 4]
 
      >>> iv.remove = [[1.1, 2.0], [], [0.2], [0.1], [1.0]]
-     >>> iv._sanity_check()
+     >>> iv.sanity_check()
 
      >>> iv.remove = [[1.1, 2.0], [0.3], [0.2]]
-     >>> iv._sanity_check()
+     >>> iv.sanity_check()
      Traceback (most recent call last):
      ...
      epidemic.PopulationVersusRemovalsError: population (5) != removal structure length (3)
+
+Test of exceptions connected to the 'FreeEpidemic' class.
+
+     >>> epidemic = FreeEpidemic()
+     Traceback (most recent call last):
+     ...
+     epidemic.BadFreeEpidemicError: FreeEpidemic object without Innovations

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-A 'python3' module with logging, doctest, This is designed to construct a set
-of innovation incidents in preparation for simulation of an SIR epidemic.
+A 'python3' module with logging, doctest. Constructs innovations for simulating SIR epidemic.
 
 Metadata:
 
@@ -16,17 +15,10 @@ Command-line options::
   usage: %prog [options] arguments
     --doctest:             perform doctests;
     --logging=LOGGING:     logging verbosity level.
-
-Notes:
- - values for 'logging' option:
- 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
- (decreasing level of verbosity), with 'WARNING' as default.
-
 """
 
 # \section{Definitions}
-# We need the logging module regardless of whether the #logging# option
-# is deployed, since #logging.info# calls are scattered through the text.
+# Logging module required since #logging.info# calls present in code.
 import logging
 import os
 import sys
@@ -50,20 +42,27 @@ class BadDataError(Error):
     Raised when bad data is supplied.
     """
     message = "Data error raised"
-    
-class PopulationError(BadDataError):
+
+class PopulationVersusRemovalsError(BadDataError):
     """
-    Raised when population (from 'remove') is inconsistent with length of 'infect'.
+    Raised when population (from 'n') is inconsistent with length of 'infect'.
+    """
+    def __init__(self, n, remove):
+        self.message = f"population ({n}) != removal structure length ({len(remove)})"
+
+class PopulationVersusInfectionsError(BadDataError):
+    """
+    Raised when population (from 'n') is inconsistent with length of 'infect'.
     """
     def __init__(self, n, infect):
-        self.message = f"population {n} minus infection structure length {len(infect)} != 1"
+        self.message = f"population ({n}) != 1 + infection structure length ({len(infect)})"
     
 class InfectionStructureError(BadDataError):
     """
     Raised when population (from 'remove') is inconsistent with structure of 'infect'.
     """
     def __init__(self, llst, rnge):
-        self.message = f"infection data sub-structure is {llst} not {rnge}"
+        self.message = f"infection data sub--list lengths are {llst} not {rnge}"
 
 
 # \needspace{.5\textheight}
@@ -118,68 +117,71 @@ class Innovations(object):
     starting at timeline '1' and working up to timeline 'n-1', and contains
     sub-sub-sub-lists of potential infection times of infections acting on the
     timeline immediately above 'A'. The sub-sub-sub-lists correspond 
-    to timelines 'B' *at* or *below* the timeline 'A'.
+    to timelines 'B' which are *at* or *below* the timeline 'A'.
     An potential infection is not effective unless timelines 'A' and 'B' 
     are infective at the relevant time, and the timeline immediately
     above timeline 'A' is susceptible.
     
-    The class runs sanity checks and provides a printing method.
+    The class runs sanity checks on initialization, and provides a printing method
+    as well as accessor methods 'removal_str' and 'infection_str'.
     """
 
-    output_template = '\n'.join(["Innovations for SIR epidemic on {} individuals:",
+    _outstr = '\n'.join(["Innovations for SIR epidemic on {} individuals:",
      "{}", "{}"])
+    _remstr1 = "TLine             List of proposed potential removals"
+    _remstr2 = " %2d:              %s"
+    _infstr1 = "Active timeline (infection works if top of infectives)" \
+             "\nTLine  (Mark)     List of proposed potential infections"
+    _infstr2 = "\n     "
+    _infstr3 = "  (%1d)        %s"
 
     def __init__(self, remove=None, infect=None):
         self.remove, self.infect = remove, infect
         self.n = len(self)
-        self.sanity_check()
+        self._sanity_check()
         
     def __repr__(self):
         return "%s\n%s" % (self.remove, self.infect)
     
     def __str__(self):
-        return self.output_template.format(self.n, self.removal_str(), self.infection_str())
+        return self._outstr.format(self.n, self.removal_str(), self.infection_str())
     
     def __len__(self):
         return len(self.remove)
     
-    # Some methods which may be separately useful.
     def removal_str(self):
         """
         Structure reversed list of removals.
         """
         rem = enumerate(reversed(self.remove))
-        return '\n'.join(["TLine             List of proposed potential removals",
-            '\n'.join(" %2d:              %s" % (self.n - i, lstr(x)) for i, x in rem)
-            ])
+        return '\n'.join([self._remstr1,
+            '\n'.join(self._remstr2 % (self.n - i, lstr(x)) for i, x in rem)])
     
     def infection_str(self):
         """
         Structure reversed list of infections.
         """
         inf = enumerate(reversed(self.infect))
-        return '\n'.join(["Active timeline (infection works if top of infectives)",
-            "TLine  (Mark)     List of proposed potential infections",
+        return '\n'.join([self._infstr1,
             '\n'.join([" %2d: %s" % \
                 (self.n - i - 1,
-                 '\n     '.join(reversed(['  (%1d)        %s' % (j + 1, lstr(y)) \
-                     for j, y in enumerate(x)]))) for i, x in inf])
-                 ])
+                 self._infstr2.join(reversed([self._infstr3 % (j + 1, lstr(y)) \
+                     for j, y in enumerate(x)]))) for i, x in inf])])
     
-    def sanity_check(self):
-        """
-        Sanity checks. We require **CHECK THIS**:
-        
-         1. 'self.infect' to be made up of one list of sub-lists of potential infections
-            for each row except for the first row (first row is presumed to _begin_
-            as infected)::
-            
-         2. and each sub-list in 'self.infect' to be made up of further sub-lists of potential
-            infections, one for every row located at or below current row.
-        """
-        if self.n - len(self.infect) != 1:
-            raise PopulationError(self.n, self.infect)
+    def _sanity_check(self):
+        """'remove' to be a list of length given by population 'n';  
 
+        'infect' to be made up of one list of sub-lists of potential infections
+            for each timeline except for the first timeline, hence 'n-1' sub-lists 
+            (first timeline is *begins* as infected);  
+
+        and each sub-list in 'infect' to be made up of sub-sub-lists of potential
+            infections of lengths rising from '1' to index of sub-list.
+        """
+        if not self.n == len(self.remove):
+            raise PopulationVersusRemovalsError(self.n, self.remove)
+        if self.n - len(self.infect) != 1:
+            raise PopulationVersusInfectionsError(self.n, self.infect)
         llst, rnge = list(map(len, self.infect)), list(range(1, self.n))
         if llst != rnge:
             raise InfectionStructureError(llst, rnge)

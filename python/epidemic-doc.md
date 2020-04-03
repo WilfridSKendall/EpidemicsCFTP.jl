@@ -145,9 +145,56 @@ And now we present the results of three further tests.
 ![Larger free SIR epidemic generated at random with three initial infectives](image/randomfigure2.png "Larger free epidemic generated at random with three initial infectives") 
 
 
+Accessor methods
+----------------
+Testing 'removal_str' and infection_str' methods.
+
+     >>> print(iv)
+     Innovations for SIR epidemic on 5 individuals:
+     TLine             List of proposed potential removals
+       5:              1.00
+       4:              1.20
+       3:              1.30
+       2:              1.50
+       1:              1.10 2.00
+     Active timeline (infection works if top of infectives)
+     TLine  (Mark)     List of proposed potential infections
+       4:   (4)        1.20
+            (3)        0.70 1.15
+            (2)        0.60
+            (1)        0.50
+       3:   (3)        
+            (2)        1.25
+            (1)        
+       2:   (2)        1.80
+            (1)        0.90
+       1:   (1)        0.10
+
+     >>> print(iv.removal_str())
+     TLine             List of proposed potential removals
+       5:              1.00
+       4:              1.20
+       3:              1.30
+       2:              1.50
+       1:              1.10 2.00
+
+     >>> print(iv.infection_str())
+     Active timeline (infection works if top of infectives)
+     TLine  (Mark)     List of proposed potential infections
+       4:   (4)        1.20
+            (3)        0.70 1.15
+            (2)        0.60
+            (1)        0.50
+       3:   (3)        
+            (2)        1.25
+            (1)        
+       2:   (2)        1.80
+            (1)        0.90
+       1:   (1)        0.10
+
 Exceptions
 ----------
-Three examples of exceptions raised by `sanity_check` method.
+Tests of exceptions raised by `sanity_check` method.
 
      >>> rem = [[1.1, 2.0], [1.5], [1.3], [1.2]]
      >>> ill = [[[0.1]], 
@@ -157,7 +204,7 @@ Three examples of exceptions raised by `sanity_check` method.
      >>> iv =Innovations(remove=rem, infect=ill)
      Traceback (most recent call last):
      ...
-     epidemic.PopulationError: population 4 minus infection structure length 4 != 1
+     epidemic.PopulationVersusInfectionsError: population (4) != 1 + infection structure length (4)
 
      >>> rem = [[1.1, 2.0], [0.3], [0.2], [0.1], [1.0]]
      >>> ill = [
@@ -168,7 +215,7 @@ Three examples of exceptions raised by `sanity_check` method.
      >>> iv =Innovations(remove=rem, infect=ill)
      Traceback (most recent call last):
      ...
-     epidemic.PopulationError: population 5 minus infection structure length 3 != 1
+     epidemic.PopulationVersusInfectionsError: population (5) != 1 + infection structure length (3)
 
      
      >>> rem = [[1.1, 2.0], [0.3], [0.2], [0.1], [1.0]]
@@ -180,5 +227,13 @@ Three examples of exceptions raised by `sanity_check` method.
      >>> iv =Innovations(remove=rem, infect=ill)
      Traceback (most recent call last):
      ...
-     epidemic.InfectionStructureError: infection data sub-structure is [1, 1, 3, 4] not [1, 2, 3, 4]
+     epidemic.InfectionStructureError: infection data sub--list lengths are [1, 1, 3, 4] not [1, 2, 3, 4]
 
+     >>> iv.remove = [[1.1, 2.0], [], [0.2], [0.1], [1.0]]
+     >>> iv._sanity_check()
+
+     >>> iv.remove = [[1.1, 2.0], [0.3], [0.2]]
+     >>> iv._sanity_check()
+     Traceback (most recent call last):
+     ...
+     epidemic.PopulationVersusRemovalsError: population (5) != removal structure length (3)

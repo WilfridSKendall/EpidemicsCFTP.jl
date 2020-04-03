@@ -77,23 +77,28 @@ class Innovations(object):
     keyword arguments.
     Here we create such an instance, print it, and check number of individuals::
 
-     >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2]],
+     >>> innov = Innovations(remove=[[1, 1.6], [1.3], [0.5, 2], [1.9]],
      ...                     infect=[[[0.2, 1.1, 1.5]],
-     ...                             [[0.4, 0.9], [0.6, 1.4]]
+     ...                             [[0.4, 0.9], [0.6, 1.4]],
+     ...                             [[0.03], [0.55, 0.7, 1.1], [1.35]]
      ...                            ])
      >>> print(innov)
-     Innovations for SIR epidemic on 3 individuals:
+     Innovations for SIR epidemic on 4 individuals:
      TLine             List of proposed potential removals
+       4:              1.90
        3:              0.50 2.00
        2:              1.30
        1:              1.00 1.60
      Active timeline (infection works if top of infectives)
      TLine  (Mark)     List of proposed potential infections
+       3:   (3)        1.35
+            (2)        0.55 0.70 1.10
+            (1)        0.03
        2:   (2)        0.60 1.40
             (1)        0.40 0.90
        1:   (1)        0.20 1.10 1.50
      >>> innov.n
-     3
+     4
 
     An 'Innovations' instance is effectively
     a list composed of two sub-lists, one for potential removals and

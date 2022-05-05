@@ -1578,7 +1578,7 @@ then \(\eta^m_k\) will be the supremum of these; if not, the active infection at
 % 	\xi^m(\tau+T) \quad&=\quad \max\left\{\bigcup_{s=1}^m \Removals^s(\tau)\right\} \vee \max\left\{\Infections^m(\tau+T)\cap[0,\xi^{m+1}(\tau+T)\right)\}\,.
 	\xi^n_k\quad &= \quad \sup \Removals^{1:n}_k
 	\intertext{and for \(1\le m<n\),}
-	\Infections^m(\tau+2T) \quad &= \quad \left( \Poisson^I_m(\tau+2T) \setminus [\phi^m_{k-1}, \xi^{m+1}_k] \right) \cup \{\eta^{m+1}_k\} \\
+	\Infections^m_k \quad &= \quad \left\{[s;m,j]\in\Poisson_k\,:\, s\notin [\phi^m_{k-1}, \xi^{m+1}_k], 1\le j\le m\right\} \cup \{\eta^{m+1}_k\} \\
 	\xi^m_k \quad&=\quad \sup \Removals^{1:m}_k \vee \sup\left\{\Infections^m_k\cap[0,\xi^{m+1}_k\right)\}\,.
  	\end{align*} 	
  \end{lem}

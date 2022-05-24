@@ -1609,8 +1609,8 @@ then \(\eta^m_k\) will be the supremum of these times; if not, the active infect
 	\end{equation}
 \end{cor}
 
-Note that equation~\eqref{eq:update_no-fly_direct} permits us to update the no-fly zone boundary and epidemic trajectory directly using the Poisson process of infections, \(\Pi_k\), avoiding the intermediate calculation of which potential infections belong to the set \(\Infections_k\).
-\NB[SBC]{This is true, but I think that we still need to ascertain the set $\Infections_k$ in order to calculate the epidemic trajectory $\phi_k$. In which case, this comment can probably be deleted.}
+Note that Corollary~\ref{cor:update_no-fly_direct} permits us to update the no-fly zone boundary and epidemic trajectory directly using the Poisson process of infections, \(\Pi_k\); this completely removes the need to calculate which potential infections belong to the set \(\Infections_k\).
+\xNB[SBC]{This is true, but I think that we still need to ascertain the set $\Infections_k$ in order to calculate the epidemic trajectory $\phi_k$. In which case, this comment can probably be deleted.}
 
 \begin{proof}
 	Lemmas~\ref{lem:infect4}, \ref{lem:removal1} and \ref{lem:update_last-viable} (in that order) show that
@@ -1630,11 +1630,11 @@ Note that equation~\eqref{eq:update_no-fly_direct} permits us to update the no-f
 	\end{align*}
 	where the last inequality follows from Lemma~\ref{lem:update_last-viable}. This therefore completes our proof by induction.
 	
-	For the proof of equation~\eqref{eq:update_epidemic-trajectory_direct}, recall from its definition in \eqref{eq:epidemic} that for \(I_0<m\le n\):
+	For the proof of equation~\eqref{eq:update_epidemic-trajectory_direct}, recall from its definition in \eqref{eq:epidemic} that for \(I_0<m\le n\),
 	\[	
 	 \phi_k^m \quad = \quad \inf\left\{s\,:\,[s;m-1,j]\in\Infections_k^{m-1}[\phi_k^{m-1}\vee \xi_k^m,\rho^j),\,1\le j< m\right\} \,.
 	 \]
-	 From Lemma~\ref{lem:infect4} we know that \(\Infections_k^{m-1}\) is obtained by censoring potential infections belonging to \(\Pi_k\), and possibly perpetuating an infection at time \(\eta_k^m\). However, only potential infections belonging to the (possibly empty) process time interval \([\phi_{k-1}^{m-1},\xi_k^m]\) are censored, and this interval has empty intersection with \([\phi_k^{m-1}\vee \xi_k^m,\rho^j)\) for all \(j<m\). It follows that the epidemic will reach time-line \(m\) at the time of the first potential infection of the form \([s;m-1,\cdot\,]\in \Pi_k[\phi_k^{m-1}\vee \xi_k^m,\rho^j)\) unless this set is empty; in that case the infection at time \(\eta_k^m\) will have been perpetuated with the result that \(\phi_k^m = \eta_k^m\).
+	 From Lemma~\ref{lem:infect4} we know that \(\Infections_k^{m-1}\) is obtained by censoring potential infections belonging to \(\Pi_k\), and possibly perpetuating an infection at time \(\eta_k^m\). However, only potential infections of the form \([\cdot\,; m-1,j]\) belonging to the (possibly empty) process time interval \([\phi_{k-1}^{m-1},\xi_k^m]\) are censored, and almost surely the Poisson process \(\Pi_k[\phi_k^{m-1}\vee \xi_k^m,\rho^j)\) contains no such infections for all \(j<m\).  It follows that the epidemic will reach time-line \(m\) at the time of the first potential infection of the form \([s;m-1,j]\in \Pi_k[\phi_k^{m-1}\vee \xi_k^m,\rho^j)\) unless this set is empty; in that case the infection at time \(\eta_k^m\) will have been perpetuated, as per Lemma~\ref{lem:infect4}, with the result that \(\phi_k^m = \eta_k^m\).
 \end{proof}
 
 
@@ -1668,8 +1668,8 @@ Note that equation~\eqref{eq:update_no-fly_direct} permits us to update the no-f
 \begin{enumerate}
 	\item{} [Lemma~\ref{lem:removal1}] Construct \(\Removals_k\) and \(\Conditioned_k\) from \(\phi_{k-1}\), \(\Conditioned_{k-1}\) and \(\Pi_k\).
 	\item{} [Lemma~\ref{lem:update_last-viable}] Construct \(\eta_k\) from \(\phi_{k-1}\), \(\Conditioned_k\) and \(\Pi_k\).
-	\item{} [Lemma~\ref{lem:infect4}] Construct \(\xi_k\) and \(\Infections_k\) from \(\phi_{k-1}\), \(\eta_k\), \(\Removals_k\) and \(\Pi_k\).
-	\item{} [Equation~\eqref{eq:epidemic}] Construct \(\phi_k\) from \(\Infections_k\), \(\xi_k\) and \(\Pi_k\).
+	\item{} [Corollary~\ref{cor:update_no-fly_direct}] Construct \(\xi_k\) from \(\phi_{k-1}\), \(\eta_k\), \(\Removals_k\) and \(\Pi_k\).
+	\item{} [Corollary~\ref{cor:update_no-fly_direct}] Construct \(\phi_k\) from \(\xi_k\), \(\eta_k\) and \(\Pi_k\).
 \end{enumerate}
 \end{rem}
 
@@ -1731,22 +1731,22 @@ In particular, we need to check reversibility and conditioning arguments, as wel
 %}
 %\TBC{I believe that the full \CFTP construction follows quickly from this.}
 
-Consider the following partial ordering between two conditioned realisations \(\early{\Epidemic}\) and \(\late{\Epidemic}\) at algorithmic time \(\tau\). Write \(\early{\Epidemic}(\tau) \ple \late{\Epidemic}(\tau)\) if and only if the following set of relations all hold, for all \(m=1,\dots,n\):
+Consider the following partial ordering between two conditioned realisations \(\early{\Epidemic}_k = (\early{\xi}^m_k, \early{\phi}^m_k, \early{\eta}^m_k, \early{\Conditioned}^m_k, \early{\Removals}^m_k)_{m=1}^n \) and \(\late{\Epidemic}_k= (\late{\xi}^m_k, \late{\phi}^m_k, \late{\eta}^m_k, \late{\Conditioned}^m_k, \late{\Removals}^m_k)_{m=1}^n \) at algorithmic time \(2kT\). Write \(\early{\Epidemic}_k \ple \late{\Epidemic}_k\) if and only if the following set of relations hold for all \(m=1,\dots,n\):
 \begin{align}
-\early{\xi}^m(\tau) \quad &\le \quad \late{\xi}^m(\tau) \label{eq:no-fly_order} \\
-\early{\phi}^m(\tau)\quad &\le \quad \late{\phi}^m(\tau) \label{eq:trajectory_order} \\
-\early{\eta}^m(\tau)\quad &\le \quad \late{\eta}^m(\tau) \label{eq:last_order} \\
-%\text{mark}(\rho^m)(\tau)\quad &\ge\quad \text{mark}(\early{\rho}^m)(\tau)  \label{eq:cond-removal_order} \\
-\early{\Conditioned}^{m:n}(\tau) \quad &\supseteq \quad \late{\Conditioned}^{m:n}(\tau) \label{eq:cond-removal_order} \\
-\early{\Removals}^{1:m}(\tau)\quad &\subseteq \quad \late{\Removals}^{1:m}(\tau) \label{eq:removals_order} 
+\early{\xi}^m_k \quad &\le \quad \late{\xi}^m_k \label{eq:no-fly_order} \\
+\early{\phi}^m_k\quad &\le \quad \late{\phi}^m_k \label{eq:trajectory_order} \\
+\early{\eta}^m_k\quad &\le \quad \late{\eta}^m_k \label{eq:last_order} \\
+%\text{mark}(\rho^m)_k\quad &\ge\quad \text{mark}(\early{\rho}^m)_k  \label{eq:cond-removal_order} \\
+\early{\Conditioned}^{m:n}_k \quad &\supseteq \quad \late{\Conditioned}^{m:n}_k \label{eq:cond-removal_order} \\
+\early{\Removals}^{1:m}_k\quad &\subseteq \quad \late{\Removals}^{1:m}_k \label{eq:removals_order} 
 %\Infections^m^1(\tau) \subseteq  \early{\Infections}_m^1(\tau) \quad&\text{and}\quad \early{\Infections}_m^2(\tau)\subseteq  \Infections^m^2(\tau) \,. \label{eq:infections_order}
 \end{align}
-The intuition here is that \(\early{\Epidemic}\) describes an epidemic that spreads through the population earlier than that in \(\late{\Epidemic}\). The orderings in \eqref{eq:no-fly_order} -- \eqref{eq:last_order} ensure that the no-fly zone boundary, epidemic trajectory and last viable epidemic lines are no later in \(\early{\Epidemic}(\tau)\) than in \(\late{\Epidemic}(\tau)\). The condition in \eqref{eq:cond-removal_order} forces each conditioned removal to be assigned to a time-line in \(\early{\Epidemic}(\tau)\) with index at least as great as in \(\late{\Epidemic}(\tau)\). (Recall that the time-line to which a conditioned removal \(\rho\) is assigned must be infected before time \(\rho\), and so assigning \(\rho\) to a higher time-line can only lead to an earlier epidemic trajectory.) Similarly, the ordering in \eqref{eq:removals_order} ensures that any potential removals in \(\early{\Epidemic}(\tau)\) are also present in \(\late{\Epidemic}(\tau)\); furthermore, any potential removal present in both realisations must be assigned to a time-line in \(\early{\Epidemic}(\tau)\) which is no greater than that in \(\late{\Epidemic}(\tau)\).
+The intuition here is that \(\early{\Epidemic}_k\) describes an epidemic that spreads through the population earlier than that in \(\late{\Epidemic}_k\). The orderings in \eqref{eq:no-fly_order} -- \eqref{eq:last_order} ensure that the no-fly zone boundary, epidemic trajectory and last viable epidemic lines are no later in \(\early{\Epidemic}_k\) than in \(\late{\Epidemic}_k\). The condition in \eqref{eq:cond-removal_order} forces each conditioned removal to be assigned to a time-line in \(\early{\Epidemic}_k\) with index at least as great as in \(\late{\Epidemic}_k\). (Recall that the time-line to which a conditioned removal \(\rho\) is assigned must be infected before time \(\rho\), and so assigning \(\rho\) to a higher time-line can only lead to an earlier epidemic trajectory.) Similarly, the ordering in \eqref{eq:removals_order} ensures that any potential removals in \(\early{\Epidemic}_k\) are also present in \(\late{\Epidemic}_k\); furthermore, any potential removal present in both realisations must be assigned to a time-line in \(\early{\Epidemic}_k\) which is no greater than that in \(\late{\Epidemic}_k\).
 
 
 \begin{thm}
 	\label{thm:infections_preserve_ordering}
-	Suppose that two conditioned realisations \(\late{\Epidemic}\) and \(\early{\Epidemic}\) are driven by common Poisson processes of potential infections \(\Poisson^I\) and potential removals \(\Poisson^R\). If at algorithmic time \(\tau = 2kT\) for some integer \(k\) they satisfy \(\early{\Epidemic}(\tau) \ple \late{\Epidemic}(\tau)\), then this ordering is preserved at algorithmic time \(\tau + 2T\), i.e. after all potential removals and infections have been resampled. %
+	Suppose that two conditioned realisations \(\late{\Epidemic}\) and \(\early{\Epidemic}\) are driven by common Poisson processes of potential infections and removals. If at algorithmic time \(2(k-1)T\) for some integer \(k\ge 1\) they satisfy \(\early{\Epidemic}_{k-1} \ple \late{\Epidemic}_{k-1}\), then this ordering is preserved at algorithmic time \(2kT\), i.e. after all potential removals and infections have been resampled. %
 	\NB[SBC]{We're only proving monotonicity here at times of the form $2kT$. I think that it should hold for all algorithmic times, but that's messier to prove, and probably not needed. Might need to say something about this when showing correctness of CFTP algorithm?}
 \end{thm}
 

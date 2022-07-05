@@ -254,7 +254,25 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  at the time of the incident.
  \end{enumerate}
  
- \TBC{Add a figure here}
+
+ \begin{Figure}
+ 	\begin{minipage}[t]{.5\linewidth}
+ 		\begin{subfigure}[t]{\linewidth}
+ 			\includegraphics[width=0.9\linewidth]{unconstrained1.pdf}
+ 		\end{subfigure}
+ 	\end{minipage}
+ 	\begin{minipage}[t]{.5\linewidth}
+ 		\begin{subfigure}[t]{\linewidth}
+ 			\includegraphics[width=0.9\linewidth]{unconstrained2.pdf}
+ 		\end{subfigure}
+ 	\end{minipage}
+ 	
+ 	
+ 	\caption{\label{fig:unconstrained}
+ 		Graphical representation of unconditioned \SIR epidemic. 
+ 		There are five time-lines. 
+ 	}
+ \end{Figure}
  
  To help make precise statements about transitions, 
  we require that 
@@ -1110,88 +1128,122 @@ Figure \ref{fig:graphical} illustrates the
 construction of 
 the constrained variant process.
 %\xNB[SBC]{Need to change key for Figure \ref{fig:graphical}, to confirm to current terminology of ``potential incident'' \emph{etc}.}
-\begin{Figure}
-\begin{minipage}[t]{.6\linewidth}
-\begin{subfigure}{.6\linewidth}
-\includegraphics[width=4in]{graphical}
-% \includegraphics[width=3in]{TimelinesSBC1.pdf}
-\end{subfigure}
-\end{minipage}
-\begin{minipage}[t]{.4\linewidth}
-\begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-Infectious}
-\caption{\label{subfig:Infectious}Infected time-line}
-\end{subfigure}
-\qquad
-\begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-pI-lo}
-\caption{\label{subfig:inline-pI-lo}Potential infections}
-\end{subfigure}
-\qquad
-\begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-aI}
-\caption{\label{subfig:Infections}Infection}
-\end{subfigure}
-
-\begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-pR}
-\caption{\label{subfig:inline-pR}Potential removals}
-\end{subfigure}
-\qquad
-\begin{subfigure}[t]{.20\linewidth}
- \includegraphics[scale=0.3]{inline-R}
-\caption{\label{subfig:inline-R}Conditioned removals}
-\end{subfigure}
-\end{minipage}
-
-
-\caption{\label{fig:graphical}
-Modified graphical representation of \SIR epidemic, conditioned on removals. 
-There are five time-lines. 
-\\
-(\ref{subfig:Infectious}): 
-Orange time-line segments denote infectious portions of time-lines.
-\\
-(\ref{subfig:inline-pI-lo}): Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\).
-\\
-The arrow begins
-at time-line \(j\) and rises to 
-just above time-line \(i\).
-\\
-(\ref{subfig:Infections}): 
-Orange arrows denote instances where a potential infection
-(with marks \(j \leq i\))
-becomes realized: this occurs only when
-time-lines \(j\) and \(i\) are both infectious
-but time-line \(i+1\) is not yet infectious.\\
-The arrow
-begins at time-line \(i\) and rises to
-just below time-line \(i+1\).
-\\
-(\ref{subfig:inline-pR}): Large blue disks denote potential removals, located
-at time-line with mark \(i\). 
-\\
-(\ref{subfig:inline-R}): Small red disks denote conditioned removals, located
-on the time-lines on which these removals happen.
-\\
-(A conditioned removal on time-line \(j\) 
-has to be associated with a potential removal located on
-time-line \(i\geq j\), such that the time-line \(i\)
-and \(j\)
-is
-actually infectious,
-and the time-line \(j\) is the infectious time-line of lowest index,
-at the potential removal time.)
-% % A potential infection with arrow ending at \(i+1\) and 
-% % starting at \(j\) (\(j<i\))
-% % takes effect only when the time-line \(i\y) is 
-% % the highest infected time-line and time-line \(j\)
-% % has not yet been removed.
-\\
-Constraints on realized removals thus lead to constraints on birth/death of infections/removals in algorithmic time.
-}
-\end{Figure}
+%\begin{Figure}
+%\begin{minipage}[t]{.6\linewidth}
+%\begin{subfigure}{.6\linewidth}
+%\includegraphics[width=4in]{graphical}
+%% \includegraphics[width=3in]{TimelinesSBC1.pdf}
+%\end{subfigure}
+%\end{minipage}
+%\begin{minipage}[t]{.4\linewidth}
+%\begin{subfigure}[t]{.20\linewidth}
+% \includegraphics[scale=0.3]{inline-Infectious}
+%\caption{\label{subfig:Infectious}Infected time-line}
+%\end{subfigure}
+%\qquad
+%\begin{subfigure}[t]{.20\linewidth}
+% \includegraphics[scale=0.3]{inline-pI-lo}
+%\caption{\label{subfig:inline-pI-lo}Potential infections}
+%\end{subfigure}
+%\qquad
+%\begin{subfigure}[t]{.20\linewidth}
+% \includegraphics[scale=0.3]{inline-aI}
+%\caption{\label{subfig:Infections}Infection}
+%\end{subfigure}
+%
+%\begin{subfigure}[t]{.20\linewidth}
+% \includegraphics[scale=0.3]{inline-pR}
+%\caption{\label{subfig:inline-pR}Potential removals}
+%\end{subfigure}
+%\qquad
+%\begin{subfigure}[t]{.20\linewidth}
+% \includegraphics[scale=0.3]{inline-R}
+%\caption{\label{subfig:inline-R}Conditioned removals}
+%\end{subfigure}
+%\end{minipage}
+%
+%
+%\caption{\label{fig:graphical}
+%Modified graphical representation of \SIR epidemic, conditioned on removals. 
+%There are five time-lines. 
+%\\
+%(\ref{subfig:Infectious}): 
+%Orange time-line segments denote infectious portions of time-lines.
+%\\
+%(\ref{subfig:inline-pI-lo}): Green vertical arrows denote potential but unrealized infections with marks \(j \leq i\).
+%\\
+%The arrow begins
+%at time-line \(j\) and rises to 
+%just above time-line \(i\).
+%\\
+%(\ref{subfig:Infections}): 
+%Orange arrows denote instances where a potential infection
+%(with marks \(j \leq i\))
+%becomes realized: this occurs only when
+%time-lines \(j\) and \(i\) are both infectious
+%but time-line \(i+1\) is not yet infectious.\\
+%The arrow
+%begins at time-line \(i\) and rises to
+%just below time-line \(i+1\).
+%\\
+%(\ref{subfig:inline-pR}): Large blue disks denote potential removals, located
+%at time-line with mark \(i\). 
+%\\
+%(\ref{subfig:inline-R}): Small red disks denote conditioned removals, located
+%on the time-lines on which these removals happen.
+%\\
+%(A conditioned removal on time-line \(j\) 
+%has to be associated with a potential removal located on
+%time-line \(i\geq j\), such that the time-line \(i\)
+%and \(j\)
+%is
+%actually infectious,
+%and the time-line \(j\) is the infectious time-line of lowest index,
+%at the potential removal time.)
+%% % A potential infection with arrow ending at \(i+1\) and 
+%% % starting at \(j\) (\(j<i\))
+%% % takes effect only when the time-line \(i\y) is 
+%% % the highest infected time-line and time-line \(j\)
+%% % has not yet been removed.
+%\\
+%Constraints on realized removals thus lead to constraints on birth/death of infections/removals in algorithmic time.
+%}
+%\end{Figure}
 %\xNB[WSK3]{Figure \ref{fig:graphical} needs graphical key!}
+\begin{Figure}
+	\begin{minipage}[t]{.5\linewidth}
+		\begin{subfigure}[t]{\linewidth}
+			\includegraphics[width=0.9\linewidth]{constrained1.pdf}
+		\end{subfigure}
+	\end{minipage}
+	\begin{minipage}[t]{.5\linewidth}
+		\begin{subfigure}[t]{\linewidth}
+			\includegraphics[width=0.9\linewidth]{constrained2.pdf}
+		\end{subfigure}
+	\end{minipage}
+	
+	
+	\caption{\label{fig:graphical}
+		Modified graphical representation of \SIR epidemic, conditioned on removals. 
+		There are five time-lines.  \\
+		\(\bullet\) Orange time-line segments denote infectious portions of time-lines.\\
+		\(\bullet\) Green vertical arrows denote potential infections with marks \(j \leq i\). 
+		The arrow begins
+		at time-line \(j\) and rises to 
+		just above time-line \(i\). \\
+		\(\bullet\) Orange arrows denote instances where a potential infection (with marks \(j \leq i\))
+		becomes realized:  this occurs only when
+		time-lines \(j\) and \(i\) are both infectious
+		but time-line \(i+1\) is not yet infectious. The arrow
+		begins at time-line \(i\) and rises to
+		just below time-line \(i+1\). \\
+		\(\bullet\) Blue disks denote potential removals, located at time-line with mark \(i\).  \\
+		\(\bullet\) Red disks denote conditioned removals: removal \(\rho^j\) is located
+		at time-line with mark \(i\geq j\), such that the time-line \(i\)
+		and is actually infectious at time \(\rho^j\).\\
+		Constraints on realized removals thus lead to constraints on birth/death of infections/removals in algorithmic time.
+	}
+\end{Figure}
 
 
 Note that, 

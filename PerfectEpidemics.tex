@@ -1610,7 +1610,7 @@ Figure~\ref{fig:updated_removals} shows a possible outcome of updating the remov
 		\label{fig:updated_removals}} 
 \end{Figure}
 
-The next few results describe the effect of updating infections during the phase of algorithmic time \(((2k-1)T, 2kT]\). Recall that this is done by introducing new potential infections from the innovation process \(\Pi_k\), censoring any which would immediately connect the current epidemic trajectory to the no-fly zone, and possibly perpetuating some infections present at algorithmic time \((2k-1)T\) as described in \ref{item:infections}. We shall write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\) after any censoring and perpetuating has taken place (so \(\Infections_k\subseteq \Pi_k\cup \Infections_{k-1}\)), and 
+We now turn our attention to the effect of updating infections during the phase of algorithmic time \(((2k-1)T, 2kT]\). Recall that this is done by introducing new potential infections from the innovation process \(\Pi_k\), censoring any which would immediately connect the current epidemic trajectory to the no-fly zone, and possibly perpetuating some infections present at algorithmic time \((2k-1)T\) as described in \ref{item:infections}. We shall write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\) after any censoring and perpetuating has taken place (so \(\Infections_k\subseteq \Pi_k\cup \Infections_{k-1}\)), and 
 \[ \Infections_k^m = \left\{[\,\cdot\,;m,j] \in\Infections_k: 1\le j\le m\right\} \]
 for the set of potential infections affecting time-line \(m+1\).
 
@@ -1625,14 +1625,14 @@ Figure~\ref{fig:updated_infections} demonstrates the effect of updating infectio
 \NB[SBC]{Better colours will be needed in the final figures!}
 ; those in red have been censored. In this realisation there are also two perpetuated infections, shown in dark green. It is useful at this point to talk through the update of infections reaching time-line 5 in this realisation, as we move through the diagram from right to left (as described in \ref{item:infections}).
 \begin{itemize}
-	\item The first new potential infection (light green arrow from time-line 4 to 5) will not affect the epidemic, since it is of the form \([t; 4,4]\) with \(t>\rho^5\); that is, it occurs after both fourth and fifth individuals are removed. It can safely be accepted, but will play no active role in the epidemic.
+	\item The first new potential infection (light green arrow from time-line 4 to 5) is of the form \([t; 4,4]\) with \(t>\rho^5\); that is, it occurs after both fourth and fifth individuals are removed. It can safely be accepted, but will play no active role in the epidemic.
 	\item We arrive next at a pre-existing potential infection (the dark green arrow emanating from time-line 3 in Figure~\ref{fig:updated_removals}); this does not form part of the last-viable epidemic, and so is deleted.
 	\item Next we arrive at a pre-existing infection at process time \(\eta^5_{k-1}\); this forms part of the last-viable epidemic in Figure~\ref{fig:updated_removals} (dashed blue arrow), but can safely be deleted since there is another infection in \(\Infections^4_{k-1}\) at time \(\phi^5_{k-1}\). Deleting this infection means that the last-viable epidemic trajectory changes, and the last possible infection time of time-line 5 becomes  \(\eta^5_k =\phi^5_{k-1}\).
-	\item The next infection we meet is that at time \(\phi^5_{k-1}\). Since there have been no new potential infections in \(\Pi_k\) which could infect time-line 5 later in process time than this one, at this moment in algorithmic time it still belongs to the last-viable epidemic trajectory, and so cannot be deleted. This infection is therefore perpetuated, and included in the set \(\Infections^4_k\); this is shown as a dark green arrow emanating from time-line 4 in Figure~\ref{fig:updated_infections}.
+	\item The next infection we meet is that at time \(\phi^5_{k-1}\). There are no new potential infections in \(\Pi_k\) which could infect time-line 5 later in process time than this one, and so at this moment in algorithmic time the infection in question still belongs to the last-viable epidemic trajectory and thus cannot be deleted. This infection is therefore perpetuated, and included in the set \(\Infections^4_k\); this is shown as a dark green arrow emanating from time-line 4 in Figure~\ref{fig:updated_infections}.
 	\item We next see a new potential infection (light green) in \(\Pi_k\); this does not connect the epidemic trajectory to the no-fly zone and is therefore accepted. In Figure~\ref{fig:updated_infections} we see that this now becomes the time at which the epidemic trajectory reaches time-line 5.
-	\item Finally, let us mention the potential infection in \(\Pi_k\) occurring in process time just after \(\rho^3\): this would immediately connect the epidemic trajectory to the no-fly zone on time-line 5, and is therefore censored (shown in red).
+	\item Finally, let us mention the potential infection in \(\Pi_k\) occurring just after \(\rho^3\) in process time: this would immediately connect the epidemic trajectory to the no-fly zone on time-line 5, and is therefore censored (shown in red).
 \end{itemize}
-
+The remaining infections are updated similarly. The next few results describe the evolution of the last-viable epidemic, no-fly zone and epidemic trajectory during the phase of algorithmic time \(((2k-1)T, 2kT]\).
 
 
 \begin{lem}\label{lem:update_last-viable}
@@ -2017,8 +2017,7 @@ Some thoughts about bounding states and coalescence.
 		\item \(\acute{\phi}^m = \acute{\eta}^m = 0\) for \(1\le m\le n\) (i.e. all individuals are infected instantaneously at process time 0);
 		\item \(\acute{\Conditioned}^n = \{\rho^1,\dots,\rho^n\}\), and \(\acute{\Conditioned}^m = \emptyset\) for all \(m<n\) (i.e. all conditioned removals are assigned to time-line \(n\));
 		\item \(\acute{\Removals}^m = \emptyset\) for \(1\le m\le n\) (i.e. no potential removals).
-	\end{itemize}
-	
+	\end{itemize}	
 	 Similarly, the `top' epidemic state is given by \(\grave{E}\), where:
 	\begin{itemize}
 		\item \(\grave{\xi}^1 = -\infty\); \(\grave{\phi}^1 = \grave{\eta}^1 = 0\) (as with all our epidemics);

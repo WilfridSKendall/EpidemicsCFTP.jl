@@ -2029,6 +2029,18 @@ Some thoughts about bounding states and coalescence.
 	
 	\item Once \(\early{\phi}^m_{k-1} = \late{\phi}^m_{k-1}\) for all \(m\) we are guaranteed that \(\early{\Epidemic}_k = \late{\Epidemic}_k\). (This follows quickly from the updates outlined in Remark~\ref{rem:update_structure}.) Thus we only need to worry about coalescence of the epidemic trajectories (which is what we're interested in, anyway).
 	
+	\item Small set considerations. For \(\delta\in(0,\rho^1)\) consider the set of epidemics \(C_\delta\) given by
+	\[ 
+		E = (\xi, \phi, \eta, \Conditioned, \Removals)\in C_\delta \quad \iff \quad \Removals=\emptyset\text{ and } \phi^n\le \delta \,.
+	\]
+	That is, an epidemic belongs to \(C_\delta\) if it contains no potential removals (equivalently, the no-fly zone boundary satisfies \(\xi^m = -\infty\) for all \(m\)), and the epidemic trajectory reaches the highest time line (all individuals are infected) by time \(\delta\). We claim that \(C_\delta\) is a small set. Note too that there is a non-trivial lower bound on \(\Prob{\Epidemic_k\in C_\delta\,|\, \Epidemic_{k-1}}\) as a function of \(\Epidemic_{k-1}\): the probability of having no potential removals is bounded below by \(\exp(-\alpha\sum_{m=1}^{n-1} \rho^m)\); sure we can also come up with a lower bound for the prob of the infection reaching level \(n\) by time \(\delta\), given no potential removals to avoid. 
+	
+	Now for the (1-step) minorisaton condition.Consider the set of epidemics \(\mathcal{F}\) given by 
+	\[ 
+		E \in \mathcal{F} \quad \iff \quad \Removals=\emptyset\text{ and }  \eta^2 > \delta \,.
+	\]
+	That is, an epidemic belongs to \(\mathcal{F}\) if it contains no potential removals, and the last viable epidemic reaches time line 2 (and therefore all time lines) \emph{after} process time \(\delta\).
+	
 \end{enumerate}
 
 

@@ -2007,33 +2007,33 @@ The intuition here is that \(\early{\Epidemic}_k\) describes an epidemic that sp
 Some thoughts about bounding states and coalescence. 
 \begin{enumerate}
 	\item The `bottom' epidemic state is that which has the earliest possible epidemic trajectory. This is given by 
-	\NB[SBC]{Don't like this notation! But it'll do for now.}
+	\NB[SBC]{Alternative could be  $E^\downarrow=(\xi^{\downarrow,m}, \phi^{\downarrow,m}, \eta^{\downarrow m}, \Conditioned^{\downarrow,m}, \Removals^{\downarrow,m})$?}
 	\[ 
-		\acute{E} = (\acute{\xi}^m, \acute{\phi}^m, \acute{\eta}^m, \acute{\Conditioned}^m, \acute{\Removals}^m)_{m=1}^n\,,
+		 E^{\text{bot}}=(\xi^{\text{bot},m}, \phi^{\text{bot},m}, \eta^{\text{bot}, m}, \Conditioned^{\text{bot},m}, \Removals^{\text{bot},m})_{m=1}^n 
 	\]
 	where: 
 	\begin{itemize}
-		\item \(\acute{\xi}^m = -\infty\) for \(1\le m \le n\);
-		\item \(\acute{\phi}^m = \acute{\eta}^m = 0\) for \(1\le m\le n\) (i.e. all individuals are infected instantaneously at process time 0);
-		\item \(\acute{\Conditioned}^n = \{\rho^1,\dots,\rho^n\}\), and \(\acute{\Conditioned}^m = \emptyset\) for all \(m<n\) (i.e. all conditioned removals are assigned to time-line \(n\));
-		\item \(\acute{\Removals}^m = \emptyset\) for \(1\le m\le n\) (i.e. no potential removals).
+		\item \(\xi^{\text{bot},m} = -\infty\) for \(1\le m \le n\);
+		\item \(\phi^{\text{bot},m} = \eta^{\text{bot},m} = 0\) for \(1\le m\le n\) (i.e. all individuals are infected instantaneously at process time 0);
+		\item \(\Conditioned^{\text{bot},n} = \{\rho^1,\dots,\rho^n\}\), and \(\Conditioned^{\text{bot},m} = \emptyset\) for all \(m<n\) (i.e. all conditioned removals are assigned to time-line \(n\));
+		\item \(\Removals^{\text{bot},m} = \emptyset\) for \(1\le m\le n\) (i.e. no potential removals).
 	\end{itemize}	
-	 Similarly, the `top' epidemic state is given by \(\grave{E}\), where:
+	 Similarly, the `top' epidemic state is given by \(E^{\text{top}}\), where:
 	\begin{itemize}
-		\item \(\grave{\xi}^1 = -\infty\); \(\grave{\phi}^1 = \grave{\eta}^1 = 0\) (as with all our epidemics);
-		\item \(\grave{\xi}^m = \grave{\phi}^m = \grave{\eta}^m = \rho^{m-1}\) for \(2\le m \le n\) (i.e. the epidemic reaches time-line \(m\) at the last possible moment, just as individual \(m-1\) is removed at time \(\rho^{m-1}\));
-		\item \(\grave{\Conditioned}^m = \{\rho^m\}\) for \(1\le m\le n\) (i.e. one conditioned removal is assigned to each time-line);
-		\item \(\grave{\Removals}^1 = \emptyset\), and \(\grave{\Removals}^m = [0,\rho^{m-1})\) for \(2\le m\le n\).
+		\item \(\xi^{\text{top},1} = -\infty\); \(\phi^{\text{top},1} = \eta^{\text{top},1} = 0\) (as with all our epidemics);
+		\item \(\xi^{\text{top},m} = \phi^{\text{top},m} = \eta^{\text{top},m} = \rho^{m-1}\) for \(2\le m \le n\) (i.e. the epidemic reaches time-line \(m\) at the last possible moment, just as individual \(m-1\) is removed at time \(\rho^{m-1}\));
+		\item \(\Conditioned^{\text{top},m} = \{\rho^m\}\) for \(1\le m\le n\) (i.e. one conditioned removal is assigned to each time-line);
+		\item \(\Removals^{\text{top},1} = \emptyset\), and \(\Removals^{\text{top},m} = [0,\rho^{m-1})\) for \(2\le m\le n\).
 	\end{itemize}
-		Note that \(\acute{E}\) and \(\grave{\Epidemic}\) satisfy the required ordering of \eqref{eq:event-order} and thus really do define valid epidemic states. Our use of `intervals of potential removals' in the definition of \(\grave{\Removals}^m\) is reminiscent of the use of `quasimaximal' and `quasiminimal' bounding states in \cite{Haggstrom-1999}'s perfect simulation algorithm for the area-interaction process.
+		Note that \(E^{\text{bot}}\) and \(\Epidemic^{\text{top}}\) satisfy the required ordering of \eqref{eq:event-order} and thus really do define valid epidemic states. Our use of `intervals of potential removals' in the definition of \(\Removals^{\text{top},m}\) is reminiscent of the use of `quasimaximal' and `quasiminimal' bounding states in \cite{Haggstrom-1999}'s perfect simulation algorithm for the area-interaction process.
 	
 	\item Once \(\early{\phi}^m_{k-1} = \late{\phi}^m_{k-1}\) for all \(m\) we are guaranteed that \(\early{\Epidemic}_k = \late{\Epidemic}_k\). (This follows quickly from the updates outlined in Remark~\ref{rem:update_structure}.) Thus we only need to worry about coalescence of the epidemic trajectories (which is what we're interested in, anyway).
 	
-	\item Small set considerations. For \(\delta\in(0,\rho^1)\) consider the set of epidemics \(C_\delta\) for which the epidemic trajectory reaches the highest time line (all individuals are infected) by time \(\delta\). We claim that \(C_\delta\) is a small set. Note too that there is a non-trivial lower bound on \(\Prob{\Epidemic_k\in C_\delta\,|\, \Epidemic_{k-1}}\) as a function of \(\Epidemic_{k-1}\): the probability of having no potential removals (\(\Removals_k=\emptyset\)) is bounded below by \(\exp(-\beta\sum_{m=1}^{n-1} \rho^m)\), and then we just need a lower bound for the probability of the infection reaching level \(n\) by time \(\delta\), given that there are no potential removals to avoid. One possibility is given by dividing the interval \([0,\delta]\) into subintervals of length \(1/(n-1)\), and asking for there to be at least one infection incident in each subinterval: this gives a lower bound of 
+	\item Small set considerations. For \(\delta\in(0,\rho^1)\) consider the set of epidemics \(C_\delta\) for which the epidemic trajectory reaches the highest time line (all individuals are infected) by time \(\delta\). We claim that \(C_\delta\) is a small set. Note that there is a non-trivial lower bound on \(\Prob{\Epidemic_k\in C_\delta\,|\, \Epidemic_{k-1}}\) as a function of \(\Epidemic_{k-1}\): the probability of having no potential removals (\(\Removals_k=\emptyset\)) is bounded below by \(\exp(-\beta\sum_{m=1}^{n-1} \rho^m)\), and then we just need a lower bound for the probability of the infection reaching level \(n\) by time \(\delta\), given that there are no potential removals to avoid. One possibility is given by dividing the interval \([0,\delta]\) into subintervals of length \(1/(n-1)\), and asking for there to be at least one infection incident in each subinterval: this gives a lower bound of 
 	\[ 
 		\prod_{i=1}^{n-1}(1- e^{-i(n-i)\alpha\delta/(n-1)})\,.
 	\]
-
+	Moreover, the set \(C_\delta\) sits at the `bottom' of the state space, in the sense that if \(\early{E}\ple\late{E}\) and \(\late{E}\in C_\delta\) then \(\early{E}\in C_\delta\).
 	
 	Now for the (1-step) minorisaton condition. Consider the set of epidemics \(\mathcal{A}_\delta\) given by 
 	\[ 
@@ -2080,22 +2080,12 @@ Some thoughts about bounding states and coalescence.
 	\end{align}
 	and in the final line we now drop the conditioning on \(E_{k-1}\). This may be justified as follows (repeating some of what was said above...): given that \(\Removals_k=\emptyset\) we know that \(\xi_k^m=-\infty\) for all time lines \(m\); given that \(\rho^1\in \Conditioned_k^n\) we know that the time lines to which the remaining conditioned removals \(\rho^m\) are assigned in \(E_k\) are uniformly distributed and independent of \(E_{k-1}\). Finally, given the three conditioning events in \eqref{eq:drop_E_k-1}, we know that both the epidemic trajectory \(\phi_k\) and last-viable epidemic \(\eta_k\) are composed entirely from potential infections belonging to \(\Pi_k^{\text{inf}}\), with no infections in \(E_{k-1}\) being perpetuated. We may therefore drop the conditioning on \(E_{k-1}\), as claimed. Writing \(\nu(A)\) for the final probability in \eqref{eq:drop_E_k-1} completes the proof.
 	
-	
-	
-	
-	
-	
-
-	
-
-
-		
-
 	\end{proof}
 
-	
-	
 \end{enumerate}
+
+
+It is now straightforward to put together a CFTP algorithm for sampling from the equilibrium distribution of an epidemic conditioned to infect all individuals before the observed removal times. Start from algorithmic time \(-2nT<0\) for some integer \(n\), and evolve two copies of the epidemic process \(\early{E}\) and \(\late{E}\), starting from states \(\early{E}_{-n} = E^{\text{bot}}\) and \(\late{E}_{-n} = E^{\text{top}}\), and using the same sequence of Poisson process innovations \(\Pi_{-(n-1)},\dots,\Pi_{-1},\Pi_0\). The monotonicity arguments laid out above ensure that \(\early{E}_k \ple \late{E}_k\) for \(k=-(n-1),\dots,0\). If these have coalesced by algorithmic time 0, return their common value as a draw from equilibrium; if not, back off in the usual manner, reusing randomness. (Note that if we backoff and begin at time \(-4nT\) with \((\early{E}_{-2n},\late{E}_{-2n}) = (E^{\text{bot}},E^{\text{top}})\) then at time \(-2nT\) these realisations will satisfy \(E^{\text{bot}}\ple \early{E}_{-n} \ple \late{E}_{-n} \ple E^{\text{top}}\), and reuse of randomness will ensure that sandwiching takes place.) Finally, observe that the backwards coalescence time will almost surely be finite: the small set argument above shows that each time \(\late{E}\) visits the small set \(C_\delta\) there is a positive chance (\(\eps\)) of regeneration (and hence coalescence of \(\late{E}\) and \(\early{E}\)), and the time taken for this to occur is geometrically distributed (with success probability sketched in item 3 above).
 
 
 % = = = = = = = = = = = = = = = = = = = = = = =   

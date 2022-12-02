@@ -2018,7 +2018,7 @@ Some thoughts about bounding states and coalescence.
 		\item \(\Conditioned^{\text{bot},n} = \{\rho^1,\dots,\rho^n\}\), and \(\Conditioned^{\text{bot},m} = \emptyset\) for all \(m<n\) (i.e. all conditioned removals are assigned to time-line \(n\));
 		\item \(\Removals^{\text{bot},m} = \emptyset\) for \(1\le m\le n\) (i.e. no potential removals).
 	\end{itemize}	
-	 Similarly, the `top' epidemic state is given by \(E^{\text{top}}\), where:
+	 See Figure~\ref{fig:top_bottom_states}. Similarly, the `top' epidemic state is given by \(E^{\text{top}}\), where:
 	\begin{itemize}
 		\item \(\xi^{\text{top},1} = -\infty\); \(\phi^{\text{top},1} = \eta^{\text{top},1} = 0\) (as with all our epidemics);
 		\item \(\xi^{\text{top},m} = \phi^{\text{top},m} = \eta^{\text{top},m} = \rho^{m-1}\) for \(2\le m \le n\) (i.e. the epidemic reaches time-line \(m\) at the last possible moment, just as individual \(m-1\) is removed at time \(\rho^{m-1}\));
@@ -2026,10 +2026,19 @@ Some thoughts about bounding states and coalescence.
 		\item \(\Removals^{\text{top},1} = \emptyset\), and \(\Removals^{\text{top},m} = [0,\rho^{m-1})\) for \(2\le m\le n\).
 	\end{itemize}
 		Note that \(E^{\text{bot}}\) and \(\Epidemic^{\text{top}}\) satisfy the required ordering of \eqref{eq:event-order} and thus really do define valid epidemic states. Our use of `intervals of potential removals' in the definition of \(\Removals^{\text{top},m}\) is reminiscent of the use of `quasimaximal' and `quasiminimal' bounding states in \cite{Haggstrom-1999}'s perfect simulation algorithm for the area-interaction process.
+		
+\begin{Figure}
+		\includegraphics[width=0.45\textwidth]{bottom-state.pdf}
+		\hspace{5mm}
+		\includegraphics[width=0.45\textwidth]{top-state.pdf}
+		\caption{
+			Representation of bottom and top epidemic states, \(E^{\text{bot}}\) and  \(E^{\text{top}}\).
+			\label{fig:top_bottom_states}} 
+\end{Figure}
 	
 	\item Once \(\early{\phi}^m_{k-1} = \late{\phi}^m_{k-1}\) for all \(m\) we are guaranteed that \(\early{\Epidemic}_k = \late{\Epidemic}_k\). (This follows quickly from the updates outlined in Remark~\ref{rem:update_structure}.) Thus we only need to worry about coalescence of the epidemic trajectories (which is what we're interested in, anyway).
 	
-	\item Small set considerations. For \(\delta\in(0,\rho^1)\) consider the set of epidemics \(C_\delta\) for which the epidemic trajectory reaches the highest time line (all individuals are infected) by time \(\delta\). We claim that \(C_\delta\) is a small set. Note that there is a non-trivial lower bound on \(\Prob{\Epidemic_k\in C_\delta\,|\, \Epidemic_{k-1}}\) as a function of \(\Epidemic_{k-1}\): the probability of having no potential removals (\(\Removals_k=\emptyset\)) is bounded below by \(\exp(-\beta\sum_{m=1}^{n-1} \rho^m)\), and then we just need a lower bound for the probability of the infection reaching level \(n\) by time \(\delta\), given that there are no potential removals to avoid. One possibility is given by dividing the interval \([0,\delta]\) into subintervals of length \(1/(n-1)\), and asking for there to be at least one infection incident in each subinterval: this gives a lower bound of 
+	\item Small set considerations. For \(\delta\in(0,\rho^1)\) consider the set of epidemics \(C_\delta\) for which the epidemic trajectory reaches the highest time line (all individuals are infected) by time \(\delta\); see Figure~\ref{fig:small_set}. We claim that \(C_\delta\) is a small set. Note that there is a non-trivial lower bound on \(\Prob{\Epidemic_k\in C_\delta\,|\, \Epidemic_{k-1}}\): the probability of having no potential removals (\(\Removals_k=\emptyset\)) is bounded below by \(\exp(-\beta\sum_{m=1}^{n-1} \rho^m)\), and then we just need a lower bound for the probability of the infection reaching level \(n\) by time \(\delta\), given that there are no potential removals to avoid. One possibility is given by dividing the interval \([0,\delta]\) into subintervals of length \(1/(n-1)\), and asking for there to be at least one infection incident in each subinterval: this gives a lower bound of 
 	\[ 
 		\prod_{i=1}^{n-1}(1- e^{-i(n-i)\alpha\delta/(n-1)})\,.
 	\]
@@ -2039,20 +2048,33 @@ Some thoughts about bounding states and coalescence.
 	\[ 
 	E = (\xi,\phi,\eta,\Removals,\Conditioned) \in \mathcal{A}_\delta \quad \iff \quad \Removals=\emptyset\text{ and } \rho^1\in \Conditioned^n \text{ and }  \eta^2> \delta \,.
 	\]
-	That is, an epidemic belongs to \(\mathcal{A}_\delta\) if it contains no potential removals, the first conditioned removal \(\rho^1\) is assigned to time line \(n\), and the last-viable epidemic reaches time line 2 after process time \(\delta\). (Note that if \(\rho^1\in \Conditioned^n\) then \(\eta^m \in (\delta,\rho^1)\) for all \(m\), in fact, since the last-viable epidemic must reach time line \(n\) before all conditioned removals assigned to \(\Conditioned^n\). Also note that if \(\Removals=\emptyset\) then the no-fly zone boundary will equal \(-\infty\) on all time lines, by definition.) Let \(B_k\) denote the event that the Poisson process \(\Pi_k^{\text{inf}}\) contains a set of potential infections which, in the absence of any removal events, would cause an epidemic trajectory starting from time line 1 \textit{at process time \(\delta\)} to reach time line \(n\) before process time \(\rho^1\). The events \(\{B_k\}\) are i.i.d., and we shall write \(\Prob{B} = \Prob{B_k}\).
+	That is, an epidemic belongs to \(\mathcal{A}_\delta\) if it contains no potential removals, the first conditioned removal \(\rho^1\) is assigned to time line \(n\), and the last-viable epidemic reaches time line 2 after process time \(\delta\); see Figure~\ref{fig:small_set}. (Note that if \(\rho^1\in \Conditioned^n\) and \(\eta^2>\delta\) then \(\eta^m \in (\delta,\rho^1]\) for all \(m\), in fact, since the last-viable epidemic must reach time line \(n\) before all conditioned removals assigned to \(\Conditioned^n\). Also note that if \(\Removals=\emptyset\) then the no-fly zone boundary will equal \(-\infty\) on all time lines, by definition.) 
+	
+	\begin{Figure}
+		\includegraphics[width=0.45\textwidth]{small_set.pdf}
+		\hspace{5mm}
+		\includegraphics[width=0.45\textwidth]{small_set2.pdf}
+		\caption{
+			Examples of epidemics belonging to the small set \(C_\delta\) and the set \(\mathcal{A}_\delta\).
+			\label{fig:small_set}} 
+	\end{Figure}
+	
+	
+	
+	Let \(B_k\) denote the event that the Poisson process \(\Pi_k^{\text{inf}}\) contains a set of potential infections which, in the absence of any removal events, would cause an epidemic trajectory starting from time line 1 \textit{at process time \(\delta\)} to reach time line \(n\) before process time \(\rho^1\). The events \(\{B_k\}\) are i.i.d., and we shall write \(\Prob{B} = \Prob{B_k}\).
 	
 	Now suppose that \(E_{k-1}\in C_\delta\).  We claim that if \(A\subseteq\mathcal{A}_\delta\) then 
 	\[ 
 		\Prob{E_k\in A\,|\, E_{k-1}\in C_\delta} \ge \eps\nu(A) \,,
 	\]
-	 where \(\eps = e^{-\beta n \delta}n^{-1}\Prob{B}>0\) and where \(\nu\) is a probability measure which is independent of \(E_{k-1}\). 
+	 where \(\eps = e^{-\beta n \delta}n^{-1}\Prob{B}>0\) and where \(\nu\) is a probability measure which is independent of \(E_{k-1}\). That is, \(C_\delta\) is a small set (of lag 1).
 	 
 	\begin{proof} 
-		Given that \(E_{k-1}\in C_\delta\), any potential removal introduced over phase of algorithmic time \((2(k-1)T, (2k-1)T]\) must lie in the process time interval \([0,\delta]\). So 
+		Given that \(E_{k-1}\in C_\delta\), any potential removal introduced over the phase of algorithmic time \((2(k-1)T, (2k-1)T]\) must lie in the process time interval \([0,\delta]\). So 
 	\[ 
 	\Prob{\Removals_k = \emptyset \,|\, E_{k-1}\in C_\delta} \ge e^{-\beta n \delta} \,.
 	\]
-	When reassigning conditioned removals to time lines, since the epidemic trajectory \(\phi_{k-1}\) reaches time line \(n\) before process time \(\delta< \rho^1\), all time lines must be infected just before time \(\rho^1\). Thus when we propose to reassign \(\rho^1\), whichever time line is proposed will be accepted, and so 
+	When reassigning conditioned removals to time lines, since the epidemic trajectory \(\phi_{k-1}\) reaches time line \(n\) before process time \(\delta< \rho^1\), all time lines must be infected in \(E_{k-1}\) before time \(\rho^1\). Thus when we propose to reassign \(\rho^1\), whichever time line is proposed will be accepted, and so 
 	\[
 	\Prob{\rho^1 \in \Conditioned_k^n\,|\, E_{k-1}\in C_\delta} = n^{-1} \,.
 	\]
@@ -2060,6 +2082,7 @@ Some thoughts about bounding states and coalescence.
 		\[ 
 		\Prob{\rho^m \in \Conditioned_k^j \,|\, \rho^1\in \Conditioned_k^n} = \frac{1}{n-m+1}\,,\quad 1< m\le j\le n\,.
 		\]
+
 	Thus, given that \(E_{k-1}\in C_\delta\), with probability at least \(e^{-\beta n \delta}n^{-1}\) the set of potential removals \(\Removals_k\) is empty and \(\rho^1\) is assigned to time line \(n\); if these occur then the no-fly zone boundary is \(-\infty\) for all time lines, and the assignment of the remaining conditioned removals to time lines is uniform and independent of \(E_{k-1}\). 
 	
 	We now claim that 

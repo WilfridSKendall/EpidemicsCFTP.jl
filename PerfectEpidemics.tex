@@ -96,8 +96,10 @@
 
 \newcommand{\ple}{\preceq}
 \newcommand{\Poisson}{\Pi}
-\newcommand{\early}[1]{\hat{#1}}
-\newcommand{\late}[1]{\check{#1}}
+%\newcommand{\early}[1]{\hat{#1}}
+%\newcommand{\late}[1]{\check{#1}}
+\newcommand{\early}[1]{#1}
+\newcommand{\late}[1]{\hat{#1}}
 \newcommand{\PoissonRem}{\Poisson^\textup{rem}}
 \newcommand{\PoissonInf}{\Poisson^\textup{inf}}
 
@@ -1860,7 +1862,7 @@ The final result of this section, Corollary~\ref{cor:update_no-fly_direct}, show
 	\item{} No-fly zone: construct \(\xi_k\) from \(\phi_{k-1}\), \(\eta_k\), \(\Removals_k\) and \(\PoissonInf_k\) (Corollary~\ref{cor:update_no-fly_direct}).
 	\item{} Epidemic trajectory: construct \(\phi_k\) from \(\xi_k\), \(\eta_k\) and \(\PoissonInf_k\) (Corollary~\ref{cor:update_no-fly_direct}).
 \end{enumerate}
-Moreover, Lemma~\ref{lem:update_last-viable} and Corollary~\ref{cor:update_no-fly_direct} show that the epidemic \(\Epidemic_k\) still satisfies the ordering in \eqref{eq:event-order} on each time-line (i.e. \(\Epidemic_k\) is still a viable epidemic conditioned to have removals only at the observed removal times \(\rho^1, \dots,\rho^n\)).
+Moreover, Lemma~\ref{lem:update_last-viable} and Corollary~\ref{cor:update_no-fly_direct} show that the epidemic \(\Epidemic_k\) still satisfies the ordering in \eqref{eq:event-order} on each time-line (i.e. \(\Epidemic_k\) as produced above really is a viable epidemic conditioned to have active removals only at the observed removal times \(\rho^1, \dots,\rho^n\)).
 \end{rem}
 
 % \begin{lem}\label{lem:infect3}
@@ -1889,20 +1891,20 @@ Moreover, Lemma~\ref{lem:update_last-viable} and Corollary~\ref{cor:update_no-fl
  \section{Monotonicity and \CFTP}\label{sec:cftp}
 % Section 5: Discussing the monotonicity of the 
 % constrained evolution, and hence CFTP.
-\TBC{
-Simulation 
-\\
- Discover monotonicity structure to allow for \CFTP constructions.
-\\
-To make sure we have a secure understanding of this, we should consider how to build a robust simulation programme for the algorithmic time evolution. 
-In particular, we need to check reversibility and conditioning arguments, as well as evaluating the possibility of monotonicity structures.  
-\begin{itemize}
- \item Monotonicity structures;
- \item Proofs;
- \item Sandwiching;
- \item \CFTP algorithm.
-\end{itemize}
-}
+%\TBC{
+%Simulation 
+%\\
+% Discover monotonicity structure to allow for \CFTP constructions.
+%\\
+%To make sure we have a secure understanding of this, we should consider how to build a robust simulation programme for the algorithmic time evolution. 
+%In particular, we need to check reversibility and conditioning arguments, as well as evaluating the possibility of monotonicity structures.  
+%\begin{itemize}
+% \item Monotonicity structures;
+% \item Proofs;
+% \item Sandwiching;
+% \item \CFTP algorithm.
+%\end{itemize}
+%}
 %
 %\TBC{I believe all we need to prove here is the following:
 %\\
@@ -1921,7 +1923,9 @@ In particular, we need to check reversibility and conditioning arguments, as wel
 %}
 %\TBC{I believe that the full \CFTP construction follows quickly from this.}
 
-Consider the following partial ordering between two conditioned realisations \(\early{\Epidemic}_k = (\early{\xi}^m_k, \early{\phi}^m_k, \early{\eta}^m_k, \early{\Conditioned}^m_k, \early{\Removals}^m_k)_{m=1}^n \) and \(\late{\Epidemic}_k= (\late{\xi}^m_k, \late{\phi}^m_k, \late{\eta}^m_k, \late{\Conditioned}^m_k, \late{\Removals}^m_k)_{m=1}^n \) at algorithmic time \(2kT\). Write \(\early{\Epidemic}_k \ple \late{\Epidemic}_k\) if and only if the following set of relations hold for all \(m=1,\dots,n\):
+Add something here to introduce this section.
+
+Consider the following partial ordering between two conditioned realisations \(\early{\Epidemic}_k = (\early{\xi}_k, \early{\phi}_k, \early{\eta}_k, \early{\Conditioned}_k, \early{\Removals}_k) \) and \(\late{\Epidemic}_k= (\late{\xi}_k, \late{\phi}_k, \late{\eta}_k, \late{\Conditioned}_k, \late{\Removals}_k)\) at algorithmic time \(2kT\). Write \(\early{\Epidemic}_k \ple \late{\Epidemic}_k\) if and only if the following set of relations hold for all \(m=1,\dots,n\):
 \begin{align}
 \early{\xi}^m_k \quad &\le \quad \late{\xi}^m_k \label{eq:no-fly_order} \\
 \early{\phi}^m_k\quad &\le \quad \late{\phi}^m_k \label{eq:trajectory_order} \\
@@ -1931,7 +1935,7 @@ Consider the following partial ordering between two conditioned realisations \(\
 \early{\Removals}^{1:m}_k\quad &\subseteq \quad \late{\Removals}^{1:m}_k \label{eq:removals_order} 
 %\Infections^m^1(\tau) \subseteq  \early{\Infections}_m^1(\tau) \quad&\text{and}\quad \early{\Infections}_m^2(\tau)\subseteq  \Infections^m^2(\tau) \,. \label{eq:infections_order}
 \end{align}
-The intuition here is that \(\early{\Epidemic}_k\) describes an epidemic that spreads through the population earlier than that in \(\late{\Epidemic}_k\). The orderings in \eqref{eq:no-fly_order} -- \eqref{eq:last_order} ensure that the no-fly zone boundary, epidemic trajectory and last-viable epidemic lines are no later in \(\early{\Epidemic}_k\) than in \(\late{\Epidemic}_k\). The condition in \eqref{eq:cond-removal_order} forces each conditioned removal to be assigned to a time-line in \(\early{\Epidemic}_k\) with index at least as great as in \(\late{\Epidemic}_k\). (Recall that the time-line to which a conditioned removal \(\rho\) is assigned must be infected before time \(\rho\), and so assigning \(\rho\) to a higher time-line can only lead to an earlier epidemic trajectory.) Similarly, the ordering in \eqref{eq:removals_order} ensures that any potential removals in \(\early{\Epidemic}_k\) are also present in \(\late{\Epidemic}_k\); furthermore, any potential removal present in both realisations must be assigned to a time-line in \(\early{\Epidemic}_k\) which is no greater than that in \(\late{\Epidemic}_k\).
+The intuition here is that \(\early{\Epidemic}_k\) describes an epidemic that spreads through the population earlier than that in \(\late{\Epidemic}_k\). The orderings in \eqref{eq:no-fly_order} -- \eqref{eq:last_order} ensure that the no-fly zone boundary, epidemic trajectory and last-viable epidemic lines are no later in \(\early{\Epidemic}_k\) than in \(\late{\Epidemic}_k\). The condition in \eqref{eq:cond-removal_order} forces each conditioned removal to be assigned to a time-line in \(\early{\Epidemic}_k\) with index at least as great as in \(\late{\Epidemic}_k\). (Recall that the time-line to which a conditioned removal \(\rho\) is assigned must be infected before time \(\rho\), and so assigning \(\rho\) to a higher time-line can only lead to an earlier epidemic trajectory.) Similarly, the ordering in \eqref{eq:removals_order} ensures that any potential (non-observed) removals in \(\early{\Epidemic}_k\) are also present in \(\late{\Epidemic}_k\); furthermore, any potential removal present in both realisations must be assigned to a time-line in \(\early{\Epidemic}_k\) which is no greater than that in \(\late{\Epidemic}_k\).
 
 
 \begin{thm}
@@ -1945,29 +1949,29 @@ The intuition here is that \(\early{\Epidemic}_k\) describes an epidemic that sp
 \begin{proof}
 	We consider the effect of updating removals and then infections, following the four steps identified in Remark~\ref{rem:update_structure}.
 \begin{description}
-	\item[1: Update removals.] Recall the two stages of updating removals as described in Lemma~\ref{lem:removal1}. In \ref{item:removals-v2} we set \(\early{\Conditioned}^m_k = \early{\Conditioned}^m_{k-1}\) and \(\late{\Conditioned}^m_{k-1} = \late{\Conditioned}^m_k \). We then delete all potential removals in \(\early{\Removals}^m_{k-1}\) and \(\late{\Removals}^m_{k-1}\), and introduce new sets of potential removals given by
-	\[ \early{\Removals}^m_k \quad = \quad \{s\,:\,[s;m] \in \Poisson_k[0,\early{\phi}^m_{k-1}) \} \quad\subseteq\quad \{s\,:\,[s;m] \in \Poisson_k[0,\late{\phi}^m_{k-1}) \}\quad =\quad \late{\Removals}^m_k\,,\]
+	\item[1: Removals.] Recall the two stages of updating removals as described in Lemma~\ref{lem:removal1}. In \ref{item:removals-v2} we set \(\early{\Conditioned}^m_k = \early{\Conditioned}^m_{k-1}\) and \(\late{\Conditioned}^m_k = \late{\Conditioned}^m_{k-1} \). We then delete all potential removals in \(\early{\Removals}^m_{k-1}\) and \(\late{\Removals}^m_{k-1}\), and introduce new sets of potential removals given by
+	\[ \early{\Removals}^m_k \quad = \quad \{s\,:\,[s;m] \in \PoissonRem_k[0,\early{\phi}^m_{k-1}) \} \quad\subseteq\quad \{s\,:\,[s;m] \in \PoissonRem_k[0,\late{\phi}^m_{k-1}) \}\quad =\quad \late{\Removals}^m_k\,,\]
 	with the set inclusion following from the ordering in \eqref{eq:trajectory_order} at time $2(k-1)T$.
 	
 	In order to complete the update of removals, in
-	\ref{item:re-mark-removals-v2} we update the assignation of removals to time-lines. Supposing that a conditioned removal \(\rho\) is currently assigned to time-line \(m\) in some epidemic (i.e. \(\rho \in \Conditioned^m_k\), where \(\Conditioned\) is either \(\early{\Conditioned}\) or \(\late{\Conditioned)}\), we sample \(m'\sim\text{Uniform}\{1,\dots,n\}\) and reassign \(\rho\) as follows:
+	\ref{item:re-mark-removals-v2} we update the assignation of removals to time-lines. Suppose that a conditioned removal \(\rho\) is currently assigned to time-line \(m\) in some epidemic (i.e. \(\rho \in \tilde\Conditioned^m_k\), where \(\tilde\Conditioned\) is either \(\early{\Conditioned}\) or \(\late{\Conditioned)}\); we then sample \(m'\sim\text{Uniform}\{1,\dots,n\}\) and reassign \(\rho\) as follows:
 	\begin{equation}\label{eq:rejection}
 	\rho \quad \in \quad \begin{cases}
-	\Conditioned^{m'}_k & \quad\text{if } \phi^{m'}_{k-1}\le \rho\le \rho^{m'} \\
-	\Conditioned^m_k & \quad\text{otherwise.}
+	\tilde\Conditioned^{m'}_k & \quad\text{if } \phi^{m'}_{k-1}\le \rho\le \rho^{m'} \\
+	\tilde\Conditioned^m_k & \quad\text{otherwise.}
 	\end{cases}
 	\end{equation}
-	In reassigning conditioned removals for epidemics \(\early{\Epidemic}\) and \(\late{\Epidemic}\) we use the same uniform draws in the above acceptance/rejection procedure. Since the rejection rule in \eqref{eq:rejection} is monotonic in \(\phi^{m'}_{k-1}\), it follows immediately from \eqref{eq:trajectory_order} and the observation that \(\phi^m_{k-1}\) is an increasing function of \(m\), that 
+	In reassigning conditioned removals for epidemics \(\early{\Epidemic}\) and \(\late{\Epidemic}\) we use the same uniform draws in the above acceptance/rejection procedure. Since the rejection rule in \eqref{eq:rejection} is monotonic in \(\phi^{m'}_{k-1}\), it follows immediately from \eqref{eq:trajectory_order} and the observation that \(\phi^m_{k-1}\) (the time at which the epidemic trajectory reaches time-line \(m\)) is an increasing function of \(m\), that 
 	\begin{equation}\label{eq:conditioned_ordering}
 		\early{\Conditioned}^{m:n}_k\quad  \supseteq \quad \late{\Conditioned}^{m:n}_k\,, \quad m=1,\dots,n \,.
 	\end{equation}
-	In the same way, using common uniform draws for \(\early{\Epidemic}\) and \(\late{\Epidemic}\) when reassigning \emph{potential} removals shows that the inequality in \eqref{eq:removals_order} holds at time \(2kT\).
+	In the same way, using common uniform draws when reassigning \emph{potential} removals in \(\early{\Removals}_k\) and \(\late{\Removals}_k\) to time-lines shows that the inequality in \eqref{eq:removals_order} holds at time \(2kT\).
 	
-	\item[2: Update last-viable epidemic.] It is immediate from Lemma~\ref{lem:update_last-viable} that, given \(\Pi_k\), \(\eta^m_k\) is increasing in both \(\phi^m_{k-1}\) and \(\inf\Conditioned^{m:n}_k\). It follows from the assumption that \(\early{E}_{k-1} \ple \late{E}_{k-1}\) and \eqref{eq:conditioned_ordering} that \(\early{\eta}^m_k\le \late{\eta}^m_k\).
+	\item[2: Last-viable epidemic.] It is immediate from Lemma~\ref{lem:update_last-viable} that, given \(\PoissonInf_k\), \(\eta^m_k\) is increasing in both \(\phi^m_{k-1}\) and \(\inf\Conditioned^{m:n}_k\). It follows from the assumption that \(\early{E}_{k-1} \ple \late{E}_{k-1}\) and 	 \eqref{eq:conditioned_ordering} that \(\early{\eta}^m_k\le \late{\eta}^m_k\).
 	
-	\item[3: Update no-fly zone.] From Corollary~\ref{cor:update_no-fly_direct} we see that \(\xi^m_k\) is increasing in \(\sup \Removals^{1:m}_k\) and \(\phi^m_{k-1}\). In step 1 we established that \(\early{\Removals}^{1:m}_k\subseteq \late{\Removals}^{1:m}_k\), and therefore \(\early{\xi}^m_k\le \late{\xi}^m_k\).
+	\item[3: No-fly zone.] From Corollary~\ref{cor:update_no-fly_direct} we see that \(\xi^m_k\) is increasing in \(\sup \Removals^{1:m}_k\) and \(\phi^m_{k-1}\). In step 1 we established that \(\early{\Removals}^{1:m}_k\subseteq \late{\Removals}^{1:m}_k\), and the assumption that \(\early{E}_{k-1} \ple \late{E}_{k-1}\) tells us that \(\early{\phi}_{k-1} \le \late{\phi}_{k-1}\). Therefore \(\early{\xi}^m_k\le \late{\xi}^m_k\).
 	
-	\item[4: Update epidemic trajectory.] We observe, once again from Corollary~\ref{cor:update_no-fly_direct}, that the epidemic trajectory \(\phi^m_k\) is an increasing function of \(\xi^m_k\) and \(\eta^m_k\); it follows from the results of steps 2 and 3 above that \(\early{\phi}^m_k\le \late{\phi}^m_k\), as required.
+	\item[4: Epidemic trajectory.] We observe, once again from Corollary~\ref{cor:update_no-fly_direct}, that the epidemic trajectory \(\phi^m_k\) is an increasing function of \(\xi^m_k\) and \(\eta^m_k\); it follows from the results of steps 2 and 3 above that \(\early{\phi}^m_k\le \late{\phi}^m_k\), as required.
 \end{description}
 \end{proof}
 

@@ -1865,6 +1865,7 @@ The final result of this section, Corollary~\ref{cor:update_no-fly_direct}, show
 	\item{} Epidemic trajectory: construct \(\phi_k\) from \(\xi_k\), \(\eta_k\) and \(\PoissonInf_k\) (Corollary~\ref{cor:update_no-fly_direct}).
 \end{enumerate}
 Moreover, Lemma~\ref{lem:update_last-viable} and Corollary~\ref{cor:update_no-fly_direct} show that the epidemic \(\Epidemic_k\) still satisfies the ordering in \eqref{eq:event-order} on each time-line (i.e. \(\Epidemic_k\) as produced above really is a viable epidemic conditioned to have active removals only at the observed removal times \(\rho^1, \dots,\rho^n\)).
+\NB[SBC]{Say something stronger here? Really claiming that $(E_k)$ is Markov -- should make state space clear, ready for monontonicity arguments in the next section.}
 \end{rem}
 
 % \begin{lem}\label{lem:infect3}
@@ -2154,48 +2155,78 @@ The use of `binary backoff' (doubling the value of \(n\) any time that coalescen
 
 
 \begin{thm}\label{thm:CFTP_works}
-	The coalescence time of the CFTP algorithm sketched above is almost surely finite (and thus the algorithm samples from the equilibrium distribution of an epidemic conditioned upon the observed removal times).
+	The coalescence time of the CFTP algorithm sketched above is almost surely finite (and thus the algorithm samples from the equilibrium distribution of an \SIR epidemic conditioned upon the observed removal times).
 \end{thm}
 
 \begin{proof}
-	Fix some constant \(\delta \in (0,\rho^1)\), where we recall that \(\rho^1\) is the first observed removal time. Given \(\delta\), we shall identify two sets \(F_\delta\) and \(G_\delta\) of viable epidemics, which satisfy the following three properties:
+	Fix some constant \(\delta \in (0,\rho^1)\), where we recall that \(\rho^1\) is the first observed removal time. Given \(\delta\), we shall identify a set \(F_\delta\) of viable epidemics which satisfies the following three properties:
 	\begin{enumerate}
-		\item\label{item:bottom} \(F_\delta\) sits at the `bottom' of the state space, in the sense that if \(\early\Epidemic\ple\late\Epidemic}\) and \(\late\Epidemic\in F_\delta\) then \(\early\Epidemic\in F_\delta\);
 		\item\label{item:hit_prob} there exists \(\gamma>0\) such that
-			\[ \inf_{\Epidemic_{k-1}} \Prob{\Epidemic_k\in F_\delta\,|\, \Epidemic_{k-1}} = \gamma\,; \]
-		\item\label{item:small_set} (minorization condition) if \(G\subseteq G_\delta\) then 
-			\[ 
-				\Prob{\Epidemic_k\in G\,|\, E_{k-1}\in F_\delta} \ge \eps\nu(G) \,,
-			\]
-		for some \(\eps >0\) and where \(\nu\) is a probability measure on \(G_\delta\) which is independent of \(E_{k-1}\). In other words, \(F_\delta\) is a \emph{small set} (of lag 1).
+		\NB[SBC]{Infimum will make more sense once state space is spelled out.}
+		\[ \inf_{\Epidemic_{k-1}} \Prob{\Epidemic_k\in F_\delta\,|\, \Epidemic_{k-1}} = \gamma\,; \]
+		\item\label{item:bottom} \(F_\delta\) sits at the `bottom' of the state space, in the sense that if \(\early\Epidemic\ple\late\Epidemic}\) and \(\late\Epidemic\in F_\delta\) then \(\early\Epidemic\in F_\delta\);		
+		\item\label{item:coalescence} there exists \(\eps>0\) such that 
+		\[ \Prob{\early{\Epidemic}_k = \late{\Epidemic}_k \,|\, \early\Epidemic_{k-1} \ple \late\Epidemic_{k-1},\, \late{\Epidemic}_{k-1}\in F_\delta}  \ge \eps \,.\]
+%		\item\label{item:small_set} (minorization condition) if \(G\subseteq G_\delta\) then 
+%			\[ 
+%				\Prob{\Epidemic_k\in G\,|\, E_{k-1}\in F_\delta} \ge \eps\nu(G) \,,
+%			\]
+%		for some \(\eps >0\) and where \(\nu\) is a probability measure on \(G_\delta\) which is independent of \(E_{k-1}\). In other words, \(F_\delta\) is a \emph{small set} (of lag 1).
 	\end{enumerate}  
- Item~\ref{item:hit_prob} shows that the time taken for the chain \(\late\Epidemic\) (started from the top state \(\Epidemic\Top\)) to enter the set \(F_\delta\) is geometrically distributed with parameter \(\gamma>0\); when this occurs, Item~\ref{item:bottom} shows that the chain \(\early\Epidemic\) (which is coupled to lie below \(\late\Epidemic\)) will also lie within \(F_\delta\); the minorization condition in Item~\ref{item:small_set} then shows that, with probability \(\eps>0\), both \(\early\Epidemic\) and \(\late\Epidemic\) can be made to coalesce by drawing their common value at the next step from the distribution \(\nu\). This shows that the bounding chain \(\late{\Epidemic}\) visits the small set \(F_\delta\) infinitely often, and that each time it does so the chains \(\early{\Epidemic}\) and \(\late{\Epidemic}\) have a positive chance (\(\eps\)) of coalescing; their coalescence time is therefore almost surely finite.
+ Item~\ref{item:hit_prob} shows that the time taken for the chain \(\late\Epidemic\) (started from the top state \(\Epidemic\Top\)) to enter the set \(F_\delta\) is dominated by a geometric random variable with mean \(1/\gamma\); Items~\ref{item:bottom} and \ref{item:coalescence} show that whenever this occurs, the chain \(\early\Epidemic\) (started from the bottom state \(\Epidemic\Bot\) and coupled to lie below \(\late\Epidemic\)) will also lie within \(F_\delta\), and with probability at least \(\eps>0\) the two epidemics will coalesce at the next time point. We deduce that their coalescence time is almost surely finite.
 
-\textbf{Not sure that the small-set statement is quite what we want, seeing as we're not using small-set CFTP in practice. Suspect that we really just want to argue that \(\Prob{\early{\Epidemic}_k = \late{\Epidemic}_k \,|\, \late{\Epidemic}_{k-1}\in F_\delta}  \ge \eps>0 \).}
-
-It remains to identify a set \(F_\delta\) for which items 1-3 above are satisfied. To that end, let \(F_\delta\) be the set of epidemics for which the epidemic trajectory reaches the highest time line (i.e. all individuals are infected) by time \(\delta\); see Figure~\ref{fig:small_set}. This clearly satisfies Item~\ref{item:bottom}, since if \(\early{\Epidemic}\ple \late{\Epidemic}\) and \(\late{\phi}^n \le \delta\) then \(\early{\phi}^n \le \delta\) follows from \eqref{eq:trajectory_order}.
+It remains to identify a set \(F_\delta\) for which items 1-3 above are satisfied. To that end, let \(F_\delta\) be the set of epidemics for which the epidemic trajectory reaches the highest time-line (i.e. all individuals are infected) by time \(\delta\) (see Figure~\ref{fig:small_set}):
+\[
+	F_\delta = \{ \Epidemic = (\xi,\phi,\eta,\Removals,\Conditioned) \,:\, \phi^n \le \delta\} \,.
+\]
+ This clearly satisfies Item~\ref{item:bottom}, since if \(\early{\Epidemic}\ple \late{\Epidemic}\) and \(\late{\phi}^n \le \delta\) then \(\early{\phi}^n \le \delta\) follows from \eqref{eq:trajectory_order}.
 
 For Item~\ref{item:hit_prob}, consider
 \begin{align}
 	\Prob{\Epidemic_k\in F_\delta\,|\, \Epidemic_{k-1}} \quad&\ge\quad \Prob{\Epidemic_k\in F_\delta\,|\, \Removals_k=\emptyset,\, \Epidemic_{k-1}}\Prob{\Removals_k=\emptyset\,|\, \Epidemic_{k-1}}  \nonumber \\
 	&\ge\quad \Prob{\Epidemic_k\in F_\delta\,|\, \Removals_k=\emptyset,\, \Epidemic_{k-1}} \exp(-\beta\sum_{m=1}^{n-1} \rho^m) \,, \label{eq:F_delta_bound}
 \end{align}
-where we have bounded \(\Prob{\Removals_k=\emptyset\,|\, \Epidemic_{k-1}} \) by the probability that the Poisson process \(\PoissonRem_k\) puts no potential removals on any time-line \(m\) before the corresponding observed removal time \(\rho^m\). The remaining probability in \eqref{eq:F_delta_bound} may now be bounded below, uniformly for all values of \(\Epidemic_{k-1}\), by the probability that the Poisson process \(\PoissonInf_k\) contains a set of potential infections which would lead to the epidemic trajectory reaching level \(n\) by time \(\delta\), given that there are no potential removals to avoid (since we have conditioned on the event that \(\Removals_k=\emptyset\)). One possible bound is given by dividing the interval \([0,\delta]\) into subintervals of length \(\delta/(n-1)\), and asking for there to be at least one infection incident which would lead to the epidemic advancing from time-line \(i\) to \(i+1\) during the \(i^\text{th}\) interval: this gives a lower bound of 
+where we have bounded \(\Prob{\Removals_k=\emptyset\,|\, \Epidemic_{k-1}} \) by the probability that the Poisson process \(\PoissonRem_k\) puts no potential removals on any time-line \(m\) before the corresponding observed removal time \(\rho^m\). The remaining probability in \eqref{eq:F_delta_bound} may now be bounded below, uniformly for all values of \(\Epidemic_{k-1}\), by the probability that the Poisson process \(\PoissonInf_k\) contains a set of potential infections which would lead to the epidemic trajectory reaching level \(n\) by time \(\delta\), given that there are no potential removals to avoid (since we have conditioned on the event that \(\Removals_k=\emptyset\)). One possible bound is given by dividing the interval \([0,\delta]\) into subintervals of length \(\delta/(n-1)\), and requiring there to be at least one infection incident which would lead to the epidemic advancing from time-line \(i\) to \(i+1\) during the \(i^\text{th}\) interval, for \(i=1,\dots,n-1\): this gives a lower bound of 
 	\[ 
 		\prod_{i=1}^{n-1}(1- e^{-i(n-i)\alpha\delta/(n-1)})\,.
 	\]
 Putting this bound into \eqref{eq:F_delta_bound} completes the proof of Item~\ref{item:hit_prob}.
 
-\medskip
-\textbf{REACHED HERE BEFORE CHRISTMAS BREAK}
-\medskip\hrule\medskip
+Finally, consider Item~\ref{item:coalescence}. Let \(B_k\) denote the event that the Poisson process \(\Pi_k^{\text{inf}}\) contains a set of potential infections which, in the absence of any removal events, would cause an epidemic trajectory starting from time-line 1 \textit{at process time \(\delta\)} to reach time-line \(n\) before process time \(\rho^1\). The events \(\{B_k\}\) are i.i.d., have positive probability, and \(B_k\) is independent of both \(\early{\Epidemic}_{k-1}\) and \(\late{\Epidemic}_{k-1}\). We now look at the update \((\early{\Epidemic}_{k-1}, \late{\Epidemic}_{k-1}) \mapsto (\early{\Epidemic}_{k}, \late{\Epidemic}_{k})\), and shall show that Item~\ref{item:coalescence} holds with \(\eps = e^{-\beta n \delta}n^{-1}\Prob{B_k}>0\).
+
+Given that \(\late\Epidemic_{k-1}\in F_\delta\), any potential removal belonging to the set \(\late{\Removals}_k\) must lie in the process time interval \([0,\delta]\), and so we can easily bound the probability that \(\late{\Removals}_k\) is empty:
+\[ 
+ \Prob{\late\Removals_k = \emptyset \,|\, \late\Epidemic_{k-1}\in F_\delta} \ge e^{-\beta n \delta} \,.
+ \]
+On this event, the coupling of \(\early{\Epidemic}\) and \(\late{\Epidemic}\) (Theorem~\ref{thm:infections_preserve_ordering}) ensures that the set \(\early \Removals_k\) is also empty, and Lemma~\ref{lem:infect4} shows that the no-fly zone boundaries \(\early\xi_k\) and \(\late{\xi}_k\) both equal \(-\infty\) on all time-lines. 
+%	\[ 
+%	\Prob{\early\Removals_k = \late\Removals_k\,|\,\early\Epidemic_{k-1} \ple \late\Epidemic_{k-1},\, \late{\Epidemic}_{k-1}\in F_\delta} \ge \Prob{\late\Removals_k = \emptyset \,|\, \late\Epidemic_{k-1}\in F_\delta} \ge e^{-\beta n \delta} \,.
+%	\]
+
+Next consider the reassignment of conditioned removals to time-lines. Since, in both \(\early{\Epidemic}_{k-1}\) and \(\late{\Epidemic}_{k-1}\), the epidemic trajectory reaches time-line \(n\) before process time \(\delta< \rho^1\), we know that each time-line \(m\) must be infected over the window of process time \([\delta,\rho^m]\). This means that for each \(m=1,\dots,n\), \textit{all} time-lines \(m,\dots,n\) must be infected at time \(\rho^m\). Therefore when we reassign conditioned removals, all proposals will be accepted in both epidemics, and so 
+	\[ 
+	\Prob{\early\Conditioned_k = \late\Conditioned_k\,|\,\early\Epidemic_{k-1} \ple \late\Epidemic_{k-1},\, \late{\Epidemic}_{k-1}\in F_\delta} = 1 \,.
+	\]
+Consider the event that the first conditioned removal, \(\rho^1\), is assigned to time-line \(n\): since it is equally likely to be assigned to any of the \(n\) infected time-lines, this event has probability
+	\[ 
+	\Prob{\rho^1 \in \late\Conditioned_k^n,\, \early\Conditioned_k = \late\Conditioned_k \,|\,\early\Epidemic_{k-1} \ple \late\Epidemic_{k-1},\, \late{\Epidemic}_{k-1}\in F_\delta} = n^{-1} \,.
+	\]
+
+We now claim that on the event \(\{\late{\Epidemic}_{k-1}\in F_\delta\} \cap\{\rho^1\in\late{\Conditioned}_k^n\}\cap B_k\) the last-viable epidemics and epidemic trajectories in \(\early{\Epidemic}_k\) and \(\late{\Epidemic}_k\) must necessarily agree. Recall that the last-viable epidemic \(\late\eta_k\) is composed of infections which either belong to the Poisson process of innovations \(\PoissonInf_k\) or which are perpetuated as we update infections over the phase of algorithmic time \(((2k-1)T, 2kT]\). Since \(\late{\Epidemic}_{k-1}\in F_\delta\), the epidemic trajectory \(\late\phi_{k-1}\) reaches time-line \(n\) before process time \(\delta<\rho^1\), and so no infection in the interval \((\delta,T]\) will be perpetuated during this update. However, on the event \(\{\rho^1\in\late{\Conditioned}_k^n\}\) the last-viable epidemic must reach time-line \(n\) before time \(\rho^1\), using some combination of infections belonging to \(\PoissonInf_k\) and perpetuated infections in the interval \([0,\delta]\). But if the event \(B_k\) occurs, the set \(\PoissonInf_k\) contains a set of infections which would allow the epidemic to spread from time-line 1 to time-line \(n\) during the interval \([\delta,\rho^1]\): in this case the last-viable epidemic will be composed entirely of infection events belonging to \(\PoissonInf_k\), and so no infections will be perpetuated. Exactly the same is true for \(\early{\Epidemic}\), and so we see that \(\early\eta_k^m = \late \eta_k^m\) for all time-lines $m$. Finally, we observe from Corollary~\ref{cor:update_no-fly_direct} that if the no-fly zone boundaries and last-viable epidemics agree in \(\early{\Epidemic}_k\) and \(\late{\Epidemic}_k\), then necessarily their epidemic trajectories will agree.
+
+Putting this all together we arrive at the following:
+\begin{align*}
+	\Prob{\early{\Epidemic}_k = \late{\Epidemic}_k\,|\, \late{\Epidemic}_{k-1}\in F_\delta}  \quad&\ge\quad  \Prob{\late{\Removals}_k=\emptyset,\, \rho^1\in\late{\Conditioned}_k,\, B_k  \,|\,\early\Epidemic_{k-1} \ple \late\Epidemic_{k-1},\, \late{\Epidemic}_{k-1}\in F_\delta}  \\
+	&=\quad \Prob{\late{\Removals}_k=\emptyset\,|\, \late{\Epidemic}_{k-1}\in F_\delta} 
+	\Prob{\rho^1\in\late{\Conditioned}_k  \,|\, \late{\Epidemic}_{k-1}\in F_\delta} 
+	\Prob{B_k} \\
+	&\ge\quad \eps \,,
+\end{align*}
+where in the second line we have made use of the fact that the three events involving potential removals, conditioned removals, and potential infections are independent given that \(\late{\Epidemic}_{k-1} \in F_\delta\).
+
 
 	
-	Now for the (1-step) minorisaton condition. Consider the set of epidemics \(\mathcal{A}_\delta\) given by 
-	\[ 
-	E = (\xi,\phi,\eta,\Removals,\Conditioned) \in \mathcal{A}_\delta \quad \iff \quad \Removals=\emptyset\text{ and } \rho^1\in \Conditioned^n \text{ and }  \eta^2> \delta \,.
-	\]
-	That is, an epidemic belongs to \(\mathcal{A}_\delta\) if it contains no potential removals, the first conditioned removal \(\rho^1\) is assigned to time line \(n\), and the last-viable epidemic reaches time line 2 after process time \(\delta\); see Figure~\ref{fig:small_set}. (Note that if \(\rho^1\in \Conditioned^n\) and \(\eta^2>\delta\) then \(\eta^m \in (\delta,\rho^1]\) for all \(m\), in fact, since the last-viable epidemic must reach time line \(n\) before all conditioned removals assigned to \(\Conditioned^n\). Also note that if \(\Removals=\emptyset\) then the no-fly zone boundary will equal \(-\infty\) on all time lines, by definition.) 
+
 	
 	\begin{Figure}
 		\includegraphics[width=0.45\textwidth]{small_set.pdf}
@@ -2208,49 +2239,8 @@ Putting this bound into \eqref{eq:F_delta_bound} completes the proof of Item~\re
 	
 	
 	
-	Let \(B_k\) denote the event that the Poisson process \(\Pi_k^{\text{inf}}\) contains a set of potential infections which, in the absence of any removal events, would cause an epidemic trajectory starting from time line 1 \textit{at process time \(\delta\)} to reach time line \(n\) before process time \(\rho^1\). The events \(\{B_k\}\) are i.i.d., and we shall write \(\Prob{B} = \Prob{B_k}\).
 	
-	Now suppose that \(E_{k-1}\in C_\delta\).  We claim that if \(A\subseteq\mathcal{A}_\delta\) then 
-	\[ 
-		\Prob{\Epidemic_k\in A\,|\, E_{k-1}\in C_\delta} \ge \eps\nu(A) \,,
-	\]
-	 where \(\eps = e^{-\beta n \delta}n^{-1}\Prob{B}>0\) and where \(\nu\) is a probability measure which is independent of \(E_{k-1}\). That is, \(C_\delta\) is a small set (of lag 1).
-	 
-	\begin{proof} 
-		Given that \(E_{k-1}\in C_\delta\), any potential removal introduced over the phase of algorithmic time \((2(k-1)T, (2k-1)T]\) must lie in the process time interval \([0,\delta]\). So 
-	\[ 
-	\Prob{\Removals_k = \emptyset \,|\, E_{k-1}\in C_\delta} \ge e^{-\beta n \delta} \,.
-	\]
-	When reassigning conditioned removals to time lines, since the epidemic trajectory \(\phi_{k-1}\) reaches time line \(n\) before process time \(\delta< \rho^1\), all time lines must be infected in \(E_{k-1}\) before time \(\rho^1\). Thus when we propose to reassign \(\rho^1\), whichever time line is proposed will be accepted, and so 
-	\[
-	\Prob{\rho^1 \in \Conditioned_k^n\,|\, E_{k-1}\in C_\delta} = n^{-1} \,.
-	\]
-	In fact, given that \(\rho^1\in \Conditioned_k^n\), we know that \textit{all} time lines \(m,\dots,n\) are infected in \(E_{k-1}\) at time \(\rho^m\), for all \(m=1,\dots,n\). Thus when we reassign conditioned removals, all proposals will be accepted. It follows that the time lines to which conditioned removals are reassigned are independent of one another, and satisfy
-		\[ 
-		\Prob{\rho^m \in \Conditioned_k^j \,|\, \rho^1\in \Conditioned_k^n} = \frac{1}{n-m+1}\,,\quad 1< m\le j\le n\,.
-		\]
 
-	Thus, given that \(E_{k-1}\in C_\delta\), with probability at least \(e^{-\beta n \delta}n^{-1}\) the set of potential removals \(\Removals_k\) is empty and \(\rho^1\) is assigned to time line \(n\); if these occur then the no-fly zone boundary is \(-\infty\) for all time lines, and the assignment of the remaining conditioned removals to time lines is uniform and independent of \(E_{k-1}\). 
-	
-	We now claim that 
-	\[
-		\Prob{\eta_k^2 > \delta\,|\, \Removals_k=\emptyset,\, \rho^1\in \Conditioned_k^n,\, E_{k-1}\in C_\delta} 
-		= \Prob{B_k} \,,
-	\]
-	from which it will follow that 
-	\[
-		\Prob{\Epidemic_k\in \mathcal{A}_\delta\,|\, E_{k-1}\in C_\delta} = \Prob{ \Removals_k=\emptyset\,,\rho^1\in \Conditioned_k^n\,, \eta_k^2 > \delta \,|\, E_{k-1}\in C_\delta} \ge \eps \,.		
-	\]
-	Recall that the last-viable epidemic \(\eta_k\) is composed of infections which either belong to the Poisson process of innovations \(\Pi_k^{\text{inf}}\) or which are perpetuated as we update infections over the phase of algorithmic time \(((2k-1)T, 2kT]\). Since \(E_{k-1}\in C_\delta\), the epidemic trajectory \(\phi_{k-1}\) reaches time line \(n\) before process time \(\delta<\rho^1\), and so no infection in the interval \((\delta,T]\) will be perpetuated during this update. Thus in order to have both \(\eta_k^2 > \delta\) and \( \rho^1\in \Conditioned_k^n\), \(\Pi_k^{\text{inf}}\) must contain a set of potential infections which would cause the last-viable epidemic to progress from time line 1 to \(n\) during the process time interval \([\delta,\rho^1]\): this is precisely the event \(B_k\).
-	
-	Now consider \(A\subseteq\mathcal{A}_\delta\). The argument above shows that
-	\begin{align}
-	\Prob{\Epidemic_k\in A\,|\, E_{k-1}\in C_\delta} \quad &\ge \quad \eps \Prob{\Epidemic_k\in A\,|\,\Removals_k=\emptyset\,,\rho^1\in \Conditioned_k^n\,,B_k\,,  E_{k-1}\in C_\delta}  \nonumber \\
-	&= \quad \eps \Prob{\Epidemic_k\in A\,|\,\Removals_k=\emptyset\,,\rho^1\in \Conditioned_k^n\,,B_k}\,, \label{eq:drop_E_k-1}
-	\end{align}
-	and in the final line we now drop the conditioning on \(E_{k-1}\). This may be justified as follows (repeating some of what was said above...): given that \(\Removals_k=\emptyset\) we know that \(\xi_k^m=-\infty\) for all time lines \(m\); given that \(\rho^1\in \Conditioned_k^n\) we know that the time lines to which the remaining conditioned removals \(\rho^m\) are assigned in \(\Epidemic_k\) are uniformly distributed and independent of \(E_{k-1}\). Finally, given the three conditioning events in \eqref{eq:drop_E_k-1}, we know that both the epidemic trajectory \(\phi_k\) and last-viable epidemic \(\eta_k\) are composed entirely from potential infections belonging to \(\Pi_k^{\text{inf}}\), with no infections in \(E_{k-1}\) being perpetuated. We may therefore drop the conditioning on \(E_{k-1}\), as claimed. Writing \(\nu(A)\) for the final probability in \eqref{eq:drop_E_k-1} completes the proof.
-	
-	\end{proof}
 
 \end{proof}
 

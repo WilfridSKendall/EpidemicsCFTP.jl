@@ -218,18 +218,20 @@ the purpose is to map out the general flow of the argument leading to perfect si
 % Sewction 2: Use Poisson streams of potential incidents
 % to generate S-I-R processes.
 %
-We begin by rehearsing how to build \SIR epidemics using Poisson streams of potential incidents
-in the simplest possible fashion.
-We shall need to modify this simple model later,
-but its description is useful in setting the scene.
+In this section we rehearse the construction of
+\SIR epidemics using the simplest possible
+\emph{graphical representation} (see for example \citealp[Section III.6]{Liggett-1985})
+in terms of Poisson streams of potential incidents.
+We shall need to modify this simple construction later,
+but its description is useful for fixing notation.
 
 Suppose that the total population is composed of \(n\) individuals.
-Using the terminology of interacting particle systems (see for example \citealp[Section III.6]{Liggett-1985}), an unconditioned \SIR epidemic can be realized using a \emph{graphical representation}.
-The simplest approach realizes
-the evolution of an \SIR epidemic for this population of \(n\) individuals 
+The simplest possible graphical representation realizes
+the \SIR epidemic evolution 
 using a set of \(n\) time-lines: 
 one copy of the process time-axis \([0,\infty)\) per each population member.
- Potential infection and removal incidents are simulated using independent Poisson streams of the different kinds of potential incidents, namely:
+ Potential infection and removal incidents are simulated using independent Poisson streams of the different kinds of potential incidents, 
+ listed as follows:
    \begin{itemize}
     \item[](\emph{potential removals}) \(n\) independent Poisson processes of potential removals 
     (one Poisson \((\beta\)) process per time-line of individual);
@@ -237,7 +239,6 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
     (one Poisson (\(\alpha\)) process per unordered pair of time-lines of two individuals, producing a stream of potentially infectious contacts between these two individuals).
    \end{itemize}
  These streams of potential infection and removal incidents 
- can be used to
  produce simulations of \SIR epidemics from all possible sets of initial conditions simultaneously,
 %\xNB[WSK2]{Note possibility of omnithermal simulation?}
  using the two following natural rules: 
@@ -247,7 +248,8 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  has not yet been removed,
  and (b) the individual has already been infected.
  \\
- In this case the individual changes from infected to removed at the time of the incident;
+ In this case the individual
+ status changes from infected to removed at the time of the incident;
  \item
  potential infections are realized as actual infections if and only if,
   before the time of the incident,
@@ -255,7 +257,7 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  and (b) one has already been infected
  while the other has not (and therefore is susceptible).
  \\
- In this case the susceptible individual changes 
+ In this case the susceptible individual status changes 
  to infected 
  at the time of the incident.
  \end{enumerate}
@@ -276,11 +278,12 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  	
  	\caption{\label{fig:unconstrained}
  		Graphical representation of unconditioned \SIR epidemic. 
- 		There are five time-lines. 
+ 		There are five time-lines, one for each of the \(n=5\)
+ 		individuals in the population. 
  	}
  \end{Figure}
  
- To help make precise statements about transitions, 
+ In order to make precise statements about transitions, 
  we require that 
  individual state trajectories 
  (trajectories corresponding to evolution in process time)
@@ -295,8 +298,10 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  at time \(t\)'' (the second statement also
  includes the possibility of removal precisely at time \(t\)).
  
-In theory such simulations can be extended to cover the complete process time-scale \([0,\infty)\),
- though we restrict attention to some bounded time-interval \([0,T]\), for a fixed 
+In principle such simulations can be extended to cover the complete process time-scale \([0,\infty)\),
+ though
+ in practice we will
+ restrict attention to some bounded time-interval \([0,T]\) for a fixed 
  finite time horizon \(T<\infty\).
 %\xNB[WSK2]{Throughout this exposition $T$ will denote the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic.}
 
@@ -2164,7 +2169,8 @@ The use of `binary backoff' (doubling the value of \(n\) any time that coalescen
 		\item\label{item:hit_prob} there exists \(\gamma>0\) such that
 		\NB[SBC]{Infimum will make more sense once state space is spelled out.}
 		\[ \inf_{\Epidemic_{k-1}} \Prob{\Epidemic_k\in F_\delta\,|\, \Epidemic_{k-1}} = \gamma\,; \]
-		\item\label{item:bottom} \(F_\delta\) sits at the `bottom' of the state space, in the sense that if \(\early\Epidemic\ple\late\Epidemic}\) and \(\late\Epidemic\in F_\delta\) then \(\early\Epidemic\in F_\delta\);		
+		\item\label{item:bottom} \(F_\delta\) sits at the `bottom' of the state space, 
+		in the sense that if \(\early\Epidemic\ple\late\Epidemic\) and \(\late\Epidemic\in F_\delta\) then \(\early\Epidemic\in F_\delta\);		
 		\item\label{item:coalescence} there exists \(\eps>0\) such that 
 		\[ \Prob{\early{\Epidemic}_k = \late{\Epidemic}_k \,|\, \early\Epidemic_{k-1} \ple \late\Epidemic_{k-1},\, \late{\Epidemic}_{k-1}\in F_\delta}  \ge \eps \,.\]
 %		\item\label{item:small_set} (minorization condition) if \(G\subseteq G_\delta\) then 

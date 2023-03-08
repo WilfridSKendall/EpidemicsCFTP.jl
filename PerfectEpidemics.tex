@@ -280,27 +280,6 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  at the incident time.
  \end{enumerate}
  
-
- \begin{Figure}
- 	\begin{minipage}[t]{.5\linewidth}
- 		\begin{subfigure}[t]{\linewidth}
- 			\includegraphics[width=0.9\linewidth]{unconstrained1.pdf}
- 		\end{subfigure}
- 	\end{minipage}
- 	\begin{minipage}[t]{.5\linewidth}
- 		\begin{subfigure}[t]{\linewidth}
- 			\includegraphics[width=0.9\linewidth]{unconstrained2.pdf}
- 		\end{subfigure}
- 	\end{minipage}
- 	
- 	
- 	\caption{\label{fig:unconstrained}
- 		Graphical representation of unconditioned \SIR epidemic. 
- 		There are five time-lines, one for each of the \(n=5\)
- 		individuals in the population. 
- 	}
- \end{Figure}
- 
  To help make precise statements about transitions, 
  we require that 
  individual state trajectories 
@@ -338,7 +317,9 @@ In principle the resulting simulation can be extended to cover the complete proc
 % using a trajectory-valued process driven by 
 % spatial immigration-death processes.
 %
- In our simulation 
+In the simulation approach adopted here,
+the trajectory of the \SIR epidemic over (process) time \([0,T]\)
+will itself evolve in a separate time-scale:
  the Poisson streams of potential incidents 
  will themselves evolve according
  to an ``algorithmic time'' parameter \(\tau\in\Reals\)
@@ -422,16 +403,44 @@ of the previous section
 may be applied 
 to the resulting pattern of potential removals and infections
 to generate a trajectory of actual removals and infections.
-
-\TBC{Needs rewriting. See annotated notes from WSK (12/12/22). Here's what WSK wrote in email conversation:
-``it doesn't help to talk about an SIR trajectory. The trajectory is that of a two-type marked point pattern: types are potential (but unobserved) removal versus potential infection; marks are (I think) threshold (for removal) and associated individual plus originating individual (for infection). The SIR is built from this, but loses information which we need if the evolution in algorithmic time is to be Markov.''
-} 
-
-By construction, the resulting trajectory-valued 
+Thus the underlying
 process 
-(running in algorithmic time \(\tau\)) 
-can be shown to be a Markov chain of trajectories which
-has the \SIR epidemic as invariant distribution: 
+is a continuous-time Markov chain running in algorithmic time,
+which at any algorithmic time \(\tau\)
+has a state which is a two-type marked point pattern on \([0,T]\);
+the types are (a) potential removals and (b) potential infections;
+potential removals marked by specific timelines controlling which individual 
+might be removed, potential infections marked by pairs of timelines
+denoting which individual might infect which other individual.%
+\NB[WSK]{Marks for potential infections: be careful to check interpretation!}
+Figure \ref{fig:graphical-representation-evolution} 
+illustrates this construction.
+
+ \begin{Figure}
+ \includegraphics[width=0.5\linewidth]{graphical-representation-evolution.pdf}
+  	\caption{\label{fig:graphical-representation-evolution}
+Evolution of the graphical representation of unconditioned \SIR epidemic
+for five individuals \(1,2,3,4,5\), 
+viewed in terms of Poisson processes of segments. 
+Algorithmic time \(\tau\) runs upwards,
+process time \(t\) runs horizontally from \(0\) to \(T\).
+Vertical segments indicate lifetimes of potential incidents:
+potential infections are green, labelled with a pair of indices of individuals;
+potential removals are orange, labelled with a single index of an individual.
+The dotted line indicates a slice determining a pattern of potential incidents:
+\(1\) potentially infects \(2\), \(3\) potentially removed, \(1\) potentially
+removed, \(1\) potentially infects \(3\). The actual evolution of the epidemic
+also depends on the initial numbers of infective and susceptible individuals.
+ 	}
+ \end{Figure}
+ 
+
+
+An epidemic trajectory can be built from such a pattern
+using rules \ref{item:removal-rule} and \ref{item:infection-rule},
+and when the underlying chain is in statistical equilibrium
+then the epidemic trajectory has the law of an
+\SIR epidemic: 
 we state this below as Theorem \ref{thm:SIR-epidemic-1}
 and outline the simple proof.
 We focus on the chain formed by observing trajectories 
@@ -1356,16 +1365,14 @@ the constrained variant process.
 % =======
 	\begin{minipage}[t]{.5\linewidth}
 		\begin{subfigure}[t]{\linewidth}
-			\includegraphics[width=0.9\linewidth]{constrained1.pdf}
+			\includegraphics[width=0.8\linewidth]{constrained1.pdf}
 		\end{subfigure}
 	\end{minipage}
 	\begin{minipage}[t]{.5\linewidth}
 		\begin{subfigure}[t]{\linewidth}
-			\includegraphics[width=0.9\linewidth]{constrained2.pdf}
+			\includegraphics[width=0.8\linewidth]{constrained2.pdf}
 		\end{subfigure}
 	\end{minipage}
-	
-	
 	\caption{\label{fig:graphical}
 		Modified graphical representation of \SIR epidemic, conditioned on removals. 
 		There are five time-lines.  \\

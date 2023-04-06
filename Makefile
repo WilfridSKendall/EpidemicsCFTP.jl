@@ -191,6 +191,7 @@ WSKtracking.sty: $(HOME)/texmf/tex/latex/WSKtracking/WSKtracking.sty
 .DIGEST/digest.pdf: $(title).tex
 	$(STRUCTURE) $(title).tex
 	pushd .DIGEST ; latexmk -pdf digest.tex ; popd
+	pushd .DIGEST ; GLOBIGNORE=*.sty:*.tex:*.pdf ; rm * ; unset GLOBIGNORE ; popd
 
 # ----------------------------------------------
 # (Patterned targets follow):

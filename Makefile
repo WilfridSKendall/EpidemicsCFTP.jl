@@ -10,6 +10,7 @@ SHELL := /bin/bash
 # WSKLIB := $(HOME)/lib
 export PYTHONPATH=$(HOME)/lib/python
 export DISPLAY=:0.0
+STRUCTURE := $(HOME)/lib/Structure/structure.py
 
 # ----------------------------------------------
 # Title:
@@ -77,6 +78,7 @@ phonytargets := all checkin clean virgin help gui backup \
 all: products ; echo $^ now up to date
 view: all ; $(START) $(title).pdf
 products: $(diafiles) $(productfiles) ; echo $^ now up to date
+digest: .digest/digest.pdf ; $(START) $^
 
 # ----------------------------------------------
 # Create 'productfiles' and then print them:
@@ -183,6 +185,12 @@ WSKmaths.sty: $(HOME)/texmf/tex/latex/WSKmaths/WSKmaths.sty
 	cp $< $@
 WSKtracking.sty: $(HOME)/texmf/tex/latex/WSKtracking/WSKtracking.sty
 	cp $< $@
+
+# ----------------------------------------------
+# Latex structuring:
+.digest/digest.pdf: $(title).tex
+	$(STRUCTURE) $(title).tex
+	pushd .digest ; latexmk -pdf digest.tex ; popd
 
 # ----------------------------------------------
 # (Patterned targets follow):

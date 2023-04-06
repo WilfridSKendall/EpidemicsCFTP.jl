@@ -78,7 +78,7 @@ phonytargets := all checkin clean virgin help gui backup \
 all: products ; echo $^ now up to date
 view: all ; $(START) $(title).pdf
 products: $(diafiles) $(productfiles) ; echo $^ now up to date
-digest: .digest/digest.pdf ; $(START) $^
+digest: .DIGEST/digest.pdf ; $(START) $^
 
 # ----------------------------------------------
 # Create 'productfiles' and then print them:
@@ -188,9 +188,9 @@ WSKtracking.sty: $(HOME)/texmf/tex/latex/WSKtracking/WSKtracking.sty
 
 # ----------------------------------------------
 # Latex structuring:
-.digest/digest.pdf: $(title).tex
+.DIGEST/digest.pdf: $(title).tex
 	$(STRUCTURE) $(title).tex
-	pushd .digest ; latexmk -pdf digest.tex ; popd
+	pushd .DIGEST ; latexmk -pdf digest.tex ; popd
 
 # ----------------------------------------------
 # (Patterned targets follow):

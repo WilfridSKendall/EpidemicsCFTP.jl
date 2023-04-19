@@ -193,7 +193,7 @@ WSKtracking.sty: $(HOME)/texmf/tex/latex/WSKtracking/WSKtracking.sty
 	$(STRUCTURE) $(title).tex
 	pushd .DIGEST ; latexmk -c digest.tex ; popd
 	pushd .DIGEST ; latexmk -pdf digest.tex ; popd
-	echo cp -f .DIGEST/digest.pdf $(shell date --iso)-digest.pdf
+	cp -f .DIGEST/digest.pdf $(shell date --iso)-digest.pdf
 
 .DIGEST/VERSION.txt: ; ln -rs -t.DIGEST ./VERSION.txt
 .DIGEST/WSKtracking.sty: ; ln -rs -t.DIGEST ./WSKtracking.sty

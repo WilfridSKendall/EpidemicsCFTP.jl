@@ -65,7 +65,7 @@ running-example := --remove="[[0.85, 1.6], 				\
 
 # ----------------------------------------------
 # Special targets:
-phonytargets := all checkin clean virgin help gui backup \
+phonytargets := all checkin clean digest virgin help gui backup \
 		products print $(targets)
 .PHONY: $(phonytargets)
 .SILENT: $(phonytargets)
@@ -164,6 +164,7 @@ products.txt: Makefile
 	echo "(targets)  " $(targets) | sed s\/^\/\\t\/ >> $@
 	echo "(handouts) " $(handouts) | sed s\/^\/\\t\/ >> $@
 	echo "(notes)    " $(notes) | sed s\/^\/\\t\/ >> $@
+digest: .DIGEST/digest.pdf ; $(START) $^
 
 # ----------------------------------------------
 # Bibliography:
@@ -187,11 +188,15 @@ WSKtracking.sty: $(HOME)/texmf/tex/latex/WSKtracking/WSKtracking.sty
 	cp $< $@
 
 # ----------------------------------------------
-# Latex structuring:
-.DIGEST/digest.pdf: $(title).tex
+# Digest:
+.DIGEST/digest.pdf: $(title).tex .DIGEST/VERSION.txt .DIGEST/WSKtracking.sty
 	$(STRUCTURE) $(title).tex
+	pushd .DIGEST ; latexmk -c digest.tex ; popd
 	pushd .DIGEST ; latexmk -pdf digest.tex ; popd
-	pushd .DIGEST ; GLOBIGNORE=*.sty:*.tex:*.pdf ; rm * ; unset GLOBIGNORE ; popd
+	echo cp -f .DIGEST/digest.pdf $(shell date --iso)-digest.pdf
+
+.DIGEST/VERSION.txt: ; ln -rs -t.DIGEST ./VERSION.txt
+.DIGEST/WSKtracking.sty: ; ln -rs -t.DIGEST ./WSKtracking.sty
 
 # ----------------------------------------------
 # (Patterned targets follow):

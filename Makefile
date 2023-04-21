@@ -194,7 +194,7 @@ WSKtracking.sty: $(HOME)/texmf/tex/latex/WSKtracking/WSKtracking.sty
 	pushd .DIGEST ; latexmk -shell-escape -pdf -pv digest.tex ; popd
 	# For correct preview, create ~/.latexmkrc containing the line
 	#         $pdf_previewer = 'start okular';
-	[ -s .DIGEST/digest.pdf ] cp -f .DIGEST/digest.pdf $(shell date --iso)-digest.pdf
+	[ -s .DIGEST/digest.pdf ] && cp -f .DIGEST/digest.pdf $(shell date --iso)-digest.pdf
 
 .DIGEST/VERSION.txt: ; ln -rs -t.DIGEST ./VERSION.txt
 .DIGEST/WSKtracking.sty: ; ln -rs -t.DIGEST ./WSKtracking.sty

@@ -232,7 +232,7 @@ In this section we rehearse the construction of
 \emph{graphical representation} (see for example \citealp[Section III.6]{Liggett-1985})
 in terms of Poisson streams of potential incidents.
 We shall need to modify this simple construction later,
-but describe it here in order to fix important notation.
+but its description enables us to fix important notation.
 
 Suppose that the total population is composed of \(n\) individuals.
 The simplest possible graphical representation views
@@ -247,6 +247,25 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
     \item[](\emph{potential infections}) \(\tbinom{n}{2}\) independent Poisson processes of potential infections 
     (one Poisson (\(\alpha\)) process per unordered pair of time-lines of two individuals, producing a stream of potentially infectious contacts between these two individuals).
    \end{itemize}
+For convenience of future reference,
+we characterize the relevant structure by a definition.
+\begin{defn}[Streams of potential incidents for an \SIR epidemic, simple case]
+In the initial simple construction,
+streams of potential incidents for an \SIR epidemic of \(n\) individuals,
+based on
+an individual removal rate \(\beta>0\) and
+an infection rate (per contact) of \(\alpha>0\),
+\label{def:streams-incidents}
+are composed of
+\(n\) Poisson processes of \emph{potential removals}, each of intensity \(\beta\),
+and 
+\(\tbinom{n}{2}\) Poisson processes of potential infections,
+each of intensity \(\alpha\).
+All \(n+\tbinom{n}{2}=\tbinom{n+1}{2}\) Poisson processes are independent.
+\end{defn}
+
+   
+
  These streams of potential infection and removal incidents 
  determine simultaneous simulations of \SIR epidemics 
  from all possible sets of initial conditions,
@@ -317,21 +336,19 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  at time \(t\)'' (the second statement also
  includes the possibility of removal precisely at time \(t\)).
  
-In principle the resulting simulation can be extended to cover the complete process time-scale \([0,\infty)\),
+In principle the resulting simulation covers the complete process time-scale \([0,\infty)\),
  though
- in practice we will
+ in practice we 
  restrict attention to some bounded time-interval \([0,T]\) for a fixed 
  finite time horizon \(T<\infty\).
 %\xNB[WSK2]{Throughout this exposition $T$ will denote the length of time over which we are simulating the (eventually removal-conditioned) \SIR epidemic.}
 
+
   As mentioned above, 
   it proves necessary 
   for purposes of perfect simulation
-  to consider a more complicated variant
-  on the
-  above simple
-  construction of an \SIR epidemic.
- However it is first useful to consider the above simpler case.
+  to consider a more complicated graphical representation.
+ However we commence with the above simpler case.
  
  % = = = = = = = = = = = = = = = = = = = = = = =   
  \section{Algorithmic time and simulation of epidemic trajectories}\label{sec:algorithmic}
@@ -364,7 +381,7 @@ specific potential removal incidents then die at unit algorithmic time-rate per 
  at algorithmic time-rate \(\alpha\) per unit of process time \(t\); 
 specific potential infection incidents die at unit algorithmic time-rate per incident.%
 \xNB[WSK4]{Need good reference to Gibson \& Renshaw work?}
-This idea is linked to the work of 
+This idea is closely related to the work of 
 \citet{GibsonRenshaw-1998,GibsonRenshaw-2001}, who use a Metropolis-Hastings sampler
 in discrete algorithmic time:
 see also the use
@@ -396,9 +413,11 @@ can be  visualized
 as orthogonal to the process time axis \([0,\infty)\): incidents then 
 form a marked Poisson segment process
 in \(\Reals\times[0,\infty)\) with all segments
-run parallel to the first coordinate axis \(\Reals\)
-(Figure \ref{fig:graphical-representation-evolution}).
- \begin{Figure}
+lying parallel to the first coordinate axis \(\Reals\)
+(Figure \ref{fig:graphical-representation-evolution}).%
+\NB[WSK5]{Figures: need to make sense in grey-scale!}
+
+\begin{Figure}
  \includegraphics[width=0.5\linewidth]{graphical-representation-evolution.pdf}
   	\caption{\label{fig:graphical-representation-evolution}
 Evolution of the graphical representation of unconditioned \SIR epidemic
@@ -419,7 +438,6 @@ finally individual \(1\) potentially infects \(3\).
 The actual evolution depends on the initial state of infective and susceptible individuals.
 }
  \end{Figure}
-\NB[WSK5]{Figures: need to make sense in grey-scale!}
 
 The Poisson process of 
 segments corresponding to
@@ -457,7 +475,7 @@ these sequences form incidents for
 Markovian immigration-death processes in process time \(t\).
 Application of \ref{item:removal-rule} and \ref{item:infection-rule}
 of the previous section
-then yields a pattern of potential removals and infections:
+then yields streams of potential removals and infections:
 together with initial conditions this
 generates a trajectory of actual removals and infections.
 Thus the underlying
@@ -477,15 +495,26 @@ denoting which individual might infect which other individual.%
 
 
 The underlying independent spatial immigration-death processes are stipulated
-to be in statistical equilibrium: this means that
-the epidemic trajectory has the law of an
-\SIR epidemic. 
-This is Theorem \ref{thm:SIR-epidemic-1} below.
+to be in statistical equilibrium: it follows immediately that
+the streams of potential removals and infections
+intersecting any specified algorithmic time \(\tau\)
+satisfy the requirements of 
+Definition \ref{def:streams-incidents}. 
+Moreover
+the resulting epidemic trajectory 
+at the specified algorithmic time \(\tau\)
+has the law of an
+\SIR epidemic
+(this corresponds to
+Theorem \ref{thm:SIR-epidemic-1} below).
 We will focus on the continuous-time Markov chain formed by observing trajectories 
 only over the bounded process time-range \([0,T]\).
 Renewal-theoretic arguments using small-set theory 
 show that the Markov chain of trajectories over \([0,T]\)  
-converges to the \SIR epidemic as a unique statistical equilibrium: a convenient small set
+converges 
+in distribution
+to the \SIR epidemic as a \emph{unique}
+statistical equilibrium: a convenient small set
 (actually a regenerative atom)
 is given by the state in which none of
 the \(\tbinom{n+1}{2}\) 
@@ -494,7 +523,7 @@ at the relevant algorithmic time \(\tau\)
 place 
  any potential incidents at all in the time interval \([0,T]\).
 
-This atom is visited at algorithmic time \(\tau\)
+This regenerative atom is visited at algorithmic time \(\tau\)
 when \emph{none} of the segments corresponding to
 potential removal incidents
 and infection incidents actually intersect
@@ -503,7 +532,7 @@ the perpendicular segment
 It is immediate from Poisson process theory
 that there is a positive chance of this happening at any particular
 \(\tau\),
-and
+and that
 consequently this regenerative 
  atom will almost surely be visited in
  due course.
@@ -533,7 +562,7 @@ consequently this regenerative
  Suppose \(\widetilde{S}_t\), \(\widetilde{I}_t\), \(\widetilde{R}_t\) measure the numbers of
  susceptibles, infectives, and removals 
 at process time \(t\) for the algorithmic time process described above.
-We assume the algorithmic time process is 
+Suppose the algorithmic time process is 
  in stochastic equilibrium
  at a fixed algorithmic time \(\tau_0\).
 For this particular \(\tau_0\) the trajectory 

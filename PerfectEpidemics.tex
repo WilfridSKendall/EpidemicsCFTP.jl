@@ -242,9 +242,9 @@ one copy of the process time-axis \([0,\infty)\) per each population member.
  Potential infection and removal incidents are simulated using independent Poisson streams of the different kinds of potential incidents, 
  listed as follows:
    \begin{itemize}
-    \item[](\emph{potential removals}) \(n\) independent Poisson processes of potential removals 
+    \item[](\emph{potential removals}) \(n\) Poisson point processes of potential removals 
     (one Poisson \((\beta\)) process per time-line of individual);
-    \item[](\emph{potential infections}) \(\tbinom{n}{2}\) independent Poisson processes of potential infections 
+    \item[](\emph{potential infections}) \(\tbinom{n}{2}\) Poisson point processes of potential infections 
     (one Poisson (\(\alpha\)) process per unordered pair of time-lines of two individuals, producing a stream of potentially infectious contacts between these two individuals).
    \end{itemize}
 For convenience of future reference,
@@ -273,7 +273,7 @@ All \(n+\tbinom{n}{2}=\tbinom{n+1}{2}\) Poisson processes are independent.
  using the two following natural rules: 
  \begin{enumerate}[label=Rule \arabic*:, ref=Rule \arabic*]
  \item\label{item:removal-rule}
- potential removal incidents are realized as actual removals if and only if, 
+ potential removal incidents are realized as actual removals if, 
  immediately before the incident time, 
   \begin{enumerate}[(a)] 
   \item
@@ -285,7 +285,7 @@ All \(n+\tbinom{n}{2}=\tbinom{n+1}{2}\) Poisson processes are independent.
  then the status of the individual
  changes from infected to removed at the incident time;
  \item\label{item:infection-rule}
- potential infection incidents are realized as actual infections if and only if,
+ potential infection incidents are realized as actual infections if,
  immediately before the incident time,
   \begin{enumerate}[(a)] 
     \item neither of the two corresponding individuals have been removed,
@@ -321,15 +321,15 @@ All \(n+\tbinom{n}{2}=\tbinom{n+1}{2}\) Poisson processes are independent.
  \end{Figure}
 
  
- To help make precise statements about transitions, 
- we require that 
+It is useful to
+ require that
  individual state trajectories 
  (trajectories corresponding to evolution in process time)
- possess the ``c\`adl\`ag'' property. 
- This is to say, epidemic trajectories are continuous 
- from the right (``continue \`a droite'')
- and have limits from the left (``limites \`a gauche'').
- This allows us to differentiate between
+ are ``c\`adl\`ag''. 
+This French acronym specifies (a) epidemic trajectories are continuous 
+ from the right -- ``continue \`a droite'';
+(b) have limits from the left -- ``limites \`a gauche''.
+Thus we can distinguish between
  the statements
  ``removal of an individual has occurred before time \(t\)''
  and ``an individual is in the removed state 
@@ -356,7 +356,7 @@ In principle the resulting simulation covers the complete process time-scale \([
 % using a trajectory-valued process driven by 
 % spatial immigration-death processes.
 %
-In the simulation approach adopted here,
+In the following simulation algorithms,
 the trajectory of the \SIR epidemic over (process) time \([0,T]\)
 itself evolves in a separate time-scale:
 to be precise, this is arranged by evolving
@@ -621,12 +621,17 @@ at a specific algorithmic time \(\tau_0\).
 
  
 % = = = = = = = = = = = = = = = = = = = = = = =   
-\section{Restrictions, conditioning, and a variant construction}\label{sec:restrictions}
+\section{A variant construction, restrictions, and conditioning}\label{sec:restrictions}
 % Section 4: Implementing conditioning on removals by
 % fixing actual times of removal for the 
 % dynamic process evolving in algorithmic time.
 %
-Immigration-death processes in equilibrium are time-reversible
+The above construction is not particularly useful, as it is straightforward
+to sample directly from the \SIR epidemic.
+However it is considerably more interesting to try to sample from
+the \SIR epidemic when conditioned, for example, upon observations
+of removal times.
+Now immigration-death processes in equilibrium are time-reversible
 and
 consequently
 time-reversibility 
@@ -638,11 +643,11 @@ described above.
 This is an important consideration when seeking
 to sample from \emph{conditioned}
 realizations of the \SIR trajectory.
-Suppose the objective is to draw from the \SIR distributio
-n with trajectory conditioned to lie in a fixed subset \(A\)
+Suppose the objective is to draw from the \SIR distribution 
+with trajectory conditioned to lie in a fixed subset \(A\)
 of the space of possible trajectories.
 So long as 
-the conditioned process of trajectories
+the conditioned process of immigration-death processes
 (viewed as evolving in algorithmic time) remains
 irreducible,
 %\xNB[WSK2]{Better to talk about Harris property rather than irreducibility?!} 
@@ -672,12 +677,13 @@ removal of specific individuals.
 The resulting subset \(A\) of trajectory space produces a \emph{reducible} constrained Markov chain, since
 none of the permitted transitions of
 the free trajectory-valued Markov chain can
-alter which individual is removed at the first removal time, \emph{et cetera}.
+alter which particular individual is removed at the first removal time, \emph{et cetera}.
 This could perhaps be overcome using symmetry considerations;
 however it also appears to be difficult to discover any monotonicity structure, given the exchangeability of the \(n\) individuals involved
 in the conditioned removals.
 Monotonicity considerations are vastly important 
-for effective implementation of \CFTP,
+for effective implementation of \CFTP
+(see for example \citealp{Kendall-2004c}),
 so we modify
 the graphical representation of the free Markov chain 
 (and consequently of the resulting 
@@ -685,7 +691,7 @@ constrained Markov chain)
 to produce a variant process running in algorithmic time.
 
 % = = = = = = = = = = = = = = = = = = = = = = =   
-\subsection{Construction of a variant process}\label{ssec:variant}
+\subsection{Construction of the variant process}\label{ssec:variant}
 % Subsection 4.1: Construction details for the 
 % variant process.
 
@@ -701,21 +707,17 @@ once individuals have entered the ``removed'' state
 they can have
 no further effect
 on the evolution of the trajectory in process time.
+We need to describe how the variant process evolves in algorithmic time: 
+we will first describe the unconditioned version,
+and then consider the effect of conditioning on observed removals.
 
 We now change the dynamics of the algorithmic time evolution 
 to ensure that
 this pattern of division
 into three contiguous blocks
 persists under evolution in algorithmic time.
-%  Firstly, we will work now in discrete
-%  algorithmic time \(\Integers\) rather than continuous
-%  algorithmic time \(\Reals\).
-%  We will arrange matters 
-%  so that for all algorithmic times \(\tau\) 
-%  the removals, infectives and susceptibles 
-%  continue to be represented by three contiguous ranges partitioning \(\{1, \ldots, n\}\).
 The new trajectory-valued Markov chain 
-will be based on an independent sequence
+will be based on a sequence
 of collections of independent
 Poisson point processes (with respect to process time) as follows: for \(k\in\Integers\),
 at algorithmic time \(\tau=2(k-1)T\), we generate
@@ -783,8 +785,8 @@ uniform over the finite set \(\{1,\ldots,i\}\).
 \end{defn}
 
 
-The sequence of collections of Poisson point processes
-is analogous to the sequence of spatial immigration-death
+This sequence of collections of Poisson point processes
+corresponds directly to the sequence of spatial immigration-death
 processes discussed in Section \ref{sec:algorithmic}
 but occurs in \emph{discrete} algorithmic time,
 modified to ensure persistence
@@ -944,7 +946,7 @@ all
 independently marked by time-lines.
 (Note that we can tacitly omit consideration 
 of removals at process time \(T\);
-almost surely in equilibrium these will not occur.)
+almost surely removals will not occur exactly at time \(T\).)
 %\xNB[WSK3]{No need to worry about whether a potential removal incident occurs exactly at time $T$! Almost surely this will never happen.}
 
 \item\label{item:re-mark-removals}
@@ -1000,24 +1002,25 @@ in equilibrium almost surely there will be no such infections.)
 
 \ref{item:re-mark-removals}
 of this procedure
-is essentially redundant for this unconstrained
-construction. 
-However it will later 
-be required in order to ensure irreducibility of a constrained version
-corresponding to conditioning on observed removals; in practice
-it can be amalgamated
+is redundant when considering evolution in algorithmic time unconstrained
+by conditioning. 
+However it is vital in order to ensure irreducibility of the constrained version
+corresponding to conditioning on observed removals. 
+For the purposes of practical computation
+it can then be amalgamated
 with the continuous-time implementation of \ref{item:removals}.
 Additionally,
 the reversal of flow of time in
-\ref{item:infections} will turn out to be important
-when easing computation for the 
-conditioned version.
+\ref{item:infections} is computationally helpful
+for the 
+constrained version.
 
 
 The validity of the algorithm
-depends on 
-whether at any algorithmic time \(\tau\)
-it delivers a trajectory sampled from the \SIR epidemic. This follows by noticing that the progression from \(\tau=2(k-1)T\) to 
+follows by noting that 
+at any algorithmic time \(\tau\)
+the resulting trajectory has the distribution of an \SIR epidemic. 
+This follows by noticing that the progression from \(\tau=2(k-1)T\) to 
 \(\tau=2(k-1)T+t\) (for any \(t\in(0,2T]\))
 can be viewed as taking a sequence of up to three 
 Gibbs sampler steps (depending on 
@@ -1059,8 +1062,8 @@ Follows from the discussion before the theorem statement.
 \subsection{Restrictions on the variant process}\label{ssec:restrictions-variant}
 % Subsection 4.2: How we introduce conditioning
 % by imposing restrictions.
-We now wish to consider the above variant process,
-but constrained by requiring
+Consider now the above variant process
+constrained by requiring
 that the actual observed removal times
 \(0<\rho^1<\rho^2<\ldots<\rho^n\)
 should never change.
@@ -1077,48 +1080,42 @@ implemented only if the sequence of
 actual observed removal times is left unchanged.
 
 %  Suppose the state-space is restricted by fixing all \(n\) observed removal times as \(0<\rho^1<\rho^2<\ldots<\rho^n\).
-We list the required restrictions on the 
+Here are the resulting restrictions on the 
 evolution of the variant
-Markov chain based on its expression
+Markov chain 
 in continuous algorithmic time:%
 %\xNB[WSK1]{Check the list of relevant restrictions on the Markov chain in algorithmic time.}
 \begin{enumerate}[(a)]
  \item \label{item:refuse-new-removal}
 At \ref{item:removals}, 
-any proposal to introduce a new potential removal is refused if it would result in the introduction of a new \emph{active} removal;
-equivalently, the introduction of a new potential removal is refused if it is located on an infected part of the relevant time-line. 
+any proposal to introduce a new potential removal is refused 
+if it would result in the introduction of a new \emph{active} removal.
+This means that the introduction of a new potential removal is refused if it is located on an infected part of the relevant time-line. 
  \item \label{item:perpetuate-old-removal} 
 At \ref{item:removals}, 
 a proposal to delete an old removal is refused if it is an observed removal. 
 \item  \label{item:re-sample-old-mark}
 At \ref{item:re-mark-removals}, 
 if a current removal is actually 
-an old removal at  process time \(\rho\) whose withdrawal was refused at \ref{item:removals} because it is an observed removal,
-then we propose to re-sample its time-line mark
+an old removal at  process time \(\rho\) whose withdrawal was refused at \ref{item:removals} because 
+of being an observed removal,
+then its time-line mark is re-sampled
 \(m\) from a Uniform (\(\{1,\dots,n\}\)) distribution (effectively reassigning
 the removal to time-line \(m\)).
 This re-sampling is allowed to proceed
 unless it would result in there
-not being an observed removal at time \(\rho\) (equivalently, the removal is reassigned to time-line \(m\) if and only if  that time-line is infected at process time \(\rho\): \(R_{\rho-} < m \leq R_{\rho-} + I_{\rho-}\)).
+not being an observed removal at time \(\rho\)
+(equivalently, the removal is reassigned to time-line \(m\) if and only if 
+that time-line is infected at process time \(\rho\): \(R_{\rho-} < m \leq R_{\rho-} + I_{\rho-}\)).
+A similar re-sampling for newly introduced removals does not alter the distribution of the mark of
+the new removal, and can be ignored.
  \item  \label{item:refuse-new-infection}
 At \ref{item:infections},
 a proposal to introduce a potential infection is refused exactly when the infection would both immediately become active and then also
 lead (directly or indirectly) to infection of a time-line in a way that results
 in the activation of 
 a potential (i.e. non-observed) removal.
-% \\
-% Re-sampling of the newly introduced
-% potential removal marks
-% can be absorbed into the procedure of generating 
-% their marks in the first instance:
-%\xNB[SBC1]{Is this the right place for this paragraph? It concerns Stage 2 (removals) rather than Stage 3, and we haven't yet formally defined the epdidemic trajectory. \textbf{WSK:} you're right, I've commented it out.}
-% for the re-sampling to proceed, it would have to be a draw from 
-% \(\{1, \ldots, R_{\rho-}\}\cup\{I_{\rho-}+1,\ldots,n\}\). Since the epidemic trajectory is not actually affected by \ref{item:removals}, this re-sampling
-% draws from the conditional distribution of the
-% mark at the time of introduction of the potential
-% infection and so has no statistical effect.
-%\xNB[WSK3]{Go into more details about how we don't have to re-sample marks for potential but currently inactive removals.}
- \item  \label{item:perpetuate-old-infection}
+\item  \label{item:perpetuate-old-infection}
 At \ref{item:infections},
 a proposal to delete an active infection is refused if it would result in 
 de-activation of a currently active removal
@@ -1131,19 +1128,18 @@ on a subsequent time-line.
 
 The continuous formulation of the
 variant process is not a reversible process,
-nor even arising from finite compositions 
-of reversible steps, so we cannot directly use 
-reversibility to deduce the proposition
+and does not even arise from finite compositions 
+of reversible steps, so 
+reversibility cannot be used directly to deduce 
 that the constrained
 variant process will have the corresponding conditional distribution as equilibrium.
 (Note that the connection between reversibility,
 constraints, and conditional distributions
 ceases to apply even for the simple generalization
 of detailed balance to dynamical reversibility.)
-However we \emph{can} prove the required proposition
+However we \emph{can} prove the required proposition, stated below,
 using limiting arguments.
 
-% \TBC{Moving into restrictions on state-space, now need new Lemma which shows that updates can be viewed as limit of reversible Gibbs sampler steps.}
 
 \begin{NoteThis2}[Detailed balance]
 It is tempting to try to use notions of 
@@ -1349,7 +1345,7 @@ Note also that potential removals
 (marked by \(j\) say)
 and infections 
 (marked by \(j\le i\) say)
-will be influential on the algorithmic time evolution of the epidemic
+can be influential on the algorithmic time evolution of the epidemic
 only if they occur prior to 
 the observed removal for the 
 relevant time-line \(j\).

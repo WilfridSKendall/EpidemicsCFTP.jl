@@ -1079,12 +1079,12 @@ each proposal is
 implemented only if the sequence of 
 actual observed removal times is left unchanged.
 
-%  Suppose the state-space is restricted by fixing all \(n\) observed removal times as \(0<\rho^1<\rho^2<\ldots<\rho^n\).
-Here are the resulting restrictions on the 
-evolution of the variant
-Markov chain 
-in continuous algorithmic time:%
-%\xNB[WSK1]{Check the list of relevant restrictions on the Markov chain in algorithmic time.}
+\begin{defn}[Evolution of variant process]
+The variant
+\label{def:variant-evolution}
+Markov chain evolves
+in continuous algorithmic time as follows:%
+\NB[SBC1]{Add figure here showing timelines and giving example of events which would be refused?}
 \begin{enumerate}[(a)]
  \item \label{item:refuse-new-removal}
 At \ref{item:removals}, 
@@ -1120,11 +1120,11 @@ At \ref{item:infections},
 a proposal to delete an active infection is refused if it would result in 
 de-activation of a currently active removal
 on a subsequent time-line.
- \item[] 
-\emph{(Terminology)} If a proposal to remove an active infection is refused at \ref{item:infections}, then we say that the retained infection is \emph{perpetuated}. 
-%   Note that perpetuated infections must therefore previously (in algorithmic time) be actual infections.
 \end{enumerate}
-\NB[SBC1]{Add figure here showing timelines and giving example of events which would be refused?}
+\end{defn}
+\emph{(Terminology)} If a proposal to remove an active infection is refused at \ref{item:infections}, 
+then we say that the retained infection is \emph{perpetuated}. 
+
 
 The continuous formulation of the
 variant process is not a reversible process,
@@ -1279,7 +1279,8 @@ of the continuous-algorithmic time formulation
 (which is to say,
 the continuous-algorithmic time formulation 
 but forbidding introduction, re-marking or removal of potential incidents
-according to \ref{item:refuse-new-removal}-\ref{item:perpetuate-old-infection}).
+according to
+Definition \ref{def:variant-evolution}\ref{item:refuse-new-removal}-\ref{item:perpetuate-old-infection}).
 
 It follows directly that the constrained version
 of the continuous-algorithmic time formulation 

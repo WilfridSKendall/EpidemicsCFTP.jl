@@ -1092,9 +1092,9 @@ individuals are removed at these times, though
 this can be deduced as a consequence
 of the persistent separation of susceptibles,
 infectives, and removals as three disjoint intervals in \(\{1, \ldots, n\}\).)
-In effect, we view the progressive introduction of the sets of new potential removals
+The progressive introduction of the sets of new potential removals
 and infections, and the progressive
-withdrawal of the sets of previous potential removals and infections, as \emph{Metropolis-Hastings proposals}:
+withdrawal of the sets of previous potential removals and infections, are treated as \emph{Metropolis-Hastings proposals}:
 each proposal is
 implemented only if the sequence of 
 actual observed removal times is left unchanged.
@@ -1103,14 +1103,14 @@ actual observed removal times is left unchanged.
 When constrained to respect conditioning by removals, the variant
 \label{def:variant-evolution}
 Markov chain evolves
-in continuous algorithmic time as follows:%
+in continuous algorithmic time following Definition \ref{def:detailed} but modified as follows:%
 \NB[SBC1]{Add figure here showing timelines and giving example of events which would be refused?}
 \begin{enumerate}[(a)]
  \item \label{item:refuse-new-removal}
 At \ref{item:detailed-removals}, 
 any proposal to introduce a new potential removal is refused 
 if it would result in the introduction of a new \emph{active} removal.
-This means that the introduction of a new potential removal is refused if it is located on an infected part of the relevant time-line. 
+Consequently the introduction of a new potential removal is refused if it is located on an infected part of the relevant time-line. 
  \item \label{item:perpetuate-old-removal} 
 At \ref{item:detailed-removals}, 
 a proposal to delete an old removal is refused if it is an observed removal. 
@@ -1143,7 +1143,7 @@ on a subsequent time-line.
 \end{enumerate}
 \end{defn}
 \emph{(Terminology)} If a proposal to remove an active infection is refused at \ref{item:detailed-infections}, 
-then we say that the retained infection is \emph{perpetuated}. 
+the retained infection is \emph{perpetuated}. 
 
 
 The continuous formulation of the
@@ -1269,7 +1269,7 @@ In equilibrium in algorithmic time,
 the process \(({S}, {I}, {R})\) (viewed in process time) forms an \SIR epidemic conditioned on these removals taking place.
 More generally
 the algorithmic time process 
-converges to this formulation conditioned \SIR epidemic in distribution as algorithmic time tends to infinity.
+converges to the conditioned \SIR epidemic in distribution as algorithmic time tends to \(\infty\).
 \end{thm}
 \begin{proof}
 Begin by observing that we can obtain
@@ -1304,8 +1304,8 @@ Definition \ref{def:variant-evolution}\ref{item:refuse-new-removal}-\ref{item:pe
 
 It follows directly that the constrained version
 of the continuous-algorithmic time formulation 
- must also have as equilibrium the required
-conditional probability distribution.
+ must also have the required
+conditional probability distribution as equilibrium.
 
 Finally we deduce convergence to this
 equilibrium based on existence of a 
@@ -1357,22 +1357,22 @@ the constrained variant process.
 
 Note that, 
 because we condition on all 
-observed removal times, 
-the process of removals which actually occur,
-\(\{R_t:t\geq0\}\),
-can be treated as deterministic, with \(R_t = |\{i:\rho^i\le t\}|\).
+observed removal times, we can treat
+the process \(\{R_t:t\geq0\}\)
+of removals which actually occur
+as deterministic, with \(R_t = |\{i:\rho^i\le t\}|\).
 
 Note also that potential removals 
 (marked by \(j\) say)
 and infections 
 (marked by \(j\le i\) say)
-can be influential on the algorithmic time evolution of the epidemic
+will influence the algorithmic time evolution of the epidemic
 only if they occur prior to 
 the observed removal for the 
 relevant time-line \(j\).
 Additionally such potential removals and
 infections can be introduced without constraint
-if originating on time-line \(j\) prior to
+if originating on a time-line \(j\) prior to
 actual infection of that time-line.
 
 

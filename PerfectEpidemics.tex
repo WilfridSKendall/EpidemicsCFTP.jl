@@ -821,7 +821,7 @@ so the contiguous block structure is preserved.
 It is convenient to collect
 potential removal and infection incidents
 at algorithmic time \(\tau=2(k-1)T\).
-\begin{defn}
+\begin{defn}[Evolution of variant process in algorithmic time]
 The separate streams of incidents of Definitions \ref{def:potential} and \ref{def:variant-streams-incidents}
 at algorithmic time \(\tau=2(k-1)T\)
 are generated
@@ -906,16 +906,16 @@ At any particular algorithmic time \(t\in (2(k-1)T, 2kT]\)
 the set of potential removal and infection patterns
 at time \(2(k-1)T\) will have been partly replaced
 by independent proposals from \(\Pi_k\).
-As described in \ref{item:removals} below,
+As described in \ref{item:detailed-removals} below,
 over the algorithmic time interval
 \((2(k-1)T, (2k-1)T)\)
 the algorithm progresses continuously
 through the process time segment \((0,T)\)
 removing each old potential removal as it is encountered, and introducing each new potential removal as it is encountered.
-At \ref{item:re-mark-removals}
+At \ref{item:detailed-re-mark-removals}
 (algorithmic time \((2k-1)T\))
 all current potential removals are re-marked.
-Then in \ref{item:infections}
+Then in \ref{item:detailed-infections}
 the algorithm progresses continuously
 \emph{backwards}
 through the process time segment \((0,T)\)
@@ -923,9 +923,14 @@ removing each old potential infection as it is encountered, and introducing each
 \xNB[SBC1]{Do we need this paragraph? Just repeating what's said above -- delete? \textcolor{red}{WSK:} Complicated construction: this material now goes before exact specification to help show hwat is going on.}
 
 Here is a detailed description of this procedure.
-Over a period \((2(k-1)T, 2kT]\) of algorithmic time:
+\begin{defn}
+The variant process is implemented as follows.
+\label{def:detailed}
+Over a period \((2(k-1)T, 2kT]\) of algorithmic time
+% --
 \begin{enumerate}[\text{Stage} 1]
-\item\label{item:removals}
+% --
+\item\label{item:detailed-removals}
 At algorithmic time \(2(k-1)T\),
 collect the entire set 
 \(\PoissonRem_k\)
@@ -963,8 +968,8 @@ independently marked by time-lines.
 of removals at process time \(T\);
 almost surely removals will not occur exactly at time \(T\).)
 %\xNB[WSK3]{No need to worry about whether a potential removal incident occurs exactly at time $T$! Almost surely this will never happen.}
-
-\item\label{item:re-mark-removals}
+% --
+\item\label{item:detailed-re-mark-removals}
 At algorithmic time \((2k-1)T\),
 re-sample the time-line marks of
 \emph{all} potential removal incidents
@@ -974,8 +979,8 @@ Uniform(\(\{1,\dots,n\}\))).
 % \end{enumerate}
 %  \item Exactly at time \((m-1)T\) we re-sample the uniform marks corresponding to the various removal incidents. 
 %  (This step will prove to be crucial if we are to ensure that the result of restricting actual realized removals to specific nominated times still leads to an irreducible Markov chain.)
-
-\item\label{item:infections}
+% --
+\item\label{item:detailed-infections}
 At algorithmic time \((2k-1)T+\),
 collect the entire set
 \(\PoissonInf_k\)
@@ -1013,9 +1018,9 @@ of time-lines.
 of infections at process time \(0\) can be tacitly omitted;
 in equilibrium almost surely there will be no such infections.)
 \end{enumerate}
+\end{defn}
 
-
-\ref{item:re-mark-removals}
+\ref{item:detailed-re-mark-removals}
 of this procedure
 is redundant when considering evolution in algorithmic time unconstrained
 by conditioning. 
@@ -1023,10 +1028,10 @@ However it is vital in order to ensure irreducibility of the constrained version
 corresponding to conditioning on observed removals. 
 For the purposes of practical computation
 it can then be amalgamated
-with the continuous-time implementation of \ref{item:removals}.
+with the continuous-time implementation of \ref{item:detailed-removals}.
 Additionally,
 the reversal of flow of time in
-\ref{item:infections} is computationally helpful
+\ref{item:detailed-infections} is computationally helpful
 for the 
 constrained version.
 
@@ -1082,7 +1087,7 @@ constrained by requiring
 that the actual observed removal times
 \(0<\rho^1<\rho^2<\ldots<\rho^n\)
 should never change.
-(We do not explicitly specify which 
+(We do not need to specify explicitly which 
 individuals are removed at these times, though
 this can be deduced as a consequence
 of the persistent separation of susceptibles,
@@ -1094,25 +1099,25 @@ each proposal is
 implemented only if the sequence of 
 actual observed removal times is left unchanged.
 
-\begin{defn}[Evolution of variant process]
-The variant
+\begin{defn}[Evolution of variant process in algorithmic time constrained by conditioned removals]
+When constrained to respect conditioning by removals, the variant
 \label{def:variant-evolution}
 Markov chain evolves
 in continuous algorithmic time as follows:%
 \NB[SBC1]{Add figure here showing timelines and giving example of events which would be refused?}
 \begin{enumerate}[(a)]
  \item \label{item:refuse-new-removal}
-At \ref{item:removals}, 
+At \ref{item:detailed-removals}, 
 any proposal to introduce a new potential removal is refused 
 if it would result in the introduction of a new \emph{active} removal.
 This means that the introduction of a new potential removal is refused if it is located on an infected part of the relevant time-line. 
  \item \label{item:perpetuate-old-removal} 
-At \ref{item:removals}, 
+At \ref{item:detailed-removals}, 
 a proposal to delete an old removal is refused if it is an observed removal. 
 \item  \label{item:re-sample-old-mark}
-At \ref{item:re-mark-removals}, 
+At \ref{item:detailed-re-mark-removals}, 
 if a current removal is actually 
-an old removal at  process time \(\rho\) whose withdrawal was refused at \ref{item:removals} because 
+an old removal at  process time \(\rho\) whose withdrawal was refused at \ref{item:detailed-removals} because 
 of being an observed removal,
 then its time-line mark is re-sampled
 \(m\) from a Uniform (\(\{1,\dots,n\}\)) distribution (effectively reassigning
@@ -1125,19 +1130,19 @@ that time-line is infected at process time \(\rho\): \(R_{\rho-} < m \leq R_{\rh
 A similar re-sampling for newly introduced removals does not alter the distribution of the mark of
 the new removal, and can be ignored.
  \item  \label{item:refuse-new-infection}
-At \ref{item:infections},
+At \ref{item:detailed-infections},
 a proposal to introduce a potential infection is refused exactly when the infection would both immediately become active and then also
 lead (directly or indirectly) to infection of a time-line in a way that results
 in the activation of 
 a potential (i.e. non-observed) removal.
 \item  \label{item:perpetuate-old-infection}
-At \ref{item:infections},
+At \ref{item:detailed-infections},
 a proposal to delete an active infection is refused if it would result in 
 de-activation of a currently active removal
 on a subsequent time-line.
 \end{enumerate}
 \end{defn}
-\emph{(Terminology)} If a proposal to remove an active infection is refused at \ref{item:infections}, 
+\emph{(Terminology)} If a proposal to remove an active infection is refused at \ref{item:detailed-infections}, 
 then we say that the retained infection is \emph{perpetuated}. 
 
 
@@ -1270,8 +1275,8 @@ converges to this formulation conditioned \SIR epidemic in distribution as algor
 Begin by observing that we can obtain
 an \(m^\text{th}\) order discrete approximation
 to the continuous-algorithmic time formulation 
-for the variant process by breaking up each of \ref{item:removals}
-and \ref{item:infections} into \(2^m\) sequential
+for the variant process by breaking up each of \ref{item:detailed-removals}
+and \ref{item:detailed-infections} into \(2^m\) sequential
 sub-proposals concerning removals, respectively
 infections, in process time intervals
 \(((r-1)2^{-m}T, r 2^{-m}T)\),
@@ -1693,7 +1698,7 @@ Figure~\ref{fig:updated_removals} shows a possible outcome of updating the remov
 		\label{fig:updated_removals}} 
 \end{Figure}
 
-We now turn our attention to the effect of updating infections during the phase of algorithmic time \(((2k-1)T, 2kT]\). Recall that this is done by introducing new potential infections from the innovation process \(\PoissonInf_k\), censoring any which would immediately connect the current epidemic trajectory to the no-fly zone, and possibly perpetuating some infections present at algorithmic time \((2k-1)T\) as described in \ref{item:infections}. We shall write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\) after any censoring and perpetuating has taken place (so \(\Infections_k\subseteq \PoissonInf_k\cup \Infections_{k-1}\)), and 
+We now turn our attention to the effect of updating infections during the phase of algorithmic time \(((2k-1)T, 2kT]\). Recall that this is done by introducing new potential infections from the innovation process \(\PoissonInf_k\), censoring any which would immediately connect the current epidemic trajectory to the no-fly zone, and possibly perpetuating some infections present at algorithmic time \((2k-1)T\) as described in \ref{item:detailed-infections}. We shall write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\) after any censoring and perpetuating has taken place (so \(\Infections_k\subseteq \PoissonInf_k\cup \Infections_{k-1}\)), and 
 \[ \Infections_k^m = \left\{[\,\cdot\,;m,j] \in\Infections_k: 1\le j\le m\right\} \]
 for the set of potential infections affecting time-line \(m+1\).
 
@@ -1706,7 +1711,7 @@ for the set of potential infections affecting time-line \(m+1\).
 
 Figure~\ref{fig:updated_infections} demonstrates the effect of updating infections, beginning from the realisation in Figure~\ref{fig:updated_removals} which we suppose corresponds to algorithmic time \((2k-1)T\). The new set of potential infections in \(\PoissonInf_k\) are shown here in light green and red
 \NB[SBC1]{Better colours will be needed in the final figures!}
-; those in red have been censored. In this realisation there are also two perpetuated infections, shown in dark green. It is useful at this point to talk through the update of infections reaching time-line 5 in this realisation, as we move through the diagram from right to left (as described in \ref{item:infections}).
+; those in red have been censored. In this realisation there are also two perpetuated infections, shown in dark green. It is useful at this point to talk through the update of infections reaching time-line 5 in this realisation, as we move through the diagram from right to left (as described in \ref{item:detailed-infections}).
 \begin{itemize}
 	\item The first new potential infection (light green arrow from time-line 4 to 5) is of the form \([t; 4,4]\) with \(t>\rho^5\); that is, it occurs after both fourth and fifth individuals are removed. It can safely be accepted, but will play no active role in the epidemic.
 	\item We arrive next at a pre-existing potential infection (the dark green arrow emanating from time-line 3 in Figure~\ref{fig:updated_removals}); this does not form part of the last-viable epidemic, and so is deleted.

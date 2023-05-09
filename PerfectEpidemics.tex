@@ -107,9 +107,12 @@
 \newcommand{\Top}[1][]{{}^{\textup{top}#1}}
 
 % Marks of potential incident!
-\newcommand{\target}{{\textcolor{red}{i}}}
-\newcommand{\infectee}{{\textcolor{red}{i}}}
-\newcommand{\infector}{{\textcolor{red}{j}}}
+% \newcommand{\target}{{i}}
+% \newcommand{\infectee}{{i}}
+% \newcommand{\infector}{{j}}
+\newcommand{\target}{{\colorbox{green!30}{\textcolor{red}{i}}}}
+\newcommand{\infectee}{{\colorbox{yellow!30}{\textcolor{red}{i}}}}
+\newcommand{\infector}{{\colorbox{orange!30}{\textcolor{red}{j}}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Document
@@ -1484,50 +1487,66 @@ for which conditioned removals occur on uninfected portions of timelines!}
 Figure \ref{fig:no-fly} illustrates the construction
 of the epidemic trajectory.
 
-
-\textcolor{red}{\textbf{TO HERE}. In particular need to introduce \(\target\), \(\infector\) and \(\infectee\) in what follows.} 
-
-
 \medskip
 \noindent \textbf{Last-viable epidemic}\\
 The \emph{last-viable epidemic} is the latest (in process time) feasible epidemic trajectory which 
 avoids activating
 any potential removals and 
 yet produces all conditioned removals.
- It is located at time \(\eta^m\) for
- time-line \(m\), defined inductively by
- \begin{align}
- \eta^{n+1} \quad=&\quad \rho^n\,, \nonumber \\
- \eta^m \quad=&\quad
-\sup\left\{s\,:\,[s;m-1,j]\in\Infections[0, \eta^{m+1} \wedge \inf\Conditioned^{m:n}\wedge \rho^j ),\,1\le j\le m-1\right\} ,
-\qquad \text{ if }1<m\le n, \label{eq:last-epidemic} \\
- \eta^1 \quad=&\quad 0 \,.\nonumber
- \end{align}
+This last-viable epidemic infects time-line \(\infectee\)
+at time \(\eta^\infectee\), defined inductively by
+setting \(\eta^{n+1}=\rho^n\) and then defining
+ \begin{equation}
+\begin{aligned}
+%  \eta^{n+1} \quad=&\quad \rho^n\,, \\
+ \eta^\infectee \quad=&\quad
+\sup\left\{s\,:\,
+[s;\infectee,\infector]\in
+\Infections[0, \eta^{\infectee+1} \wedge \inf\Conditioned^{\infectee:n}\wedge 
+\rho^\infector ),\,1\le \infector<\infectee\right\} ,
+&& \qquad \text{ for }R_0+I_0<\infectee\le n, 
+\\
+ \eta^s \quad=&\quad 0 
+&& \qquad \text{ for }s\leq R_0+I_0.
+ \end{aligned}  
+\label{eq:last-epidemic} 
+ \end{equation}
  \xNB[SBC1]{Added $\eta^1$ to make ordering arguments neater later on.}
- The rationale for the definition of \(\eta^m\) is that
- the last-viable infection time of time-line \(m\) must certainly occur
- before the time at which the last-viable epidemic reaches time-line \(m+1\),
+ The rationale for the definition of \(\eta^\infectee\) is that
+ the last-viable infection time for time-line \(\infectee\) must certainly occur
+ before the time 
+ \(\eta^{\infectee{+}1}\)
+ at which the last-viable epidemic reaches time-line \(\infectee{+}1\),
  and must also occur before any conditioned removals currently assigned to
- any of the time-lines \(m,m+1,\dots,n\);
- moreover, since the infection incident is marked by time-lines \(m-1\) and \(j\), 
- it must take place before the \(j^\text{th}\) removal time, \(\rho^j\).
- Note that, under the conditioning, 
- the supremum in \eqref{eq:last-epidemic} must be taken over a non-empty set. 
+ any of the time-lines \(\infectee,\infectee{+}1,\dots,n\).
+ Finally, if the infection incident arises from a potential infection from \(\infector\)
+ to \(\infectee\)
+ then
+ it must take place before the \(\infector^\text{th}\) removal time, \(\rho^\infector\).
+ Note that if time-line \(\infectee\) is conditioned to be removed at time 
+ \(\rho^\infectee\) then there must be \emph{some} potential infection
+ satisfying the conditions expressed in 
+ the supremum in \eqref{eq:last-epidemic}. 
 
  
 \medskip
-Note that the following ordering must be obeyed by events on each
-time-line of a viable epidemic (one in which all individuals are to be infected, and with removals only at the conditioned times):
+The following ordering must be obeyed by events on each
+time-line of a viable epidemic 
+(one in which all individuals are to be infected, and with removals only at the conditioned times):
 \begin{equation}\label{eq:event-order}
-\sup\Removals^{1:m} \le \xi^m \le \phi^m \le \eta^m \le \inf\Conditioned^{m:n} 
-\le \rho^m \,, \quad 1\le m\le n \,.
+\sup\Removals^{1:\infectee} \le \xi^\infectee
+\;\le\; \phi^\infectee
+\;\le\; \eta^\infectee 
+\;\le\; \inf\Conditioned^{\infectee:n} 
+\;\le\; \rho^\infectee 
+\,, \qquad \text{ for } 1\le \infectee\le n \,.
 \end{equation}
-That is, the time at which time-line \(m\) becomes infected
-(\(\phi^m\)) must lie outside of the no-fly zone (with boundary
-\(\xi^m\)), and occur no later than the last-viable epidemic time
-(\(\eta^m\)); this in turn must occur before the first
+That is, the time at which time-line \(\infectee\) becomes infected
+(\(\phi^\infectee\)) must lie outside of the no-fly zone (with boundary
+\(\xi^\infectee\)), and occur no later than the last-viable epidemic time
+(\(\eta^\infectee\)); this in turn must occur before the first
 conditioned removal assigned to that time-line or one of a higher index 
-(\(\inf\Conditioned^{m:n}\)). 
+(\(\inf\Conditioned^{\infectee:n}\)). 
 
 
 
@@ -1558,11 +1577,11 @@ It is always possible to delete a potential (non-active) infection.
 An active infection can be deleted unless it simultaneously forms part of the epidemic trajectory 
 and the last-viable epidemic; 
 \xNB[SBC1]{When working right-to-left in algorithmic time, updating the
-values of $\phi^m$ and $\eta^m$ as we go. This might need to be clarified!}
+values of $\phi^\infectee$ and $\eta^\infectee$ as we go. This might need to be clarified!}
 if it \emph{does} belong to both these epidemics 
 then it may not be deleted without violating the conditioning, and therefore its deletion must be refused. 
-In other words, if \(\phi^m=\eta^m\) for some \(m\), the (necessarily
-active) infection occurring at time \(\phi^m\) must be perpetuated, 
+In other words, if \(\phi^\infectee=\eta^\infectee\) for some \(\infectee\), the (necessarily
+active) infection occurring at time \(\phi^\infectee\) must be perpetuated, 
 and these are the only infections subject to perpetuation.
 Potential infections can be introduced unless they would 
 immediately connect the current epidemic trajectory to the no-fly zone 
@@ -1581,10 +1600,14 @@ We denote this collection at algorithmic time \(2kT\) by \(\Epidemic_k\):
  \[
  \Epidemic_k \quad=\quad (\xi_k, \phi_k, \eta_k, \Conditioned_k, \Removals_k) \,,
  \]
-where we write \(\phi_k = \{\phi^m_k\}_{m=1}^n\) for the entire epidemic trajectory, etc.
+where we write \(\phi_k = \{\phi^\infectee_k\}_{\infectee=1}^n\) for the entire epidemic trajectory, etc.
+
+
+\textcolor{red}{\textbf{TO HERE}. In particular need to introduce \(\target\), \(\infector\) and \(\infectee\) in what follows.} 
+
 
 So far we have described the evolution of the variant Markov chain 
-as algorithmic time increases continuously from \(\tau=2(k{-}1)T\) to \(\tau = 2kT\), for \(k=1,2,\dots\). 
+as algorithmic time increases continuously from \(\tau=2(k{-}1)T\) to \(\tau = 2kT\), for \(k\in\Integers\). 
 We now present a series of results which permit a \emph{directl} 
 construction of \(\Epidemic_k\) using only \(\Epidemic_{k-1}\) 
 and the marked Poisson process \(\Poisson_k\) of removal and infection innovations.

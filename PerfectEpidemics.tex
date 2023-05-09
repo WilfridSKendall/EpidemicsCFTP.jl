@@ -108,11 +108,13 @@
 
 % Marks of potential incident!
 % \newcommand{\target}{{i}}
+% \newcommand{\targetm}{{i'}}
 % \newcommand{\infectee}{{i}}
 % \newcommand{\infector}{{j}}
-\newcommand{\target}{{\colorbox{green!30}{\textcolor{red}{i}}}}
-\newcommand{\infectee}{{\colorbox{yellow!30}{\textcolor{red}{i}}}}
-\newcommand{\infector}{{\colorbox{orange!30}{\textcolor{red}{j}}}}
+\newcommand{\target}{{\colorbox{green!30}{$\textcolor{red}{i}$}}}
+\newcommand{\targetm}{{\colorbox{green!30}{$\textcolor{red}{i'}$}}}
+\newcommand{\infectee}{{\colorbox{yellow!30}{$\textcolor{red}{i}$}}}
+\newcommand{\infector}{{\colorbox{orange!30}{$\textcolor{red}{j}$}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Document
@@ -1104,13 +1106,13 @@ of being an observed removal,
 then a proposal is made to re-sample its time-line mark
 \(\target\) from a Uniform (\(\{1,\dots,n\}\)) distribution 
 (proposing a reassignation of
-the removal to time-line \(\target'\in\{1,\dots,n\}\)).
+the removal to time-line \(\targetm\in\{1,\dots,n\}\)).
 This proposed change is rejected
 if it results in there
 not being an observed removal at time \(\rho\)
 (equivalently, the removal is reassigned to 
-a re-sampled time-line \(\target'\) if and only if 
-that time-line is infected at process time \(\rho\): \(R_{\rho-} < \target' \leq R_{\rho-} + I_{\rho-}\)).
+a re-sampled time-line \(\targetm\) if and only if 
+that time-line is infected at process time \(\rho\): \(R_{\rho-} < \targetm \leq R_{\rho-} + I_{\rho-}\)).
 A similar re-sampling for newly introduced removals does not alter the distribution of the mark of
 the new removal, and can be ignored.
 % --
@@ -1377,14 +1379,14 @@ actual infection of that time-line.
 
 Given sets of infection and removal incidents, 
 it is helpful to develop a vocabulary describing three non-decreasing \emph{trajectories} in time-line space.
-To that end, let \(\Infections\) denote some (for now, arbitrary) set of marked potential infections:
+To that end, let \(\Infections\) denote a set of marked potential infections (for now, arbitrary):
 recall that these infections are denoted by \([t;\infectee,\infector]\), where \(0\le t\le T\) and \(1\le \infector<\infectee\leq n\). 
 For \(a<b\) we shall write 
 \[ \Infections[a,b] = \{[t;\cdot,\cdot]\in \Infections: a\le t\le b\} \]
 for the set of potential infections lying within the process time window \([a,b]\).
-Similarly, for \(m=1,\dots,n\) let \(\Removals^m\) and \(\Conditioned^m\), respectively, 
-denote some sets of potential (non-observed) and conditioned (observed) removal times 
-assigned to time-line \(m\).%
+Similarly, let \(\Removals^m\) and \(\Conditioned^m\), respectively, 
+denote the sets of potential (non-observed) and conditioned (observed) removal times 
+assigned to time-line \(m\) for \(m=1,\dots,n\).%
 \NB[WSK6]{In fact always $\Conditioned^m=\{\rho^m\}$, since there can be just one conditioned removal per actual individual!}
 Consider a removal (whether potential or conditioned) at process time \(r\) 
 which is assigned to time-line \(\target\).
@@ -1464,8 +1466,10 @@ which would break our conditioning.)
  
  \medskip
  \noindent \textbf{Epidemic trajectory}\\
- The \emph{epidemic trajectory} is built using those potential infections that become active.
- It is located at time \(\phi^\infectee\) for time-line \(\infectee\), defined inductively by
+ The \emph{epidemic trajectory} is built using those potential infections that become active.%
+ \NB[WSK6]{Need to define ``valid'' epidemic trajectories: then this one is the earliest such.}
+ It is composed of the process times \(\phi^\infectee\) at which time-line \(\infectee\) becomes
+ infected (for \(1\leq \infectee\leq n\)), and can be defined inductively by
  \begin{align}\label{eq:epidemic}
   \phi^\infectee \quad=&\quad 0\,, 
   &\text{ if \(\infectee\leq R_0+I_0=I_0\)}\,,
@@ -1475,15 +1479,15 @@ which would break our conditioning.)
 & \text{ if } I_0 < \infectee \le n \,.
  \end{align}
 % =======
-That is, time-line \(m\) becomes infected at the time \(\phi^m\)
+Consequently time-line \(\infectee\) becomes infected at the time \(\phi^\infectee\)
 of the earliest infection in \(\Infections\) of the form \([s;\infector,\infectee]\),
-which avoids the no-fly zone \([0,\xi^\infectee]\), and which occurs in the interval \([\phi^{\infectee{-}1},\rho^\infector)\) 
+which both avoids the no-fly zone \([0,\xi^\infectee]\) and also occurs in the interval \([\phi^{\infectee{-}1},\rho^\infector)\) 
 during which time-lines \(\infectee{-}1\) and \(\infector\) are both infectious.
 Note that \(\phi^\infectee=\infty\) will not arise for any \(\infectee\) 
 if we condition on the \SIR epidemic being total (if all \(n\) individuals are eventually to be removed):
-a proposal to remove an infection will not be allowed if this is a consequence. %
-\NB[WSK6]{Observe that we must not start with an epidemic trajectory 
-for which conditioned removals occur on uninfected portions of timelines!}
+a proposal to remove an infection will not be allowed if this is a consequence.%
+\NB[WSK6]{Elaborate on why we can characterize infection in the way described here.}\text{ }%
+\NB[WSK6]{Observe that we must not start with an epidemic trajectory for which conditioned removals occur on uninfected portions of timelines!}
 Figure \ref{fig:no-fly} illustrates the construction
 of the epidemic trajectory.
 
@@ -1499,15 +1503,15 @@ setting \(\eta^{n+1}=\rho^n\) and then defining
  \begin{equation}
 \begin{aligned}
 %  \eta^{n+1} \quad=&\quad \rho^n\,, \\
- \eta^\infectee \quad=&\quad
+ &\eta^\infectee &&=\quad
 \sup\left\{s\,:\,
 [s;\infectee,\infector]\in
 \Infections[0, \eta^{\infectee+1} \wedge \inf\Conditioned^{\infectee:n}\wedge 
 \rho^\infector ),\,1\le \infector<\infectee\right\} ,
-&& \qquad \text{ for }R_0+I_0<\infectee\le n, 
+& \text{ for }R_0+I_0<\infectee\le n, 
 \\
- \eta^s \quad=&\quad 0 
-&& \qquad \text{ for }s\leq R_0+I_0.
+ &\eta^s &&=\quad 0 
+& \text{ for }s\leq R_0+I_0.
  \end{aligned}  
 \label{eq:last-epidemic} 
  \end{equation}
@@ -1523,8 +1527,8 @@ setting \(\eta^{n+1}=\rho^n\) and then defining
  to \(\infectee\)
  then
  it must take place before the \(\infector^\text{th}\) removal time, \(\rho^\infector\).
- Note that if time-line \(\infectee\) is conditioned to be removed at time 
- \(\rho^\infectee\) then there must be \emph{some} potential infection
+ Note that if time-line \(r\) is conditioned to be removed at time 
+ \(\rho^r\) for all \(r\) then there must be \emph{some} potential infection
  satisfying the conditions expressed in 
  the supremum in \eqref{eq:last-epidemic}. 
 
@@ -1600,15 +1604,12 @@ We denote this collection at algorithmic time \(2kT\) by \(\Epidemic_k\):
  \[
  \Epidemic_k \quad=\quad (\xi_k, \phi_k, \eta_k, \Conditioned_k, \Removals_k) \,,
  \]
-where we write \(\phi_k = \{\phi^\infectee_k\}_{\infectee=1}^n\) for the entire epidemic trajectory, etc.
-
-
-\textcolor{red}{\textbf{TO HERE}. In particular need to introduce \(\target\), \(\infector\) and \(\infectee\) in what follows.} 
+where we write \(\phi_k = \{\phi^\infectee_k\,:\, \infectee=1.\ldots n\}\) for the entire epidemic trajectory, etc.
 
 
 So far we have described the evolution of the variant Markov chain 
 as algorithmic time increases continuously from \(\tau=2(k{-}1)T\) to \(\tau = 2kT\), for \(k\in\Integers\). 
-We now present a series of results which permit a \emph{directl} 
+We now present a series of results which permit a \emph{direct} 
 construction of \(\Epidemic_k\) using only \(\Epidemic_{k-1}\) 
 and the marked Poisson process \(\Poisson_k\) of removal and infection innovations.
 
@@ -1616,69 +1617,219 @@ and the marked Poisson process \(\Poisson_k\) of removal and infection innovatio
 \begin{lem}\label{lem:removal1}
 Consider the phase of algorithmic time  \((2(k{-}1)T, (2k{-}1)T]\) during
 which the set of removal times is updated.
-This can be implemented very directly as follows:
+This can be implemented very directly as follows:%
+\NB[WSK6]{Try to avoid using $r$ as an index: we want $r$ to mean ``removal''.}\text{ }%
+\NB[WSK6]{We could use $R_0+I_0< m\le n$!}
 \begin{enumerate}[\text{Stage} 1]
 % --
-\item\label{item:removals-v2} For each time-line \(m\): set \(\Conditioned^m_k = \Conditioned^m_{k-1}\); delete all potential removals in \(\Removals^m_{k-1}\); introduce a new set of potential removals \(\Removals^m_k\) where, for \(2\le m\le n\),
-	\[ \Removals^m_k = \{s\,:\,[s;m] \in \PoissonRem_k[0,\phi^m_{k-1}) \} \,;\]
+\item\label{item:removals-v2} For each time-line \(m\): set \(\Conditioned^m_k = \Conditioned^m_{k-1}\);
+delete all potential removals in \(\Removals^m_{k-1}\); 
+introduce a new set of potential removals \(\Removals^m_k\) where, for \(2\le m\le n\),
+\[
+	\Removals^m_k \quad=\quad \{s\,:\,[s;m] \in \PoissonRem_k[0,\phi^m_{k-1}) \} \,;
+\]
 % --
-\item\label{item:re-mark-removals-v2} Update the time-line to which each conditioned (respectively, potential) removal is assigned, as follows: for a given removal, sample \(m'\sim \textrm{Uniform}\{1,\dots,n\}\), and reassign the removal to time-line \(m'\) if and only if time-line \(m'\) is (respectively, is \textbf{not}) infected at the removal time. \\
-In other words, if \(\rho\in\Conditioned^m_k\) then move \(\rho\) to the set \(\Conditioned^{m'}_k\) if and only if \(\phi^{m'}_{k-1} \le \rho \le \rho^{m'}\); if not, leave \(\rho\) in the set \(\Conditioned^m_k\). Similarly, if \(r\in \Removals^m_k\) then move \(r\) to the set \(\Removals^{m'}_k\) if and only if \(r< \phi^{m'}_{k-1}\).
+\item\label{item:re-mark-removals-v2}
+Update the time-line to which each conditioned (respectively, potential) removal is assigned, as follows:
+for a given removal, sample \(\targetm\sim \textrm{Uniform}\{1,\dots,n\}\), 
+and reassign the removal to time-line \(\targetm\) 
+if and only if time-line \(\targetm\) is (respectively, is \textbf{not}) infected at the removal time. 
+\\
+In other words, if 
+\(\rho\) has target mark \(\target\) and is only a potential removal (hence
+\(\rho\in\Conditioned^\target_k\)) 
+then resample the target mark to \(\targetm\) and
+move \(\rho\) to the set \(\Conditioned^{\targetm}_k\)
+if and only if \(\phi^{\targetm}_{k-1} \le \rho \le \rho^{\targetm}\); 
+if not, leave \(\rho\) in the set \(\Conditioned^\target_k\). 
+Similarly, if \(r\)  has target mark \(\target\) and is a conditioned / observed removal
+(hence \(r\in \Removals^\target_k\)) then move \(r\) to the set \(\Removals^{\targetm}_k\) 
+if and only if \(r< \phi^{\targetm}_{k-1}\).%
+\NB[WSK6]{Try to avoid using $r$ as an index: we wanr $r$ to mean ``removal''.}
 \end{enumerate}
 \end{lem}
 \begin{proof}
-We have already observed that when updating removals over the time interval \((2(k{-}1)T, (2k{-}1)T]\) the only removals whose deletions will be refused are the observed removal times \(\rho^1,\dots,\rho^n\); any potential removals at time \(2(k{-}1)T\) (i.e. those in \(\Removals^m_{k-1}\)) will necessarily be deleted as part of the update. The new potential removals making up the point-set \(\Removals^m_k\) are incident times of \(\PoissonRem_k\), conditioned so that upon introduction no such removal becomes active; in other words, the incident times of \(\PoissonRem_k\) which belong to \(\Removals^m_k\) are exactly those which occur in the process time window \([0,\phi^m_{k-1})\).
+We have already observed that when updating removals over the time interval \((2(k{-}1)T, (2k{-}1)T]\) 
+the only removals whose deletions will be refused are the observed removal times \(\rho^1,\dots,\rho^n\);
+any potential removals at time \(2(k{-}1)T\) 
+(i.e. those in \(\Removals^\target_{k-1}\) for various \(\target\)) 
+will necessarily be deleted as part of the update. 
+The new potential removals making up the point-sets \(\Removals^\target_k\)  for various \(\target\)
+are incident times of \(\PoissonRem_k\),
+conditioned so that upon introduction no such removal becomes active;
+in other words, incident times of \(\PoissonRem_k\) belonging to \(\Removals^\target_k\) 
+are exactly those occurring in the process time window \([0,\phi^\target_{k-1})\)
+(where \(\target\) is the associated target mark).
 
-In \ref{item:re-mark-removals-v2}, as has already been noted, re-sampling of time-lines for potential removals clearly has no effect on the distribution of \(\Removals^m_k\), since the conditioning here is exactly the same as in \ref{item:removals-v2}. (In fact this step is, in practice, redundant for potential removals; we only include it here in order to emphasize that the reassignment step applies equally to \emph{all} removals.) Furthermore, each conditioned removal \(\rho\) is reassigned to a uniformly chosen time-line \(m'\), subject to the condition that the infection trajectory at algorithmic time \(2(k{-}1)T\) has reached time-line \(m'\) before time \(\rho\); i.e. the reassignment goes ahead if and only if \(\phi^{m'}_{k-1}\le \rho\le \rho^{m'}\).
+In \ref{item:re-mark-removals-v2}, as has already been noted, 
+re-sampling of time-lines for potential removals 
+has no effect on the distribution of \(\Removals^\target_k\),
+since the conditioning here is exactly the same as in \ref{item:removals-v2}. 
+(In fact in practice this step is redundant for potential removals; 
+we only include it here in order to emphasize that the reassignment step applies equally to
+\emph{all} removals.) 
+Furthermore, each conditioned removal \(\rho\) is reassigned to a uniformly chosen time-line \(\targetm\), 
+subject to the condition that the infection trajectory at algorithmic time \(2(k{-}1)T\) 
+has reached time-line \(\targetm\) before time \(\rho\); 
+i.e. the reassignment goes ahead if and only if \(\phi^{\targetm}_{k-1}\le \rho\le \rho^{\targetm}\).
 \end{proof}
 
-Figure~\ref{fig:updated_removals} shows a possible outcome of updating the removals for the epidemic realisation of Figure~\ref{fig:no-fly}. The potential removals (blue disks) on each time-line have been replaced with a new set of potential removals conditioned not to intersect with the epidemic trajectory, and some of the conditioned removals (red disks) have been reassigned to different time-lines: \(\rho^1\) has moved from \(\Conditioned^1\) to \(\Conditioned^2\), and both \(\rho^3\) and \(\rho^4\) have been reassigned to time-line 4.
+Figure~\ref{fig:updated_removals} gives an example of updating removals for the epidemic realisation
+of Figure~\ref{fig:no-fly}. 
+
+% % Figure~\ref{fig:updated_removals} shows a possible outcome of updating the removals for the epidemic realisation
+% % of Figure~\ref{fig:no-fly}. 
+% % The potential removals (blue disks) on each time-line have been replaced with a new set of potential removals 
+% % conditioned not to intersect with the epidemic trajectory,
+% % and some of the conditioned removals (red disks) have been reassigned to different time-lines: 
+% % \(\rho^1\) has moved from \(\Conditioned^1\) to \(\Conditioned^2\), 
+% % and both \(\rho^3\) and \(\rho^4\) have been reassigned to time-line 4.
 \begin{rem}
-	Note that although the boundary of the no-fly zone (\(\xi)\) and the last-viable epidemic (\(\eta\)) will in general be affected by the updating of removals (indeed, both have changed during the update from Figure~\ref{fig:no-fly} to Figure~\ref{fig:updated_removals}), the epidemic trajectory \(\phi\) will remain unchanged during this update. This is a consequence of our conditioning: when sampling new potential removals we do not allow any to intersect the current epidemic trajectory, and when reassigning conditioned removals we only do so if the relevant time-line is already infected at the corresponding process time. It follows that the value of \(\phi^m\) at algorithmic time \((2k{-}1)T\) (i.e. after updating all removals) agrees with that of \(\phi^m_{k-1}\) for all time-lines \(m=1,\dots,n\).
+	Note that although the boundary of the no-fly zone (\(\xi)\) and the last-viable epidemic (\(\eta\)) 
+	will in general be affected by the updating of removals 
+	(indeed, both have changed during the update from Figure~\ref{fig:no-fly} 
+	to Figure~\ref{fig:updated_removals}), 
+	the epidemic trajectory \(\phi\) will remain unchanged during this update. 
+	This is a consequence of our conditioning: 
+	when sampling new potential removals we do not allow any to intersect the current epidemic trajectory,
+	and when reassigning conditioned removals we only do so if the relevant time-line is already infected
+	at the corresponding process time. 
+	It follows that the value of \(\phi^\target\) at algorithmic time \((2k{-}1)T\) 
+	(i.e. after updating all removals) 
+	agrees with that of \(\phi^\target_{k-1}\) for all time-lines \(\target=1,\dots,n\).
 \end{rem}
 
 \begin{Figure}
 	\includegraphics[width=4in]{updated_removals.pdf}
 	\caption{
 		Demonstration of the update of removals, beginning from the realisation in Figure~\ref{fig:no-fly}.
+		The potential removals (blue disks) on each time-line have been replaced with a new set of potential removals 
+conditioned not to intersect with the epidemic trajectory,
+and some of the conditioned removals (red disks) have been reassigned to different time-lines: 
+\(\rho^1\) has moved from \(\Conditioned^1\) to \(\Conditioned^2\), 
+and both \(\rho^3\) and \(\rho^4\) have been reassigned to time-line 4.
 		\label{fig:updated_removals}} 
 \end{Figure}
 
-We now turn our attention to the effect of updating infections during the phase of algorithmic time \(((2k{-}1)T, 2kT]\). Recall that this is done by introducing new potential infections from the innovation process \(\PoissonInf_k\), censoring any which would immediately connect the current epidemic trajectory to the no-fly zone, and possibly perpetuating some infections present at algorithmic time \((2k{-}1)T\) as described in \ref{item:detailed-infections}. We shall write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\) after any censoring and perpetuating has taken place (so \(\Infections_k\subseteq \PoissonInf_k\cup \Infections_{k-1}\)), and 
-\[ \Infections_k^m = \left\{[\,\cdot\,;m,j] \in\Infections_k: 1\le j\le m\right\} \]
-for the set of potential infections affecting time-line \(m+1\).
+We now turn our attention to the effect of updating infections
+during the phase of algorithmic time \(((2k{-}1)T, 2kT]\).
+Recall that this is done by introducing new potential infections from the innovation process
+\(\PoissonInf_k\), censoring any which would immediately connect the current epidemic trajectory
+to the no-fly zone, and also possibly perpetuating some infections present at algorithmic time \((2k{-}1)T\) 
+as described in \ref{item:detailed-infections}.
+We shall write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\)
+after any censoring and perpetuating has taken place
+(so \(\Infections_k\subseteq \PoissonInf_k\cup \Infections_{k-1}\)), and 
+\[ 
+\Infections_k^\infectee \quad=\quad 
+\left\{[\,\cdot\,;\infectee,\infector] \in\Infections_k: 1\le \infector< \infectee\right\} 
+\]
+for the set of potential infections affecting time-line \(\infectee\).
 
 \begin{Figure}
-	\includegraphics[width=4in]{updated_infections.pdf}
-	\caption{
-		Demonstration of the update of infections, beginning from the realisation in Figure~\ref{fig:updated_removals}.
+\begin{subfigure}[][2.5in][t]{.5\textwidth}
+  \centering
+  \includegraphics[width=2.8in]{updated_removals.pdf}
+  \caption{Removals updated.}
+\end{subfigure}
+\begin{subfigure}[][2.5in][t]{.5\textwidth}
+  \centering
+	\includegraphics[width=2.8in]{updated_infections.pdf}
+  \caption{Additionally, infections updated.}
+\end{subfigure}
+\caption{
+Demonstration of the update of infections (the right-most figure (b)), 
+beginning from the realisation in Figure~\ref{fig:updated_removals} (repeated here as the left-most figure (a)).
+The new set of potential infections in \(\PoissonInf_k\) are shown here in light green and red;
+those in red have been censored. 
+In this realisation there are also two perpetuated infections, shown in dark green. 
+Here follows a list of how infections reaching time-line 5 have been updated in this realisation, 
+moving through the diagram from right to left (as described in \ref{item:detailed-infections}).
+\\
+1. The first new potential infection (light green arrow from time-line 4 to 5) 
+	is of the form \([t; 5,4]\) with \(t>\rho^5\); 
+	that is, it occurs after both fourth and fifth individuals are removed.
+	It can safely be accepted, but will play no active role in the epidemic.
+\\
+2. We arrive next at a pre-existing potential infection
+	(the dark green arrow emanating from time-line 3 in Figure~\ref{fig:updated_removals});
+	this does not form part of the last-viable epidemic, and so is deleted.
+\\
+3. Next we arrive at a pre-existing infection at process time \(\eta^5_{k-1}\); 
+	this forms part of the last-viable epidemic in Figure~\ref{fig:updated_removals} (dashed blue arrow),
+	but can safely be deleted since there is another infection in \(\Infections^4_{k-1}\) 
+	at time \(\phi^5_{k-1}\). 
+	Deleting this infection means that the last-viable epidemic trajectory changes, 
+	and the last possible infection time of time-line 5 becomes  \(\eta^5_k =\phi^5_{k-1}\).
+\\
+4. The next infection we meet is that at time \(\phi^5_{k-1}\). 
+	Since, in this realisation, there are no new potential infections in \(\PoissonInf_k\) 
+	which could infect time-line 5 later in process time than this one, 
+	at this moment in algorithmic time the infection in question still belongs to both 
+	the epidemic trajectory and the last-viable epidemic, and thus cannot be deleted.
+	This infection is therefore perpetuated, and included in the set \(\Infections^4_k\);
+	this is shown as a dark green arrow emanating from time-line 4 in Figure~\ref{fig:updated_infections}.
+\\
+5. We next see a new potential infection (light green) in \(\PoissonInf_k\); 
+	this does not connect the epidemic trajectory to the no-fly zone and is therefore accepted. 
+	In Figure~\ref{fig:updated_infections} we see that this now becomes 
+	the time at which the epidemic trajectory reaches time-line 5.
+\\
+6. Finally, let us mention the potential infection in \(\PoissonInf_k\) 
+	occurring just after \(\rho^3\) in process time: 
+	this would immediately connect the epidemic trajectory to the no-fly zone on time-line 5, 
+	and is therefore censored (shown in red).
+\\
+The remaining infections are updated similarly. 
 		\label{fig:updated_infections}} 
 \end{Figure}
 
-Figure~\ref{fig:updated_infections} demonstrates the effect of updating infections, beginning from the realisation in Figure~\ref{fig:updated_removals} which we suppose corresponds to algorithmic time \((2k{-}1)T\). The new set of potential infections in \(\PoissonInf_k\) are shown here in light green and red
+Figure~\ref{fig:updated_infections} demonstrates the effect of updating infections,
+beginning from the realisation in Figure~\ref{fig:updated_removals}
+which we suppose corresponds to algorithmic time \((2k{-}1)T\).%
 \NB[SBC1]{Better colours will be needed in the final figures!}
-; those in red have been censored. In this realisation there are also two perpetuated infections, shown in dark green. It is useful at this point to talk through the update of infections reaching time-line 5 in this realisation, as we move through the diagram from right to left (as described in \ref{item:detailed-infections}).
-\begin{itemize}
-	\item The first new potential infection (light green arrow from time-line 4 to 5) is of the form \([t; 4,4]\) with \(t>\rho^5\); that is, it occurs after both fourth and fifth individuals are removed. It can safely be accepted, but will play no active role in the epidemic.
-	\item We arrive next at a pre-existing potential infection (the dark green arrow emanating from time-line 3 in Figure~\ref{fig:updated_removals}); this does not form part of the last-viable epidemic, and so is deleted.
-	\item Next we arrive at a pre-existing infection at process time \(\eta^5_{k-1}\); this forms part of the last-viable epidemic in Figure~\ref{fig:updated_removals} (dashed blue arrow), but can safely be deleted since there is another infection in \(\Infections^4_{k-1}\) at time \(\phi^5_{k-1}\). Deleting this infection means that the last-viable epidemic trajectory changes, and the last possible infection time of time-line 5 becomes  \(\eta^5_k =\phi^5_{k-1}\).
-	\item The next infection we meet is that at time \(\phi^5_{k-1}\). Since, in this realisation, there are no new potential infections in \(\PoissonInf_k\) which could infect time-line 5 later in process time than this one, at this moment in algorithmic time the infection in question still belongs to both the epidemic trajectory and the last-viable epidemic, and thus cannot be deleted. This infection is therefore perpetuated, and included in the set \(\Infections^4_k\); this is shown as a dark green arrow emanating from time-line 4 in Figure~\ref{fig:updated_infections}.
-	\item We next see a new potential infection (light green) in \(\PoissonInf_k\); this does not connect the epidemic trajectory to the no-fly zone and is therefore accepted. In Figure~\ref{fig:updated_infections} we see that this now becomes the time at which the epidemic trajectory reaches time-line 5.
-	\item Finally, let us mention the potential infection in \(\PoissonInf_k\) occurring just after \(\rho^3\) in process time: this would immediately connect the epidemic trajectory to the no-fly zone on time-line 5, and is therefore censored (shown in red).
-\end{itemize}
-The remaining infections are updated similarly. The next few results describe the evolution of the last-viable epidemic, no-fly zone and epidemic trajectory during the phase of algorithmic time \(((2k{-}1)T, 2kT]\).
+The next few results describe the evolution of the last-viable epidemic, 
+no-fly zone and epidemic trajectory during the phase of algorithmic time \(((2k{-}1)T, 2kT]\).
+
+
+% The new set of potential infections in \(\PoissonInf_k\) are shown here in light green and red;
+% those in red have been censored. 
+% In this realisation there are also two perpetuated infections, shown in dark green. 
+% Here follows a list of how infections reaching time-line 5 have been updated in this realisation, 
+% as we move through the diagram from right to left (as described in \ref{item:detailed-infections}).
+% \begin{itemize}
+% 	\item The first new potential infection (light green arrow from time-line 4 to 5) 
+% 	is of the form \([t; 5,4]\) with \(t>\rho^5\); 
+% 	that is, it occurs after both fourth and fifth individuals are removed.
+% 	It can safely be accepted, but will play no active role in the epidemic.
+% 	\item We arrive next at a pre-existing potential infection (the dark green arrow emanating from time-line 3 in Figure~\ref{fig:updated_removals}); this does not form part of the last-viable epidemic, and so is deleted.
+% 	\item Next we arrive at a pre-existing infection at process time \(\eta^5_{k-1}\); this forms part of the last-viable epidemic in Figure~\ref{fig:updated_removals} (dashed blue arrow), but can safely be deleted since there is another infection in \(\Infections^4_{k-1}\) at time \(\phi^5_{k-1}\). Deleting this infection means that the last-viable epidemic trajectory changes, and the last possible infection time of time-line 5 becomes  \(\eta^5_k =\phi^5_{k-1}\).
+% 	\item The next infection we meet is that at time \(\phi^5_{k-1}\). Since, in this realisation, there are no new potential infections in \(\PoissonInf_k\) which could infect time-line 5 later in process time than this one, at this moment in algorithmic time the infection in question still belongs to both the epidemic trajectory and the last-viable epidemic, and thus cannot be deleted. This infection is therefore perpetuated, and included in the set \(\Infections^4_k\); this is shown as a dark green arrow emanating from time-line 4 in Figure~\ref{fig:updated_infections}.
+% 	\item We next see a new potential infection (light green) in \(\PoissonInf_k\); this does not connect the epidemic trajectory to the no-fly zone and is therefore accepted. In Figure~\ref{fig:updated_infections} we see that this now becomes the time at which the epidemic trajectory reaches time-line 5.
+% 	\item Finally, let us mention the potential infection in \(\PoissonInf_k\) occurring just after \(\rho^3\) in process time: this would immediately connect the epidemic trajectory to the no-fly zone on time-line 5, and is therefore censored (shown in red).
+% \end{itemize}
+% The remaining infections are updated similarly. The next few results describe the evolution of the last-viable epidemic, no-fly zone and epidemic trajectory during the phase of algorithmic time \(((2k{-}1)T, 2kT]\).
+
+
+\textcolor{red}{\textbf{TO HERE}. In particular need to introduce \(\target\), \(\infector\) and \(\infectee\) in what follows.} 
 
 
 \begin{lem}\label{lem:update_last-viable}
 Consider the phase of algorithmic time \(((2k{-}1)T, 2kT]\) during
 which the set of infection times is updated.
 %\xNB[SBC1]{The definition of $\Poisson^I$ (and $\Poisson^R$) probably need clarifying earlier on, to make clear the difference between process and algorithmic times.} 
-The last-viable epidemic $\eta_k$ at time \(2kT\) satisfies the following equations: 
-\begin{align}
-\eta^{n+1}_k \quad&=\quad \rho^n  \nonumber \\
- \eta^m_k \quad&=\quad \phi^m_{k-1} \vee \sup \{s\,:\, [s;m-1,j] \in \PoissonInf_k [0, \eta^{m+1}_k\wedge \inf\Conditioned^{m:n}_k \wedge \rho^j),\,1\le j\le m-1 \}\,,  \quad \text{ if }1<m\le n \label{eq:update_last-viable} \,.
+The last-viable epidemic $\eta_k$ at time \(2kT\) satisfies the following: 
+\begin{equation}
+ \label{eq:update_last-viable}
+\begin{aligned}
+&\eta^{n+1}_k &&=\quad
+\rho^n  \\
+&\eta^m_k     &&=\quad
+\phi^m_{k-1} \vee \sup \{s\,:\, [s;m-1,j] \in \PoissonInf_k [0, \eta^{m+1}_k\wedge \inf\Conditioned^{m:n}_k \wedge \rho^j),\,1\le j\le m-1 \}\,,  
+& \text{ if }1<m\le n \,.
 %  \eta^m(\tau+2T) \quad&=\quad \phi^m(\tau+T)\vee \sup \left\{\Poisson^I_{m-1}(\tau+2T) \cap [0, \eta^{m+1}(\tau+2T)\wedge \inf\Conditioned^{m:n}(\tau+T)) \right\}\,, \quad \text{ if }1<m\le n \label{eq:update_last-viable} \,.
- \end{align}
+\end{aligned}
+\end{equation}
 \end{lem}
 
 \begin{proof}

@@ -1473,10 +1473,11 @@ which would break our conditioning.)
  \begin{align}\label{eq:epidemic}
   \phi^\infectee \quad=&\quad 0\,, 
   &\text{ if \(\infectee\leq R_0+I_0=I_0\)}\,,
-  \nonumber\\
+  \nonumber\\ 
   \phi^\infectee \quad=&\quad
-  \inf\left\{s\,:\,[s;\infectee,\infector]\in\Infections[\phi^{\infectee{-}1}\vee \xi^\infectee,\rho^\infector),\,1\le \infector<\infectee\right\} ,
-& \text{ if } I_0 < \infectee \le n \,.
+  \inf\left\{s\,:\,[s;\infectee,\infector]\in
+		\Infections[\phi^{\infectee{-}1}\vee \xi^\infectee,\rho^\infector),\,1\le \infector<\infectee\right\} ,
+& \text{ if } I_0 < \infectee < n \,.
  \end{align}
 % =======
 Consequently time-line \(\infectee\) becomes infected at the time \(\phi^\infectee\)
@@ -1506,7 +1507,7 @@ setting \(\eta^{n+1}=\rho^n\) and then defining
  &\eta^\infectee &&=\quad
 \sup\left\{s\,:\,
 [s;\infectee,\infector]\in
-\Infections[0, \eta^{\infectee+1} \wedge \inf\Conditioned^{\infectee:n}\wedge 
+\Infections[0, \eta^{\infectee{+}1} \wedge \inf\Conditioned^{\infectee:n}\wedge 
 \rho^\infector ),\,1\le \infector<\infectee\right\} ,
 & \text{ for }R_0+I_0<\infectee\le n, 
 \\
@@ -1609,9 +1610,9 @@ where we write \(\phi_k = \{\phi^\infectee_k\,:\, \infectee=1.\ldots n\}\) for t
 
 So far we have described the evolution of the variant Markov chain 
 as algorithmic time increases continuously from \(\tau=2(k{-}1)T\) to \(\tau = 2kT\), for \(k\in\Integers\). 
-We now present a series of results which permit a \emph{direct} 
+We now present a series of results which together permit a \emph{direct} 
 construction of \(\Epidemic_k\) using only \(\Epidemic_{k-1}\) 
-and the marked Poisson process \(\Poisson_k\) of removal and infection innovations.
+and the marked Poisson process \(\Poisson_k\) of proposals of potential removal and infection incidents.
 
 
 \begin{lem}\label{lem:removal1}
@@ -1717,9 +1718,9 @@ Recall that this is done by introducing new potential infections from the innova
 \(\PoissonInf_k\), censoring any which would immediately connect the current epidemic trajectory
 to the no-fly zone, and also possibly perpetuating some infections present at algorithmic time \((2k{-}1)T\) 
 as described in \ref{item:detailed-infections}.
-We shall write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\)
+We write \(\Infections_k\) for the set of potential infections present at algorithmic time \(2kT\)
 after any censoring and perpetuating has taken place
-(so \(\Infections_k\subseteq \PoissonInf_k\cup \Infections_{k-1}\)), and 
+(so \(\Infections_k\subseteq \PoissonInf_k\cup \Infections_{k-1}\)), and set
 \[ 
 \Infections_k^\infectee \quad=\quad 
 \left\{[\,\cdot\,;\infectee,\infector] \in\Infections_k: 1\le \infector< \infectee\right\} 
@@ -1811,49 +1812,98 @@ no-fly zone and epidemic trajectory during the phase of algorithmic time \(((2k{
 % The remaining infections are updated similarly. The next few results describe the evolution of the last-viable epidemic, no-fly zone and epidemic trajectory during the phase of algorithmic time \(((2k{-}1)T, 2kT]\).
 
 
-\textcolor{red}{\textbf{TO HERE}. In particular need to introduce \(\target\), \(\infector\) and \(\infectee\) in what follows.} 
-
-
 \begin{lem}\label{lem:update_last-viable}
 Consider the phase of algorithmic time \(((2k{-}1)T, 2kT]\) during
 which the set of infection times is updated.
 %\xNB[SBC1]{The definition of $\Poisson^I$ (and $\Poisson^R$) probably need clarifying earlier on, to make clear the difference between process and algorithmic times.} 
-The last-viable epidemic $\eta_k$ at time \(2kT\) satisfies the following: 
+The last-viable epidemic $\eta_k$ at time \(2kT\) can be determined as follows.
+Set \(\eta^{n+1}_k = \rho^n\) and use the following recursion:
 \begin{equation}
  \label{eq:update_last-viable}
-\begin{aligned}
-&\eta^{n+1}_k &&=\quad
-\rho^n  \\
-&\eta^m_k     &&=\quad
-\phi^m_{k-1} \vee \sup \{s\,:\, [s;m-1,j] \in \PoissonInf_k [0, \eta^{m+1}_k\wedge \inf\Conditioned^{m:n}_k \wedge \rho^j),\,1\le j\le m-1 \}\,,  
-& \text{ if }1<m\le n \,.
+\eta^\infectee_k  \quad=\quad
+\phi^\infectee_{k-1} \vee 
+\sup \{s\,:\, 
+[s;\infectee,j] \in \PoissonInf_k [0, \eta^{\infectee{+}1}_k
+	\wedge \inf\Conditioned^{\infectee:n}_k 
+	\wedge \rho^\infector]
+		,\,1\le \infector<\infectee \}\,,  
+\qquad \text{ if }\;1<\infectee\le n \,.
 %  \eta^m(\tau+2T) \quad&=\quad \phi^m(\tau+T)\vee \sup \left\{\Poisson^I_{m-1}(\tau+2T) \cap [0, \eta^{m+1}(\tau+2T)\wedge \inf\Conditioned^{m:n}(\tau+T)) \right\}\,, \quad \text{ if }1<m\le n \label{eq:update_last-viable} \,.
-\end{aligned}
 \end{equation}
 \end{lem}
 
 \begin{proof}
-This follows from a similar argument to the rationale behind equation~\eqref{eq:last-epidemic}. The last-viable epidemic must infect time-line \(m\) before any conditioned removals currently assigned to that time-line or any time-line of greater index (i.e. by time \(\inf\Conditioned^{m:n}_k\)), and also no later than the time at which the last-viable epidemic reaches the line above (\(\eta^{m+1}_k\)). Recall that when updating infections we work backwards through the process time segment \([0,T]\). Given the value of \(\eta^{m+1}_k\), if \(\PoissonInf_k\) contains at least one new potential infection incident of the form \([s;m-1,j]\) with \(s\) in the interval 
-\[(\phi^m_{k-1},\eta^{m+1}_k \wedge  \inf\Conditioned^{m:n}_k\wedge \rho^j)  \]
-then \(\eta^m_k\) will be the supremum of these times; if not, the active infection at process time \(\phi^m_{k-1}\) will be perpetuated as we move from algorithmic time \((2k{-}1)T\) to \(2kT\), in which case we arrive at \(\eta^m_k = \phi^m_{k-1}\).
+This follows from a similar argument to the rationale behind equation~\eqref{eq:last-epidemic}. 
+Recall that when updating infections we work backwards through the process time segment \([0,T]\).
+The last-viable epidemic must infect time-line \(\infectee\) 
+before any conditioned removals currently assigned whether to that time-line or 
+whether
+to any time-line of greater index
+(which is to say, no later than time \(\inf\Conditioned^{\infectee:n}_k\)).
+Moreover time-line \(\infectee\) must be infected by the last-viable epidemic
+no later than the time \(\eta^{\infectee{+}1}_k\) at which 
+the last-viable epidemic reaches the time-line above (indexed by \(\infectee{+}1\)). 
+Finally, if the last-viable infection for time-line indexed by \(\infectee\)
+is derived from the time-line indexed by \(\infector<\infectee\) then this must happen
+before time \(\rho^\infector\) when
+the time-line indexed by \(\infector\) is removed from the epidemic.
+Consequently, given the value of \(\eta^{\infectee{+}1}_k\), 
+if \(\PoissonInf_k\) contains at least one new potential infection incident of the form
+\([s;\infectee,\infector]\) (for \(1\leq \infector<\infectee)\)), with \(s\) in the interval 
+\[
+(\phi^\infectee_{k-1}\,,\;\eta^{\infectee{+}1}_k \wedge  \inf\Conditioned^{\infectee:n}_k\wedge \rho^\infector) 
+\]
+then \(\eta^\infectee_k\) will be the supremum of these times;
+if not, the active infection at process time \(\phi^\infectee_{k-1}\) 
+will be perpetuated as algorithmic time \((2k{-}1)T\) increases to \(2kT\), 
+yielding \(\eta^\infectee_k = \phi^\infectee_{k-1}\).
 \end{proof}
 
 
+\bigskip
+\textcolor{red}{\textbf{TO HERE}. In particular need to introduce \(\target\), \(\infector\) and \(\infectee\) in what follows. And \textbf{check!}} 
+\bigskip
 
  \begin{lem}\label{lem:infect4}
- 	Consider the phase of algorithmic time \(((2k{-}1)T, 2kT]\) during
- 	which the set of infection times is updated. The no-fly zone boundary \(\xi_k\) and infection times \(\Infections_k\) at time \(2kT\) satisfy the following equations:
- 	\begin{align}
-	\xi^n_k\quad &= \quad \sup \Removals^{1:n}_k\,, & \nonumber
-	\intertext{and,}
-	\Infections^m_k \quad &= \quad \left\{[s;m,j]\in\PoissonInf_k\,:\, s\notin [\phi^m_{k-1}, \xi^{m+1}_k], 1\le j\le m\right\} \cup \{[\eta^{m+1}_k;m,\cdot\,]\}\,,   &1\le m<n\,, \label{eq:inf_set_update} \\
-	\xi^m_k \quad&=\quad \sup \Removals^{1:m}_k \vee \sup\Infections^m_k[0,\xi^{m+1}_k)\,,  &2\le m<n \,.\nonumber
-	\end{align} 	
+Consider the phase of algorithmic time \(((2k{-}1)T, 2kT]\) during
+which the set of infection times is updated. 
+The no-fly zone boundary \(\xi_k\) and infection times \(\Infections_k\) at time \(2kT\) 
+satisfy the following recursion: setting \(\xi^n_k=\sup \Removals^{1:n}_k\),%
+\NB[WSK6]{In \eqref{eq:inf_set_update} first equation, account for various removals $\rho^\infector$ for $\infector< \infectee$?}
+\begin{equation}
+\label{eq:inf_set_update}
+\begin{aligned}
+\Infections^\infectee_k \quad&=\quad 
+\left\{[s;\infectee,\infector]
+\in\PoissonInf_k\,:\,
+s\notin [\phi^{\infectee{-}1}_{k-1}, \xi^\infectee_k], 1\le \infector< \infectee\right\} 
+	\cup \{[\eta^{\infectee}_k;\infectee,\cdot\,]\}\,,   &1\le \infector<n\,,  \\
+\xi^\infectee_k \quad&=\quad 
+\sup \Removals^{1:\infectee}_k \vee \sup\Infections^\infectee_k[0,\xi^{\infectee{+}1}_k)\,,  &2\le \infectee<n \,.
+\end{aligned} 
+\end{equation}
  \end{lem}
  \begin{proof}
- 	The equation for \(\xi^n_k\) follows immediately from the definition of the no-fly zone boundary on time-line \(n\). Similarly, for \(1\le m<n\), given the set \(\Infections^m_k\), the equation for \(\xi^m_k\) follows directly from equation~\eqref{eq:boundary-time}.
+The equation for \(\xi^n_k\) follows immediately from the definition of the no-fly zone boundary
+on time-line \(n\). 
+Similarly, for \(1\le \infectee< n\), 
+given the set \(\Infections^\infectee_k\), 
+the equation for \(\xi^\infectee_k\) follows directly from equation~\eqref{eq:boundary-time}.
  	
- 	It therefore remains to establish exactly which potential infections belong to the set \(\Infections_k^m\). This set is produced from the realisation \(\PoissonInf_k\) by censoring any proposed infection that would cause the gap between the current epidemic trajectory and the no-fly zone to be bridged; that is, working backwards through the process time interval \([0,T]\), we censor any infection belonging to the (possibly empty) time interval \([\phi^m_{k-1}, \xi^{m+1}_k]\). In addition, the set \(\Infections_k^m\) may include a single perpetuated infection: if so, then this perpetuated infection occurs at process time \(\phi^{m+1}_{k-1}\), and by Lemma~\ref{lem:update_last-viable} this is equal to \(\eta^{m+1}_k\); alternatively, if there is no perpetuated infection, then \(\eta^{m+1}_k\), the time when the last-viable epidemic reaches time-line \(m+1\), is already a (non-censored) member of the point-set \(\PoissonInf_k\), in which case taking the union in \eqref{eq:inf_set_update} has no effect.
+It therefore remains to establish exactly which potential infections belong to the set \(\Infections_k^\infectee\).
+This set is produced from the realisation \(\PoissonInf_k\) 
+by censoring any proposed infection that would cause the gap between the current epidemic trajectory 
+and the no-fly zone to be bridged; 
+that is, working backwards through the process time interval \([0,T]\),
+we censor any infection belonging to the (possibly empty) time interval 
+\([\phi^{\infectee{-}1}_{k-1}, \xi^\infectee_k]\). 
+In addition, the set \(\Infections_k^\infectee\) may include a single perpetuated infection: 
+if so, then this perpetuated infection occurs at process time \(\phi^{\infectee}_{k-1}\),
+and by Lemma~\ref{lem:update_last-viable} this is equal to \(\eta^\infectee_k\); 
+alternatively, if there is no perpetuated infection, 
+then \(\eta^\infectee_k\), the time when the last-viable epidemic reaches time-line \(\infectee\), 
+is already a (non-censored) member of the point-set \(\PoissonInf_k\), 
+in which case taking the union in \eqref{eq:inf_set_update} has no effect.
  \end{proof}
 
 The final result of this section, Corollary~\ref{cor:update_no-fly_direct}, shows how we may update the no-fly zone boundary \(\xi_k\) and epidemic trajectory \(\phi_k\) directly using the Poisson process of infections, \(\PoissonInf_k\); this completely removes the intermediate steps in Lemma~\ref{lem:infect4} of calculating which potential infections belong to the sets \(\Infections_k^m\).

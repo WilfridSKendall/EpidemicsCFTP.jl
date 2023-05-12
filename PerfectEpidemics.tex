@@ -1420,6 +1420,11 @@ and therefore could not be removed at this process time,
 which would break our conditioning.)
 \xNB[SBC1]{I've now imposed that $\Removals^\target [\rho^\target,T] = \emptyset$: no problem with this that I can see, as far as theory is concerned, but pictures containing potential removals will need to be altered!}
 
+\bigskip
+\textcolor{red}{WORK THROUGH ALL THIS ON PAPER}
+\bigskip
+
+
 \medskip
 \noindent \textbf{No-fly zone}\\
  The first trajectory is the boundary of the \emph{``no-fly'' zone}. %
@@ -1432,16 +1437,20 @@ which would break our conditioning.)
  where \(\xi^\target\) is
  defined inductively by  
  \NB[SBC1]{Is it worth making these zone descriptions into formal definitions? \textcolor{red}{WSK6:} good idea, but not done this yet.}
- \begin{align}\label{eq:boundary-time}
+\begin{equation}
+ \begin{aligned}
  &\xi^n =\sup \Removals^{1:n}\,,  
- &\text{ last potential removal on or below time-line }n\,,
- \nonumber\\
+\qquad\qquad\qquad
+ & \text{ last of all potential removals}\,,
+\\
  &\xi^\target = \sup \Removals^{1:\target} \vee \sup\left\{s\,:\,[s;\target,\infector]\in\Infections[0,\xi^{\target+1}],\, 1\le \infector\leq\target\right\},
 &\text{ if }1<\target<n\,, 
- \nonumber\\
+\\
  &\xi^1 = -\infty \,.  
 &
- \end{align}
+ \end{aligned}
+ \label{eq:boundary-time}
+ \end{equation}
  \NB[SBC1]{Added definition of $\xi^1$ to make ordering arguments neater later on. This is in keeping with the definition of $\sup\emptyset$.}
  (Here and throughout we use the convention that \(\sup\emptyset=-\infty\)
  and \(\inf\emptyset=\infty\).)
@@ -1869,7 +1878,7 @@ Consider the phase of algorithmic time \(((2k{-}1)T, 2kT]\) during
 which the set of infection times is updated. 
 The no-fly zone boundary \(\xi_k\) and infection times \(\Infections_k\) at time \(2kT\) 
 satisfy the following recursion: setting \(\xi^n_k=\sup \Removals^{1:n}_k\),%
-\NB[WSK6]{In \eqref{eq:inf_set_update} first equation, account for various removals $\rho^\infector$ for $\infector< \infectee$?}
+\NB[WSK6]{In (\ref{eq:inf_set_update}) first equation, account for various removals $\rho^\infector$ for $\infector< \infectee$?}
 \begin{equation}
 \label{eq:inf_set_update}
 \begin{aligned}
@@ -1877,9 +1886,11 @@ satisfy the following recursion: setting \(\xi^n_k=\sup \Removals^{1:n}_k\),%
 \left\{[s;\infectee,\infector]
 \in\PoissonInf_k\,:\,
 s\notin [\phi^{\infectee{-}1}_{k-1}, \xi^\infectee_k], 1\le \infector< \infectee\right\} 
-	\cup \{[\eta^{\infectee}_k;\infectee,\cdot\,]\}\,,   &1\le \infector<n\,,  \\
+	\cup \{[\eta^{\infectee}_k;\infectee,\cdot\,]\}\,,  
+&\text{ for } 1\le \infectee<n\,,  \\
 \xi^\infectee_k \quad&=\quad 
-\sup \Removals^{1:\infectee}_k \vee \sup\Infections^\infectee_k[0,\xi^{\infectee{+}1}_k)\,,  &2\le \infectee<n \,.
+\sup \Removals^{1:\infectee}_k \vee \sup\Infections^\infectee_k[0,\xi^{\infectee{+}1}_k)\,,  
+&\text{ for } 2\le \infectee<n \,.
 \end{aligned} 
 \end{equation}
  \end{lem}
@@ -1906,16 +1917,31 @@ is already a (non-censored) member of the point-set \(\PoissonInf_k\),
 in which case taking the union in \eqref{eq:inf_set_update} has no effect.
  \end{proof}
 
-The final result of this section, Corollary~\ref{cor:update_no-fly_direct}, shows how we may update the no-fly zone boundary \(\xi_k\) and epidemic trajectory \(\phi_k\) directly using the Poisson process of infections, \(\PoissonInf_k\); this completely removes the intermediate steps in Lemma~\ref{lem:infect4} of calculating which potential infections belong to the sets \(\Infections_k^m\).
+The final result of this section, Corollary~\ref{cor:update_no-fly_direct}, 
+shows how we may update the no-fly zone boundary \(\xi_k\) and epidemic trajectory \(\phi_k\) 
+directly using the Poisson process of infections, \(\PoissonInf_k\); 
+this completely removes the intermediate steps in Lemma~\ref{lem:infect4} 
+of calculating which potential infections belong to the sets \(\Infections_k^m\).
 
 \begin{cor}\label{cor:update_no-fly_direct}
-	After updating infections over the phase of algorithmic time \(((2k{-}1)T, 2kT] =(\tau+T, \tau+2T] \) as described in Lemmas~\ref{lem:update_last-viable} and~\ref{lem:infect4}, the inequality \(\xi^m_k \le \eta^m_k\) continues to hold for all time-lines. Furthermore, the no-fly zone boundary on time-line \(m\in\{2,\dots,n-1\}\) satisfies 
+	After updating infections over the phase of algorithmic time \(((2k{-}1)T, 2kT] =(\tau+T, \tau+2T] \) 
+	as described in Lemmas~\ref{lem:update_last-viable} and~\ref{lem:infect4}, 
+	the inequality \(\xi^\infectee_k \le \eta^\infectee_k\) continues to hold for all time-lines \(\infectee\). 
+	Furthermore, the no-fly zone boundary on time-line \(\infectee\in\{2,\dots,n-1\}\) satisfies 
 	\begin{equation}\label{eq:update_no-fly_direct}
-		\xi^m_k = \sup \Removals^{1:m}_k \vee \sup\left\{s\,:\,[s;m,\cdot\,]\in\PoissonInf_k[0,\phi^m_{k-1}\wedge \xi^{m+1}_k\right)\}\,,
+		\xi^\infectee_k 
+\quad=\quad 
+\sup \Removals^{1:\infectee}_k \vee 
+\sup\left\{s\,:\,[s;\infectee,\cdot\,]
+			\in\PoissonInf_k[0,\phi^\infectee_{k-1}\wedge \xi^{\infectee+1}_k]\right\}\,,
 	\end{equation}
-	and the epidemic trajectory on time-line \(m\ge 2\) is given by
+	and the epidemic trajectory on time-line \(\infectee\ge 2\) is given by
 	\begin{equation}\label{eq:update_epidemic-trajectory_direct}
-	\phi^m_k = \inf \left\{s\,:\,[s;m-1,\cdot\,]\in\PoissonInf_k[\phi^{m-1}_k \vee \xi^m_k,\rho^{m-1})\right\} \wedge \eta^m_k\,.
+	\phi^\infectee_k 
+\quad=\quad
+\inf \left\{s\,:\,[s;\infectee-1,\cdot\,]
+		\in\PoissonInf_k[\phi^{\infectee-1}_k \vee \xi^\infectee_k,\rho^{\infectee-1}]\right\}
+			\wedge \eta^\infectee_k\,.
 	\end{equation}
 \end{cor}
 
@@ -1923,10 +1949,22 @@ The final result of this section, Corollary~\ref{cor:update_no-fly_direct}, show
 
 \begin{proof}
 	Lemmas~\ref{lem:infect4}, \ref{lem:removal1} and \ref{lem:update_last-viable} (in that order) show that
-	\[ \xi^n_k = \sup \Removals^{1:n}_k \le \phi^n_{k-1} \le \eta^n_k \,. \]
-	We now proceed by induction. Suppose that  \(\xi^{m+1}_k \le \eta^{m+1}_k\) for some \(m<n\).
-	We have two cases to consider. Firstly, if \(\phi^m_{k-1} \le \xi^{m+1}_k \le \eta^{m+1}_k\) then Lemma~\ref{lem:infect4} implies that 
-	\[ \Infections^m_k[0,\xi^{m+1}_k) = \left\{[s;m,\cdot\,]\in \PoissonInf_k[0,\phi^m_{k-1})\right\}\,. \]
+\[ 
+\xi^n_k \quad=\quad
+\sup \Removals^{1:n}_k \le \phi^n_{k-1} \le \eta^n_k \,.
+\]
+We now proceed by induction. 
+Suppose that  \(\xi^{\infectee+1}_k \le \eta^{\infectee+1}_k\) for some \(\infectee<n\).
+There are two cases to consider. 
+Firstly, 
+if \(\phi^\infectee_{k-1} \le \xi^{\infectee+1}_k\)
+(and thus \(\phi^\infectee_{k-1} \le \xi^{\infectee+1}_k \le \eta^{\infectee+1}_k\))
+then Lemma~\ref{lem:infect4} implies that 
+\[ 
+\Infections^\infectee_k[0,\xi^{\infectee+1}_k] 
+\quad=\quad
+\left\{[s;\infectee,\cdot\,]\in \PoissonInf_k[0,\phi^\infectee_{k-1})\right\}\,. 
+\]
 	Alternatively, if \(\xi^{m+1}_k \le \phi^m_{k-1} \wedge \eta^{m+1}_k\) then
 	\[ \Infections^m_k[0,\xi^{m+1}_k) = \left\{[s;m,\cdot\,]\in \PoissonInf_k[0,\xi^{m+1}_k)\right\}\,. \]
 	So in either case, given our inductive assumption, we see that 

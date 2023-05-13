@@ -718,46 +718,49 @@ for \(k\in\Integers\).
 \begin{enumerate}[1:]
 % --
 \item[] \emph{Potential removals}
-are marked points in process time \([0,\infty)\)
+are marked points \([t;\target]\) located at process time \(t\in[0,\infty)\)
 on \emph{target} time-lines (one time-line per individual).
-Target time-lines are determined by target marks which are
-draws \(\target\) from the Uniform (\(\{1, \ldots, n\}\))
+Target time-lines are determined by target marks \(\target\)
+with Uniform (\(\{1, \ldots, n\}\))
 distribution: the target mark assigns the potential removal to 
 the time-line of the individual targetted by the potential removal. 
 \\
 A potential removal at process time \(t\) 
-will only become active
-if its target mark \(\target\) lies in the interval
-\([R_{t-}+1,R_{t-}+I_{t-}]\)
-(corresponding to whether or not
-the targetted individual is infected at time \(t-\)).
-In this case we say that the removal \emph{succeeds},
-and we set
-\((I_t, R_t) = (I_{t-}-1, R_{t-}+1)\).
+\emph{succeeds} only when
+\(R_{t-}< \target \leq R_{t-}+I_{t-}\).
+So
+the targetted individual is then infected at time \(t-\) and
+we set
+\((I_t, R_t) = (I_{t-}{-}1, R_{t-}{+}1)\).
 % --
 \item[]
 \emph{Potential infections} associated with specified \emph{infectee}
 individuals \(i=2, \ldots, n\), 
-are marked points in process time \([0,\infty)\)
-with infectee indexed by a mark \(\infectee\) 
-drawn from the Uniform (\(\{2, \ldots, n\}\))
+are marked points \([t;\infectee,\infector]\) 
+located at process time \(t\in[0,\infty)\):
+\emph{infectee} mark \(\infectee\) has 
+Uniform (\(\{2, \ldots, n\}\))
 distribution
-together with designated \emph{infector} individual indexed by a 
-conditionally
-independent mark \(\infector\) of
-Uniform (\(\{1, \ldots, \infectee{-}1\}\)) distribution.
+and indexes the infected time-line,
+while \emph{infector} mark \(\infector\) has
+conditional
+Uniform (\(\{1, \ldots, \infectee{-}1\}\)) distribution
+and indexes the infecting time-line
+(thus \(\infectee>\infector\) comprises a draw of an 
+unordered pair drawn uniformly without replacement from \(\{1, \ldots, n\}\)).
 \\
 A potential infection at process time \(t\) 
-only becomes active if (a) the target individual \(\infectee\) is currently (at time \(t-\)) 
-the non-infected individual of \emph{lowest} index (so \(R_{t-}+I_{t-}+1=\infectee\)), and 
-(b) the corresponding infector mark \(\infector\) 
-exceeds \(R_{t-}\).
-Note that a consequence of (a) and (b) is that at time \(t-\) 
+\emph{succeeds}
+only when
+(a) the infectee time-line \(\infectee\) is (at time \(t-\)) 
+the non-infected time-line of \emph{lowest} index (so \(R_{t-}+I_{t-}{+}1=\infectee\)),
+while 
+(b) \(R_{t-}<\infector<R_{t-}+I_{t-}{+}1=\infectee\).
+So
 the infectee is susceptible while the 
-infector is infected.
-In this case the infection \emph{succeeds}: individual \(\infectee\) is switched from
-susceptible to infected at time \(t\), 
-and \((I_t,S_t)=(I_{t-}+1, S_{t-}-1)\).
+infector is infected at time \(t-\) , and we
+set
+\((I_t,S_t)=(I_{t-}{+}1, S_{t-}{-}1)\).
 \end{enumerate}
 \end{defn}
 

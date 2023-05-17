@@ -15,7 +15,7 @@ test_files :=$(wildcard test/*.jl)
 documentation: test docs/site/index.html
 
 view-pdf: docs/build/$(package).pdf
-	xdg-open $(notdir $<)
+	xdg-open $<
 
 view: serve
 	xdg-open http://127.0.0.1:8000	

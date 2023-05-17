@@ -3,3 +3,5 @@ VERSION.txt
 *.stamp
 
 TEMP-*
+
+docs/build/

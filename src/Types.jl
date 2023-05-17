@@ -3,12 +3,8 @@
 """
     AbstractIncident
 
-Represents an abstract incident (infection or removal)
-at a time specified by a `Real` number `t`.
-
-Should possess field `t<:Real` 
-(used by function `isless`
-to time-order lists of `AbstractIncident` entities).
+Represents an abstract incident (infection or removal) at a time specified by a `Real` number `t`.  
+Expects field `t<:Real` (will be used by function `isless` to time-order lists of `AbstractIncident` entities).
 """
 abstract type AbstractIncident end
 
@@ -16,24 +12,17 @@ abstract type AbstractIncident end
 """
     AbstractRemoval
 
-Represent an abstract removal by a sub-type of `AbstractIncident`.
-
-Inherits requirement of field `t<:Real` from `AbstractIncident`).
-
-Should also possess field `target<:Integer`
-
-The removal is activated only when `target` is the index of
-a timeline which is infectious just before time `t`.
+Represents an abstract removal by a sub-type of `AbstractIncident`.  
+Inherits expectation of field `t<:Real` from `AbstractIncident`).  
+Also expects field `target<:Integer`.
 """
 abstract type AbstractRemoval <: AbstractIncident end
 
 """
     Removal(t::Real, target::Integer)
 
-Represent a potential removal by a sub-type of `AbstractRemoval`.
-
-The `target` field labels the timeline being considered as host for the removal incident:
-it must be a positive integer.
+Implements a potential removal by a sub-type of `AbstractRemoval`.  
+The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `Removal` is activated if the specified timeline is infectious just before time `t`.
 
 ### Example
@@ -81,7 +70,9 @@ function timespec(t::Float64)::String
 end
 
 ### Actual display functions
-"There is an implementation of `show` for `Removal` using just one subscript and 2 decimal places for time."
+"""
+Implementation of `show` for `Removal`, with `time` as subscript (2 decimal places).
+"""
 function Base.show(io::IO, z::Removal)
     id = string(typeof(z))[1]
     t = timespec(z.t)

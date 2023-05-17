@@ -8,10 +8,11 @@ module EpidemicsCFTP
 # Exports
 # =======
 # These functions can be called without qualifications.
+export Removal
+
+# Temporary!
 export greet_EpidemicsCFTP
 
-export AbstractRemoval
-export Removal
 
 # Included files
 # ==============

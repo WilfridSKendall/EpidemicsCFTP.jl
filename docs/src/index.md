@@ -47,22 +47,23 @@ In `pkg` mode (pressing `]`):
 Produce this documentation as follows: in directory `EpidemicsCFTP`, run `make`, or `make-pdf`.
 
 
-## 1: Representing different types of incidents
+## Representing different types of incidents
 
-### Various abstract incidents
+### Various abstract incidents and associated methods
 ```@docs
 AbstractIncident
 AbstractRemoval
+show(::IO, ::AbstractRemoval)
+isless(::AbstractIncident, ::AbstractIncident)
 ```
 
-### Removals and their methods
+### Two different kinds of Removals
 ```@docs
 Removal
-show(::IO, ::Removal)
+CRemoval
 ```
 
-
-## Index
+### Index
  
 ```@index
 ```

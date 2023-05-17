@@ -43,38 +43,29 @@ struct Removal <: AbstractRemoval
 end
 
 
-
-
-## Compact printing
-using Formatting
-
-### Helper functions and format specifications for subscripts and superscripts
-subs = split("₀₁₂₃₄₅₆₇₈₉._ ", "")
-sups = split("⁰¹²³⁴⁵⁶⁷⁸⁹˙¯ ", "")
-nums = split("0123456789.- ", "")
-lows = Dict(nums[i]=>subs[i]  for i = 1:13)
-upps = Dict(nums[i]=>sups[i]  for i = 1:13)
-
-function lowers(x::String)::String
-    join(lows[c] for c in split(x, ""))
-end
-
-function uppers(x::String)::String
-    join(upps[c] for c in split(x, ""))
-end
-
-fspec = FormatSpec(".2f")
-
-function timespec(t::Float64)::String
-    lowers(fmt(fspec, t))
-end
-
-### Actual display functions
 """
-Implementation of `show` for `Removal`, with `time` as subscript (2 decimal places).
+    CRemoval(t::Real, target::Integer)
+
+Represent a conditioned removal by a sub-type of `AbstractRemoval`, similar to `Removal`.
+The `target` field should always index a time-line which is currently infectious 
+(a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> CRemoval(0.1, 4)
+C₀.₁₀(4)
+```
 """
-function Base.show(io::IO, z::Removal)
-    id = string(typeof(z))[1]
-    t = timespec(z.t)
-    printfmt(io, "{1}{2}({3})", id, t, z.target)
+struct CRemoval <: AbstractRemoval
+    t       ::Float64
+    target  ::Int
+
+    function CRemoval(t, target)
+        noun = "CRemoval($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new(t, target))
+    end
 end
+
+
+

@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-04-24T15:36:37+01:00
+
+====== 0 Introduction ======
+Created Thursday 24 April 2014
+
+The heart of the idea is a construction of an SIR epidemic using Poisson processes: Section 1 on Unconditional constructions.
+These are varied in "algorithmic time" according to a reversible trajectory-valued immigration-death process: Section 2 on Algorithmic Time.
+The result is applied to produce a CFTP algorithm (running in algorithmic time): Section 3 on CFTP. 

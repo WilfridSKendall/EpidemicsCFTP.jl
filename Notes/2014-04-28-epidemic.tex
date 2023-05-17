@@ -1,0 +1,76 @@
+\documentclass{article}
+
+\begin{document}
+Description of simulation of conditioned S-I-R epidemic in population
+of n individuals:
+
+Unconditioned case: innovation proposals are updated by an MCMC chain
+as follows.
+\begin{itemize}
+\item[A:] renew removals as Poisson process marked by uniformly random
+  layers;
+\item[A':] renew marks of removal proposals;
+\item[B1-n:] iterate through layers 1 to n:
+  \begin{itemize}
+  \item renew infection proposals attached to a layer as Poisson
+    process marked by subordinate layers chosen uniformly at random,
+    as well as by the layers to which they are attached.
+\end{itemize}
+\end{itemize}
+
+Step A' appears redundant! However, we need to impose conditioning via
+the functional that converts the configuration of infection and
+removal proposals into an epidemic trajectory defined as a sequence of
+incidents. The conditioning is of constraint form: the epidemic
+removal epochs are held fixed, prescribed by the conditioning.
+Correspondingly, the MCMC chain rejects all proposals which violate
+this constraint. Detailed balance arguments show the conditioned
+epidemic is an equililibrium distribution for: the constrained MCMC
+chain; the moves of A' now ensure that this new chain is irreducible
+and therefore that the equilibrium is unique. (Otherwise an implicit
+bias would be introduced via a subtle mechanism involving the fixed
+marks of the conditioned removals.)
+
+We require a further refinement in order to maintain a kind of
+monotonicity (important for perfect simulation). Each process is
+updated ``pixel-by-pixel''; in practice we generate the new process,
+then consider additions of proposals from the new process and
+deletions of proposals from the old process in time-order. We accept
+each of the additions and deletions if as a result the conditioning is
+not violated.
+ 
+VOCABULARY: ACTIVATION AND  DECLINING  VERSUS ACCEPTANCE AND REJECTION 
+
+To understand the conditioning, we must now describe the functional
+which converts a set of innovation proposals into an epidemic
+trajectory. The conversion procedure is as follows. First, set apart
+layers corresponding to the initial infectives. Collect all infection
+and removal proposals, and order them by time. Iterate as follows:
+move to the next proposal for which the marks (one in case of removal,
+two in case of infection) are layers corresponding to infectives.
+Decline all previous proposals. Activate this proposal and repeat,
+till either all proposals are exhausted or there are no more
+infectives. ``Activation'' is as follows: if the activated proposal is a
+removal then move one of the infective layers over to a ``removed''
+category. If the activated proposal is an infection then add to the
+infectives a layer which previously had not been among the infectives
+(the collection of such layers forms the ``susceptible'' category!).
+
+TO PROVE: RESULT IS INDEED AN S-I-R EPIDEMIC. 
+
+Implementation details vary from this description, of course,
+especially since for the conditional simulation there is a need for
+each proposal to compute aspects of the trajectory in order to
+determine whether the conditioning has been violated. we alleviate the
+computational burden here by tracking for each layer: (a) the latest
+declined infection proposal which if activated would lead to
+activation of a removal which should be declined (the ``nearly bound'')
+and (b) the latest activated proposal which if declined would lead to
+the declining of a removal proposal whose activation is required in
+order to satisfy the conditioning.
+
+TO PROVE: CONSTRAINT LENDS TO DESIRED CONDITIONING 
+
+TO PROVE: MONOTONICITY?  
+
+\end{document}

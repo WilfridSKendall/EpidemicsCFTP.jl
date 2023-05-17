@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-04-24T11:36:42+01:00
+
+====== Perfect Epidemics ======
+Created Thursday 24 April 2014
+
+Notes on work in progress. See [[+0 Introduction|introduction]] for more details.

@@ -1,0 +1,122 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-04-24T15:33:02+01:00
+
+====== 1 Unconditional constructions ======
+Created Thursday 24 April 2014
+
+===== Data structures =====
+
+==== Timelines ====
+We suppose a population of //n// individuals. We construct //n// individual //timelines// indexed by //i//=1, ..., //n//, running over the non-negative continuous time axis [0,∞). These are associated with a number of independent Poisson patterns of incidents, corresponding to potential removal and potential infection times.
+
+==== Potential removal incidents ====
+To each individual timeline //i// is associated a Poisson(β) pattern of //potential removal// //incidents// distributed over time.
+
+==== Potential infection incidents ====
+To each pair of individual timelines (//i//, //j//), with //j//=//i//+1, ..., //n// , there is associated a Poisson(α) pattern of //potential infection incidents// distributed over time.
+
+==== Actual infection and removal times ====
+Let //s// denote the //size// of the epidemic; the number of individuals who are ever infected.
+
+To each timeline //i//=1, ..., //s//, there are associated an //infection time// σ_{i} and a //removal time// τ_{i}. Here 0 ≤ σ_{i}  < τ_{i}. 
+
+=== Initial condition ===
+We suppose the simplest possible initial condition: σ_{i}=0 if and only if //i//=1 (so just one initial infective). Other more involved initial conditions are (I think) feasible at the price of some extra complexity at the CFTP stage. 
+
+===== Evolution of SIR epidemic in process-time =====
+We can specify the evolution of the SIR epidemic in //process time// (running along the individual timelines) by describing rules for removal and infection. Suppose that //S//_{t} is the number of susceptibles at time //t//, //I//_{t} is the number of infectives at time //t//, //R//_{t} is the number of removals at time //t.// Then at time //t// the individuals 1, ..., //R//_{t} are //removed// (note that none are removed if //R//_{t}=0), the individuals //R//_{t}+1, ..., //R//_{t}+//I//_{t} are infectives, the individuals //R//_{t}+//I//_{t}+1, ..., //R//_{t}+//I//_{t}+//S//_{t}=//n// are susceptibles.
+
+==== Actual removal incidents ====
+If time //t// is the time of a potential removal incident for one of the infective individuals //R//_{t-}+1, ..., //R//_{t-}+//I//_{t-}, then set
+//R//_{t}=//R//_{t-}+1, //I//_{t}=//I//_{t-}-1. Also set τ_{k}=//t,// where //k// =//R//_{t}.
+
+==== Actual infection incidents ====
+If time //t// is the time of a potential infection incident for a pair (//i//, //j//), with //i// being one of the infective individuals //R//_{t-}+1, ..., //R//_{t-}+//I//_{t-}, and //j// being one of the susceptible individuals //R//_{t-}+//I//_{t-}+1, ..., //R//_{t-}+//I//_{t-}+//S//_{t-}=//n// , then set
+//I//_{t}=//I//_{t-}+1, //S//_{t}=//S//_{t-}-1. Also set σ_{k}=//t,// where //k// =//R//_{t}+//I//_{t}.
+
+Here is an illustration of the epidemic for the case //n//=3, with 1 initial infective. Time-lines run across the page: purple stands for uninfected, yellow for infectious. The stop signs correspond to potential or actual removals. Time range is [0, 2]. Potential infections are pale green and run between the two time-lines to which they are associated. Potential infections and removals have been specified deterministically. The progress of the SIR epidemic is marked out in red.
+{{../SIR Epidemics (I) n=3.png}}
+
+Here is a further illustration, for the case //n//=5, again with 1 initial infective. Here the time range is [0, 10], and potential infections and removals have been generated at random with rates respectively α=0.1, β=0.1. Note that if a potential removal is made actual, then it applies to the currently infected time-line with the least index!
+{{../SIR Epidemics (I) n=5.png}} 
+Finally, the case //n//=10. Here α=0.01, β=0.02.
+{{../SIR Epidemics (I) n=10.png}}
+Here is what to check for in the above pictures:
+1. A potential infectious contact (vertical green line) only causes a time-line to start an infected segment (yellow) if (a) it starts at an infected segment, and the time-line that becomes infected is the first previously uninfected timeline that it crosses;
+2. A potential removal (stop sign) only causes an actual removal if (a) it occurs on an infected segment, and then (b) the removal that is caused must lie on the lowest currently infected time-line. So an active potential removal causes the lowest current yellow segment to terminate. Note that the potential removal signs occur to the left of the actual potential removal event.
+
+=== CLAIM 1 ===
+The process (//S//, //I//, //R//), viewed in process time, forms an SIR epidemic.
+(**Proof:** show it solves the relevant martingale problem, citing results on the well-posed-ness of the martingale problem from Stroock and Varadhan, 1979.)
+
+==== Simulation ====
+To make sure we have a secure understanding of this, we should consider how to build a robust simulation programme for the unconditional construction. This would (a) generate useful pictures, (b) facilitate the possibility of checking our work. Probably needs to be done in //Python// rather than //Mathematica//, though. This is because the programme structure is likely to be iterative and rather involved, and //Mathematica// control structures for iteration are somewhat clumsy.
+
+Here is a //Python// class building the innovation structure.
+'''
+class Innovation:
+    def __init__(self, remove=[[1], [2]], infect=[[[0.5, 1.2]]]):
+        self.remove, self.infect = remove, infect
+        self.n = len(remove)
+        
+'''
+	'''
+	    def __str__(self):
+	        return "%s\n%s" % (self.remove, self.infect)
+	
+	    def _build_time_line(self):
+	        res = [[i]*len(ll) for i, ll in enumerate(self.remove)]
+	        rem = zip(chain(*self.remove), chain(*res))
+	        ins = chain(*[chain(*[[(i, i+j+1)]*len(ll) for j, ll in enumerate(lll)]) \
+	                                           for i, lll, in enumerate(self.infect)])
+	        in1 = chain(*[chain(*lll) for lll in self.infect])
+	        inf = map(lambda y: (y[0], y[1][0], y[1][1]), zip(in1, ins))
+	        return sorted(list(chain(rem, inf)))
+	        
+	    def epidemic(self, I=1):
+	        S, R = self.n - I, 0
+	        trajectory = [(0, (S, I, R))]
+	        for x in self._build_time_line():
+	            if len(x) == 3:
+	                t, i, j = x
+	                if R <= i and i < I + R and I + R <= j:
+	                    print('[%f]: R=%d, i=%d, I+R=%d, j=%d' % (t, R, i, I+R, j))
+	                    I += 1
+	                    S -= 1
+	                    trajectory.append((t, (S, I, R)))
+	            if len(x) == 2:
+	                t,  i = x
+	                if R <= i and i < I + R:
+	                    I -= 1
+	                    R += 1
+	                    trajectory.append((t, (S, I, R)))
+	        return trajectory
+	'''
+
+
+Here is how it works in practice:
+'''
+     >>> from pprint import pprint
+     >>> from innovate import Innovation
+
+     >>> inn = Innovation(remove=[[1, 1.6], [1.3], [0.5, 2]],
+     ...                  infect=[[[0.4, 0.9], [0.6, 1.4]],
+     ...                          [[0.2, 1.1, 1.5]]])
+
+     >>> print(str(inn))
+     [[1, 1.6], [1.3], [0.5, 2]]
+     [[[0.4, 0.9], [0.6, 1.4]], [[0.2, 1.1, 1.5]]]
+
+     >>> pprint(inn.epidemic())
+     [(0, (2, 1, 0)),
+      (0.4, (1, 2, 0)),
+      (0.6, (0, 3, 0)),
+      (1, (0, 2, 1)),
+      (1.3, (0, 1, 2)),
+      (2, (0, 0, 3))]
+'''
+
+
+===== References =====
+Stroock, D.W. & Varadhan, S.R.S., 1979. //Multidimensional Diffusion Processes//, Berlin: Springer-Verlag.

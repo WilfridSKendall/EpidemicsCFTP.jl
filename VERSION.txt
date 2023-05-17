@@ -1,6 +1,6 @@
-Version 2.2.77	(Wed May 17 12:05:13 2023 +0100)
+Version 2.2.78	(Wed May 17 12:06:58 2023 +0100)
 ===============================================
-commit 90b48395b9f89f22e849ad0208b45a81a27f7d0b
+commit 74d32de1e5f383843dbb28b397d39a5b8ef75e71
 Author: Wilfrid Kendall <W.S.Kendall@warwick.ac.uk>
 
-    Removed files pertaining to actual document.
+    Initial non-functional skeleton.

@@ -12,16 +12,17 @@ Requirements
 ------------
 The package is being implemented using `Julia` 1.9.0 (as of 17 May 2023).
 
-See `REQUIRE` for required `Julia` packages.
+<!-- See `REQUIRE` for required `Julia` packages. -->
 
 Need
 ```bash
-please apt install python-pygments
+please apt install python3-pygments
 pip install mkdocs
 pip install python-markdown-math
 ```
+(Note: unsure whether we need `python3-pygments` or `python2-pygments`!
 
-Installed as developer package. Test within `Julia` `Pkg` environment by NOT YET CHECKED
+Installed as developer package. Test within `Julia` `Pkg` environment by
 
 ```julia
 using EpidemicsCFTP
@@ -30,7 +31,7 @@ test EpidemicsCFTP
 
 
 
-Tests NOT YET CHECKED
+Tests
 -----
 ```{bash}
 cd ~/.julia/dev/EpidemicsCFTP # this directory

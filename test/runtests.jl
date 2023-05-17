@@ -1,7 +1,4 @@
-using EpidemicsCFTP
-using Test
+include("Temporary.jl")
+include("Types.jl")
+# include("Trajectories.jl")
 
-@testset "EpidemicsCFTP.jl" begin
-    @test EpidemicsCFTP.greet_EpidemicsCFTP() == nothing
-    @test EpidemicsCFTP.greet_EpidemicsCFTP() != "Hello world!"
-end

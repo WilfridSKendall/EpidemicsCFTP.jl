@@ -1,7 +1,0 @@
-Version 0.0.1	(Wed May 17 12:24:28 2023 +0100)
-==============================================
-commit 536d6a11b44350241cd50df8c992b5c3d47ea49f
-Author: Wilfrid Kendall <W.S.Kendall@warwick.ac.uk>
-
-    Checked that `make test` works.
-    Added .gitignore.

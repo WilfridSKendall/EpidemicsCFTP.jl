@@ -1,12 +1,55 @@
-# README #
+# EpidemicsCFTP
 
-This is a collaboration between Stephen Connor and Wilfrid Kendall.
-Its aim is to developing a perfect simulation algorithm for `SIR` 
-epidemics, conditioned on complete observation of removals.
+[![Build Status](https://github.com/WilfridSKendall/EpidemicsCFTP.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/WilfridSKendall/EpidemicsCFTP.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-### How do I make this work? ###
-Use `rubber -d PerfectEpidemics.tex`.
+EpidemicsCFTP.jl
+================
+This is a `julia` package, currently under development,
+which is intended to implement Coupling from the Past (CFTP)
+for S-I-R epidemics with observed removals.
 
-### Who do I talk to? ###
+Requirements
+------------
+The package is being implemented using `Julia` 1.9.0 (as of 17 May 2023).
 
-* Repo owner: w.s.kendall@warwick.ac.uk
+See `REQUIRE` for required `Julia` packages.
+
+Need
+```bash
+please apt install python-pygments
+pip install mkdocs
+pip install python-markdown-math
+```
+
+Installed as developer package. Test within `Julia` `Pkg` environment by NOT YET CHECKED
+
+```julia
+using EpidemicsCFTP
+test EpidemicsCFTP
+```
+
+
+
+Tests NOT YET CHECKED
+-----
+```{bash}
+cd ~/.julia/dev/EpidemicsCFTP # this directory
+make test
+```
+
+Documentation
+-------------
+For `gitbook` format, NOT YET IMPLEMENTED
+```{bash}
+cd ~/.julia/dev/EpidemicsCFTP # this directory
+make view
+```
+
+
+-------------
+For `pdf` format, NOT YET IMPLEMENTED
+```{bash}
+cd ~/.julia/dev/EpidemicsCFTP # this directory
+make pdf
+```
+

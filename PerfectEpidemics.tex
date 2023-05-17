@@ -493,9 +493,9 @@ is a continuous-time Markov chain running in algorithmic time,
 which at any algorithmic time \(\tau\)
 has a state which can be viewed as a two-type marked point pattern on \([0,T]\);
 the types are (a) potential removals and (b) potential infections;
-potential removals are marked by specific timelines controlling which individual 
+potential removals are marked by specific time-lines controlling which individual 
 might be removed, 
-while potential infections are marked by pairs of timelines
+while potential infections are marked by pairs of time-lines
 denoting which individual might infect which other individual.%
 \NB[WSK]{Marks for potential infections: be careful to check interpretation!}
 
@@ -1112,7 +1112,7 @@ When constrained to respect conditioning by removals, the variant
 \label{def:variant-evolution}
 Markov chain evolves
 in continuous algorithmic time following Definition \ref{def:detailed} but modified as follows:%
-\NB[SBC1]{Add figure here showing timelines and giving example of events which would be refused?}
+\NB[SBC1]{Add figure here showing time-lines and giving example of events which would be refused?}
 % --
 \begin{enumerate}[(a)]
 % --
@@ -1331,7 +1331,7 @@ conditional probability distribution as equilibrium.
 Finally we deduce convergence to this
 equilibrium based on existence of a 
 positive-recurrent small set. 
-The relevant small set can be derived by consideration of trajectories such that each timeline is infected once only, 
+The relevant small set can be derived by consideration of trajectories such that each time-line is infected once only, 
 very shortly after time \(0\), with no potential removals other than observed removals, so that time-line 
 and subsequent time-lines are all infected before their observed removal times.
 \NB[WSK3]{Need to explain more carefully the positive-recurrent small set in proof of Theorem \ref{thm:conditioned-SIR-epidemic}.}
@@ -1413,8 +1413,8 @@ For \(a<b\) we shall write
 for the set of potential infections lying within the process time window \([a,b]\).
 Similarly, let \(\Removals^m\) and \(\Conditioned^m\), respectively, 
 denote the sets of potential (non-observed) and conditioned (observed) removal times 
-assigned to time-line \(m\) for \(m=1,\dots,n\).%
-\NB[WSK6]{In fact always $\Conditioned^m=\{\rho^m\}$, since there can be just one conditioned removal per actual individual!}
+assigned to time-line \(m\) for \(m=1,\dots,n\).
+\xNB[WSK6]{IO wrote: ``In fact always $\Conditioned^m=\{\rho^m\}$, since there can be just one conditioned removal per actual individual!'' but this is not true as $m$ is the marked time-line not the removed time-line.}
 Consider a removal (whether potential or conditioned) at process time \(r\) 
 which is assigned to time-line \(\target\).
 This can only have
@@ -1524,7 +1524,7 @@ Note that \(\phi^\infectee=\infty\) will not arise for any \(\infectee\)
 if we condition on the \SIR epidemic being total (if all \(n\) individuals are eventually to be removed):
 a proposal to remove an infection will not be allowed if this is a consequence.%
 \NB[WSK6]{Elaborate on why we can characterize infection in the way described here.}\text{ }%
-\NB[WSK6]{Observe that we must not start with an epidemic trajectory for which conditioned removals occur on uninfected portions of timelines!}
+\NB[WSK6]{Observe that we must not start with an epidemic trajectory for which conditioned removals occur on uninfected portions of time-lines!}
 Figure \ref{fig:no-fly} illustrates the construction
 of the epidemic trajectory.
 

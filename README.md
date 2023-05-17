@@ -22,11 +22,10 @@ pip install python-markdown-math
 ```
 (Note: unsure whether we need `python3-pygments` or `python2-pygments`!
 
-Installed as developer package. Test within `Julia` `Pkg` environment by
-
+Installed as developer package. Test within directory `EpidemicsCFTP` environment by
 ```julia
-using EpidemicsCFTP
-test EpidemicsCFTP
+Pkg.activate(".")
+Pkg.test("EpidemicsCFTP")
 ```
 
 

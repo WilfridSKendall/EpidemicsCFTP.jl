@@ -49,24 +49,43 @@ Produce this documentation as follows: in directory `EpidemicsCFTP`, run `make`,
 
 ## Representing different types of incidents
 
-### Various abstract incidents and associated methods
+### Various abstract incidents
+`AbstractIncident` is a generic type for incidents taking place in time.
+`AbstractRemoval` and `AbstractInfection` are generic incidents corresponding
+to potential removals and potential incidents respectively.
 ```@docs
 AbstractIncident
 AbstractRemoval
-show(::IO, ::AbstractRemoval)
-isless(::AbstractIncident, ::AbstractIncident)
+AbstractInfection
 ```
 
-### Two different kinds of `Removal`s
+
+### Two different kinds of `AbstractRemoval`s
+`Removal` and `CRemoval` are specific potential removal incidents: 
+`CRemoval` is reserved for realized removals (which in our application
+are always conditioned to happen).
 ```@docs
 Removal
 CRemoval
 ```
 
-### Two different kinds of `Infection`s
+### Two different kinds of `AbstractInfection`s
+`Infection` and `PInfection` are specific potential infection incidents;
+`PInfection` is reserved for infections which are perpetuated from an earlier stage of the CFTP run.
 ```@docs
 Infection
 PInfection
+```
+
+### Associated  methods
+Associated methods overload `show` (to provide compact displays)
+and `isless` (to provide a partial order based on time `t` of occurrence of the relevant 
+instances of
+`AbstractIncident`s.
+```@docs
+isless(::AbstractIncident, ::AbstractIncident)
+show(::IO, ::AbstractRemoval)
+show(::IO, ::AbstractInfection)
 ```
 
 ### Index

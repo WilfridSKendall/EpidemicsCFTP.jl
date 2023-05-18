@@ -14,7 +14,7 @@ abstract type AbstractIncident end
 """
     AbstractRemoval
 
-Represents an abstract removal by a sub-type of `AbstractIncident`.  
+Represents an abstract removal using a sub-type of `AbstractIncident`.  
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects field `target<:Integer`.
 
@@ -27,7 +27,7 @@ abstract type AbstractRemoval <: AbstractIncident end
 """
     AbstractInfection
 
-Represents an abstract infection by a sub-type of `AbstractIncident`.
+Represents an abstract infection using a sub-type of `AbstractIncident`.
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects fields `infector<:Integer` and `infectee<:Integer`,
 such that `infector < infectee`.
@@ -50,7 +50,7 @@ abstract type AbstractInfection <: AbstractIncident end
 """
     Removal(t::Real, target::Integer)
 
-Implements a potential removal by a sub-type of `AbstractRemoval`.  
+Implements a potential removal using a sub-type of `AbstractRemoval`.  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `Removal` is activated if the specified timeline is infectious just before time `t`.
 
@@ -75,7 +75,7 @@ end
 """
     CRemoval(t::Real, target::Integer)
 
-Represent a conditioned removal by a sub-type of `AbstractRemoval`, similar to `Removal`.
+Represent a conditioned removal using a sub-type of `AbstractRemoval`, similar to `Removal`.
 The `target` field should always index a time-line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
@@ -102,7 +102,7 @@ end
 """
     Infection(t::Real, infector::Integer, infectee::Integer)
 
-Represent a potential infection by a sub-type of `AbstractInfection`,
+Represent a potential infection using a sub-type of `AbstractInfection`,
 using mark time `t`, also specified marks `infector` and `infectee` timelines
 which must be positive integers.
 
@@ -131,7 +131,7 @@ end
 """
     PInfection(t::Real, infector::Integer, infectee::Integer)
 
-Represent a perpetuated infection by a sub-type of `AbstractInfection`
+Represent a perpetuated infection using a sub-type of `AbstractInfection`
 which is identical to `Infection` but with a different name.
 
 ### Example

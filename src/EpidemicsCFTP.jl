@@ -13,6 +13,9 @@ export AbstractRemoval
 export Removal
 export CRemoval
 
+export Infection
+export PInfection
+
 # Included files
 # ==============
 # Include types defined in this package.

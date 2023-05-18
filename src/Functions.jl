@@ -45,10 +45,17 @@ end
 ### Actual display functions
 
 """
-Implementation of `show` for `AbstractRemoval`, with `time` as subscript (2 decimal places).
+Implementation of `show` for `AbstractRemoval`, with time `t` as subscript (2 decimal places).
 """
 function Base.show(io::IO, z::AbstractRemoval)
     id = string(typeof(z))[1]
     t = timespec(z.t)
     printfmt(io, "{1}{2}({3})", id, t, z.target)
+end
+
+"There is an implementation of `show` for `AbstractInfection` using subscripts and 2 decimal places for time `t`."
+function Base.show(io::IO, z::AbstractInfection)
+    id = string(typeof(z))[1]
+    t = timespec(z.t)
+    printfmt(io, "{1}{2}({3},{4})", id, t, z.infector, z.infectee)
 end

@@ -57,10 +57,16 @@ show(::IO, ::AbstractRemoval)
 isless(::AbstractIncident, ::AbstractIncident)
 ```
 
-### Two different kinds of Removals
+### Two different kinds of `Removal`s
 ```@docs
 Removal
 CRemoval
+```
+
+### Two different kinds of `Infection`s
+```@docs
+Infection
+PInfection
 ```
 
 ### Index

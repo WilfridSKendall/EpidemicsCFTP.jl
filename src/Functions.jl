@@ -1,4 +1,5 @@
 ## Comparison of incidents by time
+
 """
     isless(inc1::AbstractIncident, inc2::AbstractIncident)::Bool
 
@@ -18,6 +19,36 @@ false
 function Base.isless(inc1::AbstractIncident, inc2::AbstractIncident)::Bool
     inc1.t < inc2.t
     end
+
+## Produce a time-ordered list of incidents from an `AbstractEnvironment`.
+
+"""
+    chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
+    
+Returns  time-ordered list of incidents from an `AbstractEnvironment`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+n = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.1, 2), Removal(0.2, 3)] ;
+cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)] ;
+chronology(Innovation(n, infections, removals, cremovals))
+
+# output
+6-element Vector{AbstractIncident}:
+ C₀.₀₀(1)
+ C₀.₀₅(2)
+ R₀.₁₀(2)
+ R₀.₂₀(3)
+ P₀.₅₀(1,2)
+ I₀.₇₀(1,2)
+```
+"""
+function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
+    chron = Iterators.flatten([env.infections, env.removals, env.cremovals]) ;
+    [inc::AbstractIncident for inc in sort(collect(chron))]
+end
 
 
 ## Compact printing
@@ -78,4 +109,34 @@ function Base.show(io::IO, z::AbstractInfection)
     id = string(typeof(z))[1]
     t = timespec(z.t)
     printfmt(io, "{1}{2}({3},{4})", id, t, z.infector, z.infectee)
+end
+
+"""
+Implementation of `show` for `Innovation` as three rows of lists of incidents
+-- or two rows if no `CRemoval`s. We illustrate this second version here.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+n = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.1, 2), Removal(0.2, 3)] ;
+Innovation(n, infections, removals, CRemoval[])
+
+# output
+Innovation(3,
+  AbstractInfection[P₀.₅₀(1,2), I₀.₇₀(1,2)],
+  Removal[R₀.₁₀(2), R₀.₂₀(3)])
+```
+"""
+function Base.show(io::IO, z::Innovation)
+    #infections = AbstractInfection[inc for inc in z.chronology if typeof(inc)<:AbstractInfection]
+    #removals   = Removal[inc for inc in z.chronology if typeof(inc)<:Removal]
+    #cremovals  = CRemoval[inc for inc in z.chronology if typeof(inc)<:CRemoval]
+    if isempty(z.cremovals)
+        printfmt(io, "{1}({2},\n  {3},\n  {4})",
+                    typeof(z), z.n, z.infections, z.removals)
+    else
+        printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5})",
+                    typeof(z), z.n, z.infections, z.removals, z.cremovals)
+    end
 end

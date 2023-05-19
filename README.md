@@ -36,6 +36,7 @@ Working in `bash`,
 ```{bash}
 cd ~/.julia/dev/EpidemicsCFTP # this directory
 make test
+make doctest
 ```
 
 Documentation

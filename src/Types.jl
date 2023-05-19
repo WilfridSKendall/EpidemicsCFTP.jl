@@ -157,3 +157,66 @@ struct PInfection <: AbstractInfection
 end
 
 
+"""
+    AbstractEnvironment
+
+Represent an entire innovation of environment for a single step of algorithmic time.
+
+Should always possess fields `n` (positive `Integer`) and
+`chron` (`Vector{AbstractIncident}`), but displays `n`
+together with
+`infections`, `removals`, `cremovals` 
+(sorted as **time-ordered** lists of corresponding incidents).
+"""
+abstract type AbstractEnvironment end
+
+"""
+    Innovation(n::Integer, infections::Vector{<:AbstractInfection},
+                           removals::Vector{Removal},
+                           cremovals::Vector{CRemoval})
+
+Represent an entire innovation
+corresponding to a single step of _algorithmic_ time,
+stored as a sequence of three **time-ordered** lists 
+(realized and unrealized infections, unrealized removals, conditional removals).
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+n = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
+cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)] ;
+Innovation(n, infections, removals, cremovals)
+
+# output
+Innovation(3,
+  AbstractInfection[P₀.₅₀(1,2), I₀.₇₀(1,2)],
+  Removal[R₀.₁₀(2), R₀.₂₀(3)],
+  CRemoval[C₀.₀₀(1), C₀.₀₅(2)])
+```
+"""
+struct Innovation <: AbstractEnvironment
+    n::Int
+    infections::Vector{<:AbstractInfection}
+    removals::Vector{Removal}
+    cremovals::Vector{CRemoval}
+
+    function Innovation(n::Integer, infections::Vector{<:AbstractInfection},
+                                    removals::Vector{Removal},
+                                    cremovals::Vector{CRemoval})
+        noun = "Innovation(n, $infections, $removals, $cremovals)"
+        if n <= 0
+            throw(DomainError(noun, "non-positive population size n"))
+        elseif length(cremovals) > n
+            throw(ArgumentError("too many conditional removals in \n$noun"))
+        elseif any(cr.target > n for cr in cremovals)
+            throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
+        elseif any(r.target > n for r in removals)
+            throw(ArgumentError("some removal timelines too high in \n$noun"))
+        elseif any(i.infectee > n for i in infections)
+            throw(ArgumentError("some infection targets too high in \n$noun"))
+        else
+            new(n, sort(infections), sort(removals), sort(cremovals))
+        end
+    end
+end

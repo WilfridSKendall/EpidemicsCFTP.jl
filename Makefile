@@ -22,7 +22,10 @@ view: serve
 
 serve: documentation
 	pushd docs ; mkdocs serve
-	
+
+doctest:
+	@$(JULIA) --color=yes docs/make_doctests.jl
+
 test: tested.stamp
 	@touch tested.stamp
 

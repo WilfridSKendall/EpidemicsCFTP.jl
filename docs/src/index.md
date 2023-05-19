@@ -45,6 +45,7 @@ In `pkg` mode (using `]` at `julia` prompt):
 ```
 
 Alternative way to test package: in directory `EpidemicsCFTP`, run `make test`.
+For doctests, run `make doctest`.
 
 Produce this documentation as follows: in directory `EpidemicsCFTP`, 
 run `make view` (for `gitbook` documentation)
@@ -81,17 +82,43 @@ Infection
 PInfection
 ```
 
-### Associated utility methods
-Associated methods overload `show` (to provide compact displays)
-and `isless` (to provide a partial order based on time `t` of occurrence of the relevant 
+## Representing different kinds of environments
+`AbstractEnvironment` is a generic type for a collection of lists of `infections`,
+`removals` and `cremovals` (conditioned removals).
+```@docs
+AbstractEnvironment
+```
+
+`Innovations` fills the lists of an abstract environment with simulated contents
+of lists of the requisite infections or removals.
+```@docs
+Innovation
+```
+
+
+## Associated methods
+
+### Display methods
+These overload `show` (to provide compact displays)
+```@docs
+show(::IO, ::AbstractRemoval)
+show(::IO, ::AbstractInfection)
+show(::IO, ::Innovation)
+```
+### Comparison method
+A partial order is provided by `isless`, based on time `t` of occurrence of the relevant 
 instances of
 `AbstractIncident`s.
 ```@docs
 isless(::AbstractIncident, ::AbstractIncident)
-show(::IO, ::AbstractRemoval)
-show(::IO, ::AbstractInfection)
 ```
 
+### Other methods
+The method `chronology` converts an `AbstractEnvironment` 
+into a time-ordered list of incidents
+```@docs
+chronology
+```
 ### Index
  
 ```@index

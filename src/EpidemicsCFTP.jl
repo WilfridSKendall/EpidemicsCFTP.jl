@@ -10,11 +10,18 @@ module EpidemicsCFTP
 # These functions can be called without qualifications.
 export AbstractIncident
 export AbstractRemoval
+export AbstractInfection
+export AbstractInnovation
+
 export Removal
 export CRemoval
 
 export Infection
 export PInfection
+
+export Innovation
+
+export chronology
 
 # Included files
 # ==============

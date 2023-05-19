@@ -5,10 +5,10 @@ DocTestSetup = quote
 end
 ```
 
-# Julia module `EpidemicsCFTP`
-![Small julia logo](image/small-julia.png)
 
-This is a very brief description of the following module (under development).
+# Julia module `EpidemicsCFTP` 
+
+Here is a brief description of the following module (under development):
 
 ```@docs
 EpidemicsCFTP
@@ -29,7 +29,7 @@ I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta I
 ## How to install the package and produce documentation
 Create source for a package (see for example <https://julialang.org/contribute/developing_package/>).
 
-In `pkg` mode (pressing `]`):
+In `pkg` mode (using `]` at `julia` prompt):
 
 1. Inform `pkg` that package folder exists and is under development with `dev`.
 ```julia
@@ -44,7 +44,11 @@ In `pkg` mode (pressing `]`):
 (v1.0) pkg> test EpidemicsCFTP
 ```
 
-Produce this documentation as follows: in directory `EpidemicsCFTP`, run `make`, or `make-pdf`.
+Alternative way to test package: in directory `EpidemicsCFTP`, run `make test`.
+
+Produce this documentation as follows: in directory `EpidemicsCFTP`, 
+run `make view` (for `gitbook` documentation)
+or `make view-pdf` (for `pdf` documentation).
 
 
 ## Representing different types of incidents
@@ -77,7 +81,7 @@ Infection
 PInfection
 ```
 
-### Associated  methods
+### Associated utility methods
 Associated methods overload `show` (to provide compact displays)
 and `isless` (to provide a partial order based on time `t` of occurrence of the relevant 
 instances of

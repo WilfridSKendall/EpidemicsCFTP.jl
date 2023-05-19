@@ -32,6 +32,7 @@ Pkg.test("EpidemicsCFTP")
 
 Tests
 -----
+Working in `bash`,
 ```{bash}
 cd ~/.julia/dev/EpidemicsCFTP # this directory
 make test
@@ -39,7 +40,7 @@ make test
 
 Documentation
 -------------
-For `gitbook` format, NOT YET IMPLEMENTED
+For `gitbook` format, working in `bash`,
 ```{bash}
 cd ~/.julia/dev/EpidemicsCFTP # this directory
 make view
@@ -47,9 +48,9 @@ make view
 
 
 -------------
-For `pdf` format, NOT YET IMPLEMENTED
+For `pdf` format, working in `bash`,
 ```{bash}
 cd ~/.julia/dev/EpidemicsCFTP # this directory
-make pdf
+make view-pdf
 ```
 

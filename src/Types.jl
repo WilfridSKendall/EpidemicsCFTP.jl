@@ -34,11 +34,11 @@ such that `infector < infectee`.
 
 If the potential infection is to become realized 
 then `infector` must index a time-line which is infectious, 
-and `infectee` must index the time-line of smallest
-index which is susceptible, both measured just before time `t`.
+and `infectee` must index the susceptible time-line of smallest
+index, both measured just before time `t`.
 
 In particular, if there is no timeline which is susceptible
-just before time `t` then the infection will not be activated
+just before time `t` then the infection cannot be realized
 whatever the value of `infectee`.
 
 """
@@ -52,7 +52,7 @@ abstract type AbstractInfection <: AbstractIncident end
 
 Implements a potential removal using a sub-type of `AbstractRemoval`.  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
-The `Removal` is activated if the specified timeline is infectious just before time `t`.
+The `Removal` is realized if the specified timeline is infectious just before time `t`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)

@@ -38,7 +38,7 @@ cp.set_default_graphic_size(5inch, 3inch)
 time_max = 5
 
 tic = -0.02
-ticks_array = [[(x,0), (x,tic)] for x in collect(range(0, stop=10, length=time_max))]
+ticks_array = [[(x,0), (x,tic)] for x in collect(range(0, stop=10, length=1+time_max))]
 
 horizontal_axis = 
   (cp.context(), cp.line([(0,0), (10,0)]), cp.stroke("black"), cp.linewidth(1mm),
@@ -66,7 +66,7 @@ timeline_index = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨",
 function timeline(index)
   height = 0.1index
   return (cp.context(), 
-                cp.text(0.25inch, height, timeline_index[index], 
+                cp.text(0.1inch, height, timeline_index[index], 
                       cp.hleft, cp.vcenter),
                 cp.line([(0, height), (10, height)]), cp.stroke("black")
          )

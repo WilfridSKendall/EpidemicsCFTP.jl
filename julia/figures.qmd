@@ -1,17 +1,28 @@
 ---
 title:  "Figures for Perfect Epidemics"
 author: "Wilfrid Kendall"
-date:   "21 May 2021"
+date:   today
 format:
   html:
     code-fold: true
-jupyter: julia-1.9
+---
+
+---
+date-format: "D MMMM YYYY"
+format:
+    pdf:
+        link-citations: true
+        numbersections: true
+papersize: a4
+jupyter:    julia-1.9
 ---
 
 Run this notebook using
 ```bash
-quarto render figures.qmd --to pdf
+quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
 ```
+Note the untidy `--from=markdown+tex_math_single_backslash` parameter,
+required to avoid use of the unsophisticated `$` and `$$` switches.
 
 Consult <https://quarto.org/docs/computations/execution-options.html>.
 for further execution options for cells.

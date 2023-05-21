@@ -747,7 +747,7 @@ we set
 \item[]
 \emph{Potential infections} associated with specified \emph{infectee}
 individuals \(i=2, \ldots, n\), 
-are marked points \([t;\infectee,\infector]\) 
+are marked points \([t;\infector,\infectee]\) 
 located at process time \(t\in[0,\infty)\):
 \emph{infectee} mark \(\infectee\) has 
 Uniform (\(\{2, \ldots, n\}\))
@@ -862,7 +862,7 @@ with probability
 the incident is marked
 by \(\infectee\), together with \(\infector\)
 from a Uniform (\(\{1, \ldots, \infectee{-}1\}\)) distribution,
-and is denoted by \([t;\infectee,\infector]\) where \(t\) is
+and is denoted by \([t;\infector,\infectee]\) where \(t\) is
 again the process time while \(\infectee\) is the infectee and \(\infector\) is the infector.
 \end{enumerate}
 The various \(\Poisson_k\) for algorithmic times \(\tau=2(k{-}1)T\) (\(k\in\Integers\))
@@ -1407,7 +1407,7 @@ actual infection of that time-line.
 Given sets of infection and removal incidents, 
 it is helpful to develop a vocabulary describing three non-decreasing \emph{trajectories} in time-line space.
 To that end, let \(\Infections\) denote a set of marked potential infections (for now, arbitrary):
-recall that these infections are denoted by \([t;\infectee,\infector]\), where \(0\le t\le T\) and \(1\le \infector<\infectee\leq n\). 
+recall that these infections are denoted by \([t;\infector,\infectee]\), where \(0\le t\le T\) and \(1\le \infector<\infectee\leq n\). 
 For \(a<b\) we shall write 
 \[ \Infections[a,b] = \{[t;\cdot,\cdot]\in \Infections: a\le t\le b\} \]
 for the set of potential infections lying within the process time window \([a,b]\).
@@ -1784,7 +1784,7 @@ Here follows a list of how infections reaching time-line 5 have been updated in 
 moving through the diagram from right to left (as described in \ref{item:detailed-infections}).
 \\
 1. The first new potential infection (light green arrow from time-line 4 to 5) 
-	is of the form \([t; 5,4]\) with \(t>\rho^5\); 
+	is of the form \([t; 4,5]\) with \(t>\rho^5\); 
 	that is, it occurs after both fourth and fifth individuals are removed.
 	It can safely be accepted, but will play no active role in the epidemic.
 \\
@@ -1836,7 +1836,7 @@ no-fly zone and epidemic trajectory during the phase of algorithmic time \(((2k{
 % as we move through the diagram from right to left (as described in \ref{item:detailed-infections}).
 % \begin{itemize}
 % 	\item The first new potential infection (light green arrow from time-line 4 to 5) 
-% 	is of the form \([t; 5,4]\) with \(t>\rho^5\); 
+% 	is of the form \([t; 4,5]\) with \(t>\rho^5\); 
 % 	that is, it occurs after both fourth and fifth individuals are removed.
 % 	It can safely be accepted, but will play no active role in the epidemic.
 % 	\item We arrive next at a pre-existing potential infection (the dark green arrow emanating from time-line 3 in Figure~\ref{fig:updated_removals}); this does not form part of the last-viable epidemic, and so is deleted.

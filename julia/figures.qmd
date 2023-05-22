@@ -2,100 +2,123 @@
 title:  "Figures for Perfect Epidemics"
 author: "Wilfrid Kendall"
 date:   today
-format:
-  html:
-    code-fold: true
 ---
 
 ---
 date-format: "D MMMM YYYY"
+papersize:  a4
+
 format:
-    pdf:
-        link-citations: true
-        numbersections: true
-papersize: a4
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+
 jupyter:    julia-1.9
 ---
 
-Run this notebook using
+Run this notebook from the command-line using
 ```bash
 quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
 ```
-Note the untidy `--from=markdown+tex_math_single_backslash` parameter,
+or simply `make figures.pdf` or even just `make`.
+
+Note the untidy parameter, `--from=markdown+tex_math_single_backslash`
 required to avoid use of the unsophisticated `$` and `$$` switches.
 
 Consult <https://quarto.org/docs/computations/execution-options.html>.
 for further execution options for cells.
 
-Brief summary description of `Compose.jl` at 
+# Initialisation
+We invoke the key modules which we will use.
+```{julia}
+using Compose, Colors, Measures
+```
+
+A brief summary description of the `julia` package `Compose.jl` 
+(the key package for producing these graphics)
+can be found at 
 <https://giovineitalia.github.io/Compose.jl/latest/gallery/forms/>.
 
+Basic simulation parameters are the `population` size 
+and the `duration` (assumes epidemic simulation commences at time `0`).
 ```{julia}
-#| echo: false
-#| output: false
+const popn     = 5 ;
+const duration = 10 ;
 
-using Colors, Measures
-import Compose 
-cp = Compose
-
-cp.set_default_graphic_size(5inch, 3inch)
+const maxpopn  = 20 ;
+if popn > maxpopn
+  error("If `popn > $(maxpopn)` then modify code for indexing of time-lines!")
+end ;
 ```
 
-# Generating a horizontal axis
+Note that (trivial) labelling issues arise if `popn > maxpopn=20`.
 
-
+We now set up and establish graphics size and coordinates.
 ```{julia}
+set_default_graphic_size(5inch, 3inch) ;
 
-time_max = 5
+coords        = UnitBox(0, popn, duration, -popn, 
+                  leftpad=0.5inch, rightpad=0.5inch, 
+                  bottompad=0.5inch, toppad=0.25inch) ;
+```
 
-tic = -0.02
-ticks_array = [[(x,0), (x,tic)] for x in collect(range(0, stop=10, length=1+time_max))]
 
-horizontal_axis = 
-  (cp.context(), cp.line([(0,0), (10,0)]), cp.stroke("black"), cp.linewidth(1mm),
-   cp.line(ticks_array), cp.stroke("black"), cp.linewidth(0.2mm)
+# Basic image template elements
+First we construct the time axis, with tick marks at integer times:
+```{julia}
+time_axis    = 
+  (context(), 
+   line([(0,0), (duration, 0)]), stroke("black"), linewidth(0.5mm)
   ) ;
 
-function label(time)
-  label_height = 0cp.cy + 0.25inch
-  return cp.text(time, label_height, "$(time)", cp.hcenter)
-  end ;
-  
-horizontal_axis_labels =
-  (cp.context(units=cp.UnitBox(0, 1, time_max, -1,
-                  leftpad=0.5inch, rightpad=0.5inch, bottompad=0.5inch)),
-   label(0), label(1), label(2), label(3), label(4), label(5)
+tic          = -0.1
+tic_loc      = [((x,0), (x, tic)) for x in 0:duration]
+
+ticks        =
+ (context(), 
+   line(tic_loc), 
+     stroke("black"), linewidth(0.2mm),
+  ) ;
+
+label_height = 0cy + 0.25inch
+tick_labels  =
+  (context(),
+    text(0:duration, [label_height], ["$i" for i in 0:duration], 
+      [hcenter], [vbottom]), 
+    stroke("grey"), fontsize(7pt)
   ) ;
 ```
 
-
-
+Now we build the time-lines, labelled by circled integers.
+The definition of `circ_labels` needs to be changed if `popn > maxpopn=20`,
+as unicode then runs out of circled integers!
 ```{julia}
-
-timeline_index = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"]
-
-function timeline(index)
-  height = 0.1index
-  return (cp.context(), 
-                cp.text(0.1inch, height, timeline_index[index], 
-                      cp.hleft, cp.vcenter),
-                cp.line([(0, height), (10, height)]), cp.stroke("black")
-         )
-  end ;
+lab_xoffset  = 0cx - 0.25inch
+circ_labels  = [string(Char(0x00002460+i-1)) for i in 1:popn]
+line_labels  = (context(),
+    text([lab_xoffset], [i for i in 1:popn], circ_labels,
+      [hleft], [vcenter]), 
+    stroke("grey"), fontsize(7pt)
+  ) ;
+lines        = (context(),
+  line([[(0, k), (duration, k)] for k in 1:popn]), 
+  stroke("black"), linewidth(0.5mm)
+  ) ;
 ```
 
-
-
+# Drawing the figure
+We can now draw the basic figure for (almost) all our diagrams:
 ```{julia}
 #| label: fig-axis
 #| fig-cap: "Trial image"
-cp.compose(
-     cp.context(units=cp.UnitBox(0, 1, 10, -1,
-                  leftpad=0.5inch, rightpad=0.5inch, bottompad=0.5inch)),
-    (cp.context(), cp.rectangle(), cp.fill("salmon"), cp.fillopacity(0.3)),
-    timeline(1), timeline(2), timeline(3), timeline(4), timeline(5),
-    timeline(6), timeline(7), timeline(8),
-    horizontal_axis,
-    horizontal_axis_labels
-    )
+compose(context(units=coords), 
+  (context(), rectangle(), fill("bisque"), fillopacity(0.3)),
+  time_axis,
+  ticks,
+  tick_labels,
+  line_labels,
+  lines
+)
 ```

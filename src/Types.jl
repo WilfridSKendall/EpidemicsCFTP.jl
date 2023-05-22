@@ -57,7 +57,7 @@ The `Removal` is realized if the specified timeline is infectious just before ti
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Removal(0.1, 4)
-R₀.₁₀(4)
+R₀.₁₀⁴
 ```
 """
 struct Removal <: AbstractRemoval
@@ -82,7 +82,7 @@ The `target` field should always index a time-line which is currently infectious
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> CRemoval(0.1, 4)
-C₀.₁₀(4)
+C₀.₁₀⁴
 ```
 """
 struct CRemoval <: AbstractRemoval
@@ -109,7 +109,7 @@ which must be positive integers.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Infection(0.2, 1, 2)
-I₀.₂₀(1,2)
+I₀.₂₀¹𝄒²
 ```
 """
 struct Infection <: AbstractInfection
@@ -137,7 +137,7 @@ which is identical to `Infection` but with a different name.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> PInfection(0.2, 1, 2)
-P₀.₂₀(1,2)
+P₀.₂₀¹𝄒²
 ```
 """
 struct PInfection <: AbstractInfection
@@ -190,9 +190,9 @@ Innovation(n, infections, removals, cremovals)
 
 # output
 Innovation(3,
-  AbstractInfection[P₀.₅₀(1,2), I₀.₇₀(1,2)],
-  Removal[R₀.₁₀(2), R₀.₂₀(3)],
-  CRemoval[C₀.₀₀(1), C₀.₀₅(2)])
+  AbstractInfection[P₀.₅₀¹𝄒², I₀.₇₀¹𝄒²],
+  Removal[R₀.₁₀², R₀.₂₀³],
+  CRemoval[C₀.₀₀¹, C₀.₀₅²])
 ```
 """
 struct Innovation <: AbstractEnvironment

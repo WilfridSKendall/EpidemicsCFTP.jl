@@ -41,8 +41,8 @@ chronology(Innovation(n, infections, removals, cremovals))
  C₀.₀₅²
  R₀.₁₀²
  R₀.₂₀³
- P₀.₅₀¹𝄒²
- I₀.₇₀¹𝄒²
+ P₀.₅₀¹⁻²
+ I₀.₇₀¹⁻²
 ```
 """
 function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
@@ -100,15 +100,15 @@ Implementation of `show` for `AbstractInfection` using subscripts and 2 decimal 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Infection(0.10, 3, 4)
-I₀.₁₀³𝄒⁴
+I₀.₁₀³⁻⁴
 julia> PInfection(0.10, 3, 4)
-P₀.₁₀³𝄒⁴
+P₀.₁₀³⁻⁴
 ```
 """
 function Base.show(io::IO, z::AbstractInfection)
     id = string(typeof(z))[1]
     t = timespec(z.t)
-    printfmt(io, "{1}{2}{3}𝄒{4}", id, t, uppers(string(z.infector)), uppers(string(z.infectee)))
+    printfmt(io, "{1}{2}{3}⁻{4}", id, t, uppers(string(z.infector)), uppers(string(z.infectee)))
 end
 
 """
@@ -124,7 +124,7 @@ Innovation(n, infections, removals, CRemoval[])
 
 # output
 Innovation(3,
-  AbstractInfection[P₀.₅₀¹𝄒², I₀.₇₀¹𝄒²],
+  AbstractInfection[P₀.₅₀¹⁻², I₀.₇₀¹⁻²],
   Removal[R₀.₁₀², R₀.₂₀³])
 ```
 """

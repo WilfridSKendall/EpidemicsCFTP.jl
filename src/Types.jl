@@ -109,7 +109,7 @@ which must be positive integers.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Infection(0.2, 1, 2)
-I₀.₂₀¹𝄒²
+I₀.₂₀¹⁻²
 ```
 """
 struct Infection <: AbstractInfection
@@ -137,7 +137,7 @@ which is identical to `Infection` but with a different name.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> PInfection(0.2, 1, 2)
-P₀.₂₀¹𝄒²
+P₀.₂₀¹⁻²
 ```
 """
 struct PInfection <: AbstractInfection
@@ -190,7 +190,7 @@ Innovation(n, infections, removals, cremovals)
 
 # output
 Innovation(3,
-  AbstractInfection[P₀.₅₀¹𝄒², I₀.₇₀¹𝄒²],
+  AbstractInfection[P₀.₅₀¹⁻², I₀.₇₀¹⁻²],
   Removal[R₀.₁₀², R₀.₂₀³],
   CRemoval[C₀.₀₀¹, C₀.₀₅²])
 ```

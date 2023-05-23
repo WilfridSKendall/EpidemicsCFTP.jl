@@ -8,6 +8,7 @@ module EpidemicsCFTP
 # Exports
 # =======
 # These functions can be called without qualifications.
+export AbstractTimedOccurrence
 export AbstractIncident
 export AbstractRemoval
 export AbstractInfection
@@ -20,6 +21,7 @@ export Infection
 export PInfection
 
 export Innovation
+export SIR
 
 export chronology
 

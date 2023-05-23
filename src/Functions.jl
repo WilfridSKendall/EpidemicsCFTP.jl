@@ -1,9 +1,9 @@
 ## Comparison of incidents by time
 
 """
-    isless(inc1::AbstractIncident, inc2::AbstractIncident)::Bool
+    isless(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
 
-Implements comparison of two `AbstractIncident` quantities using time-order.
+Implements comparison of two `AbstractTimedOccurrence` quantities using time-order.
 
 As indicated by the examples, logical comparison operators may be used.
 However `inc1 == inc2` is _not_ a consequence of `inc1 ≤ inc2` and `inc1 ≥ inc2`.
@@ -16,7 +16,7 @@ julia> Removal(0.10, 3) ≥ PInfection(0.15, 2, 7)
 false
 ```
 """
-function Base.isless(inc1::AbstractIncident, inc2::AbstractIncident)::Bool
+function Base.isless(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
     inc1.t < inc2.t
     end
 
@@ -151,4 +151,20 @@ function Base.show(io::IO, z::Innovation)
         printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5})",
                     typeof(z), z.n, z.infections, z.removals, z.cremovals)
     end
+end
+
+"""
+Implementation of `show` for `SIR` using subscript and 2 decimal places for time.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+SIR(0.4, 1, 2, 3)
+
+# output
+SIR₀.₄₀(1:2:3)
+```
+"""
+function Base.show(io::IO, z::SIR)
+    printfmt(io, "SIR{1}({2}:{3}:{4})",
+                 timespec(z.t), z.s, z.i, z.r)
 end

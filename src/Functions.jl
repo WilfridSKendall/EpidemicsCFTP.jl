@@ -89,7 +89,13 @@ C₀.₁₀³
 ```
 """
 function Base.show(io::IO, z::AbstractRemoval)
-    id = string(typeof(z))[1]
+    #id = string(typeof(z))[1]
+    id = "X"
+    if z isa Removal
+        id = "R"
+    elseif z isa CRemoval 
+        id = "C"
+    end
     t = timespec(z.t)
     printfmt(io, "{1}{2}{3}", id, t, uppers(string(z.target)))
 end
@@ -106,7 +112,13 @@ P₀.₁₀³⁻⁴
 ```
 """
 function Base.show(io::IO, z::AbstractInfection)
-    id = string(typeof(z))[1]
+    #id = string(typeof(z))[1]
+    id = "X"
+    if z isa Infection
+        id = "I"
+    elseif z isa PInfection 
+        id = "P"
+    end
     t = timespec(z.t)
     printfmt(io, "{1}{2}{3}⁻{4}", id, t, uppers(string(z.infector)), uppers(string(z.infectee)))
 end

@@ -1,13 +1,21 @@
 ## Types for various incidents.
+"""
+    AbstractTimedOccurrence
+
+Represents an abstract incident or a state as occurring
+at a time specified by a `Real` number `t`.
+
+Expects field `t<:Real` (used by function `isless`
+to time-order lists of `AbstractTimedOccurrence` entities).
+"""
+abstract type AbstractTimedOccurrence end
 
 """
     AbstractIncident
 
-Represents an abstract incident (infection or removal) at a time specified 
-by a `Real` number `t`.  
-Expects field `t<:Real` (will be used by function `isless` to time-order lists of `AbstractIncident` entities).
+Sub-type of `AbstractTimedOccurrence`.
 """
-abstract type AbstractIncident end
+abstract type AbstractIncident <: AbstractTimedOccurrence end
 
 ## AbstractIncidents representing removals and infections
 
@@ -217,6 +225,44 @@ struct Innovation <: AbstractEnvironment
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
             new(n, sort(infections), sort(removals), sort(cremovals))
+        end
+    end
+end
+
+        
+        
+## An `SIR` state for an S-I-R epidemic and associated functions
+"""
+    SIR(t::Real, s::Integer, i::Integer, r::Integer)
+
+Represent a state of an S-I-R epidemic (`s`, `i`, `r`)
+(all non-negative integers adding up to a positive integer)
+at a specified time `t` (a real number).
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> SIR(0.1, 1, 2, 3)
+SIR₀.₁₀(1:2:3)
+```
+"""
+struct SIR <: AbstractTimedOccurrence
+    t::Float64
+    s::Int
+    i::Int
+    r::Int
+
+    function SIR(t, s, i, r)
+        noun = "SIR($t, $s, $i, $r)"
+        if s < 0
+            throw(DomainError(noun, "negative number $s of susceptibles"))
+        elseif i < 0
+            throw(DomainError(noun, "negative number $i of infectives"))
+        elseif r < 0
+            throw(DomainError(noun, "negative number $r of removals"))
+        elseif s + i + r == 0
+            throw(DomainError(noun, "zero total population"))
+        else
+            new(t, s, i, r)
         end
     end
 end

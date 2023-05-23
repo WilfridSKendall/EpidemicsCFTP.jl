@@ -53,6 +53,12 @@ or `make view-pdf` (for `pdf` documentation).
 
 
 ## Representing different types of incidents
+Everything is built on the `AbstractTimedOccurrence`.
+The only requirement on ojections of this type is that they should possess
+a real-valued attribute `t` corresponding to a (process) time.
+```@docs
+AbstractTimedOccurrence
+```
 
 ### Various abstract incidents
 `AbstractIncident` is a generic type for incidents taking place in time.
@@ -82,7 +88,7 @@ Infection
 PInfection
 ```
 
-## Representing different kinds of environments
+## Representing different kinds of environments and states
 `AbstractEnvironment` is a generic type for a collection of lists of `infections`,
 `removals` and `cremovals` (conditioned removals).
 ```@docs
@@ -95,6 +101,10 @@ of lists of the requisite infections or removals.
 Innovation
 ```
 
+`SIR` records the state of an \(SIR\) epidemic at a stipulated time.
+```@docs
+SIR
+```
 
 ## Associated methods
 
@@ -104,13 +114,14 @@ These overload `show` (to provide compact displays)
 show(::IO, ::AbstractRemoval)
 show(::IO, ::AbstractInfection)
 show(::IO, ::Innovation)
+show(::IO, ::SIR)
 ```
 ### Comparison method
 A partial order is provided by `isless`, based on time `t` of occurrence of the relevant 
 instances of
-`AbstractIncident`s.
+`AbstractTimedOccurrence`s.
 ```@docs
-isless(::AbstractIncident, ::AbstractIncident)
+isless(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 ```
 
 ### Other methods
@@ -119,7 +130,7 @@ into a time-ordered list of incidents
 ```@docs
 chronology
 ```
-### Index
- 
+
+## Index 
 ```@index
 ```

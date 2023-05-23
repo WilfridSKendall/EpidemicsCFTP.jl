@@ -65,12 +65,17 @@ end
             C[C(0.00, 1), C(0.01, 1), C(0.02, 1), C(0.05, 1)])
 end
 
+## Testing `SIR`, state of epidemic
+@testset "EpidemicsCFTP: SIR       " begin
+    @test_throws DomainError SIR(0.0,-1, 2, 3)
+    @test_throws DomainError SIR(0.0, 1,-2, 3)
+    @test_throws DomainError SIR(0.0, 1, 2,-3)
+    @test_throws DomainError SIR(0.0, 0, 0, 0)
+end
+
 
 # ## Testing `isless`
 # @testset "EpidemicsCFTP: isless    " begin
-#     @test   SIR(0.0, 1, 2, 1)     < SIR(0.5, 0, 3, 1)
-#     @test !(SIR(0.0, 1, 2, 1)     < SIR(0.0, 0, 3, 1))
-#     @test   Removal(0.5, 3)       < Infection(0.90, 1, 2)
 #     @test   RightCensor(0.5)      < Infection(0.90, 1, 2)
 #     @test   RightCensor(1.5)      > Infection(0.90, 1, 2)
 # end=#
@@ -83,11 +88,4 @@ end
 #     @test_throws MethodError     resample(crem, -100.5) # No signature available for non-integer second argument!
 # end
 # 
-# ## Testing `SIR`, state of epidemic
-# @testset "EpidemicsCFTP: SIR       " begin
-#     @test_throws DomainError SIR(0.0,-1, 2, 3)
-#     @test_throws DomainError SIR(0.0, 1,-2, 3)
-#     @test_throws DomainError SIR(0.0, 1, 2,-3)
-#     @test_throws DomainError SIR(0.0, 0, 0, 0)
-# end
-# 
+

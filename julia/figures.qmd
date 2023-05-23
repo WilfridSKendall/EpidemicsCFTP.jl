@@ -62,7 +62,7 @@ Note that (trivial) labelling issues arise if `popn > MAXPOP=20`.
 
 We now set up and establish graphics size and coordinates.
 ```{julia}
-set_default_graphic_size(5inch, 3inch) ;
+set_default_graphic_size(6inch, 4inch) ;
 
 coordinates     = UnitBox(0, popn, duration, -popn, 
                   leftpad=0.5inch, rightpad=0.5inch, 
@@ -197,7 +197,7 @@ compose(context(units=coordinates),
     fill("yellow"), fillopacity(0.1), stroke("orange")
   ),
 
-  (context(units=coordinates), 
+  (context(), 
     line([[(inc.t, inc.infector+4radius), (inc.t, inc.infectee)]
            for inc in env0.infections]),
     line([[(inc.t-0.5radius, inc.infectee-0.125), 
@@ -205,7 +205,23 @@ compose(context(units=coordinates),
            (inc.t+0.5radius, inc.infectee-0.125)]
            for inc in env0.infections]),
     stroke("orange")
-  )
+  ),
+  
+  (context(),
+    text([inc.t for inc in env0.infections],
+         [0.05h], 
+         [string(inc) for inc in env0.infections],
+         [hcenter]),
+    fontsize(5pt), font("Helvetica"),
+    ),
+    
+  (context(),
+    text([inc.t for inc in env0.removals],
+         [0.075h], 
+         [string(inc) for inc in env0.removals],
+         [hcenter]),
+    fontsize(5pt), font("Helvetica"),
+  ),
 )
 ```
 

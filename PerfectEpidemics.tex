@@ -113,8 +113,8 @@
 % \newcommand{\infector}{{j}}
 \newcommand{\target}{{\colorbox{green!30}{$\textcolor{red}{i}$}}}
 \newcommand{\targetm}{{\colorbox{green!30}{$\textcolor{red}{i'}$}}}
-\newcommand{\infectee}{{\colorbox{yellow!30}{$\textcolor{red}{i}$}}}
-\newcommand{\infector}{{\colorbox{orange!30}{$\textcolor{red}{j}$}}}
+\newcommand{\infectee}{{\colorbox{yellow!30}{$\textcolor{red}{j}$}}}
+\newcommand{\infector}{{\colorbox{orange!30}{$\textcolor{red}{i}$}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Document
@@ -1049,7 +1049,8 @@ for the
 constrained version.
 
 
-We state the validity of this algorithm as a theorem.
+We state the validity of this algorithm as a theorem.%
+\NB[WSK6]{Need to show the result genuinely is $\SIR$ -- easy matter of computation of rates!}
 \begin{thm}\label{thm:SIR-epidemic-2}
 Suppose \({S}_t\), \({I}_t\), \({R}_t\) measure the numbers of susceptibles, infectives, and removals 
 arising at time \(\tau\) in stochastic equilibrium for the algorithmic time process given by the modified construction described above.

@@ -37,12 +37,12 @@ chronology(Innovation(n, infections, removals, cremovals))
 
 # output
 6-element Vector{AbstractIncident}:
- C₀.₀₀¹
- C₀.₀₅²
- R₀.₁₀²
- R₀.₂₀³
- P₀.₅₀¹⁻²
- I₀.₇₀¹⁻²
+ 𝒞₀.₀₀¹
+ 𝒞₀.₀₅²
+ ℛ₀.₁₀²
+ ℛ₀.₂₀³
+ 𝒫₀.₅₀¹⁻²
+ ℐ₀.₇₀¹⁻²
 ```
 """
 function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
@@ -83,21 +83,14 @@ Implementation of `show` for `AbstractRemoval`, using subscripts and 2 decimal p
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Removal(0.10, 3)
-R₀.₁₀³
+ℛ₀.₁₀³
 julia> CRemoval(0.10, 3)
-C₀.₁₀³
+𝒞₀.₁₀³
 ```
 """
 function Base.show(io::IO, z::AbstractRemoval)
-    #id = string(typeof(z))[1]
-    id = "X"
-    if z isa Removal
-        id = "R"
-    elseif z isa CRemoval 
-        id = "C"
-    end
     t = timespec(z.t)
-    printfmt(io, "{1}{2}{3}", id, t, uppers(string(z.target)))
+    printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
 end
 
 """
@@ -106,21 +99,14 @@ Implementation of `show` for `AbstractInfection` using subscripts and 2 decimal 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Infection(0.10, 3, 4)
-I₀.₁₀³⁻⁴
+ℐ₀.₁₀³⁻⁴
 julia> PInfection(0.10, 3, 4)
-P₀.₁₀³⁻⁴
+𝒫₀.₁₀³⁻⁴
 ```
 """
 function Base.show(io::IO, z::AbstractInfection)
-    #id = string(typeof(z))[1]
-    id = "X"
-    if z isa Infection
-        id = "I"
-    elseif z isa PInfection 
-        id = "P"
-    end
     t = timespec(z.t)
-    printfmt(io, "{1}{2}{3}⁻{4}", id, t, uppers(string(z.infector)), uppers(string(z.infectee)))
+    printfmt(io, "{1}{2}{3}⁻{4}", z.kind, t, uppers(string(z.infector)), uppers(string(z.infectee)))
 end
 
 """
@@ -136,14 +122,11 @@ Innovation(n, infections, removals, CRemoval[])
 
 # output
 Innovation(3,
-  AbstractInfection[P₀.₅₀¹⁻², I₀.₇₀¹⁻²],
-  Removal[R₀.₁₀², R₀.₂₀³])
+  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  Removal[ℛ₀.₁₀², ℛ₀.₂₀³])
 ```
 """
 function Base.show(io::IO, z::Innovation)
-    #infections = AbstractInfection[inc for inc in z.chronology if typeof(inc)<:AbstractInfection]
-    #removals   = Removal[inc for inc in z.chronology if typeof(inc)<:Removal]
-    #cremovals  = CRemoval[inc for inc in z.chronology if typeof(inc)<:CRemoval]
     if isempty(z.cremovals)
         printfmt(io, "{1}({2},\n  {3},\n  {4})",
                     typeof(z), z.n, z.infections, z.removals)

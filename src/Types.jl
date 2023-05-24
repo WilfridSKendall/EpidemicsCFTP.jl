@@ -14,6 +14,9 @@ abstract type AbstractTimedOccurrence end
     AbstractIncident
 
 Sub-type of `AbstractTimedOccurrence`.
+
+Expects field `kind<:String` (used by function `show`
+to represent the particular kind of incident).
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
@@ -65,17 +68,18 @@ The `Removal` is realized if the specified timeline is infectious just before ti
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Removal(0.1, 4)
-R₀.₁₀⁴
+ℛ₀.₁₀⁴
 ```
 """
 struct Removal <: AbstractRemoval
+    kind      ::String     
     t         ::Float64
     target    ::Int
 
     function Removal(t, target)
         noun = "Removal($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new(t, target))
+                new("ℛ", t, target))
     end
 end
 
@@ -90,17 +94,18 @@ The `target` field should always index a time-line which is currently infectious
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> CRemoval(0.1, 4)
-C₀.₁₀⁴
+𝒞₀.₁₀⁴
 ```
 """
 struct CRemoval <: AbstractRemoval
-    t       ::Float64
-    target  ::Int
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
 
     function CRemoval(t, target)
         noun = "CRemoval($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new(t, target))
+                new("𝒞", t, target))
     end
 end
 
@@ -117,13 +122,15 @@ which must be positive integers.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Infection(0.2, 1, 2)
-I₀.₂₀¹⁻²
+ℐ₀.₂₀¹⁻²
 ```
 """
 struct Infection <: AbstractInfection
-    t::  Float64
-    infector:: Int
-    infectee:: Int
+    kind      ::String
+    t         ::Float64
+    infector  ::Int
+    infectee  ::Int
+
     function Infection(t, infector, infectee)
         noun = "Infection($t, $infector, $infectee)"
         if infectee <= infector
@@ -131,7 +138,7 @@ struct Infection <: AbstractInfection
         elseif infector <= 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
-            new(t, infector, infectee)
+            new("ℐ", t, infector, infectee)
         end
     end
 end
@@ -145,13 +152,15 @@ which is identical to `Infection` but with a different name.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> PInfection(0.2, 1, 2)
-P₀.₂₀¹⁻²
+𝒫₀.₂₀¹⁻²
 ```
 """
 struct PInfection <: AbstractInfection
-    t::  Float64
-    infector:: Int
-    infectee:: Int
+    kind      ::String
+    t         ::Float64
+    infector  ::Int
+    infectee  ::Int
+    
     function PInfection(t, infector, infectee)
         noun = "PInfection($t, $infector, $infectee)"
         if infectee <= infector
@@ -159,7 +168,7 @@ struct PInfection <: AbstractInfection
         elseif infector <= 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new(t, infector, infectee)
+            new("𝒫", t, infector, infectee)
         end
     end
 end
@@ -198,9 +207,9 @@ Innovation(n, infections, removals, cremovals)
 
 # output
 Innovation(3,
-  AbstractInfection[P₀.₅₀¹⁻², I₀.₇₀¹⁻²],
-  Removal[R₀.₁₀², R₀.₂₀³],
-  CRemoval[C₀.₀₀¹, C₀.₀₅²])
+  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  Removal[ℛ₀.₁₀², ℛ₀.₂₀³],
+  CRemoval[𝒞₀.₀₀¹, 𝒞₀.₀₅²])
 ```
 """
 struct Innovation <: AbstractEnvironment

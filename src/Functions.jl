@@ -36,11 +36,11 @@ chronology(Innovation(n, infections, removals, cremovals))
 
 # output
 6-element Vector{AbstractIncident}:
- ℱ₀.₀₀¹
- ℱ₀.₀₅²
+ 𝒞₀.₀₀¹
+ 𝒞₀.₀₅²
  ℛ₀.₁₀²
  ℛ₀.₂₀³
- ℋ₀.₅₀¹⁻²
+ 𝒫₀.₅₀¹⁻²
  ℐ₀.₇₀¹⁻²
 ```
 """
@@ -84,7 +84,7 @@ Implementation of `show` for `AbstractRemoval`, using subscripts and 2 decimal p
 julia> Removal(0.10, 3)
 ℛ₀.₁₀³
 julia> CRemoval(0.10, 3)
-ℱ₀.₁₀³
+𝒞₀.₁₀³
 ```
 """
 function Base.show(io::IO, z::AbstractRemoval)
@@ -100,7 +100,7 @@ Implementation of `show` for `AbstractInfection` using subscripts and 2 decimal 
 julia> Infection(0.10, 3, 4)
 ℐ₀.₁₀³⁻⁴
 julia> PInfection(0.10, 3, 4)
-ℋ₀.₁₀³⁻⁴
+𝒫₀.₁₀³⁻⁴
 ```
 """
 function Base.show(io::IO, z::AbstractInfection)
@@ -121,7 +121,7 @@ Innovation(n, infections, removals, CRemoval[])
 
 # output
 Innovation(3,
-  AbstractInfection[ℋ₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
   Removal[ℛ₀.₁₀², ℛ₀.₂₀³])
 ```
 """

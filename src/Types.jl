@@ -91,10 +91,12 @@ Represent a conditioned removal using a sub-type of `AbstractRemoval`, similar t
 The `target` field should always index a time-line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
+The `kind` field carries `ℱ` short for "fixed".
+
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> CRemoval(0.1, 4)
-𝒞₀.₁₀⁴
+ℱ₀.₁₀⁴
 ```
 """
 struct CRemoval <: AbstractRemoval
@@ -105,7 +107,7 @@ struct CRemoval <: AbstractRemoval
     function CRemoval(t, target)
         noun = "CRemoval($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("𝒞", t, target))
+                new("ℱ", t, target))
     end
 end
 
@@ -149,10 +151,12 @@ end
 Represent a perpetuated infection using a sub-type of `AbstractInfection`
 which is identical to `Infection` but with a different name.
 
+The `kind` field carries `ℋ` short for "hold over".
+
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> PInfection(0.2, 1, 2)
-𝒫₀.₂₀¹⁻²
+ℋ₀.₂₀¹⁻²
 ```
 """
 struct PInfection <: AbstractInfection
@@ -168,7 +172,7 @@ struct PInfection <: AbstractInfection
         elseif infector <= 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒫", t, infector, infectee)
+            new("ℋ", t, infector, infectee)
         end
     end
 end
@@ -208,9 +212,9 @@ Innovation(n, infections, removals, cremovals)
 
 # output
 Innovation(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  AbstractInfection[ℋ₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
   Removal[ℛ₀.₁₀², ℛ₀.₂₀³],
-  CRemoval[𝒞₀.₀₀¹, 𝒞₀.₀₅²])
+  CRemoval[ℱ₀.₀₀¹, ℱ₀.₀₅²])
 ```
 """
 struct Innovation <: AbstractEnvironment

@@ -117,11 +117,11 @@ show(::IO, ::Innovation)
 show(::IO, ::SIR)
 ```
 ### Comparison method
-A partial order is provided by `isless`, based on time `t` of occurrence of the relevant 
+A partial order is provided by `isearlier`, based on time `t` of occurrence of the relevant 
 instances of
 `AbstractTimedOccurrence`s.
 ```@docs
-isless(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
+isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 ```
 
 ### Other methods

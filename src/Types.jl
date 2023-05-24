@@ -5,7 +5,7 @@
 Represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 
-Expects field `t<:Real` (used by function `isless`
+Expects field `t<:Real` (used by function `isearlier`
 to time-order lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
@@ -179,11 +179,12 @@ end
 
 Represent an entire innovation of environment for a single step of algorithmic time.
 
-Should always possess fields `n` (positive `Integer`) and
-`chron` (`Vector{AbstractIncident}`), but displays `n`
+Should always possess field `n` (positive `Integer`) and
+`infections`, `removals`, `cremovals (`Vector{AbstractIncident}`),
+but displays `n`
 together with
 `infections`, `removals`, `cremovals` 
-(sorted as **time-ordered** lists of corresponding incidents).
+as **time-ordered** lists of corresponding incidents.
 """
 abstract type AbstractEnvironment end
 
@@ -233,7 +234,9 @@ struct Innovation <: AbstractEnvironment
         elseif any(i.infectee > n for i in infections)
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
-            new(n, sort(infections), sort(removals), sort(cremovals))
+            new(n, sort(infections, lt=isearlier), 
+                   sort(removals,   lt=isearlier), 
+                   sort(cremovals,  lt=isearlier))
         end
     end
 end

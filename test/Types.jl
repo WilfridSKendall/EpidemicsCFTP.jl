@@ -74,10 +74,9 @@ end
 end
 
 
-# ## Testing `isless`
-# @testset "EpidemicsCFTP: isless    " begin
-#     @test   RightCensor(0.5)      < Infection(0.90, 1, 2)
-#     @test   RightCensor(1.5)      > Infection(0.90, 1, 2)
+# ## Testing `isearlier`
+# @testset "EpidemicsCFTP: isearlier  " begin
+#     @test   isearlier(RightCensor(0.5), Infection(0.90, 1, 2))
 # end=#
 
 

@@ -23,6 +23,7 @@ export PInfection
 export Innovation
 export SIR
 
+export isearlier
 export chronology
 
 # Included files

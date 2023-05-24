@@ -1,24 +1,23 @@
 ## Comparison of incidents by time
 
 """
-    isless(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
+    isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
 
 Implements comparison of two `AbstractTimedOccurrence` quantities using time-order.
 
-As indicated by the examples, logical comparison operators may be used.
-However `inc1 == inc2` is _not_ a consequence of `inc1 ≤ inc2` and `inc1 ≥ inc2`.
+We don't use `isless`, because we don't have a total ordering here!
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> Removal(0.10, 3) < CRemoval(0.15, 2)
+julia> isearlier(Removal(0.10, 3), CRemoval(0.15, 2))
 true
-julia> Removal(0.10, 3) ≥ PInfection(0.15, 2, 7)
+julia> isearlier(PInfection(0.15, 2, 7), Removal(0.10, 3))
 false
 ```
 """
-function Base.isless(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
-    inc1.t < inc2.t
-    end
+function isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
+  inc1.t < inc2.t
+end
 
 ## Produce a time-ordered list of incidents from an `AbstractEnvironment`.
 
@@ -47,7 +46,7 @@ chronology(Innovation(n, infections, removals, cremovals))
 """
 function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
     chron = Iterators.flatten([env.infections, env.removals, env.cremovals]) ;
-    [inc::AbstractIncident for inc in sort(collect(chron))]
+    [inc::AbstractIncident for inc in sort(collect(chron), lt=isearlier)]
 end
 
 

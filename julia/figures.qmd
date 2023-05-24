@@ -14,7 +14,7 @@ format:
   pdf:
     link-citations: true
     numbersections: true
-    monofont: "DejaVu Sans Mono"
+    monofont: "Noto Sans Mono"
     mainfont: "Times New Roman"
 
 jupyter:    julia-1.9
@@ -27,22 +27,22 @@ quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
 or simply `make figures.pdf` or even just `make`.
 
 Note the untidy parameter `--from=markdown+tex_math_single_backslash`,
-required to avoid use of the unsophisticated `$` and `$$` switches.
+in order to replace the unsophisticated \TeX\ `$` and `$$` toggles
+by the \LaTeX\ pairs `\(⋯\)` and `\[⋯\]`.
 
 Consult <https://quarto.org/docs/computations/execution-options.html>
 for further execution options for cells.
 
 # Initialisation
-We invoke the key modules which we will use.
+First access required modules.
 ```{julia}
 using Compose, Colors, Measures
-
 import EpidemicsCFTP
 epi = EpidemicsCFTP ;
 ```
 
-A brief and laconic description of the `julia` package `Compose.jl` 
-(the key package for producing these graphics)
+A laconic description of the `julia` package `Compose.jl` 
+(the graphics package used for these figures)
 is provided at 
 <https://giovineitalia.github.io/Compose.jl/latest/>.
 
@@ -71,53 +71,45 @@ region      = (context(), rectangle(), fill("bisque"), fillopacity(0.3)) ;
 
 
 # Basic image template elements
-First we construct the time axis, with tick marks at integer times.
+First construct the time axis, with tick marks at integer times.
 Note, here and following,  careful use of graphics area units (`cx`, `cy`) 
 ```{julia}
-time_axis = (context(),
-   line([(0cx, 0cy), ((duration)cx, 0cy)]), stroke("black"), linewidth(0.5mm)
-  ) ;
-
 tic       = -0.2cy
 step      = 10^floor(Int, log10(duration))
 tic_loc1  = [(((x)cx,0cy), ((x)cx, tic))    for x in 0:1.0step:duration]
 tic_loc2  = [(((x)cx,0cy), ((x)cx, tic))    for x in 0:0.5step:duration]
 tic_loc3  = [(((x)cx,0cy), ((x)cx, 0.5tic)) for x in 0:0.1step:duration]
 
-ticks     = (context(),
-  (context(), line(tic_loc1), stroke("black"), linewidth(0.2mm)),
-  (context(), line(tic_loc2), stroke("black"), linewidth(0.1mm)),
-  (context(), line(tic_loc3), stroke("black"), linewidth(0.1mm))
-)
-
 label_height = 0cy + 0.25inch
 labellocs    = [(x)cx for x in 0:duration]
-ticklabels   = 
-  (context(), text(labellocs, [label_height], ["$i" for i in 0:duration], 
-      [hcenter], [vbottom]), 
-    stroke("grey"), fontsize(7pt)
-  ) ;
+
+time_axis = (context(),
+   line([(0cx, 0cy), ((duration)cx, 0cy)]), stroke("grey"), linewidth(0.5mm),
+   (context(), line(tic_loc1), stroke("grey"), linewidth(0.2mm)),
+   (context(), line(tic_loc2), stroke("grey"), linewidth(0.1mm)),
+   (context(), line(tic_loc3), stroke("grey"), linewidth(0.1mm)),
+   (context(), text(labellocs, [label_height], ["$i" for i in 0:duration], 
+      [hcenter], [vcenter]), stroke("grey"), fontsize(7pt)) ) ;
 ```
 
 
-Now we build the time-lines, labelled by circled integers.
+Now build the time-lines, labelled by circled integers.
 The definition of `circlabels` below needs to be changed if `population > MAXPOP=20`,
 as unicode then runs out of circled integers!
 ```{julia}
-lab_xoffset  = 0cx - 0.25inch
 circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
-linelabels   = (context(),
-  text([lab_xoffset], [(i)cy for i in 1:population], circlabels,
-      [hleft], [vcenter]), stroke("grey"), fontsize(7pt) ) ;
+
 lines        = (context(), 
   line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
-  stroke("black"), linewidth(0.5mm) ) ;
+      stroke("black"), linewidth(0.5mm), 
+  (context(),
+  text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
+      [hleft], [vcenter]), stroke("black"), fontsize(10pt)) ) ;
 ```
 
 Finally we build a tree describing the construction of scaffolding.
 ```{julia}
-scaffolding = (context(), region,
-  (context(), time_axis, ticks, ticklabels, linelabels, lines) ) ;
+scaffolding = (context(), region, (context(), time_axis, lines) ) ;
 ```
 
 # Drawing the underlying scaffolding
@@ -139,18 +131,16 @@ C = epi.CRemoval
 
 env0 = epi.Innovation(5, 
   epi.AbstractInfection[
-    I(0.5,2,5), I(0.7,1,2), P(0.8,1,2), I(0.9,2,4), I(1.15,3,4), I(1.2,2,3),
-    I(1.3,1,2), I(1.35,4,5), I(1.41,1,4), I(1.5,2,4), I(1.9,3,5), I(1.8,3,4)
+    I(0.2,2,5), I(0.4,1,2), P(0.5,1,2), I(0.6,2,4), I(0.85,3,4), I(0.9,2,3),
+    I(1.0,1,2), I(1.05,4,5), I(1.11,1,4), I(1.2,2,4), I(1.6,3,5), I(1.5,3,4)
     ], 
-  R[
-    R(0.6,5), R(1.25,5), R(1.7,2)
-    ],
-  C[C(1.6,2), C(1.1,1)]
+  R[R(0.3,5), R(0.42,3), R(0.95,5), R(1.4,2)],
+  C[C(1.3,2), C(0.8,1), C(1.7,4), C(1.8,4), C(1.92,5)]
 ) ;
 ```
 
 Then we must plot epidemics arising from the time-sequence of potential incidents.
-Note that elements are plotted in reverse-order: for example, the first in sequence overlays 
+Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements.
 ```{julia}
 epi.chronology(env0)
@@ -159,13 +149,13 @@ epi.chronology(env0)
 @fig-potential illustrates the required plot.
 ```{julia}
 #| label: fig-potential
-#| fig-cap: "Potential incidents, including both removals and infections:                     \
-#|           Potential removals are indicated by disks with blue outlines,                    \
-#|           conditional removals are indicated by disks with purple outlines,                \
-#|           potential infections are indicated by disks with orange outlines,                \
-#|           perpetuated infections are indicated by disks with dark green outlines.          \
-#|           Orange arrows indicate connections of potential infector time-lines              \
-#|           to corresponding potential infectee time-lines.                                  \
+#| fig-cap: "Potential incidents, including both removals and infections:                                 \
+#|           Potential removals (R for _removal_) are indicated by disks with blue outlines,              \
+#|           conditional removals (C for _conditioned_) are indicated by disks with purple outlines,      \
+#|           potential infections (I for _infected_) are indicated by disks with orange outlines,         \
+#|           perpetuated infections (P for _perpetuated_) are indicated by disks with dark green outlines.\
+#|           Orange arrows indicate connections of potential infector time-lines                          \
+#|           to corresponding potential infectee time-lines.                                              \
 #|           Each disk is annotated by the summary description of the corresponding incident."
 
 radius = 0.2cy
@@ -177,53 +167,53 @@ compose(context(units=coordinates),
          [(inc.infector)cy for inc in env0.infections], 
          [string(inc) for inc in env0.infections],
          [hcenter], [vcenter]),
-    fontsize(5pt), font("Helvetica"), ),
+    fontsize(5pt), font("Helvetica"), ),                    # Labels (Infections) 
     
   (context(),
     text([(inc.t)cx for inc in env0.removals],
          [(inc.target)cy for inc in env0.removals], 
          [string(inc) for inc in env0.removals],
          [hcenter], [vcenter]),
-    fontsize(5pt), font("Helvetica"), ),
+    fontsize(5pt), font("Helvetica"), ),                    # Labels (Removals)
 
   (context(),
     text([(inc.t)cx for inc in env0.cremovals],
          [(inc.target)cy for inc in env0.cremovals], 
          [string(inc) for inc in env0.cremovals],
          [hcenter], [vcenter]),
-    fontsize(5pt), font("Helvetica"), ),
+    fontsize(5pt), font("Helvetica"), ),                    # Labels (CRemovals)
 
   (context(), 
     line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
            for inc in env0.infections]),
-    line([[((inc.t)cx-bit, (inc.infectee)cy-bit), 
-           ((inc.t)cx, (inc.infectee)cy), 
-           ((inc.t)cx+bit, (inc.infectee)cy-bit)]
-           for inc in env0.infections]), stroke("orange") ), # Infection contacts
+    line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
+           ((inc.t)cx,          (inc.infectee)cy), 
+           ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
+           for inc in env0.infections]), stroke("orange")), # Infection contacts
   
   (context(), 
     circle([(inc.t)cx for inc in env0.infections if isa(inc, P)], 
            [(inc.infector)cy for inc in env0.infections if isa(inc, P)],
            [radius]),
-    fill("white"), stroke("darkgreen") ),                   # Perpetuated infections
+    fill("white"), stroke("darkgreen")),                   # Perpetuated infections
 
   (context(), 
     circle([(inc.t)cx for inc in env0.infections if isa(inc, I)], 
            [(inc.infector)cy for inc in env0.infections if isa(inc, I)],
            [radius]),
-    fill("white"), stroke("orange") ),                      # Infections
+    fill("white"), stroke("orange")),                      # Infections
 
   (context(), 
     circle([(inc.t)cx for inc in env0.removals], 
            [(inc.target)cy for inc in env0.removals],
            [radius]),
-    fill("white"), stroke("blue") ),                        # Removals
+    fill("white"), stroke("blue")),                        # Removals
 
   (context(), 
     circle([(inc.t)cx for inc in env0.cremovals], 
            [(inc.target)cy for inc in env0.cremovals],
            [radius]),
-    fill("white"), stroke("purple") ),                      # Conditional Removals
+    fill("white"), stroke("purple")),                      # Conditional Removals
 
   scaffolding,
 )

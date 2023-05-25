@@ -150,3 +150,20 @@ function Base.show(io::IO, z::SIR)
     printfmt(io, "SIR{1}({2}:{3}:{4})",
                  timespec(z.t), z.s, z.i, z.r)
 end
+
+
+"""
+Implementation of `show` for `SIR` using subscript and 2 decimal places for time.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+SIR(0.4, 1, 2, 3)
+
+# output
+SIR₀.₄₀(1:2:3)
+```
+"""
+function Base.show(io::IO, z::SIR)
+    printfmt(io, "SIR{1}({2}:{3}:{4})",
+                 timespec(z.t), z.s, z.i, z.r)
+end

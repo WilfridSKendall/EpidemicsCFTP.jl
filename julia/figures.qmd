@@ -139,13 +139,9 @@ env0 = epi.Innovation(5,
 ) ;
 ```
 
-Then we must plot epidemics arising from the time-sequence of potential incidents.
+We now add a graphical depiction of the potential incidents supplied by the innocation.
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements.
-```{julia}
-epi.chronology(env0)
-```
-
 @fig-potential illustrates the required plot.
 ```{julia}
 #| label: fig-potential
@@ -161,7 +157,7 @@ epi.chronology(env0)
 radius = 0.2cy
 bit    = -0.02h
 
-compose(context(units=coordinates), 
+elements = (context(),
   (context(),
     text([(inc.t)cx for inc in env0.infections],
          [(inc.infector)cy for inc in env0.infections], 
@@ -214,8 +210,22 @@ compose(context(units=coordinates),
            [(inc.target)cy for inc in env0.cremovals],
            [radius]),
     fill("white"), stroke("purple")),                      # Conditional Removals
+);
 
-  scaffolding,
-)
+compose(context(units=coordinates), elements, scaffolding)
+```
+
+# Evolving the epidemic in process time
+Next we must plot the course of epidemics arising from the time-sequence of potential incidents
+supplied by the innovation. The time sequence is derived from the innovation
+by the `chronology` function, and we need to compute the trajectory,
+and history of realized incidents, corresponding to a specific initial state at time \(0.0\),
+given by an `SIR` structure.
+```{julia}
+epi.SIR(0.0, 1, 4, 0)
+```
+
+```{julia}
+epi.chronology(env0)
 ```
 

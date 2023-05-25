@@ -50,7 +50,173 @@ function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
 end
 
 
-## Compact printing
+"""
+    EpidemicsCFTP.infect(t::Real, state::SIR)::SIR
+
+Change state of an S-I-R epidemic to implement an infection at time `t`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> EpidemicsCFTP.infect(0.1, SIR(0.0, 1, 2, 3))
+SIR₀.₁₀(0:3:3)
+```
+"""
+function infect(t::Real, state::SIR)::SIR
+    SIR(t, state.s - 1, state.i + 1, state.r)
+end
+
+
+"""
+    EpidemicsCFTP.is_infectable(state::SIR, inc::AbstractInfection)::Bool
+
+Tests whether an infection should be implemented for a given state.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 6))
+true
+julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 5))
+false
+```
+"""
+function is_infectable(state::SIR, inc::AbstractInfection)::Bool
+    inc.t >= state.t && inc.infector > state.r && inc.infectee == state.i + state.r + 1
+end
+
+"""
+    EpidemicsCFTP.remove(t::Real, state::SIR)::SIR
+
+Change state of an S-I-R epidemic to implement a removal at time `t`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> EpidemicsCFTP.remove(0.1, SIR(0.0, 1, 2, 3))
+SIR₀.₁₀(1:1:4)
+```
+"""
+function remove(t::Real, state::SIR)::SIR
+    SIR(t, state.s, state.i - 1, state.r + 1)
+end
+
+
+"""
+    EpidemicsCFTP.is_removeable(state::SIR, event::AbstractRemoval)::Bool
+
+Tests whether a removal should be implemented for a given state.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 4))
+true
+julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 6))
+false
+```
+"""
+function is_removeable(state::SIR, inc::AbstractRemoval)::Bool
+    inc.t >= state.t && inc.target > state.r && inc.target <= state.i + state.r
+end
+
+
+"""
+    EpidemicsCFTP.update(state::SIR, event::Union{Removal, CRemoval, Infection, PInfection})::SIR
+
+Applies incident to a given state and returns resulting incident.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), Removal(0.2, 4))
+SIR₀.₂₀(1:1:4)
+```
+"""
+function update(state::SIR, event::Union{Removal, CRemoval, Infection, PInfection})::SIR
+    inc = typeof(event)
+    if state.t > event.t
+        return state
+    elseif inc <: AbstractRemoval    && is_removeable(state, event)
+        return remove(event.t, state)
+    elseif inc <: AbstractInfection  && is_infectable(state, event)
+        return infect(event.t, state)
+    else
+        return SIR(event.t, state.s, state.i, state.r)
+    end
+end
+
+"""
+    EpidemicsCFTP.is_same_config(state1::SIR, state2::SIR)::Bool
+
+Checks if the two states have the same values for `s`, `i`, `r` fields
+(but not `t` field).
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> EpidemicsCFTP.is_same_config(SIR(0.1, 1, 2, 3), SIR(0.9, 1, 2, 3))
+true
+```
+
+"""
+function is_same_config(state1::SIR, state2::SIR)::Bool
+    state1.s == state2.s && state1.i == state2.i && state1.r == state2.r
+    end
+
+
+"""
+    evolution_recurse!(states::Vector{SIR}, t1::Real, history::Vector{AbstractIncident},
+                        chron::Vector{AbstractIncident})::Tuple{Vector{SIR},Vector{AbstractIncident}}
+
+Evolves an S-I-R epidemic recursively from an initial pair of
+
+1. a time-ordered list `states` of `SIR` states and 
+2. and a `history` `Vector{AbstractIncident}`
+
+to an updated list of `SIR` states running up to
+time `t1`  and an updated history `Vector{AbstractIncident}`,
+using a time-ordered stream `chron`
+which is a `Vector{AbstractInfection}`.
+
+**IMPORTANT:** Note that this function changes the contents
+of `states`, `history` and `chron`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> states = SIR[SIR(0.01, 1, 2, 3)] ;
+
+julia> t1 = 1.0 ;
+
+julia> chron = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)] ;
+
+julia> states, history = evolution_recurse!(states, AbstractIncident[], t1, chron) ;
+
+julia> states
+3-element Vector{SIR}:
+ SIR₀.₀₁(1:2:3)
+ SIR₀.₅₀(1:1:4)
+ SIR₀.₆₀(0:2:4)
+
+julia> history
+2-element Vector{AbstractIncident}:
+ ℛ₀.₅₀⁴
+ ℐ₀.₆₀⁵⁻⁶
+```
+"""
+function evolution_recurse!(states::Vector{SIR}, history::Vector{AbstractIncident}, t1::Real,
+                    chron::Vector{AbstractIncident})::Tuple{Vector{SIR},Vector{AbstractIncident}}
+    if isempty(chron)
+        return states, history
+    else
+        event = popfirst!(chron)
+        if event.t <= t1
+            new_state = update(states[end], event)
+            if ! is_same_config(new_state, states[end])
+                push!(states, new_state)
+                push!(history, event)
+            end
+        end
+        return evolution_recurse!(states, history, t1, chron)
+    end
+end
+
+
+ ## Compact printing
 using Formatting
 
 ### Helper functions and format specifications for subscripts and superscripts
@@ -151,19 +317,3 @@ function Base.show(io::IO, z::SIR)
                  timespec(z.t), z.s, z.i, z.r)
 end
 
-
-"""
-Implementation of `show` for `SIR` using subscript and 2 decimal places for time.
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-SIR(0.4, 1, 2, 3)
-
-# output
-SIR₀.₄₀(1:2:3)
-```
-"""
-function Base.show(io::IO, z::SIR)
-    printfmt(io, "SIR{1}({2}:{3}:{4})",
-                 timespec(z.t), z.s, z.i, z.r)
-end

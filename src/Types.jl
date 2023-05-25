@@ -91,8 +91,6 @@ Represent a conditioned removal using a sub-type of `AbstractRemoval`, similar t
 The `target` field should always index a time-line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
-The `kind` field carries `𝒞` short for "fixed".
-
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> CRemoval(0.1, 4)
@@ -150,8 +148,6 @@ end
 
 Represent a perpetuated infection using a sub-type of `AbstractInfection`
 which is identical to `Infection` but with a different name.
-
-The `kind` field carries `𝒫` short for "hold over".
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)

@@ -126,9 +126,30 @@ isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 
 ### Other methods
 The method `chronology` converts an `AbstractEnvironment` 
-into a time-ordered list of incidents
+into a time-ordered list of incidents. 
+
+The method
+`evolution_recurse!` 
+**(NOT YET TESTED)**
+extends a pair of lists of
+
+1. a trajectory of states, and
+2. a history of events
+
+using a chronology of incidents.
 ```@docs
 chronology
+evolution_recurse!
+```
+
+Various private methods relating to updating a trajectory:
+```@docs
+infect
+is_infectable
+remove
+is_removeable
+is_same_config
+update
 ```
 
 ## Index 

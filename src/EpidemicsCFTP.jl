@@ -23,8 +23,10 @@ export PInfection
 export Innovation
 export SIR
 
-export isearlier
 export chronology
+export evolution_recurse!
+
+export isearlier
 
 # Included files
 # ==============

@@ -30,8 +30,8 @@ Note the untidy parameter `--from=markdown+tex_math_single_backslash`,
 in order to replace the unsophisticated \TeX\ `$` and `$$` toggles
 by the \LaTeX\ pairs `\(⋯\)` and `\[⋯\]`.
 
-Consult <https://quarto.org/docs/computations/execution-options.html>
-for further execution options for cells.
+Further execution options for cells: see
+<https://quarto.org/docs/computations/execution-options.html>.
 
 # Initialisation
 First access required modules.
@@ -124,13 +124,11 @@ compose(context(units=coordinates), scaffolding)
 We introduce some content by considering potential incidents underlying
 an unconditional epidemic.
 ```{julia}
-I = epi.Infection
-P = epi.PInfection
-R = epi.Removal
-C = epi.CRemoval
+A = epi.AbstractInfection ; 
+I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
 
 env0 = epi.Innovation(5, 
-  epi.AbstractInfection[
+  A[
     I(0.2,2,5), I(0.4,1,2), P(0.5,1,2), I(0.6,2,4), I(0.85,3,4), I(0.9,2,3),
     I(1.0,1,2), I(1.05,4,5), I(1.11,1,4), I(1.2,2,4), I(1.6,3,5), I(1.5,3,4)
     ], 
@@ -139,10 +137,62 @@ env0 = epi.Innovation(5,
 ) ;
 ```
 
-We now add a graphical depiction of the potential incidents supplied by the innocation.
+We now add a graphical depiction of the potential incidents supplied by the innovation.
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
-all subsequent elements.
-@fig-potential illustrates the required plot.
+all subsequent elements. @fig-potential illustrates the required plot.
+
+```{julia}
+radius = 0.2cy
+bit    = -0.02h
+elements = (context(), # Labels (Infections) 
+  (context(),
+    text([(inc.t)cx for inc in env0.infections],
+         [(inc.infector)cy for inc in env0.infections], 
+         [string(inc) for inc in env0.infections],
+         [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
+    
+  (context(),          # Labels (Removals)
+    text([(inc.t)cx for inc in env0.removals],
+         [(inc.target)cy for inc in env0.removals], 
+         [string(inc) for inc in env0.removals],
+         [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
+
+  (context(),          # Labels (Conditional Removals)
+    text([(inc.t)cx for inc in env0.cremovals],
+         [(inc.target)cy for inc in env0.cremovals], 
+         [string(inc) for inc in env0.cremovals],
+         [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
+
+  (context(),          # Infection contacts
+    line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
+           for inc in env0.infections]),
+    line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
+           ((inc.t)cx,          (inc.infectee)cy), 
+           ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
+           for inc in env0.infections]), stroke("orange")),
+  
+  (context(),          # Perpetuated infections
+    circle([(inc.t)cx for inc in env0.infections if isa(inc, P)], 
+           [(inc.infector)cy for inc in env0.infections if isa(inc, P)],
+           [radius]), fill("white"), stroke("darkgreen")),                  
+
+  (context(),          # Infections
+    circle([(inc.t)cx for inc in env0.infections if isa(inc, I)], 
+           [(inc.infector)cy for inc in env0.infections if isa(inc, I)],
+           [radius]), fill("white"), stroke("orange")),                      
+
+  (context(),          # Removals
+    circle([(inc.t)cx for inc in env0.removals], 
+           [(inc.target)cy for inc in env0.removals],
+           [radius]), fill("white"), stroke("blue")),                        
+
+  (context(),          # Conditional Removals
+    circle([(inc.t)cx for inc in env0.cremovals], 
+           [(inc.target)cy for inc in env0.cremovals],
+           [radius]), fill("white"), stroke("purple")),                     
+);
+```
+
 ```{julia}
 #| label: fig-potential
 #| fig-cap: "Potential incidents, including both removals and infections:                                 \
@@ -154,78 +204,46 @@ all subsequent elements.
 #|           to corresponding potential infectee time-lines.                                              \
 #|           Each disk is annotated by the summary description of the corresponding incident."
 
-radius = 0.2cy
-bit    = -0.02h
-
-elements = (context(),
-  (context(),
-    text([(inc.t)cx for inc in env0.infections],
-         [(inc.infector)cy for inc in env0.infections], 
-         [string(inc) for inc in env0.infections],
-         [hcenter], [vcenter]),
-    fontsize(5pt), font("Helvetica"), ),                    # Labels (Infections) 
-    
-  (context(),
-    text([(inc.t)cx for inc in env0.removals],
-         [(inc.target)cy for inc in env0.removals], 
-         [string(inc) for inc in env0.removals],
-         [hcenter], [vcenter]),
-    fontsize(5pt), font("Helvetica"), ),                    # Labels (Removals)
-
-  (context(),
-    text([(inc.t)cx for inc in env0.cremovals],
-         [(inc.target)cy for inc in env0.cremovals], 
-         [string(inc) for inc in env0.cremovals],
-         [hcenter], [vcenter]),
-    fontsize(5pt), font("Helvetica"), ),                    # Labels (CRemovals)
-
-  (context(), 
-    line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
-           for inc in env0.infections]),
-    line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
-           ((inc.t)cx,          (inc.infectee)cy), 
-           ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
-           for inc in env0.infections]), stroke("orange")), # Infection contacts
-  
-  (context(), 
-    circle([(inc.t)cx for inc in env0.infections if isa(inc, P)], 
-           [(inc.infector)cy for inc in env0.infections if isa(inc, P)],
-           [radius]),
-    fill("white"), stroke("darkgreen")),                   # Perpetuated infections
-
-  (context(), 
-    circle([(inc.t)cx for inc in env0.infections if isa(inc, I)], 
-           [(inc.infector)cy for inc in env0.infections if isa(inc, I)],
-           [radius]),
-    fill("white"), stroke("orange")),                      # Infections
-
-  (context(), 
-    circle([(inc.t)cx for inc in env0.removals], 
-           [(inc.target)cy for inc in env0.removals],
-           [radius]),
-    fill("white"), stroke("blue")),                        # Removals
-
-  (context(), 
-    circle([(inc.t)cx for inc in env0.cremovals], 
-           [(inc.target)cy for inc in env0.cremovals],
-           [radius]),
-    fill("white"), stroke("purple")),                      # Conditional Removals
-);
-
 compose(context(units=coordinates), elements, scaffolding)
 ```
 
 # Evolving the epidemic in process time
-Next we must plot the course of epidemics arising from the time-sequence of potential incidents
+Next we must plot the course of epidemics arising from the time-sequence `chron` of potential incidents
 supplied by the innovation. The time sequence is derived from the innovation
 by the `chronology` function, and we need to compute the trajectory,
 and history of realized incidents, corresponding to a specific initial state at time \(0.0\),
-given by an `SIR` structure.
+given by an `SIR` structure. Application of `evolution_recurse!`, working destructively on the input lists, delivers the \(SIR\) trajectory `traj`, and lists realized incidents in `active`.
+
+::: {.callout-caution}
+Re-work `evolution_recurse!` to be non-destructive of its arguments!
+:::
+
+First of all, we use the `traj` argument to produce a plot against time of the numbers of
+susceptibles, infectives and removed individuals. We begin by generating a dataframe
+recording the trajectories as the knots of piecewise constant functions.
 ```{julia}
-epi.SIR(0.0, 1, 4, 0)
+t1     = 2.0                       # Final time
+states = [epi.SIR(0.0, 4, 1, 0)]   # Initial state list (will be overwritten)
+chron  = epi.chronology(env0)      # Empty list (will be overwritted)
+traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], t1, chron)
+
+using DataFrames
+t = [state.t for state in traj]
+push!(t, t1)
+t = repeat(t, inner=2)[2:(end-1)]
+
+s = repeat([state.s for state in traj], inner=2)
+i = repeat([state.i for state in traj], inner=2)
+r = repeat([state.r for state in traj], inner=2)
+df = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
 ```
 
 ```{julia}
-epi.chronology(env0)
-```
+#| label: fig-trajectories
+#| fig-cap: Trajectories in time of susceptibles, infections and removals.   
 
+import Gadfly
+Gadfly.plot(df, x=:t, y=Gadfly.Col.value(:Susceptibles, :Infectives, :Removals), 
+  color=Gadfly.Col.index(:Susceptibles, :Infectives, :Removals), 
+  Gadfly.Geom.line)
+```

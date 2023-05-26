@@ -212,7 +212,9 @@ Next we must plot the course of epidemics arising from the time-sequence `chron`
 supplied by the innovation. The time sequence is derived from the innovation
 by the `chronology` function, and we need to compute the trajectory,
 and history of realized incidents, corresponding to a specific initial state at time \(0.0\),
-given by an `SIR` structure. Application of `evolution_recurse!`, working destructively on the input lists, delivers the \(SIR\) trajectory `traj`, and lists realized incidents in `active`.
+given by an `SIR` structure. Application of `evolution_recurse!`,
+working destructively on the input lists, delivers the \(SIR\) trajectory `traj`,
+and lists realized incidents in `active`.
 
 ::: {.callout-caution}
 Re-work `evolution_recurse!` to be non-destructive of its arguments!
@@ -223,7 +225,8 @@ susceptibles, infectives and removed individuals. We begin by generating a dataf
 recording the trajectories as the knots of piecewise constant functions.
 ```{julia}
 t1     = 2.0                       # Final time
-states = [epi.SIR(0.0, 4, 1, 0)]   # Initial state list (will be overwritten)
+initial= epi.SIR(0.0, 4, 1, 0)     # Initial state
+states = [initial]                 # Starting state list (will be overwritten)
 chron  = epi.chronology(env0)      # Empty list (will be overwritted)
 traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], t1, chron)
 
@@ -257,13 +260,16 @@ thicker line-widths, producing @fig-realized.
 #|           backgrounds and realized infections have thicker line-widths. The epidemic     \
 #|           curve and curve of removals ares also drawn as thick yellow and brown lines    \
 #|           respectively, with regions of infection and removal shaded as yellow and brown \
-#|           respectively."
+#|           respectively. Dotted vertical lines connect removal incidents to relevant      \
+#|           time-lines, if the removal incident does not already lie on the time-line,"
+
+active_removals = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
 
 realized = (context(),
   (context(),          # Infection contacts
     line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
            for inc in active if isa(inc, I)]),
-           stroke("orange"), linewidth(0.75mm)),
+           stroke("orange"), linewidth(0.75mm), strokedash([])),
   (context(),          # Infections
     circle([(inc.t)cx for inc in active if isa(inc, I)], 
            [(inc.infector)cy for inc in active if isa(inc, I)],
@@ -276,23 +282,24 @@ realized = (context(),
   (context(),          # Conditional Removals
     circle([(inc.t)cx for inc in active if isa(inc, C)], 
            [(inc.target)cy for inc in active if isa(inc, C)],
-           [radius]), fill("purple"), fillopacity(0.2), stroke("purple")),                     
-)
-
-timelines1 = (context(),
-  (context(),          # Removed trail
-    line([(a,b) for (a,b) in zip(t, r) if b>0]),
-    stroke("brown"), linewidth(2mm) ),
-  (context(), # Epidemic trail
-    line([zip(t, i+r)]),
-    stroke("yellow"), linewidth(2mm) ),
+           [radius]), fill("purple"), fillopacity(0.2), stroke("purple")),
+  (context(),
+    line([[((inc.t)cx, (inc.target)cy - radius), ((inc.t)cx, (k + initial.r - 1)cy)]
+      for (k, inc) in enumerate(active_removals) if k + initial.r < inc.target]), 
+    stroke("brown")), strokedash([0.5mm, 0.5mm])
 )
 
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
 push!(removed_fill, (t1, 1))
 infected_fill = [(a,b) for (a,b) in zip(t, i+r) if b>0]
 append!(infected_fill, reverse(removed_fill))
-timelines2 = (context(),
+timelines = (context(),
+  (context(),          # Removed trail
+    line([(a,b) for (a,b) in zip(t, r) if b>0]),
+    stroke("brown"), linewidth(2mm) ),
+  (context(), # Epidemic trail
+    line([zip(t, i+r)]),
+    stroke("yellow"), linewidth(2mm) ),
   (context(),          # Removed trail
     polygon(removed_fill),
     fill("brown"), fillopacity(0.1) ),
@@ -301,5 +308,5 @@ timelines2 = (context(),
     fill("yellow"), fillopacity(0.1) ),
 )
 
-compose(context(units=coordinates), realized, elements, timelines1, timelines2, scaffolding)
+compose(context(units=coordinates), realized, elements, timelines, scaffolding)
 ```

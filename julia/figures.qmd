@@ -231,11 +231,10 @@ using DataFrames
 t = [state.t for state in traj]
 push!(t, t1)
 t = repeat(t, inner=2)[2:(end-1)]
-
 s = repeat([state.s for state in traj], inner=2)
 i = repeat([state.i for state in traj], inner=2)
 r = repeat([state.r for state in traj], inner=2)
-df = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
+realized = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
 ```
 
 ```{julia}
@@ -243,7 +242,64 @@ df = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
 #| fig-cap: Trajectories in time of susceptibles, infections and removals.   
 
 import Gadfly
-Gadfly.plot(df, x=:t, y=Gadfly.Col.value(:Susceptibles, :Infectives, :Removals), 
+Gadfly.plot(realized, x=:t, y=Gadfly.Col.value(:Susceptibles, :Infectives, :Removals), 
   color=Gadfly.Col.index(:Susceptibles, :Infectives, :Removals), 
   Gadfly.Geom.line)
+```
+
+Secondly we can examine which of the potential incidents have become actual. 
+We do this by amending @fig-potential so that realized incident nodes have light-coloured backgrounds and 
+thicker line-widths, producing @fig-realized.
+
+```{julia}
+#| label: fig-realized
+#| fig-cap: "Amended version of @fig-potential: realized incident nodes have light-coloured \
+#|           backgrounds and realized infections have thicker line-widths. The epidemic     \
+#|           curve and curve of removals ares also drawn as thick yellow and brown lines    \
+#|           respectively, with regions of infection and removal shaded as yellow and brown \
+#|           respectively."
+
+realized = (context(),
+  (context(),          # Infection contacts
+    line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
+           for inc in active if isa(inc, I)]),
+           stroke("orange"), linewidth(0.75mm)),
+  (context(),          # Infections
+    circle([(inc.t)cx for inc in active if isa(inc, I)], 
+           [(inc.infector)cy for inc in active if isa(inc, I)],
+           [radius]), fill("orange"), fillopacity(0.2), 
+           stroke("orange")), 
+  (context(),          # Removals
+    circle([(inc.t)cx for inc in active if isa(inc, R)], 
+           [(inc.target)cy for inc in active if isa(inc, R)],
+           [radius]), fill("blue"), fillopacity(0.2), stroke("blue")),                        
+  (context(),          # Conditional Removals
+    circle([(inc.t)cx for inc in active if isa(inc, C)], 
+           [(inc.target)cy for inc in active if isa(inc, C)],
+           [radius]), fill("purple"), fillopacity(0.2), stroke("purple")),                     
+)
+
+timelines1 = (context(),
+  (context(),          # Removed trail
+    line([(a,b) for (a,b) in zip(t, r) if b>0]),
+    stroke("brown"), linewidth(2mm) ),
+  (context(), # Epidemic trail
+    line([zip(t, i+r)]),
+    stroke("yellow"), linewidth(2mm) ),
+)
+
+removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
+push!(removed_fill, (t1, 1))
+infected_fill = [(a,b) for (a,b) in zip(t, i+r) if b>0]
+append!(infected_fill, reverse(removed_fill))
+timelines2 = (context(),
+  (context(),          # Removed trail
+    polygon(removed_fill),
+    fill("brown"), fillopacity(0.1) ),
+  (context(),          # Removed trail
+    polygon(infected_fill),
+    fill("yellow"), fillopacity(0.1) ),
+)
+
+compose(context(units=coordinates), realized, elements, timelines1, timelines2, scaffolding)
 ```

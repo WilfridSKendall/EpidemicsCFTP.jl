@@ -37,7 +37,7 @@ Further cell execution options: see
 First access required modules.
 ```{julia}
 using Compose, Colors, Measures
-import EpidemicsCFTP
+import EpidemicsCFTP, Gadfly
 epi = EpidemicsCFTP ;
 ```
 
@@ -124,13 +124,37 @@ scaffolding = (context(), region, (context(), time_axis, lines) ) ;
 compose(context(units=coordinates), scaffolding)
 ```
 
+# Colour and line-width for different kinds of incident
+Here are dictionaries and variables to hold 
+information about various types of incident.
+```{julia}
+E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
+I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
+
+radius   = 0.2cy
+smradius = 0.75radius
+bit      = -0.02h
+
+col = Dict(
+  I => colorant"orange",
+  P => colorant"darkgreen",
+  R => colorant"tan",
+  C => colorant"purple",
+  A => colorant"yellow",
+  E => colorant"white",
+) ;
+
+lw = Dict(
+  "bdry"   => linewidth(1mm),
+  "trail"  => linewidth(0.75mm),
+  "active" => linewidth(0.75mm),
+) ;
+```
+
 # An innovation for an unconditioned \(SIR\) epidemic
 We introduce some content by considering potential incidents underlying
 an unconditional epidemic.
 ```{julia}
-A = epi.AbstractInfection ; 
-I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
-
 env0 = epi.Innovation(5, 
   A[
     I(0.2,2,5), I(0.4,1,2), P(0.5,1,2), I(0.6,2,4), I(0.85,3,4), I(0.9,2,3),
@@ -147,8 +171,6 @@ Elements are plotted in reverse-order: for example, the first in sequence overla
 all subsequent elements. @fig-potential illustrates the required plot.
 
 ```{julia}
-radius = 0.2cy
-bit    = -0.02h
 elements = (context(), # Labels (Infections) 
   (context(),
     text([(inc.t)cx for inc in env0.infections],
@@ -168,33 +190,33 @@ elements = (context(), # Labels (Infections)
          [string(inc) for inc in env0.cremovals],
          [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
 
-  (context(),          # Infection contacts
+  (context(),          # Infection connections
     line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
            for inc in env0.infections]),
     line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
            ((inc.t)cx,          (inc.infectee)cy), 
            ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
-           for inc in env0.infections]), stroke(colorant"orange")),
+           for inc in env0.infections]), stroke(col[I]) ),
   
   (context(),          # Perpetuated infections
     circle([(inc.t)cx for inc in env0.infections if isa(inc, P)], 
            [(inc.infector)cy for inc in env0.infections if isa(inc, P)],
-           [radius]), fill(colorant"white"), stroke(colorant"darkgreen")),                  
+           [radius]), fill(col[E]), stroke(col[P]) ),                  
 
   (context(),          # Infections
     circle([(inc.t)cx for inc in env0.infections if isa(inc, I)], 
            [(inc.infector)cy for inc in env0.infections if isa(inc, I)],
-           [radius]), fill(colorant"white"), stroke(colorant"orange")),                      
+           [radius]), fill(col[E]), stroke(col[I]) ),                      
 
   (context(),          # Removals
     circle([(inc.t)cx for inc in env0.removals], 
            [(inc.target)cy for inc in env0.removals],
-           [radius]), fill(colorant"white"), stroke(colorant"blue")),                        
+           [radius]), fill(col[E]), stroke(col[R]) ),                        
 
   (context(),          # Conditional Removals
     circle([(inc.t)cx for inc in env0.cremovals], 
            [(inc.target)cy for inc in env0.cremovals],
-           [radius]), fill(colorant"white"), stroke(colorant"purple")),                     
+           [radius]), fill(col[E]), stroke(col[C]) ),                     
 );
 ```
 
@@ -249,12 +271,10 @@ realized = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r) ;
 #| label: fig-trajectories
 #| fig-cap: "Trajectories in process time of susceptibles, infectives (brown dashed line) and removals (grey dotted line)."   
 
-import Gadfly
-
-inf_layer = Gadfly.layer(realized, x=:t, y=:Infectives, color=[colorant"orange"], 
+inf_layer = Gadfly.layer(realized, x=:t, y=:Infectives, color=[col[I]], 
   Gadfly.Geom.line, 
   Gadfly.style(line_width=1mm, line_style=[:solid]))
-rem_layer = Gadfly.layer(realized, x=:t, y=:Removals, color=[colorant"brown"], 
+rem_layer = Gadfly.layer(realized, x=:t, y=:Removals, color=[col[R]], 
   Gadfly.Geom.line, 
   Gadfly.style(line_width=1mm, line_style=[:dash]))
 sus_layer = Gadfly.layer(realized, x=:t, y=:Susceptibles, color=[colorant"grey"], 
@@ -286,32 +306,35 @@ removal_connections = (context(),
   (context(),          # Connecting removal nodes
     circle([(inc.t)cx for (k, inc) in observed_removals], 
            [(k + initial.r)cy for (k, inc) in observed_removals],
-           [0.75radius]), fill(colorant"purple"), fillopacity(0.5), stroke(colorant"purple")),
+           [smradius]), stroke(col[C]), lw["active"], fill(col[C]), fillopacity(0.5) ),
   (context(),          # Connecting removal lines
-    line([[((inc.t)cx, (inc.target)cy - radius), ((inc.t)cx, (k + initial.r)cy)]
+    line([[((inc.t)cx, (inc.target)cy - radius), 
+           ((inc.t)cx, (k + initial.r)cy + radius)]
       for (k, inc) in observed_removals]), 
-    stroke(colorant"brown"), strokedash([0.5mm, 0.5mm])
-    )
-  )
+    stroke(col[R]), lw["trail"], strokedash([0.5mm, 0.5mm]) )
+)
 
 realized = (context(),
-  (context(),          # Infection contacts
+  (context(),          # Infection contacts (I)
     line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
            for inc in active if isa(inc, I)]),
-           stroke(colorant"orange"), linewidth(0.75mm), strokedash([])),
+           stroke(col[I]), lw["trail"], strokedash([]) ), 
+  (context(),          # Infection contacts (II)
+    circle([(inc.t)cx for inc in active if isa(inc, I)], 
+           [inc.infectee for inc in active if isa(inc, I)],
+           [smradius]), lw["active"], fill(col[I]), fillopacity(0.5), stroke(col[I]) ),
   (context(),          # Infections
     circle([(inc.t)cx for inc in active if isa(inc, I)], 
            [(inc.infector)cy for inc in active if isa(inc, I)],
-           [radius]), fill(colorant"orange"), fillopacity(0.2), 
-           stroke(colorant"orange")), 
+           [radius]), lw["active"], fill(col[I]), fillopacity(0.2), stroke(col[I]) ), 
   (context(),          # Removals
     circle([(inc.t)cx for inc in active if isa(inc, R)], 
            [(inc.target)cy for inc in active if isa(inc, R)],
-           [radius]), fill(colorant"blue"), fillopacity(0.2), stroke(colorant"blue")),                        
+           [radius]), lw["active"], fill(col[R]), fillopacity(0.2), stroke(col[R]) ),                        
   (context(),          # Conditional Removals
     circle([(inc.t)cx for inc in active if isa(inc, C)], 
            [(inc.target)cy for inc in active if isa(inc, C)],
-           [radius]), fill(colorant"purple"), fillopacity(0.2), stroke(colorant"purple")),
+           [radius]), lw["active"], fill(col[C]), fillopacity(0.2), stroke(col[C]) ),
 )
 
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
@@ -321,16 +344,16 @@ append!(infected_fill, reverse(removed_fill))
 timelines = (context(),
   (context(),          # Removed trail
     line([(a,b) for (a,b) in zip(t, r) if b>0]),
-    stroke(colorant"brown"), linewidth(2mm) ),
-  (context(), # Epidemic trail
-    line([zip(t, i+r)]),
-    stroke(colorant"yellow"), linewidth(2mm) ),
+    stroke(col[R]), lw["bdry"] ),
   (context(),          # Removed trail
     polygon(removed_fill),
-    fill(colorant"brown"), fillopacity(0.1) ),
-  (context(),          # Removed trail
+    fill(col[R]), fillopacity(0.1) ),
+  (context(),          # Epidemic trail
+    line([zip(t, i+r)]),
+    stroke(col[A]), lw["bdry"] ),
+  (context(),          # Epidemic trail
     polygon(infected_fill),
-    fill(colorant"yellow"), fillopacity(0.1) ),
+    fill(col[A]), fillopacity(0.1) ),
 )
 
 compose(context(units=coordinates), removal_connections, realized, 
@@ -339,5 +362,5 @@ compose(context(units=coordinates), removal_connections, realized,
 
 
 ::: {.callout-caution}
-Replace `colorant"yellow"` _etc_ by variables (or dictionary?) translating style elements into colours.
+Develop intelligent functions for depositing potential and realized discs.
 :::

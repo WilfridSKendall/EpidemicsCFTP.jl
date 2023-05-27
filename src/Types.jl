@@ -41,7 +41,7 @@ abstract type AbstractRemoval <: AbstractIncident end
 Represents an abstract infection using a sub-type of `AbstractIncident`.
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects fields `infector<:Integer` and `infectee<:Integer`,
-such that `infector < infectee`.
+such that `infector < infectee`. The field `infector` is also called `target`.
 
 If the potential infection is to become realized 
 then `infector` must index a time-line which is infectious, 
@@ -117,7 +117,7 @@ end
 
 Represent a potential infection using a sub-type of `AbstractInfection`,
 using mark time `t`, also specified marks `infector` and `infectee` timelines
-which must be positive integers.
+which must be positive integers. The mark `infector` is also called `target`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -130,6 +130,7 @@ struct Infection <: AbstractInfection
     t         ::Float64
     infector  ::Int
     infectee  ::Int
+    target    ::Int
 
     function Infection(t, infector, infectee)
         noun = "Infection($t, $infector, $infectee)"
@@ -138,7 +139,7 @@ struct Infection <: AbstractInfection
         elseif infector <= 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
-            new("ℐ", t, infector, infectee)
+            new("ℐ", t, infector, infectee, infector)
         end
     end
 end
@@ -160,6 +161,7 @@ struct PInfection <: AbstractInfection
     t         ::Float64
     infector  ::Int
     infectee  ::Int
+    target    ::Int
     
     function PInfection(t, infector, infectee)
         noun = "PInfection($t, $infector, $infectee)"
@@ -168,7 +170,7 @@ struct PInfection <: AbstractInfection
         elseif infector <= 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒫", t, infector, infectee)
+            new("𝒫", t, infector, infectee, infector)
         end
     end
 end

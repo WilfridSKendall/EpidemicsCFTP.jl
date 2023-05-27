@@ -30,7 +30,7 @@ Note the untidy parameter `--from=markdown+tex_math_single_backslash`,
 in order to replace the unsophisticated \TeX\ `$` and `$$` toggles
 by the \LaTeX\ pairs `\(⋯\)` and `\[⋯\]`.
 
-Further execution options for cells: see
+Further cell execution options: see
 <https://quarto.org/docs/computations/execution-options.html>.
 
 # Initialisation
@@ -63,12 +63,11 @@ end ;
 
 We now set up and establish graphics size, coordinates, and drawing region.
 ```{julia}
-set_default_graphic_size(6inch, 4inch) ;
+set_default_graphic_size(6inch, 3.25inch) ;
 
 coordinates = UnitBox(0, population, duration, -population, 
-                      leftpad=0.5inch, rightpad=0.5inch, 
-                      bottompad=0.5inch, toppad=0.5inch) ;
-region      = (context(), rectangle(), fill("bisque"), fillopacity(0.3)) ;
+                      leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
+region      = (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)) ;
 ```
 
 
@@ -78,20 +77,20 @@ Note, here and following,  careful use of graphics area units (`cx`, `cy`)
 ```{julia}
 tic       = -0.2cy
 step      = 10^floor(Int, log10(duration))
-tic_loc1  = [(((x)cx,0cy), ((x)cx, tic))    for x in 0:1.0step:duration]
-tic_loc2  = [(((x)cx,0cy), ((x)cx, tic))    for x in 0:0.5step:duration]
-tic_loc3  = [(((x)cx,0cy), ((x)cx, 0.5tic)) for x in 0:0.1step:duration]
+xht       = 0.5cy # 0cy + 0.25inch
+labellocs = [(x)cx for x in 0:duration]
 
-label_height = 0cy + 0.25inch
-labellocs    = [(x)cx for x in 0:duration]
+tic_loc1  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:1.0step:duration]
+tic_loc2  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:0.5step:duration]
+tic_loc3  = [(((x)cx,xht), ((x)cx, xht+0.5tic)) for x in 0:0.1step:duration]
 
 time_axis = (context(),
-   line([(0cx, 0cy), ((duration)cx, 0cy)]), stroke("grey"), linewidth(0.5mm),
+   (context(), text(labellocs, [xht + 0.25inch], ["$i" for i in 0:duration], 
+      [hcenter], [vcenter]), fontsize(7pt), font("TimesRoman"), ),
+   (context(), line([(0cx, xht), ((duration)cx, xht)]), stroke("grey"), linewidth(0.5mm) ),
    (context(), line(tic_loc1), stroke("grey"), linewidth(0.2mm)),
    (context(), line(tic_loc2), stroke("grey"), linewidth(0.1mm)),
-   (context(), line(tic_loc3), stroke("grey"), linewidth(0.1mm)),
-   (context(), text(labellocs, [label_height], ["$i" for i in 0:duration], 
-      [hcenter], [vcenter]), stroke("grey"), fontsize(7pt)) ) ;
+   (context(), line(tic_loc3), stroke("grey"), linewidth(0.1mm)), ) ;
 ```
 
 
@@ -105,12 +104,11 @@ as unicode then runs out of circled integers!
 ```{julia}
 circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
 
-lines        = (context(), 
-  line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
-      stroke("black"), linewidth(0.5mm), 
-  (context(),
-  text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
-      [hleft], [vcenter]), stroke("black"), fontsize(10pt)) ) ;
+lines        = (context(),
+  (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
+      [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
+  (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
+      stroke("grey"), linewidth(0.5mm), ), ) ;
 ```
 
 Finally we build a tree describing the construction of scaffolding.
@@ -176,27 +174,27 @@ elements = (context(), # Labels (Infections)
     line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
            ((inc.t)cx,          (inc.infectee)cy), 
            ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
-           for inc in env0.infections]), stroke("orange")),
+           for inc in env0.infections]), stroke(colorant"orange")),
   
   (context(),          # Perpetuated infections
     circle([(inc.t)cx for inc in env0.infections if isa(inc, P)], 
            [(inc.infector)cy for inc in env0.infections if isa(inc, P)],
-           [radius]), fill("white"), stroke("darkgreen")),                  
+           [radius]), fill(colorant"white"), stroke(colorant"darkgreen")),                  
 
   (context(),          # Infections
     circle([(inc.t)cx for inc in env0.infections if isa(inc, I)], 
            [(inc.infector)cy for inc in env0.infections if isa(inc, I)],
-           [radius]), fill("white"), stroke("orange")),                      
+           [radius]), fill(colorant"white"), stroke(colorant"orange")),                      
 
   (context(),          # Removals
     circle([(inc.t)cx for inc in env0.removals], 
            [(inc.target)cy for inc in env0.removals],
-           [radius]), fill("white"), stroke("blue")),                        
+           [radius]), fill(colorant"white"), stroke(colorant"blue")),                        
 
   (context(),          # Conditional Removals
     circle([(inc.t)cx for inc in env0.cremovals], 
            [(inc.target)cy for inc in env0.cremovals],
-           [radius]), fill("white"), stroke("purple")),                     
+           [radius]), fill(colorant"white"), stroke(colorant"purple")),                     
 );
 ```
 
@@ -262,9 +260,9 @@ rem_layer = Gadfly.layer(realized, x=:t, y=:Removals, color=[colorant"brown"],
 sus_layer = Gadfly.layer(realized, x=:t, y=:Susceptibles, color=[colorant"grey"], 
   Gadfly.Geom.line, 
   Gadfly.style(line_width=1mm, line_style=[:dot]))
-Gadfly.plot(sus_layer, rem_layer, inf_layer,
+Gadfly.plot(sus_layer, rem_layer, inf_layer, Gadfly.style(panel_fill=colorant"bisque"),
   Gadfly.Guide.xlabel("process time"), 
-  Gadfly.Guide.ylabel("removals, infectives, susceptibles"))
+  Gadfly.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
 ```
 
 Secondly we can examine which of the potential incidents have become actual. 
@@ -288,11 +286,11 @@ removal_connections = (context(),
   (context(),          # Connecting removal nodes
     circle([(inc.t)cx for (k, inc) in observed_removals], 
            [(k + initial.r)cy for (k, inc) in observed_removals],
-           [0.75radius]), fill("purple"), fillopacity(0.5), stroke("purple")),
+           [0.75radius]), fill(colorant"purple"), fillopacity(0.5), stroke(colorant"purple")),
   (context(),          # Connecting removal lines
     line([[((inc.t)cx, (inc.target)cy - radius), ((inc.t)cx, (k + initial.r)cy)]
       for (k, inc) in observed_removals]), 
-    stroke("brown"), strokedash([0.5mm, 0.5mm])
+    stroke(colorant"brown"), strokedash([0.5mm, 0.5mm])
     )
   )
 
@@ -300,20 +298,20 @@ realized = (context(),
   (context(),          # Infection contacts
     line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
            for inc in active if isa(inc, I)]),
-           stroke("orange"), linewidth(0.75mm), strokedash([])),
+           stroke(colorant"orange"), linewidth(0.75mm), strokedash([])),
   (context(),          # Infections
     circle([(inc.t)cx for inc in active if isa(inc, I)], 
            [(inc.infector)cy for inc in active if isa(inc, I)],
-           [radius]), fill("orange"), fillopacity(0.2), 
-           stroke("orange")), 
+           [radius]), fill(colorant"orange"), fillopacity(0.2), 
+           stroke(colorant"orange")), 
   (context(),          # Removals
     circle([(inc.t)cx for inc in active if isa(inc, R)], 
            [(inc.target)cy for inc in active if isa(inc, R)],
-           [radius]), fill("blue"), fillopacity(0.2), stroke("blue")),                        
+           [radius]), fill(colorant"blue"), fillopacity(0.2), stroke(colorant"blue")),                        
   (context(),          # Conditional Removals
     circle([(inc.t)cx for inc in active if isa(inc, C)], 
            [(inc.target)cy for inc in active if isa(inc, C)],
-           [radius]), fill("purple"), fillopacity(0.2), stroke("purple")),
+           [radius]), fill(colorant"purple"), fillopacity(0.2), stroke(colorant"purple")),
 )
 
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
@@ -323,18 +321,23 @@ append!(infected_fill, reverse(removed_fill))
 timelines = (context(),
   (context(),          # Removed trail
     line([(a,b) for (a,b) in zip(t, r) if b>0]),
-    stroke("brown"), linewidth(2mm) ),
+    stroke(colorant"brown"), linewidth(2mm) ),
   (context(), # Epidemic trail
     line([zip(t, i+r)]),
-    stroke("yellow"), linewidth(2mm) ),
+    stroke(colorant"yellow"), linewidth(2mm) ),
   (context(),          # Removed trail
     polygon(removed_fill),
-    fill("brown"), fillopacity(0.1) ),
+    fill(colorant"brown"), fillopacity(0.1) ),
   (context(),          # Removed trail
     polygon(infected_fill),
-    fill("yellow"), fillopacity(0.1) ),
+    fill(colorant"yellow"), fillopacity(0.1) ),
 )
 
 compose(context(units=coordinates), removal_connections, realized, 
            elements, timelines, scaffolding)
 ```
+
+
+::: {.callout-caution}
+Replace `colorant"yellow"` _etc_ by variables (or dictionary?) translating style elements into colours.
+:::

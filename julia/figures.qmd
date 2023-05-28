@@ -28,7 +28,7 @@ or simply `make figures.pdf` or even just `make`.
 
 Note the untidy parameter `--from=markdown+tex_math_single_backslash`,
 in order to replace the unsophisticated \TeX\ `$` and `$$` toggles
-by the \LaTeX\ pairs `\(⋯\)` and `\[⋯\]`.
+by the \LaTeX\ pairs `\(`\(\cdots\)`\)` and `\[`\(\cdots\)`\]`.
 
 Further cell execution options: see
 <https://quarto.org/docs/computations/execution-options.html>.
@@ -99,6 +99,8 @@ Now build the time-lines, labelled by circled integers.
 ::: {.callout-caution}
 The definition of `circlabels` below needs to be changed if `population > MAXPOP=20`,
 as unicode then runs out of circled integers!
+(Figure out how to use 
+one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers#>.)
 :::
 
 ```{julia}
@@ -127,6 +129,7 @@ compose(context(units=coordinates), scaffolding)
 # Colour and line-width for different kinds of incident
 Here are dictionaries and variables to hold 
 information about various types of incident.
+(See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/>.)
 ```{julia}
 E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
 I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
@@ -169,7 +172,6 @@ env0 = epi.Innovation(5,
 We now add a graphical depiction of the potential incidents supplied by the innovation.
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements. @fig-potential illustrates the required plot.
-
 ```{julia}
 elements = (context(), # Labels (Infections) 
   (context(),

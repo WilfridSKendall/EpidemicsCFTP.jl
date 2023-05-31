@@ -126,7 +126,7 @@ version = "1.6.0"
 
 [[deps.EpidemicsCFTP]]
 deps = ["Formatting"]
-path = "/home/wilfrid/.julia/dev/EpidemicsCFTP"
+path = "EpidemicsCFTP"
 uuid = "e9e582aa-fa14-4cd8-84f3-d59ae741ce27"
 version = "1.0.0-DEV"
 

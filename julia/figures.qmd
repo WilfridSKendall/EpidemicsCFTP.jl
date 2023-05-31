@@ -154,6 +154,26 @@ lw = Dict(
 ) ;
 ```
 
+Here is a function which creates a union of all composite types
+below a given (typically abstract!) type. This is applied to create
+a union type for composite types implementing `AbstractIncident`:
+we do this in order to be programmatic about constructing generalized 
+drawing functions later.
+```{julia}
+function unionize_composites(a::Type)::Type
+  xl = Type[x for x in subtypes(a)]
+  if length(xl) == 0
+    return a # a composite type
+  else
+    xl = Type[unionize_composites(y) for y in xl]
+    return reduce((t1, t2) -> Union{t1, t2}, xl) # a union type
+  end
+end
+
+BasicOccurrence = unionize_composites(epi.AbstractIncident)
+BasicOccurrence == Union{epi.Removal, epi.CRemoval, epi.Infection, epi.PInfection}
+```
+
 # An innovation for an unconditioned \(SIR\) epidemic
 We introduce some content by considering potential incidents underlying
 an unconditional epidemic.
@@ -176,7 +196,7 @@ all subsequent elements. @fig-potential illustrates the required plot.
 elements = (context(), # Labels (Infections) 
   (context(),
     text([(inc.t)cx for inc in env0.infections],
-         [(inc.infector)cy for inc in env0.infections], 
+         [(inc.target)cy for inc in env0.infections], 
          [string(inc) for inc in env0.infections],
          [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
     
@@ -193,7 +213,7 @@ elements = (context(), # Labels (Infections)
          [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
 
   (context(),          # Infection connections
-    line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
+    line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
            for inc in env0.infections]),
     line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
            ((inc.t)cx,          (inc.infectee)cy), 
@@ -202,12 +222,12 @@ elements = (context(), # Labels (Infections)
   
   (context(),          # Perpetuated infections
     circle([(inc.t)cx for inc in env0.infections if isa(inc, P)], 
-           [(inc.infector)cy for inc in env0.infections if isa(inc, P)],
+           [(inc.target)cy for inc in env0.infections if isa(inc, P)],
            [radius]), fill(col[E]), stroke(col[P]) ),                  
 
   (context(),          # Infections
     circle([(inc.t)cx for inc in env0.infections if isa(inc, I)], 
-           [(inc.infector)cy for inc in env0.infections if isa(inc, I)],
+           [(inc.target)cy for inc in env0.infections if isa(inc, I)],
            [radius]), fill(col[E]), stroke(col[I]) ),                      
 
   (context(),          # Removals
@@ -318,7 +338,7 @@ removal_connections = (context(),
 
 realized = (context(),
   (context(),          # Infection contacts (I)
-    line([[((inc.t)cx, (inc.infector)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
+    line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
            for inc in active if isa(inc, I)]),
            stroke(col[I]), lw["trail"], strokedash([]) ), 
   (context(),          # Infection contacts (II)
@@ -327,7 +347,7 @@ realized = (context(),
            [smradius]), lw["active"], fill(col[I]), fillopacity(0.5), stroke(col[I]) ),
   (context(),          # Infections
     circle([(inc.t)cx for inc in active if isa(inc, I)], 
-           [(inc.infector)cy for inc in active if isa(inc, I)],
+           [(inc.target)cy for inc in active if isa(inc, I)],
            [radius]), lw["active"], fill(col[I]), fillopacity(0.2), stroke(col[I]) ), 
   (context(),          # Removals
     circle([(inc.t)cx for inc in active if isa(inc, R)], 

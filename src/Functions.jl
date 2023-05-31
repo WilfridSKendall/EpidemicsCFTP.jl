@@ -80,7 +80,7 @@ false
 ```
 """
 function is_infectable(state::SIR, inc::AbstractInfection)::Bool
-    inc.t >= state.t && inc.infector > state.r && inc.infectee == state.i + state.r + 1
+    inc.t >= state.t && inc.target > state.r && inc.infectee == state.i + state.r + 1
 end
 
 """
@@ -271,7 +271,7 @@ julia> PInfection(0.10, 3, 4)
 """
 function Base.show(io::IO, z::AbstractInfection)
     t = timespec(z.t)
-    printfmt(io, "{1}{2}{3}⁻{4}", z.kind, t, uppers(string(z.infector)), uppers(string(z.infectee)))
+    printfmt(io, "{1}{2}{3}⁻{4}", z.kind, t, uppers(string(z.target)), uppers(string(z.infectee)))
 end
 
 """

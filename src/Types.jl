@@ -29,7 +29,7 @@ Represents an abstract removal using a sub-type of `AbstractIncident`.
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects field `target<:Integer`.
 
-If the potential infection is to become realized 
+If the potential removal is to become realized 
 then `target` must index a time-line which is infectious just before time `t`.
 
 """
@@ -40,17 +40,17 @@ abstract type AbstractRemoval <: AbstractIncident end
 
 Represents an abstract infection using a sub-type of `AbstractIncident`.
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
-Also expects fields `infector<:Integer` and `infectee<:Integer`,
-such that `infector < infectee`. The field `infector` is also called `target`.
+Also expects fields `target<:Integer` and `infectee<:Integer`,
+such that `target < infectee`.
 
 If the potential infection is to become realized 
-then `infector` must index a time-line which is infectious, 
+then `target` must index a time-line which is infectious, 
 and `infectee` must index the susceptible time-line of smallest
 index, both measured just before time `t`.
 
 In particular, if there is no timeline which is susceptible
 just before time `t` then the infection cannot be realized
-whatever the value of `infectee`.
+whatever the value of `target`.
 
 """
 abstract type AbstractInfection <: AbstractIncident end
@@ -113,11 +113,11 @@ end
 ## Various kinds of infection
 
 """
-    Infection(t::Real, infector::Integer, infectee::Integer)
+    Infection(t::Real, infector::Integer, target::Integer)
 
 Represent a potential infection using a sub-type of `AbstractInfection`,
-using mark time `t`, also specified marks `infector` and `infectee` timelines
-which must be positive integers. The mark `infector` is also called `target`.
+using mark time `t` and another mark `target` and a further mark `infectee`.
+Marks `target` and `infectee` must be positive integers with `target < infectee`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -128,27 +128,28 @@ julia> Infection(0.2, 1, 2)
 struct Infection <: AbstractInfection
     kind      ::String
     t         ::Float64
-    infector  ::Int
-    infectee  ::Int
     target    ::Int
+    infectee  ::Int
 
-    function Infection(t, infector, infectee)
-        noun = "Infection($t, $infector, $infectee)"
-        if infectee <= infector
+    function Infection(t, target, infectee)
+        noun = "Infection($t, $target, $infectee)"
+        if infectee <= target
             throw(DomainError(noun, "disordered marks"))
-        elseif infector <= 0
+        elseif target <= 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
-            new("ℐ", t, infector, infectee, infector)
+            new("ℐ", t, target, infectee)
         end
     end
 end
 
 """
-    PInfection(t::Real, infector::Integer, infectee::Integer)
+    PInfection(t::Real, infector::Integer, target::Integer)
 
 Represent a perpetuated infection using a sub-type of `AbstractInfection`
 which is identical to `Infection` but with a different name.
+
+**CAN THIS BE DONE MORE NEATLY?**
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -159,18 +160,17 @@ julia> PInfection(0.2, 1, 2)
 struct PInfection <: AbstractInfection
     kind      ::String
     t         ::Float64
-    infector  ::Int
-    infectee  ::Int
     target    ::Int
+    infectee  ::Int
     
-    function PInfection(t, infector, infectee)
-        noun = "PInfection($t, $infector, $infectee)"
-        if infectee <= infector
+    function PInfection(t, target, infectee)
+        noun = "PInfection($t, $target, $infectee)"
+        if infectee <= target
             throw(DomainError(noun, "disordered marks"))
-        elseif infector <= 0
+        elseif target <= 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒫", t, infector, infectee, infector)
+            new("𝒫", t, target, infectee)
         end
     end
 end
@@ -233,7 +233,7 @@ struct Innovation <: AbstractEnvironment
             throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
         elseif any(r.target > n for r in removals)
             throw(ArgumentError("some removal timelines too high in \n$noun"))
-        elseif any(i.infectee > n for i in infections)
+        elseif any(i.target > n for i in infections)
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
             new(n, sort(infections, lt=isearlier), 

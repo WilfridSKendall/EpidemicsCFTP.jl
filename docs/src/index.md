@@ -130,7 +130,7 @@ into a time-ordered list of incidents.
 
 The method
 `evolution_recurse!` 
-**(NOT YET TESTED)**
+**(NOT YET FULLY TESTED)**
 extends a pair of lists of
 
 1. a trajectory of states, and

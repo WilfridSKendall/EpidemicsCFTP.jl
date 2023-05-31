@@ -87,7 +87,8 @@ tic_loc3  = [(((x)cx,xht), ((x)cx, xht+0.5tic)) for x in 0:0.1step:duration]
 time_axis = (context(),
    (context(), text(labellocs, [xht + 0.25inch], ["$i" for i in 0:duration], 
       [hcenter], [vcenter]), fontsize(7pt), font("TimesRoman"), ),
-   (context(), line([(0cx, xht), ((duration)cx, xht)]), stroke("grey"), linewidth(0.5mm) ),
+   (context(), line([(0cx, xht), ((duration)cx, xht)]),
+      stroke("grey"), linewidth(0.5mm) ),
    (context(), line(tic_loc1), stroke("grey"), linewidth(0.2mm)),
    (context(), line(tic_loc2), stroke("grey"), linewidth(0.1mm)),
    (context(), line(tic_loc3), stroke("grey"), linewidth(0.1mm)), ) ;
@@ -170,8 +171,8 @@ function unionize_composites(a::Type)::Type
   end
 end
 
-BasicOccurrence = unionize_composites(epi.AbstractIncident)
-BasicOccurrence == Union{epi.Removal, epi.CRemoval, epi.Infection, epi.PInfection}
+BasicIncident = unionize_composites(epi.AbstractIncident)
+BasicIncident == Union{epi.Removal, epi.CRemoval, epi.Infection, epi.PInfection}
 ```
 
 # An innovation for an unconditioned \(SIR\) epidemic
@@ -189,59 +190,36 @@ env0 = epi.Innovation(5,
 ) ;
 ```
 
-We now add a graphical depiction of the potential incidents supplied by the innovation.
+Here are functions which draw inactive respectively active nodes for each of a list
+of a given composite type of `BasicIncident`. It would be helpful also to add variants
+to deal with empty `AbstractIncident[]` vectors.
+```{julia}
+function sketch_incident(incl::Vector{T}) where T <: BasicIncident
+  I = eltype(incl) ;
+  (context(),
+    (context(),
+      text([(inc.t)cx for inc in incl],
+           [(inc.target)cy for inc in incl], 
+           [string(inc) for inc in incl],
+           [hcenter], [vcenter]), fontsize(5pt), font("Helvetica")),
+    (context(),
+      circle([(inc.t)cx for inc in incl if isa(inc, I)], 
+             [(inc.target)cy for inc in incl if isa(inc, I)],
+             [radius]), fill(col[E]), stroke(col[I])), 
+  )
+end
+
+function sketch_realized(incl::Vector{T}) where T <: BasicIncident
+  I = eltype(incl) ;
+  (context(),
+    circle([(inc.t)cx for inc in incl if isa(inc, I)], 
+           [(inc.target)cy for inc in incl if isa(inc, I)],
+           [radius]), lw["active"], fill(col[I]), fillopacity(0.2), stroke(col[I])) 
+end ;
+```
+We now add graphical depictions of the potential incidents supplied by the innovation.
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements. @fig-potential illustrates the required plot.
-```{julia}
-elements = (context(), # Labels (Infections) 
-  (context(),
-    text([(inc.t)cx for inc in env0.infections],
-         [(inc.target)cy for inc in env0.infections], 
-         [string(inc) for inc in env0.infections],
-         [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
-    
-  (context(),          # Labels (Removals)
-    text([(inc.t)cx for inc in env0.removals],
-         [(inc.target)cy for inc in env0.removals], 
-         [string(inc) for inc in env0.removals],
-         [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
-
-  (context(),          # Labels (Conditional Removals)
-    text([(inc.t)cx for inc in env0.cremovals],
-         [(inc.target)cy for inc in env0.cremovals], 
-         [string(inc) for inc in env0.cremovals],
-         [hcenter], [vcenter]), fontsize(5pt), font("Helvetica"), ),                    
-
-  (context(),          # Infection connections
-    line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
-           for inc in env0.infections]),
-    line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
-           ((inc.t)cx,          (inc.infectee)cy), 
-           ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
-           for inc in env0.infections]), stroke(col[I]) ),
-  
-  (context(),          # Perpetuated infections
-    circle([(inc.t)cx for inc in env0.infections if isa(inc, P)], 
-           [(inc.target)cy for inc in env0.infections if isa(inc, P)],
-           [radius]), fill(col[E]), stroke(col[P]) ),                  
-
-  (context(),          # Infections
-    circle([(inc.t)cx for inc in env0.infections if isa(inc, I)], 
-           [(inc.target)cy for inc in env0.infections if isa(inc, I)],
-           [radius]), fill(col[E]), stroke(col[I]) ),                      
-
-  (context(),          # Removals
-    circle([(inc.t)cx for inc in env0.removals], 
-           [(inc.target)cy for inc in env0.removals],
-           [radius]), fill(col[E]), stroke(col[R]) ),                        
-
-  (context(),          # Conditional Removals
-    circle([(inc.t)cx for inc in env0.cremovals], 
-           [(inc.target)cy for inc in env0.cremovals],
-           [radius]), fill(col[E]), stroke(col[C]) ),                     
-);
-```
-
 ```{julia}
 #| label: fig-potential
 #| fig-cap: "Potential incidents, including both removals and infections:                                 \
@@ -252,7 +230,19 @@ elements = (context(), # Labels (Infections)
 #|           Orange arrows indicate connections of potential infector time-lines                          \
 #|           to corresponding potential infectee time-lines.                                              \
 #|           Each disk is annotated by the summary description of the corresponding incident.             "
-
+elements = (context(),
+  sketch_incident([inc for inc in env0.infections if typeof(inc)==epi.Infection]),
+  sketch_incident([inc for inc in env0.infections if typeof(inc)==epi.PInfection]),
+  (context(),          # Infection connections
+    line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
+           for inc in env0.infections]),
+    line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
+           ((inc.t)cx,          (inc.infectee)cy), 
+           ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
+           for inc in env0.infections]), stroke(col[I]) ),
+  sketch_incident([inc for inc in env0.removals if typeof(inc)==epi.Removal]),
+  sketch_incident([inc for inc in env0.cremovals if typeof(inc)==epi.CRemoval]),
+  )
 compose(context(units=coordinates), elements, scaffolding)
 ```
 
@@ -294,22 +284,23 @@ realized = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r) ;
 #| fig-cap: "Trajectories in process time of susceptibles, infectives (brown dashed line) and removals (grey dotted line)."   
 
 inf_layer = Gadfly.layer(realized, x=:t, y=:Infectives, color=[col[I]], 
-  Gadfly.Geom.line, 
-  Gadfly.style(line_width=1mm, line_style=[:solid]))
+  Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:solid]))
 rem_layer = Gadfly.layer(realized, x=:t, y=:Removals, color=[col[R]], 
   Gadfly.Geom.line, 
   Gadfly.style(line_width=1mm, line_style=[:dash]))
 sus_layer = Gadfly.layer(realized, x=:t, y=:Susceptibles, color=[colorant"grey"], 
   Gadfly.Geom.line, 
   Gadfly.style(line_width=1mm, line_style=[:dot]))
-Gadfly.plot(sus_layer, rem_layer, inf_layer, Gadfly.style(panel_fill=colorant"bisque"),
+Gadfly.plot(sus_layer, rem_layer, inf_layer,
+  Gadfly.style(panel_fill=colorant"bisque"),
   Gadfly.Guide.xlabel("process time"), 
   Gadfly.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
 ```
 
-Secondly we can examine which of the potential incidents have become actual. 
+Secondly we can examine which of the potential incidents have been realized. 
 We do this by amending @fig-potential so that realized incident nodes have light-coloured backgrounds and 
-thicker line-widths, producing @fig-realized.
+thicker line-widths, producing @fig-realized. **Need to return a `no-op` 
+if the argument is an empty list!?!**
 
 ```{julia}
 #| label: fig-realized
@@ -328,7 +319,8 @@ removal_connections = (context(),
   (context(),          # Connecting removal nodes
     circle([(inc.t)cx for (k, inc) in observed_removals], 
            [(k + initial.r)cy for (k, inc) in observed_removals],
-           [smradius]), stroke(col[C]), lw["active"], fill(col[C]), fillopacity(0.5) ),
+           [smradius]), stroke(col[C]), 
+           lw["active"], fill(col[C]), fillopacity(0.5) ),
   (context(),          # Connecting removal lines
     line([[((inc.t)cx, (inc.target)cy - radius), 
            ((inc.t)cx, (k + initial.r)cy + radius)]
@@ -344,19 +336,11 @@ realized = (context(),
   (context(),          # Infection contacts (II)
     circle([(inc.t)cx for inc in active if isa(inc, I)], 
            [inc.infectee for inc in active if isa(inc, I)],
-           [smradius]), lw["active"], fill(col[I]), fillopacity(0.5), stroke(col[I]) ),
-  (context(),          # Infections
-    circle([(inc.t)cx for inc in active if isa(inc, I)], 
-           [(inc.target)cy for inc in active if isa(inc, I)],
-           [radius]), lw["active"], fill(col[I]), fillopacity(0.2), stroke(col[I]) ), 
-  (context(),          # Removals
-    circle([(inc.t)cx for inc in active if isa(inc, R)], 
-           [(inc.target)cy for inc in active if isa(inc, R)],
-           [radius]), lw["active"], fill(col[R]), fillopacity(0.2), stroke(col[R]) ),                        
-  (context(),          # Conditional Removals
-    circle([(inc.t)cx for inc in active if isa(inc, C)], 
-           [(inc.target)cy for inc in active if isa(inc, C)],
-           [radius]), lw["active"], fill(col[C]), fillopacity(0.2), stroke(col[C]) ),
+           [smradius]), lw["active"], 
+           fill(col[I]), fillopacity(0.5), stroke(col[I]) ),
+
+  sketch_realized([inc for inc in active if typeof(inc)==epi.Infection]),
+  sketch_realized([inc for inc in active if typeof(inc)==epi.CRemoval]),
 )
 
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]

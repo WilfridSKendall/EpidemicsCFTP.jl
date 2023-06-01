@@ -154,16 +154,13 @@ information about various types of incident.
 ```{julia}
 E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
 I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
-
 RADIUS   = 0.2cy ; SMRADIUS = 0.75RADIUS
 bit      = -0.02h
-
 col = Dict(
   I => colorant"orange",  P => colorant"darkgreen",
   R => colorant"tan",     C => colorant"purple",
   A => colorant"yellow",  "blank" => colorant"white",
 ) ;
-
 lw = Dict(
   "bdry"   =>  linewidth(1.00mm),   "trail"  =>  linewidth(0.75mm),
   "active" =>  linewidth(0.75mm),   "dormant" => linewidth(0.25mm),
@@ -177,7 +174,8 @@ an unconditional epidemic:
 ```{julia}
 env0 = epi.Innovation(5, 
   A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
-    I(0.9,2,3), I(1.0,2,5), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), I(1.5,3,4)], 
+    I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
+    I(1.5,3,4)], 
   R[R(0.3,5), R(0.42,3), R(0.7,3), R(0.55,3), R(0.95,5), R(1.4,2), R(1.55,1),
     R(1.85,2)],
   C[C(1.3,2), C(0.8,1), C(1.7,4), C(1.8,4), C(1.92,5)] ) ;
@@ -189,7 +187,7 @@ Variants are added
 to deal with `AbstractIncident[]` vectors by doing nothing -- this is useful if a
 selected sublist is empty as it then becomes an `AbstractIncident[]` vector.
 ```{julia}
-function sketch_incident(xl::Vector{T}) where T <: BasicIncident
+function draw_incident(xl::Vector{T}) where T<:BasicIncident
   (context(),
     (context(),
       text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
@@ -200,20 +198,20 @@ function sketch_incident(xl::Vector{T}) where T <: BasicIncident
       fill(col["blank"]), stroke(col[eltype(xl)])), )
 end
 
-function sketch_realized(xl::Vector{T}) where T <: BasicIncident
+function draw_realized(xl::Vector{T}) where T<:BasicIncident
   xtype = eltype(xl) ;
   (context(),
     (context(),
     circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [RADIUS]), 
     lw["active"], fill(col[xtype]), fillopacity(0.2), stroke(col[xtype]) ),
-    if xtype <: epi.AbstractInfection
+    if xtype<:epi.AbstractInfection
       (context(),
       circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [SMRADIUS]),
        lw["active"], fill(col[xtype]), fillopacity(0.5), stroke(col[xtype]))
     end, )
 end ;
 
-function sketch_connect(xl::Vector{T}; active=false) where T <: BasicIncident
+function draw_connect(xl::Vector{T}; active=false) where T<:BasicIncident
   xtype = eltype(xl)
   (context(), 
     line(map(x -> [((x.t)cx, (x.target)cy+RADIUS), ((x.t)cx, (x.infectee)cy)], xl)),
@@ -223,14 +221,9 @@ function sketch_connect(xl::Vector{T}; active=false) where T <: BasicIncident
     stroke(col[xtype]), (active ? lw["active"] : lw["dormant"]) )
 end
 
-function sketch_incident(xl::Vector{T}) where T <: epi.AbstractIncident
-end
-
-function sketch_realized(xl::Vector{T}) where T <: epi.AbstractIncident
-end
-
-function sketch_connect(xl::Vector{T}; active=false) where T <: epi.AbstractIncident
-end
+function draw_incident(xl::Vector{T}) where T<:epi.AbstractIncident end
+function draw_realized(xl::Vector{T}) where T<:epi.AbstractIncident end
+function draw_connect(xl::Vector{T}; active=false) where T<:epi.AbstractIncident end ;
 ```
 
 We now add graphical depictions of the potential incidents supplied by the innovation.
@@ -238,49 +231,42 @@ Elements are plotted in reverse-order: for example, the first in sequence overla
 all subsequent elements. @fig-potential illustrates the required plot.
 ```{julia}
 #| label: fig-potential
-#| fig-cap: "Potential incidents, including both removals and infections:                                 \
-#|           Potential removals (R for _removal_) are indicated by disks with blue outlines,              \
-#|           conditional removals (C for _conditioned_) are indicated by disks with purple outlines,      \
-#|           potential infections (I for _infected_) are indicated by disks with orange outlines,         \
-#|           perpetuated infections (P for _perpetuated_) are indicated by disks with dark green outlines.\
-#|           Orange arrows indicate connections of potential infector time-lines                          \
-#|           to corresponding potential infectee time-lines.                                              \
-#|           Each disk is annotated by the summary description of the corresponding incident.             "
-
-#element_list = Any[context()]
-#append!(element_list, [epi.Removal, epi.CRemoval, epi.Infection, epi.PInfection])
-#println(Tuple(x for x in element_list))
-  
-
+#| fig-cap: "Potential incidents (both removals and infections):                       \
+#|           Removals (R for _removal_) are blue outline disks;                        \
+#|           conditional removals (C for _conditioned_) are purple outline disks;      \
+#|           Infections (I for _infected_) are orange outline disks;                   \
+#|           perpetuated infections (P for _perpetuated_) are dark green outline disks.\
+#|           Orange arrows connect infector time-lines                                 \
+#|           to corresponding infectee time-lines.                                     \
+#|           Each disk is annotated by a summary description of its incident."
 
 elements = (context(),
-  sketch_incident([inc for inc in env0.infections if isa(inc, I)]),
-  sketch_incident([inc for inc in env0.infections if isa(inc, P)]),
-  sketch_incident([inc for inc in env0.removals   if isa(inc, R)]),
-  sketch_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
-  sketch_connect([inc for inc in env0.infections if isa(inc, I)]),
-  sketch_connect([inc for inc in env0.infections if isa(inc, P)]),
-  )
+  draw_incident([inc for inc in env0.infections if isa(inc, I)]),
+  draw_incident([inc for inc in env0.infections if isa(inc, P)]),
+  draw_incident([inc for inc in env0.removals   if isa(inc, R)]),
+  draw_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
+  draw_connect([inc for inc in env0.infections  if isa(inc, I)]),
+  draw_connect([inc for inc in env0.infections  if isa(inc, P)]), )
 compose(context(units=coordinates), elements, scaffolding)
 ```
 
 # Evolving the epidemic in process time
-Next we must plot the course of epidemics arising from the time-sequence `chron` of potential incidents
-supplied by the innovation. The time sequence is derived from the innovation
-by the `chronology` function, and we need to compute the trajectory,
-and history of realized incidents, corresponding to a specific initial state at time \(0.0\),
-given by an `SIR` structure. Application of `evolution_recurse!`,
-working destructively on the input lists, delivers the \(\text{SIR}\) trajectory `traj`,
-and lists realized incidents in `active`.
+Now plot epidemics using the time-sequence `chron` of potential incidents, 
+derived
+from the innovation using the `chronology` function. Compute trajectory
+and history of realized incidents corresponding to a specific initial state at time \(0.0\),
+given by an `SIR` structure. 
+Then `evolution_recurse!`
+works destructively on inputs, delivers the \(\text{SIR}\) trajectory `traj`,
+and realized incidents `active`.
 
-::: {.callout-caution}
-Produce a function calling `evolution_recurse!` which is non-destructive of its arguments!
-:::
-
-First of all, we use the `traj` argument to produce a plot against time of the numbers of
-susceptibles, infectives and removed individuals. We begin by generating a dataframe
-recording the trajectories as the knots of piecewise constant functions.
+Use the `traj` argument to produce a plot against time of the numbers of
+susceptibles, infectives and removed individuals, _via_ a dataframe
+of trajectories as knots of piecewise constant functions.
 ```{julia}
+#| label: fig-trajectories
+#| fig-cap: "Trajectories of susceptibles, infectives (brown dashed lines) \
+#|           and removals (grey dotted lines)."   
 t1     = 2.0                       # Final time
 initial= epi.SIR(0.0, 4, 1, 0)     # Initial state
 states = [initial]                 # Starting state list (will be overwritten)
@@ -288,37 +274,32 @@ chron  = epi.chronology(env0)      # Empty list (will be overwritten)
 traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], t1, chron)
 
 using DataFrames
-t = [state.t for state in traj]
-push!(t, t1)
+t = [state.t for state in traj] ; push!(t, t1)
 t = repeat(t, inner=2)[2:(end-1)]
 s = repeat([state.s for state in traj], inner=2)
 i = repeat([state.i for state in traj], inner=2)
 r = repeat([state.r for state in traj], inner=2)
 realized = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r) ;
-```
-
-```{julia}
-#| label: fig-trajectories
-#| fig-cap: "Trajectories in process time of susceptibles, infectives (brown dashed line) and removals (grey dotted line)."   
 
 inf_layer = Gadfly.layer(realized, x=:t, y=:Infectives, color=[col[I]], 
   Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:solid]))
 rem_layer = Gadfly.layer(realized, x=:t, y=:Removals, color=[col[R]], 
-  Gadfly.Geom.line, 
-  Gadfly.style(line_width=1mm, line_style=[:dash]))
+  Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:dash]))
 sus_layer = Gadfly.layer(realized, x=:t, y=:Susceptibles, color=[colorant"grey"], 
-  Gadfly.Geom.line, 
-  Gadfly.style(line_width=1mm, line_style=[:dot]))
+  Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:dot]))
 Gadfly.plot(sus_layer, rem_layer, inf_layer,
-  Gadfly.style(panel_fill=colorant"bisque"),
-  Gadfly.Guide.xlabel("process time"), 
+  Gadfly.style(panel_fill=colorant"bisque"), Gadfly.Guide.xlabel("process time"), 
   Gadfly.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
 ```
 
+::: {.callout-tip}
+Need a function calling `evolution_recurse!` which is non-destructive of its arguments!
+:::
+
+
 Secondly we can examine which of the potential incidents have been realized. 
 We do this by amending @fig-potential so that realized incident nodes have light-coloured backgrounds and 
-thicker line-widths, producing @fig-realized. **Need to return a `no-op` 
-if the argument is an empty list!?!**
+thicker line-widths, producing @fig-realized.
 
 ```{julia}
 #| label: fig-realized
@@ -333,6 +314,14 @@ active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
 observed_removals = [(k, inc) for (k, inc) in enumerate(active_removals) 
                        if k + initial.r < inc.target]
 
+realized = (context(),
+  draw_realized([inc for inc in active if isa(inc, I)]),
+  draw_realized([inc for inc in active if isa(inc, P)]),
+  draw_realized([inc for inc in active if isa(inc, C)]),
+  draw_connect([inc for inc in active if isa(inc, I)]; active=true),
+  draw_connect([inc for inc in active if isa(inc, P)]; active=true), )
+
+# Could the following be cleaned up?!
 removal_connections = (context(),
   (context(),          # Connecting removal nodes
     circle([(inc.t)cx for (k, inc) in observed_removals], 
@@ -346,38 +335,40 @@ removal_connections = (context(),
     stroke(col[R]), lw["trail"], strokedash([0.5mm, 0.5mm]) )
 )
 
-realized = (context(),
-  sketch_connect([inc for inc in active if isa(inc, I)]; active=true),
-  sketch_connect([inc for inc in active if isa(inc, P)]; active=true),
-  [context(), sketch_realized([inc for inc in active if isa(inc, I)]),
-  sketch_realized([inc for inc in active if isa(inc, P)]),
-  sketch_realized([inc for inc in active if isa(inc, C)]),]
-)
-
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
 push!(removed_fill, (t1, 1))
 infected_fill = [(a,b) for (a,b) in zip(t, i+r) if b>0]
 append!(infected_fill, reverse(removed_fill))
+
+
+
 timelines = (context(),
   (context(),          # Removed trail
     line([(a,b) for (a,b) in zip(t, r) if b>0]),
+    line([[(a,b), (t1, b)] for (a,b) in zip(t, r) if b>0]),
     stroke(col[R]), lw["bdry"] ),
-  (context(),          # Removed trail
+  (context(),          # Removed trail fill
     polygon(removed_fill),
     fill(col[R]), fillopacity(0.1) ),
+    
   (context(),          # Epidemic trail
     line([zip(t, i+r)]),
+    line([[(a,b), (t1, b)] for (a,b) in zip(t, i+r) if b>0]),
     stroke(col[A]), lw["bdry"] ),
-  (context(),          # Epidemic trail
+  (context(),          # Epidemic trail fill
     polygon(infected_fill),
-    fill(col[A]), fillopacity(0.1) ),
-)
+    fill(col[A]), fillopacity(0.1) ), )
 
 compose(context(units=coordinates), removal_connections, realized, 
            elements, timelines, scaffolding)
 ```
 
+Here is the trajectory
+```{julia}
+traj
+```
 
-::: {.callout-caution}
-Develop intelligent functions for depositing potential and realized discs.
-:::
+and here are the active incidents.
+```{julia}
+active
+```

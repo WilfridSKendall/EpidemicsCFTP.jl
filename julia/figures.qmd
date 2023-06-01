@@ -145,13 +145,14 @@ col = Dict(
   R => colorant"tan",
   C => colorant"purple",
   A => colorant"yellow",
-  E => colorant"white",
+  "blank" => colorant"white",
 ) ;
 
 lw = Dict(
-  "bdry"   => linewidth(1mm),
-  "trail"  => linewidth(0.75mm),
-  "active" => linewidth(0.75mm),
+  "bdry"   =>  linewidth(1.00mm),
+  "trail"  =>  linewidth(0.75mm),
+  "active" =>  linewidth(0.75mm),
+  "dormant" => linewidth(0.25mm),
 ) ;
 ```
 
@@ -181,8 +182,8 @@ an unconditional epidemic.
 ```{julia}
 env0 = epi.Innovation(5, 
   A[
-    I(0.2,2,5), I(0.4,1,2), P(0.5,1,2), I(0.6,2,4), I(0.85,3,4), I(0.9,2,3),
-    I(1.0,1,2), I(1.05,4,5), I(1.11,1,4), I(1.2,2,4), I(1.6,3,5), I(1.5,3,4)
+    I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
+    I(0.9,2,3), I(1.0,2,5), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), I(1.5,3,4)
     ], 
   R[R(0.3,5), R(0.42,3), R(0.7,3), R(0.55,3), R(0.95,5), R(1.4,2), R(1.55,1),
     R(1.85,2)],
@@ -191,8 +192,9 @@ env0 = epi.Innovation(5,
 ```
 
 Here are functions which draw inactive respectively active nodes for each of a list
-of a given composite type of `BasicIncident`. It would be helpful also to add variants
-to deal with empty `AbstractIncident[]` vectors.
+of a given composite type of `BasicIncident`. Variants are added
+to deal with `AbstractIncident[]` vectors to do nothing -- this is useful if a
+selected sublist is empty as it then becomes an `AbstractIncident[]` vector.
 ```{julia}
 function sketch_incident(incl::Vector{T}) where T <: BasicIncident
   I = eltype(incl) ;
@@ -205,18 +207,57 @@ function sketch_incident(incl::Vector{T}) where T <: BasicIncident
     (context(),
       circle([(inc.t)cx for inc in incl if isa(inc, I)], 
              [(inc.target)cy for inc in incl if isa(inc, I)],
-             [radius]), fill(col[E]), stroke(col[I])), 
+             [radius]), fill(col["blank"]), stroke(col[I])), 
   )
 end
 
+function sketch_incident(incl::Vector{T}) where T <: epi.AbstractIncident
+end
+
 function sketch_realized(incl::Vector{T}) where T <: BasicIncident
-  I = eltype(incl) ;
+  inctype = eltype(incl) ;
   (context(),
-    circle([(inc.t)cx for inc in incl if isa(inc, I)], 
-           [(inc.target)cy for inc in incl if isa(inc, I)],
-           [radius]), lw["active"], fill(col[I]), fillopacity(0.2), stroke(col[I])) 
+    (context(),
+      circle([(inc.t)cx for inc in incl if isa(inc, inctype)], 
+             [(inc.target)cy for inc in incl if isa(inc, inctype)],
+             [radius]), lw["active"], 
+             fill(col[inctype]), fillopacity(0.2), stroke(col[inctype]) ),
+    if inctype <: epi.AbstractInfection
+      (context(),
+        circle([(inc.t)cx for inc in active if isa(inc, inctype)], 
+               [inc.infectee for inc in active if isa(inc, inctype)],
+               [smradius]), lw["active"], 
+               fill(col[inctype]), fillopacity(0.5), stroke(col[inctype]) )
+    end
+  )
 end ;
+
+function sketch_realized(incl::Vector{T}) where T <: epi.AbstractIncident
+end
+
+function sketch_connections(incl::Vector{T}; active=false) where T <: BasicIncident
+  inctype = eltype(incl)
+  (context(), 
+    (context(), 
+      line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
+             for inc in incl]),
+      line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
+             ((inc.t)cx,          (inc.infectee)cy), 
+             ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
+             for inc in incl]), stroke(col[inctype]),
+             (active ? lw["active"] : lw["dormant"]))
+#    (context(),
+#      circle([(inc.t)cx for inc in active if isa(inc, inctype)], 
+#             [inc.infectee for inc in active if isa(inc, inctype)],
+#             [smradius]), lw["active"], 
+#             fill(col[I]), fillopacity(0.5), stroke(col[inctype]) ),
+  )
+end
+
+function sketch_connections(incl::Vector{T}; active=false) where T <: epi.AbstractIncident
+end
 ```
+
 We now add graphical depictions of the potential incidents supplied by the innovation.
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements. @fig-potential illustrates the required plot.
@@ -230,18 +271,20 @@ all subsequent elements. @fig-potential illustrates the required plot.
 #|           Orange arrows indicate connections of potential infector time-lines                          \
 #|           to corresponding potential infectee time-lines.                                              \
 #|           Each disk is annotated by the summary description of the corresponding incident.             "
+
+#element_list = Any[context()]
+#append!(element_list, [epi.Removal, epi.CRemoval, epi.Infection, epi.PInfection])
+#println(Tuple(x for x in element_list))
+  
+
+
 elements = (context(),
-  sketch_incident([inc for inc in env0.infections if typeof(inc)==epi.Infection]),
-  sketch_incident([inc for inc in env0.infections if typeof(inc)==epi.PInfection]),
-  (context(),          # Infection connections
-    line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
-           for inc in env0.infections]),
-    line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
-           ((inc.t)cx,          (inc.infectee)cy), 
-           ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
-           for inc in env0.infections]), stroke(col[I]) ),
-  sketch_incident([inc for inc in env0.removals if typeof(inc)==epi.Removal]),
-  sketch_incident([inc for inc in env0.cremovals if typeof(inc)==epi.CRemoval]),
+  sketch_incident([inc for inc in env0.infections if isa(inc, I)]),
+  sketch_incident([inc for inc in env0.infections if isa(inc, P)]),
+  sketch_incident([inc for inc in env0.removals   if isa(inc, R)]),
+  sketch_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
+  sketch_connections([inc for inc in env0.infections if isa(inc, I)]),
+  sketch_connections([inc for inc in env0.infections if isa(inc, P)]),
   )
 compose(context(units=coordinates), elements, scaffolding)
 ```
@@ -329,18 +372,11 @@ removal_connections = (context(),
 )
 
 realized = (context(),
-  (context(),          # Infection contacts (I)
-    line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
-           for inc in active if isa(inc, I)]),
-           stroke(col[I]), lw["trail"], strokedash([]) ), 
-  (context(),          # Infection contacts (II)
-    circle([(inc.t)cx for inc in active if isa(inc, I)], 
-           [inc.infectee for inc in active if isa(inc, I)],
-           [smradius]), lw["active"], 
-           fill(col[I]), fillopacity(0.5), stroke(col[I]) ),
-
-  sketch_realized([inc for inc in active if typeof(inc)==epi.Infection]),
-  sketch_realized([inc for inc in active if typeof(inc)==epi.CRemoval]),
+  sketch_connections([inc for inc in active if isa(inc, I)]; active=true),
+  sketch_connections([inc for inc in active if isa(inc, P)]; active=true),
+  [context(), sketch_realized([inc for inc in active if isa(inc, I)]),
+  sketch_realized([inc for inc in active if isa(inc, P)]),
+  sketch_realized([inc for inc in active if isa(inc, C)]),]
 )
 
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]

@@ -14,7 +14,7 @@ format:
   pdf:
     link-citations: true
     numbersections: true
-    monofont: "Noto Sans Mono"
+    monofont: "JuliaMono"
     mainfont: "Times New Roman"
 
 jupyter:    julia-1.9
@@ -363,6 +363,37 @@ compose(context(units=coordinates), removal_connections, realized,
            elements, timelines, scaffolding)
 ```
 
+# Computing the last viable epidemic
+First establish active removal incidents in time-increasing order.
+Do alternative computations with same result as above.
+```{julia}
+active_removals = filter(x -> (isa(x, R) || isa(x, C)), active)
+collect(enumerate(active_removals))
+```
+
+Now compute infection incidents composing the epidemic.
+```{julia}
+epidemic_infections = filter(x -> (isa(x, I) || isa(x, P)), active)
+collect(enumerate(epidemic_infections))
+```
+
+For each time-line from time-line \(2\) upwards, list viable infection
+accidents targetting that time-line between epidemic infection and active removal.
+
+::: {.callout-tip}
+## This has still to be done!
+
+1. List infection incidents targetting that time-line.
+2. Select those lying between infection and removal.
+3. Figure out how to extract viable incidents.
+4. Tighten up so subsequent timelines also infected(!)
+5. Choose the latest.
+
+:::
+
+\newpage
+# Miscellaneous
+
 Here is the trajectory
 ```{julia}
 traj
@@ -371,4 +402,9 @@ traj
 and here are the active incidents.
 ```{julia}
 active
+```
+
+Quick check on removal:
+```{julia}
+epi.Removal(1.0,4)
 ```

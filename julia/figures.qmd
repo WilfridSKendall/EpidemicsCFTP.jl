@@ -155,7 +155,7 @@ information about various types of incident.
 E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
 I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
 
-radius   = 0.2cy ; smradius = 0.75radius
+RADIUS   = 0.2cy ; SMRADIUS = 0.75RADIUS
 bit      = -0.02h
 
 col = Dict(
@@ -189,64 +189,47 @@ Variants are added
 to deal with `AbstractIncident[]` vectors by doing nothing -- this is useful if a
 selected sublist is empty as it then becomes an `AbstractIncident[]` vector.
 ```{julia}
-function sketch_incident(incl::Vector{T}) where T <: BasicIncident
+function sketch_incident(xl::Vector{T}) where T <: BasicIncident
   (context(),
     (context(),
-#      text([(inc.t)cx for inc in incl],
-      text(map(inc->(inc.t)cx, incl),
-           [(inc.target)cy for inc in incl], 
-           [string(inc) for inc in incl],
-           [hcenter], [vcenter]), fontsize(5pt), font("Helvetica")),
+      text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
+           map(x -> string(x), xl), [hcenter], [vcenter]), 
+      fontsize(5pt), font("Helvetica")),
     (context(),
-      circle([(inc.t)cx for inc in incl], 
-             [(inc.target)cy for inc in incl],
-             [radius]), fill(col["blank"]), stroke(col[eltype(incl)])), )
+      circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [RADIUS]), 
+      fill(col["blank"]), stroke(col[eltype(xl)])), )
 end
 
-function sketch_incident(incl::Vector{T}) where T <: epi.AbstractIncident
-end
-
-function sketch_realized(incl::Vector{T}) where T <: BasicIncident
-  inctype = eltype(incl) ;
+function sketch_realized(xl::Vector{T}) where T <: BasicIncident
+  xtype = eltype(xl) ;
   (context(),
     (context(),
-      circle([(inc.t)cx for inc in incl], 
-             [(inc.target)cy for inc in incl if isa(inc, inctype)],
-             [radius]), lw["active"], 
-             fill(col[inctype]), fillopacity(0.2), stroke(col[inctype]) ),
-    if inctype <: epi.AbstractInfection
+    circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [RADIUS]), 
+    lw["active"], fill(col[xtype]), fillopacity(0.2), stroke(col[xtype]) ),
+    if xtype <: epi.AbstractInfection
       (context(),
-        circle([(inc.t)cx for inc in incl], 
-               [inc.infectee for inc in incl],
-               [smradius]), lw["active"], 
-               fill(col[inctype]), fillopacity(0.5), stroke(col[inctype]) )
-    end
-  )
+      circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [SMRADIUS]),
+       lw["active"], fill(col[xtype]), fillopacity(0.5), stroke(col[xtype]))
+    end, )
 end ;
 
-function sketch_realized(incl::Vector{T}) where T <: epi.AbstractIncident
-end
-
-function sketch_connections(incl::Vector{T}; active=false) where T <: BasicIncident
-  inctype = eltype(incl)
+function sketch_connect(xl::Vector{T}; active=false) where T <: BasicIncident
+  xtype = eltype(xl)
   (context(), 
-    (context(), 
-      line([[((inc.t)cx, (inc.target)cy+radius), ((inc.t)cx, (inc.infectee)cy)]
-             for inc in incl]),
-      line([[((inc.t)cx - 0.3bit, (inc.infectee)cy-bit), 
-             ((inc.t)cx,          (inc.infectee)cy), 
-             ((inc.t)cx + 0.3bit, (inc.infectee)cy-bit)]
-             for inc in incl]), stroke(col[inctype]),
-             (active ? lw["active"] : lw["dormant"]))
-#    (context(),
-#      circle([(inc.t)cx for inc in active if isa(inc, inctype)], 
-#             [inc.infectee for inc in active if isa(inc, inctype)],
-#             [smradius]), lw["active"], 
-#             fill(col[I]), fillopacity(0.5), stroke(col[inctype]) ),
-  )
+    line(map(x -> [((x.t)cx, (x.target)cy+RADIUS), ((x.t)cx, (x.infectee)cy)], xl)),
+    line(map(x -> [((x.t)cx - 0.3bit, (x.infectee)cy-bit), 
+                   ((x.t)cx,          (x.infectee)cy), 
+                   ((x.t)cx + 0.3bit, (x.infectee)cy-bit)], xl)), 
+    stroke(col[xtype]), (active ? lw["active"] : lw["dormant"]) )
 end
 
-function sketch_connections(incl::Vector{T}; active=false) where T <: epi.AbstractIncident
+function sketch_incident(xl::Vector{T}) where T <: epi.AbstractIncident
+end
+
+function sketch_realized(xl::Vector{T}) where T <: epi.AbstractIncident
+end
+
+function sketch_connect(xl::Vector{T}; active=false) where T <: epi.AbstractIncident
 end
 ```
 
@@ -275,8 +258,8 @@ elements = (context(),
   sketch_incident([inc for inc in env0.infections if isa(inc, P)]),
   sketch_incident([inc for inc in env0.removals   if isa(inc, R)]),
   sketch_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
-  sketch_connections([inc for inc in env0.infections if isa(inc, I)]),
-  sketch_connections([inc for inc in env0.infections if isa(inc, P)]),
+  sketch_connect([inc for inc in env0.infections if isa(inc, I)]),
+  sketch_connect([inc for inc in env0.infections if isa(inc, P)]),
   )
 compose(context(units=coordinates), elements, scaffolding)
 ```
@@ -354,18 +337,18 @@ removal_connections = (context(),
   (context(),          # Connecting removal nodes
     circle([(inc.t)cx for (k, inc) in observed_removals], 
            [(k + initial.r)cy for (k, inc) in observed_removals],
-           [smradius]), stroke(col[C]), 
+           [SMRADIUS]), stroke(col[C]), 
            lw["active"], fill(col[C]), fillopacity(0.5) ),
   (context(),          # Connecting removal lines
-    line([[((inc.t)cx, (inc.target)cy - radius), 
-           ((inc.t)cx, (k + initial.r)cy + radius)]
+    line([[((inc.t)cx, (inc.target)cy - RADIUS), 
+           ((inc.t)cx, (k + initial.r)cy + RADIUS)]
       for (k, inc) in observed_removals]), 
     stroke(col[R]), lw["trail"], strokedash([0.5mm, 0.5mm]) )
 )
 
 realized = (context(),
-  sketch_connections([inc for inc in active if isa(inc, I)]; active=true),
-  sketch_connections([inc for inc in active if isa(inc, P)]; active=true),
+  sketch_connect([inc for inc in active if isa(inc, I)]; active=true),
+  sketch_connect([inc for inc in active if isa(inc, P)]; active=true),
   [context(), sketch_realized([inc for inc in active if isa(inc, I)]),
   sketch_realized([inc for inc in active if isa(inc, P)]),
   sketch_realized([inc for inc in active if isa(inc, C)]),]

@@ -43,13 +43,13 @@ epi = EpidemicsCFTP ;
 
 A laconic description of the `julia` package `Compose.jl` 
 (the graphics package used for these figures)
-is provided at 
+is to be found at 
 <https://giovineitalia.github.io/Compose.jl/latest/>.
-Further useful information can be found in 
+For further useful information, see
 <https://shashi.biz/ijulia-notebooks/funcgeo/>.
 
 Basic simulation parameters are the `population` size 
-and the `duration` (assumes epidemic simulation commences at time `0`).
+and the `duration` (assume epidemic simulation commences at time `0`).
 Note that (trivial) labelling issues arise if `population > MAXPOP=20`.
 ```{julia}
 const population = 5 ;
@@ -61,7 +61,7 @@ if population > MAXPOP
 end ;
 ```
 
-We now set up and establish graphics size, coordinates, and drawing region.
+Set up and establish graphics size, coordinates, and drawing region.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
 
@@ -121,7 +121,8 @@ scaffolding = (context(), region, (context(), time_axis, lines) ) ;
 ```
 
 # Drawing the underlying scaffolding
-@fig-scaffolding illustrates the underlying scaffolding for (almost) all our diagrams:
+@fig-scaffolding illustrates the underlying scaffolding for (almost) all 
+the following diagrams.
 ```{julia}
 #| label: fig-scaffolding
 #| fig-cap: "Scaffolding"
@@ -131,26 +132,24 @@ compose(context(units=coordinates), scaffolding)
 # Dealing with different kinds of incident
 Here is a function which creates a union of all composite types
 below a given (typically abstract!) type. This is applied to create
-a union type for composite types implementing `AbstractIncident`:
-we do this in order to be programmatic about constructing generalized 
-drawing functions later.
+a union type for composite types implementing `AbstractIncident`,
+in order to be programmatic about construction of generalized 
+drawing functions.
 ```{julia}
 function unionize_composites(a::Type)::Type
   xl = Type[x for x in subtypes(a)]
   if length(xl) == 0
-    return a # a composite type
+    return a # return a composite type
   else
     xl = Type[unionize_composites(y) for y in xl]
-    return reduce((t1, t2) -> Union{t1, t2}, xl) # a union type
+    return reduce((t1, t2) -> Union{t1, t2}, xl) # return a union type
   end
 end
 
 BasicIncident = unionize_composites(epi.AbstractIncident) ;
 ```
 
-We use `julia` dictionaries and variables to hold 
-information about various types of incident.
-(See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/>.)
+Various types of incident are styled by `julia` dictionaries and variables.
 ```{julia}
 E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
 I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
@@ -167,10 +166,11 @@ lw = Dict(
 ) ;
 ```
 
+Colour list: see <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/>.
 
 # An innovation for an unconditioned \(\text{SIR}\) epidemic
-We consider lists of potential incidents underlying
-an unconditional epidemic:
+Consider lists of potential incidents underlying
+an unconditional epidemic.
 ```{julia}
 env0 = epi.Innovation(5, 
   A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
@@ -181,11 +181,11 @@ env0 = epi.Innovation(5,
   C[C(1.3,2), C(0.8,1), C(1.7,4), C(1.8,4), C(1.92,5)] ) ;
 ```
 
-We define functions to draw inactive (respectively, active) nodes for each of a list
+Here are functions to draw inactive (respectively, active) nodes for each of a list
 conposed of incidents from a prescribed composite type of `BasicIncident`. 
-Variants are added
+Variants
 to deal with `AbstractIncident[]` vectors by doing nothing -- this is useful if a
-selected sublist is empty as it then becomes an `AbstractIncident[]` vector.
+selected sublist is empty, perhaps becoming an `AbstractIncident[]` vector.
 ```{julia}
 function draw_incident(xl::Vector{T}) where T<:BasicIncident
   (context(),
@@ -213,6 +213,9 @@ end ;
 
 function draw_connect(xl::Vector{T}; active=false) where T<:BasicIncident
   xtype = eltype(xl)
+  if ! (xtype<:epi.AbstractInfection)
+    return
+  end
   (context(), 
     line(map(x -> [((x.t)cx, (x.target)cy+RADIUS), ((x.t)cx, (x.infectee)cy)], xl)),
     line(map(x -> [((x.t)cx - 0.3bit, (x.infectee)cy-bit), 
@@ -258,23 +261,21 @@ and history of realized incidents corresponding to a specific initial state at t
 given by an `SIR` structure. 
 Then `evolution_recurse!`
 works destructively on inputs, delivers the \(\text{SIR}\) trajectory `traj`,
-and realized incidents `active`.
+and realized incidents in `active`.
 
 Use the `traj` argument to produce a plot against time of the numbers of
 susceptibles, infectives and removed individuals, _via_ a dataframe
 of trajectories as knots of piecewise constant functions.
 ```{julia}
 #| label: fig-trajectories
-#| fig-cap: "Trajectories of susceptibles, infectives (brown dashed lines) \
-#|           and removals (grey dotted lines)."   
-t1     = 2.0                       # Final time
-initial= epi.SIR(0.0, 4, 1, 0)     # Initial state
-states = [initial]                 # Starting state list (will be overwritten)
-chron  = epi.chronology(env0)      # Empty list (will be overwritten)
-traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], t1, chron)
+#| fig-cap: "Trajectories of susceptibles, infectives (brown dashed lines), \
+#|           removals (grey dotted lines)."   
+initial= epi.SIR(0.0, 4, 1, 0)
+chron  = epi.chronology(env0) ; states = [initial] # both will be overwritten
+traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], duration, chron)
 
 using DataFrames
-t = [state.t for state in traj] ; push!(t, t1)
+t = [state.t for state in traj] ; push!(t, duration)
 t = repeat(t, inner=2)[2:(end-1)]
 s = repeat([state.s for state in traj], inner=2)
 i = repeat([state.i for state in traj], inner=2)
@@ -297,8 +298,8 @@ Need a function calling `evolution_recurse!` which is non-destructive of its arg
 :::
 
 
-Secondly we can examine which of the potential incidents have been realized. 
-We do this by amending @fig-potential so that realized incident nodes have light-coloured backgrounds and 
+Now examine which of the potential incidents have been realized. 
+Amend @fig-potential: realized incident nodes have light-coloured backgrounds and 
 thicker line-widths, producing @fig-realized.
 
 ```{julia}
@@ -321,8 +322,7 @@ realized = (context(),
   draw_connect([inc for inc in active if isa(inc, I)]; active=true),
   draw_connect([inc for inc in active if isa(inc, P)]; active=true), )
 
-# Could the following be cleaned up?!
-removal_connections = (context(),
+removal_connections = (context(), # COuld this be cleaned up?
   (context(),          # Connecting removal nodes
     circle([(inc.t)cx for (k, inc) in observed_removals], 
            [(k + initial.r)cy for (k, inc) in observed_removals],
@@ -336,24 +336,22 @@ removal_connections = (context(),
 )
 
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
-push!(removed_fill, (t1, 1))
+push!(removed_fill, (duration, 1))
 infected_fill = [(a,b) for (a,b) in zip(t, i+r) if b>0]
 append!(infected_fill, reverse(removed_fill))
 
-
-
 timelines = (context(),
-  (context(),          # Removed trail
+  (context(),          # Trail of Removals
     line([(a,b) for (a,b) in zip(t, r) if b>0]),
-    line([[(a,b), (t1, b)] for (a,b) in zip(t, r) if b>0]),
+    line([[(a,b), (duration, b)] for (a,b) in zip(t, r) if b>0]),
     stroke(col[R]), lw["bdry"] ),
-  (context(),          # Removed trail fill
+  (context(),          # Removals trail fill
     polygon(removed_fill),
     fill(col[R]), fillopacity(0.1) ),
     
-  (context(),          # Epidemic trail
+  (context(),          # Trail of Epidemic
     line([zip(t, i+r)]),
-    line([[(a,b), (t1, b)] for (a,b) in zip(t, i+r) if b>0]),
+    line([[(a,b), (duration, b)] for (a,b) in zip(t, i+r) if b>0]),
     stroke(col[A]), lw["bdry"] ),
   (context(),          # Epidemic trail fill
     polygon(infected_fill),
@@ -363,27 +361,42 @@ compose(context(units=coordinates), removal_connections, realized,
            elements, timelines, scaffolding)
 ```
 
+\newpage
+
 # Computing the last viable epidemic
-First establish active removal incidents in time-increasing order.
-Do alternative computations with same result as above.
+First establish active removal incidents in time-decreasing order
+of _removed_ timeline,
+and list prior potential infections 
+corresponding according to the time-line
+they might infect (prior to removal of that time-line).
+Notice we have not yet covered the possibility that some time-lines
+are never infected and others are not removed before `duration`
+(the end of the simulation). Notice too that the first time-line
+is (of course) never infected.
+
 ```{julia}
 active_removals = filter(x -> (isa(x, R) || isa(x, C)), active)
-collect(enumerate(active_removals))
+reversed_removals = reverse(collect(enumerate(active_removals)))
+for (k, rem) in reversed_removals
+  println("Timeline $k ends at $rem, at time $(rem.t)")
+  prior_removals = [pr for pr in env0.removals if pr.target==k && pr.t < rem.t]
+  println("  (prior rem) ", join([string(pr) for pr in prior_removals], " "))
+  prior_infections = [pi for pi in env0.infections if pi.infectee==k && pi.t < rem.t]
+  println("  (prior inf) ", join([string(pi) for pi in prior_infections], " "))
+  println("\n")
+end
 ```
 
-Now compute infection incidents composing the epidemic.
-```{julia}
-epidemic_infections = filter(x -> (isa(x, I) || isa(x, P)), active)
-collect(enumerate(epidemic_infections))
-```
+By the nature of the simulation, no prior potential infections will infect
+a time-line _after_ it has been removed, because by then the `target` time-line
+must also have been removed.
 
-For each time-line from time-line \(2\) upwards, list viable infection
-accidents targetting that time-line between epidemic infection and active removal.
+
 
 ::: {.callout-tip}
 ## This has still to be done!
 
-1. List infection incidents targetting that time-line.
+1. List infection incidents targetting that time-line. **DONE**
 2. Select those lying between infection and removal.
 3. Figure out how to extract viable incidents.
 4. Tighten up so subsequent timelines also infected(!)

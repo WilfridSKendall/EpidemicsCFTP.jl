@@ -14,9 +14,10 @@ format:
   pdf:
     link-citations: true
     numbersections: true
-    monofont: "JuliaMono"
     mainfont: "Times New Roman"
-
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
 jupyter:    julia-1.9
 ---
 
@@ -72,38 +73,43 @@ region      = (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3))
 
 
 # Basic image template elements
-First construct the time axis, with tick marks at integer times.
-Note, here and following,  careful use of graphics area units (`cx`, `cy`).
+First construct a function to draw the time axis, with tick marks at integer times.
+Note, both here and following, the careful use of graphics area units (`cx`, `cy`).
 ```{julia}
 tic       = -0.2cy
 step      = 10^floor(Int, log10(duration))
 xht       = 0.5cy # 0cy + 0.25inch
-labellocs = [(x)cx for x in 0:duration]
 
-tic_loc1  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:1.0step:duration]
-tic_loc2  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:0.5step:duration]
-tic_loc3  = [(((x)cx,xht), ((x)cx, xht+0.5tic)) for x in 0:0.1step:duration]
+function time_axis(duration, tic, step, xht)
+  labellocs = [(x)cx for x in 0:duration]
 
-time_axis = (context(),
-   (context(), text(labellocs, [xht + 0.25inch], ["$i" for i in 0:duration], 
-      [hcenter], [vcenter]), fontsize(7pt), font("TimesRoman"), ),
-   (context(), line([(0cx, xht), ((duration)cx, xht)]),
+  tic_loc1  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:1.0step:duration]
+  tic_loc2  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:0.5step:duration]
+  tic_loc3  = [(((x)cx,xht), ((x)cx, xht+0.5tic)) for x in 0:0.1step:duration]
+
+  return (context(),
+    (context(), text(labellocs, [xht + 0.25inch], ["$i" for i in 0:duration], 
+      [hcenter], [vcenter]), fontsize(5pt), font("TimesRoman"), ),
+    (context(), line([(0cx, xht), ((duration)cx, xht)]),
       stroke("grey"), linewidth(0.5mm) ),
-   (context(), line(tic_loc1), stroke("grey"), linewidth(0.2mm)),
-   (context(), line(tic_loc2), stroke("grey"), linewidth(0.1mm)),
-   (context(), line(tic_loc3), stroke("grey"), linewidth(0.1mm)), ) ;
+    (context(), line(tic_loc1), stroke("grey"), linewidth(0.2mm)),
+    (context(), line(tic_loc2), stroke("grey"), linewidth(0.1mm)),
+    (context(), line(tic_loc3), stroke("grey"), linewidth(0.1mm)), )
+end ;
 ```
 
 
-Now build the time-lines, labelled by circled integers.
+Now construct a function to draw the time-lines as black threads, labelled by circled integers.
 ```{julia}
-circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
+function time_threads(population)
+  circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
 
-lines        = (context(),
-  (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
+  return (context(),
+    (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
       [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
-  (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
-      stroke("grey"), linewidth(0.5mm), ), ) ;
+    (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
+      stroke("grey"), linewidth(0.5mm), ), )
+end ;
 ```
 
 
@@ -115,9 +121,10 @@ one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-
 :::
 
 
-Finally we build a tree describing the construction of scaffolding.
+Finally we build a tree describing the construction of scaffolding (axes, time lines _etc_).
 ```{julia}
-scaffolding = (context(), region, (context(), time_axis, lines) ) ;
+scaffolding = (context(), region, 
+  time_axis(duration, tic, step, xht), time_threads(population)) ;
 ```
 
 # Drawing the underlying scaffolding
@@ -234,13 +241,13 @@ Elements are plotted in reverse-order: for example, the first in sequence overla
 all subsequent elements. @fig-potential illustrates the required plot.
 ```{julia}
 #| label: fig-potential
-#| fig-cap: "Potential incidents (both removals and infections):                       \
-#|           Removals (R for _removal_) are blue outline disks;                        \
-#|           conditional removals (C for _conditioned_) are purple outline disks;      \
-#|           Infections (I for _infected_) are orange outline disks;                   \
-#|           perpetuated infections (P for _perpetuated_) are dark green outline disks.\
-#|           Orange arrows connect infector time-lines                                 \
-#|           to corresponding infectee time-lines.                                     \
+#| fig-cap: "Potential incidents (both removals and infections):                        \
+#|           Removals (R for _removal_) are blue outline disks;                         \
+#|           conditional removals (C for _conditioned_) are purple outline disks;       \
+#|           Infections (I for _infected_) are orange outline disks;                    \
+#|           perpetuated infections (P for _perpetuated_) are dark green outline disks. \
+#|           Orange arrows connect infector time-lines                                  \
+#|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
 
 elements = (context(),
@@ -280,21 +287,26 @@ t = repeat(t, inner=2)[2:(end-1)]
 s = repeat([state.s for state in traj], inner=2)
 i = repeat([state.i for state in traj], inner=2)
 r = repeat([state.r for state in traj], inner=2)
-realized = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r) ;
+flow = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r) ;
 
-inf_layer = Gadfly.layer(realized, x=:t, y=:Infectives, color=[col[I]], 
+inf_layer = Gadfly.layer(flow, x=:t, y=:Infectives, color=[col[I]], 
   Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:solid]))
-rem_layer = Gadfly.layer(realized, x=:t, y=:Removals, color=[col[R]], 
+rem_layer = Gadfly.layer(flow, x=:t, y=:Removals, color=[col[R]], 
   Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:dash]))
-sus_layer = Gadfly.layer(realized, x=:t, y=:Susceptibles, color=[colorant"grey"], 
+sus_layer = Gadfly.layer(flow, x=:t, y=:Susceptibles, color=[colorant"grey"], 
   Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:dot]))
 Gadfly.plot(sus_layer, rem_layer, inf_layer,
   Gadfly.style(panel_fill=colorant"bisque"), Gadfly.Guide.xlabel("process time"), 
   Gadfly.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
 ```
 
+```{julia}
+#| echo: false
+print(flow) ;
+```
+
 ::: {.callout-tip}
-Need a function calling `evolution_recurse!` which is non-destructive of its arguments!
+In the following, it would be helpful to have a function calling `evolution_recurse!` which is non-destructive of its arguments!
 :::
 
 
@@ -338,7 +350,8 @@ removal_connections = (context(), # COuld this be cleaned up?
 removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
 push!(removed_fill, (duration, 1))
 infected_fill = [(a,b) for (a,b) in zip(t, i+r) if b>0]
-append!(infected_fill, reverse(removed_fill))
+removed1_fill = [(a,b + 1) for (a,b) in zip(t, r) if b < population]
+append!(infected_fill, reverse(removed1_fill))
 
 timelines = (context(),
   (context(),          # Trail of Removals
@@ -355,7 +368,7 @@ timelines = (context(),
     stroke(col[A]), lw["bdry"] ),
   (context(),          # Epidemic trail fill
     polygon(infected_fill),
-    fill(col[A]), fillopacity(0.1) ), )
+    fill(col[A]), stroke(col[A]), fillopacity(0.1) ), )
 
 compose(context(units=coordinates), removal_connections, realized, 
            elements, timelines, scaffolding)

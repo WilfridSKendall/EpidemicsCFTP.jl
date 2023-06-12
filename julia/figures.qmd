@@ -38,6 +38,7 @@ Further cell execution options: see
 First access required modules.
 ```{julia}
 using Compose, Colors, Measures
+import Cairo, Fontconfig
 import EpidemicsCFTP, Gadfly
 epi = EpidemicsCFTP ;
 ```
@@ -124,16 +125,20 @@ one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-
 Finally we build a tree describing the construction of scaffolding (axes, time lines _etc_).
 ```{julia}
 scaffolding = (context(), region, 
-  time_axis(duration, tic, step, xht), time_threads(population)) ;
+  time_axis(duration, tic, step, xht), time_threads(population))
+Scaffolding = compose(context(units=coordinates), scaffolding) ;
 ```
 
 # Drawing the underlying scaffolding
 @fig-scaffolding illustrates the underlying scaffolding for (almost) all 
 the following diagrams.
 ```{julia}
+#| echo: false
 #| label: fig-scaffolding
-#| fig-cap: "Scaffolding"
-compose(context(units=coordinates), scaffolding)
+#| fig-cap: "Scaffolding: time axis and time-lines."
+draw(PNG("image/Scaffolding.png"), Scaffolding)
+draw(PDF("image/Scaffolding.pdf"), Scaffolding)
+Scaffolding
 ```
 
 # Dealing with different kinds of incident
@@ -240,6 +245,18 @@ We now add graphical depictions of the potential incidents supplied by the innov
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements. @fig-potential illustrates the required plot.
 ```{julia}
+elements = (context(),
+  draw_incident([inc for inc in env0.infections if isa(inc, I)]),
+  draw_incident([inc for inc in env0.infections if isa(inc, P)]),
+  draw_incident([inc for inc in env0.removals   if isa(inc, R)]),
+  draw_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
+  draw_connect([inc for inc in env0.infections  if isa(inc, I)]),
+  draw_connect([inc for inc in env0.infections  if isa(inc, P)]), )
+InitialView = compose(context(units=coordinates), elements, scaffolding) ;
+```
+
+```{julia}
+#| echo: false
 #| label: fig-potential
 #| fig-cap: "Potential incidents (both removals and infections):                        \
 #|           Removals (R for _removal_) are blue outline disks;                         \
@@ -249,15 +266,9 @@ all subsequent elements. @fig-potential illustrates the required plot.
 #|           Orange arrows connect infector time-lines                                  \
 #|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
-
-elements = (context(),
-  draw_incident([inc for inc in env0.infections if isa(inc, I)]),
-  draw_incident([inc for inc in env0.infections if isa(inc, P)]),
-  draw_incident([inc for inc in env0.removals   if isa(inc, R)]),
-  draw_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
-  draw_connect([inc for inc in env0.infections  if isa(inc, I)]),
-  draw_connect([inc for inc in env0.infections  if isa(inc, P)]), )
-compose(context(units=coordinates), elements, scaffolding)
+draw(PNG("image/InitialView.png"), InitialView)
+draw(PDF("image/InitialView.pdf"), InitialView)
+InitialView
 ```
 
 # Evolving the epidemic in process time
@@ -274,21 +285,28 @@ Use the `traj` argument to produce a plot against time of the numbers of
 susceptibles, infectives and removed individuals, _via_ a dataframe
 of trajectories as knots of piecewise constant functions.
 ```{julia}
-#| label: fig-trajectories
-#| fig-cap: "Trajectories of susceptibles, infectives (brown dashed lines), \
-#|           removals (grey dotted lines)."   
+using DataFrames
 initial= epi.SIR(0.0, 4, 1, 0)
 chron  = epi.chronology(env0) ; states = [initial] # both will be overwritten
 traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], duration, chron)
-
-using DataFrames
 t = [state.t for state in traj] ; push!(t, duration)
 t = repeat(t, inner=2)[2:(end-1)]
 s = repeat([state.s for state in traj], inner=2)
 i = repeat([state.i for state in traj], inner=2)
 r = repeat([state.r for state in traj], inner=2)
 flow = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r) ;
+```
 
+```{julia}
+#| echo: false
+print(flow) ;
+```
+
+```{julia}
+#| echo: false
+#| label: fig-trajectories
+#| fig-cap: "Trajectories of susceptibles, infectives (brown dashed lines), \
+#|           removals (grey dotted lines)."   
 inf_layer = Gadfly.layer(flow, x=:t, y=:Infectives, color=[col[I]], 
   Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:solid]))
 rem_layer = Gadfly.layer(flow, x=:t, y=:Removals, color=[col[R]], 
@@ -298,11 +316,6 @@ sus_layer = Gadfly.layer(flow, x=:t, y=:Susceptibles, color=[colorant"grey"],
 Gadfly.plot(sus_layer, rem_layer, inf_layer,
   Gadfly.style(panel_fill=colorant"bisque"), Gadfly.Guide.xlabel("process time"), 
   Gadfly.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
-```
-
-```{julia}
-#| echo: false
-print(flow) ;
 ```
 
 ::: {.callout-tip}
@@ -315,14 +328,6 @@ Amend @fig-potential: realized incident nodes have light-coloured backgrounds an
 thicker line-widths, producing @fig-realized.
 
 ```{julia}
-#| label: fig-realized
-#| fig-cap: "@fig-potential with epidemic and removal curves: realized incident nodes have  \
-#|           light-coloured backgrounds and realized infections have thicker line-widths.   \
-#|           The epidemic and removal curves are drawn as thick yellow and brown lines      \
-#|           respectively, with regions of infection and removal shaded as yellow and brown \
-#|           respectively. Dotted vertical lines connect removal incidents to relevant      \
-#|           time-lines, if the removal incident does not already lie on the time-line."
-
 active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
 observed_removals = [(k, inc) for (k, inc) in enumerate(active_removals) 
                        if k + initial.r < inc.target]
@@ -370,8 +375,26 @@ timelines = (context(),
     polygon(infected_fill),
     fill(col[A]), stroke(col[A]), fillopacity(0.1) ), )
 
-compose(context(units=coordinates), removal_connections, realized, 
-           elements, timelines, scaffolding)
+FinalView = compose(context(units=coordinates), removal_connections, realized, 
+           elements, timelines, scaffolding) ;
+```
+
+\newpage
+
+```{julia}
+#| echo: false
+#| label: fig-realized
+#| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
+#|           coloured yellow/brown."
+draw(PNG("image/FinalView.png"), FinalView)
+draw(PDF("image/FinalView.pdf"), FinalView)
+FinalView
+```
+
+```{julia}
+#| echo: false
+print(flow) ;
 ```
 
 \newpage

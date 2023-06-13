@@ -222,7 +222,7 @@ function draw_realized(xl::Vector{T};
 end ;
 
 function draw_connect(xl::Vector{T}; 
-                      bit=BIT, radius=RADIUS, smradius=SMRADIUS, active=false, col=col, lw=lw) where T<:BasicIncident
+                      bit=BIT, radius=RADIUS, smradius=SMRADIUS, activated=false, col=col, lw=lw) where T<:BasicIncident
   xtype = eltype(xl)
   if ! (xtype<:epi.AbstractInfection)
     return
@@ -232,7 +232,7 @@ function draw_connect(xl::Vector{T};
     line(map(x -> [((x.t)cx - 0.3bit, (x.infectee)cy-bit), 
                    ((x.t)cx,          (x.infectee)cy), 
                    ((x.t)cx + 0.3bit, (x.infectee)cy-bit)], xl)), 
-    stroke(col[xtype]), (active ? lw["active"] : lw["dormant"]) )
+    stroke(col[xtype]), (activated ? lw["active"] : lw["dormant"]) )
 end
 
 function draw_incident(xl::Vector{T}; bit=BIT, radius=RADIUS, col=col, lw=lw) where T<:epi.AbstractIncident 
@@ -241,7 +241,7 @@ function draw_realized(xl::Vector{T};
                        bit=BIT, radius=RADIUS, col=col, lw=lw) where T<:epi.AbstractIncident
                        end
 function draw_connect(xl::Vector{T}; 
-                       bit=BIT, radius=RADIUS, active=false, col=col, lw=lw) where T<:epi.AbstractIncident 
+                       bit=BIT, radius=RADIUS, activated=false, col=col, lw=lw) where T<:epi.AbstractIncident 
                        end ;
 ```
 
@@ -250,7 +250,7 @@ Elements are plotted in reverse-order: for example, the first in sequence overla
 all subsequent elements. @fig-potential illustrates the required plot.
 ```{julia}
 function draw_elements(env; I=I, P=P, R=R, C=C, 
-                       bit=BIT, radius=RADIUS, smradius=SMRADIUS, active=false, col=col, lw=lw) 
+                       bit=BIT, radius=RADIUS, smradius=SMRADIUS, col=col, lw=lw) 
   (context(),
     draw_incident([inc for inc in env.infections if isa(inc, I)],
                   bit=bit, radius=radius, col=col, lw=lw),
@@ -261,16 +261,16 @@ function draw_elements(env; I=I, P=P, R=R, C=C,
     draw_incident([inc for inc in env.cremovals  if isa(inc, C)],
                   bit=bit, radius=radius, col=col, lw=lw),
     draw_connect([inc for inc in  env.infections  if isa(inc, I)], 
-                 bit=bit, radius=radius, active=false, col=col, lw=lw),
+                 bit=bit, radius=radius, col=col, lw=lw),
     draw_connect([inc for inc in  env.infections  if isa(inc, P)], 
-                 bit=bit, radius=radius, active=false, col=col, lw=lw), )
+                 bit=bit, radius=radius, col=col, lw=lw), )
 end
 function compose_nodes_view(duration, population, env; 
             coordinates=coordinates, I=I, P=P, R=R, C=C, 
-            bit=BIT, radius=RADIUS, active=false, col=col, lw=lw,
+            bit=BIT, radius=RADIUS, col=col, lw=lw,
             tic=-0.2cy, xht=0.5cy, region=REGION)
   compose(context(units=coordinates), 
-    draw_elements(env, I=I, P=P, R=R, C=C, bit=bit, radius=radius, active=false, col=col, lw=lw), 
+    draw_elements(env, I=I, P=P, R=R, C=C, bit=bit, radius=radius, col=col, lw=lw), 
     scaffolding(duration, population, tic=tic, xht=xht, region=region))
 end ;
 ```
@@ -364,8 +364,8 @@ function draw_active_elements(active; I=I, P=P, R=R, C=C, bit=BIT, radius=RADIUS
     draw_realized([inc for inc in active if isa(inc, C)],
                   bit=bit, radius=radius, col=col, lw=lw),
     draw_connect( [inc for inc in active if isa(inc, I)],
-                  bit=bit, radius=radius, active=true, col=col, lw=lw),
-    draw_connect( [inc for inc in active if isa(inc, P)]; active=true),
+                  bit=bit, radius=radius, activated=true, col=col, lw=lw),
+    draw_connect( [inc for inc in active if isa(inc, P)]; activated=true),
     (context(), # Could this be cleaned up?
     (context(),          # Connecting removal nodes
       circle([(inc.t)cx for (k, inc) in observed_removals], 

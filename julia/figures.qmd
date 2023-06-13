@@ -21,6 +21,8 @@ format:
 jupyter:    julia-1.9
 ---
 
+\newcommand{\SIR}{\operatorname{SIR}}
+
 Run this notebook from the command-line using
 ```bash
 quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
@@ -38,16 +40,16 @@ Further cell execution options: see
 First access required modules.
 ```{julia}
 using Compose, Colors, Measures
-import Cairo, Fontconfig
-import EpidemicsCFTP, Gadfly
-epi = EpidemicsCFTP ;
+import Cairo, Fontconfig, Gadfly
+import EpidemicsCFTP
+epi = EpidemicsCFTP ; gf = Gadfly ;
 ```
 
-A laconic description of the `julia` package `Compose.jl` 
-(the graphics package used for these figures)
-is to be found at 
+For a laconic description of the `julia` package `Compose.jl` 
+(the graphics package used for these figures),
+see
 <https://giovineitalia.github.io/Compose.jl/latest/>.
-For further useful information, see
+Further useful information is given in
 <https://shashi.biz/ijulia-notebooks/funcgeo/>.
 
 Basic simulation parameters are the `population` size 
@@ -56,7 +58,6 @@ Note that (trivial) labelling issues arise if `population > MAXPOP=20`.
 ```{julia}
 const population = 5 ;
 const duration   = 2 ;
-
 const MAXPOP  = 20 ;
 if population > MAXPOP
   error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
@@ -66,29 +67,24 @@ end ;
 Set up and establish graphics size, coordinates, and drawing region.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
-
 coordinates = UnitBox(0, population, duration, -population, 
                       leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
-region      = (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)) ;
+REGION      = (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)) ;
 ```
 
 
 # Basic image template elements
-First construct a function to draw the time axis, with tick marks at integer times.
+We define a function to draw the time axis, with tick marks at integer times.
 Note, both here and following, the careful use of graphics area units (`cx`, `cy`).
 ```{julia}
-tic       = -0.2cy
-step      = 10^floor(Int, log10(duration))
-xht       = 0.5cy # 0cy + 0.25inch
-
-function time_axis(duration, tic, step, xht)
+function time_axis(duration; tic=-0.2cy, xht=0.5cy)
   labellocs = [(x)cx for x in 0:duration]
-
+  step = 10^floor(Int, log10(duration))
   tic_loc1  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:1.0step:duration]
   tic_loc2  = [(((x)cx,xht), ((x)cx, xht+tic))    for x in 0:0.5step:duration]
   tic_loc3  = [(((x)cx,xht), ((x)cx, xht+0.5tic)) for x in 0:0.1step:duration]
 
-  return (context(),
+  (context(), # Returned value of function!
     (context(), text(labellocs, [xht + 0.25inch], ["$i" for i in 0:duration], 
       [hcenter], [vcenter]), fontsize(5pt), font("TimesRoman"), ),
     (context(), line([(0cx, xht), ((duration)cx, xht)]),
@@ -100,12 +96,12 @@ end ;
 ```
 
 
-Now construct a function to draw the time-lines as black threads, labelled by circled integers.
+Now we define a function to draw all time-lines as black threads labelled by circled integers.
 ```{julia}
-function time_threads(population)
+function time_threads(duration, population)
   circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
 
-  return (context(),
+  (context(), # Returned value of function!
     (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
       [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
     (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
@@ -122,20 +118,21 @@ one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-
 :::
 
 
-Finally we build a tree describing the construction of scaffolding (axes, time lines _etc_).
+A third function constructs scaffolding (axes, time lines _etc_).
 ```{julia}
-scaffolding = (context(), region, 
-  time_axis(duration, tic, step, xht), time_threads(population))
-Scaffolding = compose(context(units=coordinates), scaffolding) ;
+function scaffolding(duration, population ; tic=-0.2cy, xht=0.5cy, region=REGION)
+  (context(), region, time_axis(duration; tic=-tic, xht=xht), time_threads(duration, population))
+end ;
 ```
 
 # Drawing the underlying scaffolding
-@fig-scaffolding illustrates the underlying scaffolding for (almost) all 
-the following diagrams.
+@fig-scaffolding illustrates the kind of scaffolding used in (almost) all 
+following diagrams.
 ```{julia}
 #| echo: false
 #| label: fig-scaffolding
 #| fig-cap: "Scaffolding: time axis and time-lines."
+Scaffolding = compose(context(units=coordinates), scaffolding(duration, population)) ;
 draw(PNG("image/Scaffolding.png"), Scaffolding)
 draw(PDF("image/Scaffolding.pdf"), Scaffolding)
 Scaffolding
@@ -166,7 +163,7 @@ Various types of incident are styled by `julia` dictionaries and variables.
 E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
 I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
 RADIUS   = 0.2cy ; SMRADIUS = 0.75RADIUS
-bit      = -0.02h
+BIT      = -0.02h
 col = Dict(
   I => colorant"orange",  P => colorant"darkgreen",
   R => colorant"tan",     C => colorant"purple",
@@ -180,7 +177,7 @@ lw = Dict(
 
 Colour list: see <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/>.
 
-# An innovation for an unconditioned \(\text{SIR}\) epidemic
+# An innovation for an unconditioned \(\SIR\) epidemic
 Consider lists of potential incidents underlying
 an unconditional epidemic.
 ```{julia}
@@ -196,40 +193,40 @@ env0 = epi.Innovation(5,
 Here are functions to draw inactive (respectively, active) nodes for each of a list
 conposed of incidents from a prescribed composite type of `BasicIncident`. 
 Variants
-to deal with `AbstractIncident[]` vectors by doing nothing -- this is useful if a
-selected sublist is empty, perhaps becoming an `AbstractIncident[]` vector.
+deal with `AbstractIncident[]` vectors by doing nothing -- useful if a
+selected sublist is empty, so becoming an `AbstractIncident[]` vector.
 ```{julia}
-function draw_incident(xl::Vector{T}) where T<:BasicIncident
+function draw_incident(xl::Vector{T}; radius=RADIUS) where T<:BasicIncident
   (context(),
     (context(),
       text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
            map(x -> string(x), xl), [hcenter], [vcenter]), 
       fontsize(5pt), font("Helvetica")),
     (context(),
-      circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [RADIUS]), 
+      circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [radius]), 
       fill(col["blank"]), stroke(col[eltype(xl)])), )
 end
 
-function draw_realized(xl::Vector{T}) where T<:BasicIncident
+function draw_realized(xl::Vector{T}; radius=RADIUS, smradius=SMRADIUS) where T<:BasicIncident
   xtype = eltype(xl) ;
   (context(),
     (context(),
-    circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [RADIUS]), 
+    circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [radius]), 
     lw["active"], fill(col[xtype]), fillopacity(0.2), stroke(col[xtype]) ),
     if xtype<:epi.AbstractInfection
       (context(),
-      circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [SMRADIUS]),
+      circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [smradius]),
        lw["active"], fill(col[xtype]), fillopacity(0.5), stroke(col[xtype]))
     end, )
 end ;
 
-function draw_connect(xl::Vector{T}; active=false) where T<:BasicIncident
+function draw_connect(xl::Vector{T}; bit=BIT, radius=RADIUS, active=false) where T<:BasicIncident
   xtype = eltype(xl)
   if ! (xtype<:epi.AbstractInfection)
     return
   end
   (context(), 
-    line(map(x -> [((x.t)cx, (x.target)cy+RADIUS), ((x.t)cx, (x.infectee)cy)], xl)),
+    line(map(x -> [((x.t)cx, (x.target)cy+radius), ((x.t)cx, (x.infectee)cy)], xl)),
     line(map(x -> [((x.t)cx - 0.3bit, (x.infectee)cy-bit), 
                    ((x.t)cx,          (x.infectee)cy), 
                    ((x.t)cx + 0.3bit, (x.infectee)cy-bit)], xl)), 
@@ -252,7 +249,9 @@ elements = (context(),
   draw_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
   draw_connect([inc for inc in env0.infections  if isa(inc, I)]),
   draw_connect([inc for inc in env0.infections  if isa(inc, P)]), )
-InitialView = compose(context(units=coordinates), elements, scaffolding) ;
+InitialView = compose(context(units=coordinates), 
+  elements, 
+  scaffolding(duration, population)) ;
 ```
 
 ```{julia}
@@ -278,7 +277,7 @@ from the innovation using the `chronology` function. Compute trajectory
 and history of realized incidents corresponding to a specific initial state at time \(0.0\),
 given by an `SIR` structure. 
 Then `evolution_recurse!`
-works destructively on inputs, delivers the \(\text{SIR}\) trajectory `traj`,
+works destructively on inputs, delivers the \(\SIR\) trajectory `traj`,
 and realized incidents in `active`.
 
 Use the `traj` argument to produce a plot against time of the numbers of
@@ -307,15 +306,15 @@ print(flow) ;
 #| label: fig-trajectories
 #| fig-cap: "Trajectories of susceptibles, infectives (brown dashed lines), \
 #|           removals (grey dotted lines)."   
-inf_layer = Gadfly.layer(flow, x=:t, y=:Infectives, color=[col[I]], 
-  Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:solid]))
-rem_layer = Gadfly.layer(flow, x=:t, y=:Removals, color=[col[R]], 
-  Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:dash]))
-sus_layer = Gadfly.layer(flow, x=:t, y=:Susceptibles, color=[colorant"grey"], 
-  Gadfly.Geom.line, Gadfly.style(line_width=1mm, line_style=[:dot]))
-Gadfly.plot(sus_layer, rem_layer, inf_layer,
-  Gadfly.style(panel_fill=colorant"bisque"), Gadfly.Guide.xlabel("process time"), 
-  Gadfly.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
+inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[col[I]], 
+  gf.Geom.line, gf.style(line_width=1mm, line_style=[:solid]))
+rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[col[R]], 
+  gf.Geom.line, gf.style(line_width=1mm, line_style=[:dash]))
+sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[colorant"grey"], 
+  gf.Geom.line, gf.style(line_width=1mm, line_style=[:dot]))
+gf.plot(sus_layer, rem_layer, inf_layer,
+  gf.style(panel_fill=colorant"bisque"), gf.Guide.xlabel("process time"), 
+  gf.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
 ```
 
 ::: {.callout-tip}
@@ -376,7 +375,7 @@ timelines = (context(),
     fill(col[A]), stroke(col[A]), fillopacity(0.1) ), )
 
 FinalView = compose(context(units=coordinates), removal_connections, realized, 
-           elements, timelines, scaffolding) ;
+           elements, timelines, scaffolding(duration, population)) ;
 ```
 
 \newpage
@@ -427,8 +426,6 @@ By the nature of the simulation, no prior potential infections will infect
 a time-line _after_ it has been removed, because by then the `target` time-line
 must also have been removed.
 
-
-
 ::: {.callout-tip}
 ## This has still to be done!
 
@@ -439,6 +436,40 @@ must also have been removed.
 5. Choose the latest.
 
 :::
+
+
+# Figures for the paper
+In this section we produce some figures for Connor-Kendall (in preparation).
+
+## Figure 1
+"Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
+```{julia}
+duration1 = 10 ; population1 = 5 ;
+coordinates1 = UnitBox(0, population1, duration1, -population1,
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
+```
+
+```{julia}
+#| echo: false
+#| label: fig-scaffolding1
+#| fig-cap: "Scaffolding for some figures in Connor-Kendall (in preparation)."
+compose(context(units=coordinates1), scaffolding(duration1, population1))
+```
+Here is the set of innovations:
+```{julia}
+#| echo: false
+env_figure1 = epi.Innovation(5, 
+  A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
+    I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
+    I(1.5,3,4)], 
+  R[R(0.3,5), R(0.42,3), R(0.7,3), R(0.55,3), R(0.95,5), R(1.4,2), R(1.55,1),
+    R(1.85,2)],
+  C[]
+  ) ;
+
+env_figure1
+```
+
 
 \newpage
 # Miscellaneous

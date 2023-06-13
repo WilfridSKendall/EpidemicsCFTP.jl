@@ -39,10 +39,9 @@ Further cell execution options: see
 # Initialisation
 First access required modules.
 ```{julia}
-using Compose, Colors, Measures
-import Cairo, Fontconfig, Gadfly
-import EpidemicsCFTP
-epi = EpidemicsCFTP ; gf = Gadfly ;
+using Colors, Compose, DataFrames, Measures
+import Cairo, Fontconfig, Gadfly, EpidemicsCFTP # EpidemicsCFTP under development!
+gf = Gadfly ; epi = EpidemicsCFTP ; 
 ```
 
 For a laconic description of the `julia` package `Compose.jl` 
@@ -120,7 +119,7 @@ one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-
 
 A third function constructs scaffolding (axes, time lines _etc_).
 ```{julia}
-function scaffolding(duration, population ; tic=-0.2cy, xht=0.5cy, region=REGION)
+function scaffolding(duration, population; tic=-0.2cy, xht=0.5cy, region=REGION)
   (context(), region, time_axis(duration; tic=-tic, xht=xht), time_threads(duration, population))
 end ;
 ```
@@ -158,12 +157,14 @@ end
 BasicIncident = unionize_composites(epi.AbstractIncident) ;
 ```
 
-Various types of incident are styled by `julia` dictionaries and variables.
+Various types of incident are styled using a `julia` structure and some convenient variables.
+See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a list of colours.
 ```{julia}
 E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
 I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
 RADIUS   = 0.2cy ; SMRADIUS = 0.75RADIUS
 BIT      = -0.02h
+
 col = Dict(
   I => colorant"orange",  P => colorant"darkgreen",
   R => colorant"tan",     C => colorant"purple",
@@ -174,8 +175,6 @@ lw = Dict(
   "active" =>  linewidth(0.75mm),   "dormant" => linewidth(0.25mm),
 ) ;
 ```
-
-Colour list: see <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/>.
 
 # An innovation for an unconditioned \(\SIR\) epidemic
 Consider lists of potential incidents underlying
@@ -191,23 +190,25 @@ env0 = epi.Innovation(5,
 ```
 
 Here are functions to draw inactive (respectively, active) nodes for each of a list
-conposed of incidents from a prescribed composite type of `BasicIncident`. 
-Variants
-deal with `AbstractIncident[]` vectors by doing nothing -- useful if a
-selected sublist is empty, so becoming an `AbstractIncident[]` vector.
+conposed of incidents from a prescribed composite type of `BasicIncident`, while doing nothing. 
+for `AbstractIncident[]` vectors.
 ```{julia}
-function draw_incident(xl::Vector{T}; radius=RADIUS) where T<:BasicIncident
-  (context(),
+function draw_incident(xl::Vector{T}; 
+                       bit=BIT, radius=RADIUS, col=col, lw=lw) where T<:BasicIncident
+  if length(xl) > 0
     (context(),
-      text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
-           map(x -> string(x), xl), [hcenter], [vcenter]), 
-      fontsize(5pt), font("Helvetica")),
-    (context(),
-      circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [radius]), 
-      fill(col["blank"]), stroke(col[eltype(xl)])), )
+      (context(),
+        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
+             map(x -> string(x), xl), [hcenter], [vcenter]), 
+        fontsize(5pt), font("Helvetica")),
+      (context(),
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [radius]), 
+        fill(col["blank"]), stroke(col[eltype(xl)])), )
+  end
 end
 
-function draw_realized(xl::Vector{T}; radius=RADIUS, smradius=SMRADIUS) where T<:BasicIncident
+function draw_realized(xl::Vector{T}; 
+                       bit=BIT, radius=RADIUS, smradius=SMRADIUS, col=col, lw=lw) where T<:BasicIncident
   xtype = eltype(xl) ;
   (context(),
     (context(),
@@ -220,7 +221,8 @@ function draw_realized(xl::Vector{T}; radius=RADIUS, smradius=SMRADIUS) where T<
     end, )
 end ;
 
-function draw_connect(xl::Vector{T}; bit=BIT, radius=RADIUS, active=false) where T<:BasicIncident
+function draw_connect(xl::Vector{T}; 
+                      bit=BIT, radius=RADIUS, smradius=SMRADIUS, active=false, col=col, lw=lw) where T<:BasicIncident
   xtype = eltype(xl)
   if ! (xtype<:epi.AbstractInfection)
     return
@@ -233,25 +235,44 @@ function draw_connect(xl::Vector{T}; bit=BIT, radius=RADIUS, active=false) where
     stroke(col[xtype]), (active ? lw["active"] : lw["dormant"]) )
 end
 
-function draw_incident(xl::Vector{T}) where T<:epi.AbstractIncident end
-function draw_realized(xl::Vector{T}) where T<:epi.AbstractIncident end
-function draw_connect(xl::Vector{T}; active=false) where T<:epi.AbstractIncident end ;
+function draw_incident(xl::Vector{T}; bit=BIT, radius=RADIUS, col=col, lw=lw) where T<:epi.AbstractIncident 
+end
+function draw_realized(xl::Vector{T}; 
+                       bit=BIT, radius=RADIUS, col=col, lw=lw) where T<:epi.AbstractIncident
+                       end
+function draw_connect(xl::Vector{T}; 
+                       bit=BIT, radius=RADIUS, active=false, col=col, lw=lw) where T<:epi.AbstractIncident 
+                       end ;
 ```
 
 We now add graphical depictions of the potential incidents supplied by the innovation.
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements. @fig-potential illustrates the required plot.
 ```{julia}
-elements = (context(),
-  draw_incident([inc for inc in env0.infections if isa(inc, I)]),
-  draw_incident([inc for inc in env0.infections if isa(inc, P)]),
-  draw_incident([inc for inc in env0.removals   if isa(inc, R)]),
-  draw_incident([inc for inc in env0.cremovals  if isa(inc, C)]),
-  draw_connect([inc for inc in env0.infections  if isa(inc, I)]),
-  draw_connect([inc for inc in env0.infections  if isa(inc, P)]), )
-InitialView = compose(context(units=coordinates), 
-  elements, 
-  scaffolding(duration, population)) ;
+function draw_elements(env; I=I, P=P, R=R, C=C, 
+                       bit=BIT, radius=RADIUS, smradius=SMRADIUS, active=false, col=col, lw=lw) 
+  (context(),
+    draw_incident([inc for inc in env.infections if isa(inc, I)],
+                  bit=bit, radius=radius, col=col, lw=lw),
+    draw_incident([inc for inc in env.infections if isa(inc, P)],
+                  bit=bit, radius=radius, col=col, lw=lw),
+    draw_incident([inc for inc in env.removals   if isa(inc, R)],
+                  bit=bit, radius=radius, col=col, lw=lw),
+    draw_incident([inc for inc in env.cremovals  if isa(inc, C)],
+                  bit=bit, radius=radius, col=col, lw=lw),
+    draw_connect([inc for inc in  env.infections  if isa(inc, I)], 
+                 bit=bit, radius=radius, active=false, col=col, lw=lw),
+    draw_connect([inc for inc in  env.infections  if isa(inc, P)], 
+                 bit=bit, radius=radius, active=false, col=col, lw=lw), )
+end
+function compose_nodes_view(duration, population, env; 
+            coordinates=coordinates, I=I, P=P, R=R, C=C, 
+            bit=BIT, radius=RADIUS, active=false, col=col, lw=lw,
+            tic=-0.2cy, xht=0.5cy, region=REGION)
+  compose(context(units=coordinates), 
+    draw_elements(env, I=I, P=P, R=R, C=C, bit=bit, radius=radius, active=false, col=col, lw=lw), 
+    scaffolding(duration, population, tic=tic, xht=xht, region=region))
+end ;
 ```
 
 ```{julia}
@@ -265,9 +286,10 @@ InitialView = compose(context(units=coordinates),
 #|           Orange arrows connect infector time-lines                                  \
 #|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
-draw(PNG("image/InitialView.png"), InitialView)
-draw(PDF("image/InitialView.pdf"), InitialView)
-InitialView
+nodes_view = compose_nodes_view(duration, population, env0)
+draw(PNG("image/nodes_view.png"), nodes_view)
+draw(PDF("image/nodes_view.pdf"), nodes_view)
+nodes_view
 ```
 
 # Evolving the epidemic in process time
@@ -276,45 +298,47 @@ derived
 from the innovation using the `chronology` function. Compute trajectory
 and history of realized incidents corresponding to a specific initial state at time \(0.0\),
 given by an `SIR` structure. 
-Then `evolution_recurse!`
-works destructively on inputs, delivers the \(\SIR\) trajectory `traj`,
+Define functions to construct and plot a dataframe
+of trajectories as knots of piecewise constant functions, using `evolution_recurse!`
+to deliver the \(\SIR\) trajectory `traj`,
 and realized incidents in `active`.
-
-Use the `traj` argument to produce a plot against time of the numbers of
-susceptibles, infectives and removed individuals, _via_ a dataframe
-of trajectories as knots of piecewise constant functions.
 ```{julia}
-using DataFrames
 initial= epi.SIR(0.0, 4, 1, 0)
 chron  = epi.chronology(env0) ; states = [initial] # both will be overwritten
 traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], duration, chron)
-t = [state.t for state in traj] ; push!(t, duration)
-t = repeat(t, inner=2)[2:(end-1)]
-s = repeat([state.s for state in traj], inner=2)
-i = repeat([state.i for state in traj], inner=2)
-r = repeat([state.r for state in traj], inner=2)
-flow = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r) ;
-```
 
-```{julia}
-#| echo: false
-print(flow) ;
+function trajectory_table(duration, initial, traj)
+  states = [initial]
+  t = [state.t for state in traj] ; push!(t, duration)
+  t = repeat(t, inner=2)[2:(end-1)]
+  s = repeat([state.s for state in traj], inner=2)
+  i = repeat([state.i for state in traj], inner=2)
+  r = repeat([state.r for state in traj], inner=2)
+  DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
+end
+
+function plot_trajectories(flow; col=col)
+  inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[col[I]], 
+    gf.Geom.line, gf.style(line_width=1mm, line_style=[:solid]))
+  rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[col[R]], 
+    gf.Geom.line, gf.style(line_width=1mm, line_style=[:dash]))
+  sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[colorant"grey"], 
+    gf.Geom.line, gf.style(line_width=1mm, line_style=[:dot]))
+  gf.plot(sus_layer, rem_layer, inf_layer,
+    gf.style(panel_fill=colorant"bisque"), gf.Guide.xlabel("process time"), 
+    gf.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
+end
+
+flow = trajectory_table(duration, initial, traj) ;
 ```
 
 ```{julia}
 #| echo: false
 #| label: fig-trajectories
-#| fig-cap: "Trajectories of susceptibles, infectives (brown dashed lines), \
-#|           removals (grey dotted lines)."   
-inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[col[I]], 
-  gf.Geom.line, gf.style(line_width=1mm, line_style=[:solid]))
-rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[col[R]], 
-  gf.Geom.line, gf.style(line_width=1mm, line_style=[:dash]))
-sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[colorant"grey"], 
-  gf.Geom.line, gf.style(line_width=1mm, line_style=[:dot]))
-gf.plot(sus_layer, rem_layer, inf_layer,
-  gf.style(panel_fill=colorant"bisque"), gf.Guide.xlabel("process time"), 
-  gf.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
+#| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
+#|           removals (grey short dashes)."  
+print(flow) ;
+plot_trajectories(flow)
 ```
 
 ::: {.callout-tip}
@@ -327,55 +351,67 @@ Amend @fig-potential: realized incident nodes have light-coloured backgrounds an
 thicker line-widths, producing @fig-realized.
 
 ```{julia}
-active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
-observed_removals = [(k, inc) for (k, inc) in enumerate(active_removals) 
-                       if k + initial.r < inc.target]
+function draw_active_elements(active; I=I, P=P, R=R, C=C, bit=BIT, radius=RADIUS, smradius=SMRADIUS, lw=lw, col=col)
+  active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
+  observed_removals = [(k, inc) for (k, inc) in enumerate(active_removals) 
+                       if k + initial.r ≤ inc.target]
 
-realized = (context(),
-  draw_realized([inc for inc in active if isa(inc, I)]),
-  draw_realized([inc for inc in active if isa(inc, P)]),
-  draw_realized([inc for inc in active if isa(inc, C)]),
-  draw_connect([inc for inc in active if isa(inc, I)]; active=true),
-  draw_connect([inc for inc in active if isa(inc, P)]; active=true), )
+  (context(),
+    draw_realized([inc for inc in active if isa(inc, I)],
+                  bit=bit, radius=radius, col=col, lw=lw),
+    draw_realized([inc for inc in active if isa(inc, P)],
+                  bit=bit, radius=radius, col=col, lw=lw),
+    draw_realized([inc for inc in active if isa(inc, C)],
+                  bit=bit, radius=radius, col=col, lw=lw),
+    draw_connect( [inc for inc in active if isa(inc, I)],
+                  bit=bit, radius=radius, active=true, col=col, lw=lw),
+    draw_connect( [inc for inc in active if isa(inc, P)]; active=true),
+    (context(), # Could this be cleaned up?
+    (context(),          # Connecting removal nodes
+      circle([(inc.t)cx for (k, inc) in observed_removals], 
+             [(k + initial.r)cy for (k, inc) in observed_removals],
+             [smradius]), stroke(col[C]), 
+             lw["active"], fill(col[C]), fillopacity(0.5) ),
+    (context(),          # Connecting removal lines
+      line([[((inc.t)cx, (inc.target)cy - radius), 
+             ((inc.t)cx, (k + initial.r)cy + radius)]
+        for (k, inc) in observed_removals]), 
+      stroke(col[R]), lw["trail"], strokedash([0.5mm, 0.5mm]) ) ) )
+end
 
-removal_connections = (context(), # COuld this be cleaned up?
-  (context(),          # Connecting removal nodes
-    circle([(inc.t)cx for (k, inc) in observed_removals], 
-           [(k + initial.r)cy for (k, inc) in observed_removals],
-           [SMRADIUS]), stroke(col[C]), 
-           lw["active"], fill(col[C]), fillopacity(0.5) ),
-  (context(),          # Connecting removal lines
-    line([[((inc.t)cx, (inc.target)cy - RADIUS), 
-           ((inc.t)cx, (k + initial.r)cy + RADIUS)]
-      for (k, inc) in observed_removals]), 
-    stroke(col[R]), lw["trail"], strokedash([0.5mm, 0.5mm]) )
-)
+function draw_realized_regions(duration, population, flow; col=col, lw=lw)
+  removed_fill = [(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]
+  push!(removed_fill, (duration, 1))
+  infected_fill = [(a,b) for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]
+  removed1_fill = [(a,b + 1) for (a,b) in zip(flow.t, flow.Removals) if b < population]
+  append!(infected_fill, reverse(removed1_fill))
 
-removed_fill = [(a,b) for (a,b) in zip(t, r) if b>0]
-push!(removed_fill, (duration, 1))
-infected_fill = [(a,b) for (a,b) in zip(t, i+r) if b>0]
-removed1_fill = [(a,b + 1) for (a,b) in zip(t, r) if b < population]
-append!(infected_fill, reverse(removed1_fill))
-
-timelines = (context(),
-  (context(),          # Trail of Removals
-    line([(a,b) for (a,b) in zip(t, r) if b>0]),
-    line([[(a,b), (duration, b)] for (a,b) in zip(t, r) if b>0]),
-    stroke(col[R]), lw["bdry"] ),
-  (context(),          # Removals trail fill
-    polygon(removed_fill),
-    fill(col[R]), fillopacity(0.1) ),
+  (context(),
+    (context(),          # Trail of Removals
+      line([(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]),
+      line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Removals) if b>0]),
+      stroke(col[R]), lw["bdry"] ),
+    (context(),          # Removals trail fill
+      polygon(removed_fill),
+      fill(col[R]), fillopacity(0.1) ),
     
   (context(),          # Trail of Epidemic
-    line([zip(t, i+r)]),
-    line([[(a,b), (duration, b)] for (a,b) in zip(t, i+r) if b>0]),
+    line([zip(flow.t, flow.Infectives+flow.Removals)]),
+    line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]),
     stroke(col[A]), lw["bdry"] ),
   (context(),          # Epidemic trail fill
     polygon(infected_fill),
     fill(col[A]), stroke(col[A]), fillopacity(0.1) ), )
+end ;
+```
 
-FinalView = compose(context(units=coordinates), removal_connections, realized, 
-           elements, timelines, scaffolding(duration, population)) ;
+```{julia}
+function compose_epidemic_view(duration, population, env, flow, active; coordinates)
+  compose(context(units=coordinates),
+          draw_active_elements(active), draw_elements(env), 
+          draw_realized_regions(duration, population, flow),
+          scaffolding(duration, population))
+end ;
 ```
 
 \newpage
@@ -386,9 +422,10 @@ FinalView = compose(context(units=coordinates), removal_connections, realized,
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/brown."
-draw(PNG("image/FinalView.png"), FinalView)
-draw(PDF("image/FinalView.pdf"), FinalView)
-FinalView
+epidemics_view = compose_epidemic_view(duration, population, env0, flow, active; coordinates)
+draw(PNG("image/epidemics_view.png"), epidemics_view)
+draw(PDF("image/epidemics_view.pdf"), epidemics_view)
+epidemics_view
 ```
 
 ```{julia}
@@ -442,49 +479,55 @@ must also have been removed.
 In this section we produce some figures for Connor-Kendall (in preparation).
 
 ## Figure 1
+We generate a precise equivalent of Figure 1 of Connor-Kendall (in preparation).
+
+**Caption in draft paper:** 
 "Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
 ```{julia}
-duration1 = 10 ; population1 = 5 ;
+duration1 = 20 ; population1 = 5 ;
 coordinates1 = UnitBox(0, population1, duration1, -population1,
   leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
 ```
 
-```{julia}
-#| echo: false
-#| label: fig-scaffolding1
-#| fig-cap: "Scaffolding for some figures in Connor-Kendall (in preparation)."
-compose(context(units=coordinates1), scaffolding(duration1, population1))
-```
 Here is the set of innovations:
 ```{julia}
+env_figure1 = epi.Innovation(duration1, 
+  A[I(1,2,5),  I(2,1,2),  I(3,1,2),  I(4,2,4),  I(6,3,4),  I(7,2,3),  I(8,1,2), 
+    I(8,4,5),  I(9,1,4),  I(11,2,4), I(15,3,5)], 
+  R[R(3,5),    R(5,1),    R(7.5,5),  R(13,3),   R(14,3)],  C[]) ;
+```
+
+```{julia}
+initial1= epi.SIR(0.0, 4, 1, 0)
+chron1  = epi.chronology(env_figure1) ; states1 = [initial1] # both will be overwritten
+traj1, active1 = epi.evolution_recurse!(states1, epi.AbstractIncident[], duration1, chron1)
+
+
+flow1 = trajectory_table(duration1, initial1, traj1) ;
+print(flow1) ;
+```
+
+
+```{julia}
 #| echo: false
-env_figure1 = epi.Innovation(5, 
-  A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
-    I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
-    I(1.5,3,4)], 
-  R[R(0.3,5), R(0.42,3), R(0.7,3), R(0.55,3), R(0.95,5), R(1.4,2), R(1.55,1),
-    R(1.85,2)],
-  C[]
-  ) ;
-
-env_figure1
+#| label: fig-nodes1
+#| fig-cap: "Nodes used in Figure 1 of Connor-Kendall (in preparation)."
+compose_nodes_view(duration1, population1, env_figure1, coordinates=coordinates1)
 ```
 
-
-\newpage
-# Miscellaneous
-
-Here is the trajectory
 ```{julia}
-traj
+#| echo: false
+#| label: fig-trajectories1
+#| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
+#|           removals (grey short dashes)."  
+plot_trajectories(flow1)
 ```
 
-and here are the active incidents.
 ```{julia}
-active
-```
-
-Quick check on removal:
-```{julia}
-epi.Removal(1.0,4)
+#| echo: false
+#| label: realized1
+#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. Realized incidents have   \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
+#|           coloured yellow/brown."
+compose_epidemic_view(duration1, population1, env_figure1, flow1, active1; coordinates=coordinates1)
 ```

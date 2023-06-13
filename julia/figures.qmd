@@ -520,7 +520,9 @@ compose_nodes_view(duration1, population1, env_figure1, coordinates=coordinates1
 #| label: fig-trajectories1
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes)."  
-plot_trajectories(flow1)
+draftfigure1b = plot_trajectories(flow1)
+draw(PDF("image/draftfigure1b.pdf"), draftfigure1b)
+draftfigure1b
 ```
 
 ```{julia}
@@ -529,7 +531,9 @@ plot_trajectories(flow1)
 #| fig-cap: "@fig-nodes1 plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured yellow/brown."
-compose_epidemic_view(duration1, population1, env_figure1, flow1, active1; coordinates=coordinates1)
+draftfigure1a = compose_epidemic_view(duration1, population1, env_figure1, flow1, active1; coordinates=coordinates1)
+draw(PDF("image/draftfigure1a.pdf"), draftfigure1a)
+draftfigure1a
 ```
 
 \newpage
@@ -581,7 +585,9 @@ compose_nodes_view(duration3, population3, env_figure3, coordinates=coordinates3
 #| label: fig-trajectories3
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes)."  
-plot_trajectories(flow3)
+draftfigure3b = plot_trajectories(flow3)
+draw(PDF("image/draftfigure3b.pdf"), draftfigure3b)
+draftfigure3b
 ```
 
 ```{julia}
@@ -590,6 +596,8 @@ plot_trajectories(flow3)
 #| fig-cap: "@fig-nodes3 plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured yellow/brown."
-compose_epidemic_view(duration3, population3, env_figure3, flow3, active3; coordinates=coordinates3)
+draftfigure3a = compose_epidemic_view(duration3, population3, env_figure3, flow3, active3; coordinates=coordinates3)
+draw(PDF("image/draftfigure3a.pdf"), draftfigure3a)
+draftfigure3a
 ```
 

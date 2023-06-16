@@ -15,6 +15,8 @@ test_files :=$(wildcard test/*.jl)
 documentation: test docs/site/index.html
 
 view-pdf: docs/build/$(package).pdf
+	echo "\\setmonofont[Scale = 0.75]{JuliaMono}" > docs/build/custom.sty
+	latexmk -cd -g -xelatex -shell-escape docs/build/$(package).tex
 	xdg-open $<
 
 view: serve

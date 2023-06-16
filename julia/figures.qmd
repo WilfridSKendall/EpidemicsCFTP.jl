@@ -348,8 +348,7 @@ thicker line-widths, producing @fig-realized.
 ```{julia}
 function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=styles)
   active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
-  observed_removals = [(k, inc) for (k, inc) in enumerate(active_removals) 
-                       if k + initial.r ≤ inc.target]
+  enumerated_removals = collect(enumerate(active_removals))
 
   (context(),
     draw_realized([inc for inc in active if isa(inc, I)]),
@@ -359,14 +358,14 @@ function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=styles)
     draw_connect( [inc for inc in active if isa(inc, P)], activated=true),
     (context(), # Could this be cleaned up?
     (context(),          # Connecting removal nodes
-      circle([(inc.t)cx for (k, inc) in observed_removals], 
-             [(k + initial.r)cy for (k, inc) in observed_removals],
+      circle([(inc.t)cx for (k, inc) in enumerated_removals], 
+             [(k + initial.r)cy for (k, inc) in enumerated_removals],
              [sty["smradius"]]), stroke(sty[C]), 
              sty["active"], fill(sty[C]), fillopacity(0.5) ),
     (context(),          # Connecting removal lines
       line([[((inc.t)cx, (inc.target)cy - sty["radius"]), 
              ((inc.t)cx, (k + initial.r)cy + sty["radius"])]
-        for (k, inc) in observed_removals]), 
+        for (k, inc) in enumerated_removals]), 
       stroke(sty[R]), sty["trail"], strokedash([0.5mm, 0.5mm]) ) ) )
 end
 
@@ -481,7 +480,7 @@ We generate a precise equivalent of Figure 1 of Connor-Kendall (in preparation).
 **Caption in draft paper:** 
 "Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
 ```{julia}
-duration1 = 20 ; population1 = 5 ;
+duration1 = 15 ; population1 = 5 ;
 coordinates1 = UnitBox(0, population1, duration1, -population1,
   leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
 ```
@@ -490,7 +489,7 @@ Here is the set of innovations:
 ```{julia}
 env_figure1 = epi.Innovation(duration1, 
   A[I(1,2,5),  I(2,1,2),  I(3,1,2),  I(4,2,4),  I(6,3,4),  I(7,2,3),  I(8,1,2), 
-    I(8,4,5),  I(9,1,4),  I(11,2,4), I(15,3,5)], 
+    I(8,4,5),  I(9,1,4),  I(11,2,4), I(14.5,3,5)], 
   R[R(3,5),    R(5,1),    R(7.5,5),  R(13,3),   R(14,3)],  C[]) ;
 ```
 

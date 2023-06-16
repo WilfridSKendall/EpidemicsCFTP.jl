@@ -218,8 +218,7 @@ function draw_incident(xl::Vector{T}; sty=styles) where T<:BasicIncident
   end
 end
 
-function draw_realized(xl::Vector{T}; 
-                       bit=BIT, radius=RADIUS, smradius=SMRADIUS, sty=styles) where T<:BasicIncident
+function draw_realized(xl::Vector{T}; sty=styles) where T<:BasicIncident
   xtype = eltype(xl) ;
   (context(),
     (context(),
@@ -232,8 +231,7 @@ function draw_realized(xl::Vector{T};
     end, )
 end ;
 
-function draw_connect(xl::Vector{T}; 
-                      bit=BIT, radius=RADIUS, smradius=SMRADIUS, activated=false, sty=styles) where T<:BasicIncident
+function draw_connect(xl::Vector{T}; activated=false, sty=styles) where T<:BasicIncident
   xtype = eltype(xl)
   if ! (xtype<:epi.AbstractInfection)
     return
@@ -248,10 +246,9 @@ end
 
 function draw_incident(xl::Vector{T}; sty=styles) where T<:epi.AbstractIncident 
 end
-function draw_realized(xl::Vector{T}; bit=BIT, radius=RADIUS, smradius=SMRADIUS, sty=styles) where T<:epi.AbstractIncident
+function draw_realized(xl::Vector{T}; sty=styles) where T<:epi.AbstractIncident
                        end
-function draw_connect(xl::Vector{T}; 
-                       bit=BIT, radius=RADIUS, smradius=SMRADIUS, activated=false, sty=styles) where T<:epi.AbstractIncident 
+function draw_connect(xl::Vector{T}; activated=false, sty=styles) where T<:epi.AbstractIncident 
                        end ;
 ```
 
@@ -262,14 +259,12 @@ all subsequent elements. @fig-potential illustrates the required plot.
 function draw_elements(env; I=I, P=P, R=R, C=C, 
                        bit=BIT, radius=RADIUS, smradius=SMRADIUS, sty=styles) 
   (context(),
-    draw_incident([inc for inc in env.infections if isa(inc, I)], sty=styles),
-    draw_incident([inc for inc in env.infections if isa(inc, P)], sty=styles),
-    draw_incident([inc for inc in env.removals   if isa(inc, R)], sty=styles),
-    draw_incident([inc for inc in env.cremovals  if isa(inc, C)], sty=styles),
-    draw_connect([inc for inc in  env.infections  if isa(inc, I)], 
-                 bit=bit, radius=radius, sty=styles),
-    draw_connect([inc for inc in  env.infections  if isa(inc, P)], 
-                 bit=bit, radius=radius, sty=styles), )
+    draw_incident([inc for inc in env.infections if isa(inc, I)]),
+    draw_incident([inc for inc in env.infections if isa(inc, P)]),
+    draw_incident([inc for inc in env.removals   if isa(inc, R)]),
+    draw_incident([inc for inc in env.cremovals  if isa(inc, C)]),
+    draw_connect([inc for inc in  env.infections  if isa(inc, I)]),
+    draw_connect([inc for inc in  env.infections  if isa(inc, P)]), )
 end
 function compose_nodes_view(duration, population, env; 
             coordinates=coordinates, I=I, P=P, R=R, C=C, 
@@ -363,15 +358,11 @@ function draw_active_elements(active; I=I, P=P, R=R, C=C, bit=BIT, radius=RADIUS
                        if k + initial.r ≤ inc.target]
 
   (context(),
-    draw_realized([inc for inc in active if isa(inc, I)],
-                  bit=bit, radius=radius, sty=styles),
-    draw_realized([inc for inc in active if isa(inc, P)],
-                  bit=bit, radius=radius, sty=styles),
-    draw_realized([inc for inc in active if isa(inc, C)],
-                  bit=bit, radius=radius, sty=styles),
-    draw_connect( [inc for inc in active if isa(inc, I)],
-                  bit=bit, radius=radius, activated=true, sty=styles),
-    draw_connect( [inc for inc in active if isa(inc, P)]; activated=true),
+    draw_realized([inc for inc in active if isa(inc, I)]),
+    draw_realized([inc for inc in active if isa(inc, P)]),
+    draw_realized([inc for inc in active if isa(inc, C)]),
+    draw_connect( [inc for inc in active if isa(inc, I)], activated=true),
+    draw_connect( [inc for inc in active if isa(inc, P)], activated=true),
     (context(), # Could this be cleaned up?
     (context(),          # Connecting removal nodes
       circle([(inc.t)cx for (k, inc) in observed_removals], 

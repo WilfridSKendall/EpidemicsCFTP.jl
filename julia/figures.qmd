@@ -63,14 +63,11 @@ if population > MAXPOP
 end ;
 ```
 
-Set up and establish graphics size, coordinates and drawing region.
+Set up and establish graphics size and coordinates.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
 coordinates = UnitBox(0, population, duration, -population, 
                       leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
-REGION      = (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)) ;
-RADIUS   = 0.2cy ; SMRADIUS = 0.75RADIUS
-BIT      = -0.02h ;
 ```
 Setup abbreviations,
 and collect drawing styles in the dictionary `styles`.
@@ -83,10 +80,10 @@ I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
 styles = Dict(
   "radius" =>  0.2cy, "smradius" => 0.75 * 0.2cy, "bit" => -0.02h,
   "tic"    => -0.2cy, "xht"      => 0.5cy, 
-  I => colorant"orange",  P => colorant"darkgreen",
-  R => colorant"tan",     C => colorant"purple",
-  A => colorant"yellow",  "blank" => colorant"white",
-  "bdry"   =>  linewidth(1.00mm),   "trail"  =>  linewidth(0.75mm),
+  I => colorant"orange",       P => colorant"darkgreen",
+  R => colorant"tan",          C => colorant"purple",
+  A => colorant"yellow", "blank" => colorant"white",
+  "bdry"   =>  linewidth(1.00mm),   "trail"   =>  linewidth(0.75mm),
   "active" =>  linewidth(0.75mm),   "dormant" => linewidth(0.25mm),
   "scaff"  => colorant"grey",
   "region" => (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
@@ -247,31 +244,28 @@ end
 function draw_incident(xl::Vector{T}; sty=styles) where T<:epi.AbstractIncident 
 end
 function draw_realized(xl::Vector{T}; sty=styles) where T<:epi.AbstractIncident
-                       end
+end
 function draw_connect(xl::Vector{T}; activated=false, sty=styles) where T<:epi.AbstractIncident 
-                       end ;
+end ;
 ```
 
 We now add graphical depictions of the potential incidents supplied by the innovation.
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements. @fig-potential illustrates the required plot.
 ```{julia}
-function draw_elements(env; I=I, P=P, R=R, C=C, 
-                       bit=BIT, radius=RADIUS, smradius=SMRADIUS, sty=styles) 
+function draw_elements(env; I=I, P=P, R=R, C=C, sty=styles) 
   (context(),
     draw_incident([inc for inc in env.infections if isa(inc, I)]),
     draw_incident([inc for inc in env.infections if isa(inc, P)]),
     draw_incident([inc for inc in env.removals   if isa(inc, R)]),
     draw_incident([inc for inc in env.cremovals  if isa(inc, C)]),
-    draw_connect([inc for inc in  env.infections  if isa(inc, I)]),
-    draw_connect([inc for inc in  env.infections  if isa(inc, P)]), )
+    draw_connect([inc for inc in  env.infections if isa(inc, I)]),
+    draw_connect([inc for inc in  env.infections if isa(inc, P)]), )
 end
 function compose_nodes_view(duration, population, env; 
-            coordinates=coordinates, I=I, P=P, R=R, C=C, 
-            bit=BIT, radius=RADIUS, sty=styles,
-            tic=-0.2cy, xht=0.5cy)
+            coordinates=coordinates, I=I, P=P, R=R, C=C, sty=styles)
   compose(context(units=coordinates), 
-    draw_elements(env, I=I, P=P, R=R, C=C, bit=bit, radius=radius, sty=styles), 
+    draw_elements(env, I=I, P=P, R=R, C=C, sty=styles), 
     scaffolding(duration, population))
 end ;
 ```
@@ -352,7 +346,7 @@ Amend @fig-potential: realized incident nodes have light-coloured backgrounds an
 thicker line-widths, producing @fig-realized.
 
 ```{julia}
-function draw_active_elements(active; I=I, P=P, R=R, C=C, bit=BIT, radius=RADIUS, smradius=SMRADIUS, sty=styles)
+function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=styles)
   active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
   observed_removals = [(k, inc) for (k, inc) in enumerate(active_removals) 
                        if k + initial.r ≤ inc.target]
@@ -410,8 +404,6 @@ function compose_epidemic_view(duration, population, env, flow, active; coordina
           scaffolding(duration, population))
 end ;
 ```
-
-\newpage
 
 ```{julia}
 #| echo: false

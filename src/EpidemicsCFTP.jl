@@ -7,12 +7,17 @@ module EpidemicsCFTP
 
 # Exports
 # =======
-# These functions can be called without qualifications.
+# These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
 export AbstractTimedOccurrence
+export AbstractMarker
 export AbstractIncident
 export AbstractRemoval
 export AbstractInfection
 export AbstractInnovation
+
+export MarkerSusceptible
+export MarkerRemoved
+export MarkerInfected
 
 export Removal
 export CRemoval

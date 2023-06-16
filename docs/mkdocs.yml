@@ -16,7 +16,3 @@ markdown_extensions:
 docs_dir: 'build'
 pages: 
     - Home:         index.md
-format:
-  pdf:
-    monofont: "Noto Sans Mono"
-    mainfont: "Times New Roman"

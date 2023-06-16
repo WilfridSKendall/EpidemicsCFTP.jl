@@ -243,6 +243,24 @@ end
 ### Actual display functions
 
 """
+Implementation of `show` for `AbstractMarker`, using subscripts and 2 decimal places for time `t`. 
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> MarkerSusceptible(0.10, 3)
+ℳ₀.₁₀³
+julia> MarkerInfected(0.10, 3)
+ℳ₀.₁₀³
+julia> MarkerRemoved(0.10, 3)
+ℳ₀.₁₀³
+```
+"""
+function Base.show(io::IO, z::AbstractMarker)
+    t = timespec(z.t)
+    printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
+end
+
+"""
 Implementation of `show` for `AbstractRemoval`, using subscripts and 2 decimal places for time `t`.
 
 ## Example

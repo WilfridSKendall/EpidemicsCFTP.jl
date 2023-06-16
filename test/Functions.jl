@@ -2,7 +2,7 @@
 
 ## Testing `isearlier`
 # =================================
-@testset "EpidemicsCFTP: isearlier " begin
+@testset "EpidemicsCFTP: isearlier     " begin
     @test  isearlier(Removal(0.10, 2),      Removal(0.5, 3))
     @test !isearlier(Removal(0.5, 2),       Removal(0.1, 3))
     @test  isearlier(Removal(0.5, 3),       Removal(0.90, 2))
@@ -16,11 +16,13 @@
     @test  isearlier(Removal(0.5, 3),       Infection(0.90, 1, 2))
     @test  isearlier(SIR(0.0, 1, 2, 1),     SIR(0.5, 0, 3, 1))
     @test !isearlier(SIR(0.0, 1, 2, 1),     SIR(0.0, 0, 3, 1))
+    @test  isearlier(Removal(0.10, 2),      MarkerSusceptible(0.5, 3))
+    @test !isearlier(Removal(0.5, 2),       MarkerInfected(0.1, 3))
 end
 
 ## Testing to do with eliciting epidemic trajectory
 # =================================
-@testset "EpidemicsCFTP: chronology" begin
+@testset "EpidemicsCFTP: chronology    " begin
     P, I, R, C = PInfection, Infection, Removal, CRemoval
     AI = AbstractIncident
 
@@ -39,7 +41,7 @@ end
 end
 
 # =================================
-@testset "EpidemicsCFTP: actions   " begin
+@testset "EpidemicsCFTP: actions       " begin
     infect = EpidemicsCFTP.infect
     remove = EpidemicsCFTP.remove
     is_same_config = EpidemicsCFTP.is_same_config

@@ -64,10 +64,13 @@ AbstractTimedOccurrence
 `AbstractIncident` is a generic type for incidents taking place in time.
 `AbstractRemoval` and `AbstractInfection` are generic incidents corresponding
 to potential removals and potential incidents respectively.
+`AbstractMarker` is a generic type for a marker to be added programmatically
+(_not_ by the user) to indicate state of each time-line at end of its duration.
 ```@docs
 AbstractIncident
 AbstractRemoval
 AbstractInfection
+AbstractMarker
 ```
 
 
@@ -86,6 +89,16 @@ CRemoval
 ```@docs
 Infection
 PInfection
+```
+
+### Three different kinds of `AbstractMarker`s
+`MarkerSusceptible`, `MarkerRemoved`,
+`MarkerInfected` are added programmatically
+(_not_ by the user) to indicate state of each time-line at end of its duration.
+```@docs
+MarkerSusceptible
+MarkerRemoved
+MarkerInfected
 ```
 
 ## Representing different kinds of environments and states
@@ -113,6 +126,7 @@ These overload `show` (to provide compact displays)
 ```@docs
 show(::IO, ::AbstractRemoval)
 show(::IO, ::AbstractInfection)
+show(::IO, ::AbstractMarker)
 show(::IO, ::Innovation)
 show(::IO, ::SIR)
 ```

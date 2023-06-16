@@ -3,8 +3,18 @@
 using EpidemicsCFTP
 using Test
 
+## Testing `AbstractMarker`
+@testset "EpidemicsCFTP: AbstractMarker" begin
+for inc in [MarkerSusceptible, MarkerRemoved, MarkerInfected]
+    @test_throws DomainError    inc(0.05, -2)
+    @test_throws DomainError    inc(0.05, 0)
+    @test_throws InexactError   inc(0.05, 2.5)
+    @test_throws DomainError    inc(0.05, -2.3)
+end
+end
+
 ## Testing `Removal`
-@testset "EpidemicsCFTP: Removal   " begin
+@testset "EpidemicsCFTP: Removal       " begin
 inc1 = Removal
     @test_throws DomainError    inc1(0.05, -2)
     @test_throws DomainError    inc1(0.05, 0)
@@ -12,7 +22,7 @@ inc1 = Removal
     @test_throws DomainError    inc1(0.05, -2.3)
 end
 
-@testset "EpidemicsCFTP: CRemoval  " begin
+@testset "EpidemicsCFTP: CRemoval      " begin
 inc2 = CRemoval
     @test_throws DomainError    inc2(0.05, -2)
     @test_throws DomainError    inc2(0.05, 0)
@@ -22,7 +32,7 @@ end
 
 
 ## Testing `Infection` and `PInfection`
-@testset "EpidemicsCFTP: Infection " begin
+@testset "EpidemicsCFTP: Infection     " begin
 for inc in [Infection, PInfection]
     @test_throws DomainError    inc(0.10,-1,-2)
     @test_throws DomainError    inc(0.10,-1, 2)
@@ -40,7 +50,7 @@ for inc in [Infection, PInfection]
     end
 end
 
-@testset "EpidemicsCFTP: Innovation" begin
+@testset "EpidemicsCFTP: Innovation    " begin
     P, I, R, C = PInfection, Infection, Removal, CRemoval
     AI = AbstractIncident
 
@@ -66,18 +76,12 @@ end
 end
 
 ## Testing `SIR`, state of epidemic
-@testset "EpidemicsCFTP: SIR       " begin
+@testset "EpidemicsCFTP: SIR           " begin
     @test_throws DomainError SIR(0.0,-1, 2, 3)
     @test_throws DomainError SIR(0.0, 1,-2, 3)
     @test_throws DomainError SIR(0.0, 1, 2,-3)
     @test_throws DomainError SIR(0.0, 0, 0, 0)
 end
-
-
-# ## Testing `isearlier`
-# @testset "EpidemicsCFTP: isearlier  " begin
-#     @test   isearlier(RightCensor(0.5), Infection(0.90, 1, 2))
-# end=#
 
 
 # 

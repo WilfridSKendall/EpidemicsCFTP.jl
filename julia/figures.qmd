@@ -82,12 +82,39 @@ styles = Dict(
   "tic"    => -0.2cy, "xht"      => 0.5cy, 
   I => colorant"orange",       P => colorant"darkgreen",
   R => colorant"tan",          C => colorant"purple",
-  A => colorant"yellow", "blank" => colorant"white",
+  A => colorant"yellow",
   "bdry"   =>  linewidth(1.00mm),   "trail"   =>  linewidth(0.75mm),
   "active" =>  linewidth(0.75mm),   "dormant" => linewidth(0.25mm),
-  "scaff"  => colorant"grey",
+  "blank" => colorant"white",       "scaff"  => colorant"grey",
   "region" => (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
 ) ;
+
+struct Styles
+  radius   :: Length{:cy, Float64}
+  smradius :: Length{:cy, Float64}
+  bit      :: Length{:h,  Float64}
+  tic      :: Length{:cy, Float64}
+  xht      :: Length{:cy, Float64}
+  bdry     :: AbsoluteLength
+  trail    :: AbsoluteLength
+  active   :: AbsoluteLength
+  dormant  :: AbsoluteLength
+end
+
+styles_test = Styles(
+   0.2cy,
+   0.75 * 0.2cy,
+  -0.02h,
+  -0.2cy,
+   0.5cy,
+   1.00mm,
+   0.75mm,
+   0.75mm,
+   0.25mm
+)
+
+styles_test
+
 ```
 
 

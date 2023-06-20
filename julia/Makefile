@@ -8,9 +8,15 @@ figures.pdf: figures.qmd
 
 clean: ; rm figures.ipynb
 
-verify:
+verify: figures.pdf
 	@for f in $(wildcard image/REFERENCE-*.png) ; \
-	  do ( (cmp -s $$f $${f/REFERENCE-/}) || /usr/bin/gwenview $$f $${f/REFERENCE-/} ) ; \
+	  do ( (cmp -s $$f $${f/REFERENCE-/}) || \
+	     ( \
+	     compare $${f/REFERENCE-/} $$f -compose src $${f/REFERENCE-/DIFF_} ; \
+	     /usr/bin/gwenview $${f/REFERENCE-/} $${f/REFERENCE-/DIFF_} $$f 2> /dev/null ; \
+	     ) \
+	     ) ; \
 	  done
+	@echo Checked $(wildcard image/REFERENCE-*.png)
 
 set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/REFERENCE-} ; done

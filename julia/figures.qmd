@@ -36,7 +36,8 @@ by the \LaTeX\ pairs `\(`\(\cdots\)`\)` and `\[`\(\cdots\)`\]`.
 Further cell execution options: see
 <https://quarto.org/docs/computations/execution-options.html>.
 
-# Initialisation
+# Initialisation and styling
+## Set-up details
 First access required modules.
 ```{julia}
 using Colors, Compose, DataFrames, Measures
@@ -63,135 +64,28 @@ if population > MAXPOP
 end ;
 ```
 
+## Style choices
 Set up and establish graphics size and coordinates.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
 coordinates = UnitBox(0, population, duration, -population, 
                       leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
 ```
-Setup abbreviations,
-and collect drawing styles in the dictionary `styles`.
-Various types of incident are styled using a `julia` structure and some convenient variables.
-See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a list of colours.
+Collect drawing styles in the named tuple `style`.
+See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
 ```{julia}
-E = epi.AbstractIncident ; A = epi.AbstractInfection ; 
-I = epi.Infection ; P = epi.PInfection ; R = epi.Removal ; C = epi.CRemoval
-
-styles = Dict(
-  "radius" =>  0.2cy, "smradius" => 0.75 * 0.2cy, "bit" => -0.02h,
-  "tic"    => -0.2cy, "xht"      => 0.5cy, 
-  I => colorant"orange",       P => colorant"darkgreen",
-  R => colorant"tan",          C => colorant"purple",
-  A => colorant"yellow",
-  "bdry"   =>  linewidth(1.00mm),   "trail"   =>  linewidth(0.75mm),
-  "active" =>  linewidth(0.75mm),   "dormant" => linewidth(0.25mm),
-  "blank" => colorant"white",       "scaff"  => colorant"grey",
-  "region" => (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
+style = (
+  radius   =  0.2cy,              smradius =  0.75 * 0.2cy,
+  bit      = -0.02h,              tic      = -0.2cy,
+  xht      =  0.5cy,              
+  bdry     =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
+  active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
+  blank    =  colorant"white",    scaff    =  colorant"grey",
+  region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
 ) ;
-
-struct Styles
-  radius   :: Length{:cy, Float64}
-  smradius :: Length{:cy, Float64}
-  bit      :: Length{:h,  Float64}
-  tic      :: Length{:cy, Float64}
-  xht      :: Length{:cy, Float64}
-  bdry     :: AbsoluteLength
-  trail    :: AbsoluteLength
-  active   :: AbsoluteLength
-  dormant  :: AbsoluteLength
-end
-
-styles_test = Styles(
-   0.2cy,
-   0.75 * 0.2cy,
-  -0.02h,
-  -0.2cy,
-   0.5cy,
-   1.00mm,
-   0.75mm,
-   0.75mm,
-   0.25mm
-)
-
-styles_test
-
 ```
 
-
-::: {.callout-caution}
-Using a dictionary here is not type-stable!
-A structure (with explicit typing) would be better.
-:::
-
-
-
-# Basic image template elements
-We define a function to draw the time axis, with tick marks at integer times.
-Note, both here and following, the careful use of graphics area units (`cx`, `cy`).
-```{julia}
-function time_axis(duration; sty=styles)
-  labellocs = [(x)cx for x in 0:duration]
-  step = 10^floor(Int, log10(duration))
-  tic_loc1  = [(((x)cx,sty["xht"]), ((x)cx, sty["xht"]+sty["tic"]))    for x in 0:1.0step:duration]
-  tic_loc2  = [(((x)cx,sty["xht"]), ((x)cx, sty["xht"]+sty["tic"]))    for x in 0:0.5step:duration]
-  tic_loc3  = [(((x)cx,sty["xht"]), ((x)cx, sty["xht"]+0.5sty["tic"])) for x in 0:0.1step:duration]
-
-  (context(), # Returned value of function!
-    (context(), text(labellocs, [sty["xht"] + 0.25inch], ["$i" for i in 0:duration], 
-      [hcenter], [vcenter]), fontsize(5pt), font("TimesRoman"), ),
-    (context(), line([(0cx, sty["xht"]), ((duration)cx, sty["xht"])]),
-      stroke(sty["scaff"]), linewidth(0.5mm) ),
-    (context(), line(tic_loc1), stroke(sty["scaff"]), linewidth(0.2mm)),
-    (context(), line(tic_loc2), stroke(sty["scaff"]), linewidth(0.1mm)),
-    (context(), line(tic_loc3), stroke(sty["scaff"]), linewidth(0.1mm)), )
-end ;
-```
-
-
-Now we define a function to draw all time-lines as black threads labelled by circled integers.
-```{julia}
-function time_threads(duration, population; sty=styles)
-  circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
-
-  (context(), # Returned value of function!
-    (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
-      [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
-    (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
-      stroke(sty["scaff"]), linewidth(0.5mm), ), )
-end ;
-```
-
-
-::: {.callout-caution}
-The definition of `circlabels` below needs to be changed if `population > MAXPOP=20`,
-as unicode then runs out of circled integers!
-(Figure out how to use 
-one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers#>.)
-:::
-
-
-A third function constructs scaffolding (axes, time lines _etc_).
-```{julia}
-function scaffolding(duration, population; sty=styles)
-  (context(), styles["region"], time_axis(duration; sty=sty), 
-              time_threads(duration, population, sty=sty))
-end ;
-```
-
-# Drawing the underlying scaffolding
-@fig-scaffolding illustrates the kind of scaffolding used in (almost) all 
-following diagrams.
-```{julia}
-#| echo: false
-#| label: fig-scaffolding
-#| fig-cap: "Scaffolding: time axis and time-lines."
-Scaffolding = compose(context(units=coordinates), scaffolding(duration, population)) ;
-draw(PNG("image/Scaffolding.png"), Scaffolding)
-draw(PDF("image/Scaffolding.pdf"), Scaffolding)
-Scaffolding
-```
-
-# Dealing with different kinds of incident
+## Dealing with different kinds of incident
 Here is a function which creates a union of all composite types
 below a given (typically abstract!) type. This is applied to create
 a union type for composite types implementing `AbstractIncident`,
@@ -211,6 +105,90 @@ end
 BasicIncident = unionize_composites(epi.AbstractIncident) ;
 ```
 
+Various types of incident are styled using a `julia` structure and some convenient variables.
+```{julia}
+E = epi.AbstractIncident  ; R = epi.Removal   ; C = epi.CRemoval   ;
+A = epi.AbstractInfection ; I = epi.Infection ; P = epi.PInfection ;
+
+styles = Dict(
+  I => colorant"orange",       P => colorant"darkgreen",
+  R => colorant"tan",          C => colorant"purple",
+  A => colorant"yellow",
+) ;
+```
+::: {.callout-caution}
+Using a dictionary here may not be type-stable!
+A function might be better.
+:::
+
+
+
+# Basic image template elements
+We define a function to draw the time axis, with tick marks at integer times.
+Note, both here and following, the careful use of graphics area units (`cx`, `cy`).
+```{julia}
+function time_axis(duration; sty=style)
+  labellocs = [(x)cx for x in 0:duration]
+  step = 10^floor(Int, log10(duration))
+  tic_loc1  = [(((x)cx,sty.xht), ((x)cx, sty.xht+sty.tic))    for x in 0:1.0step:duration]
+  tic_loc2  = [(((x)cx,sty.xht), ((x)cx, sty.xht+sty.tic))    for x in 0:0.5step:duration]
+  tic_loc3  = [(((x)cx,sty.xht), ((x)cx, sty.xht+0.5sty.tic)) for x in 0:0.1step:duration]
+
+  (context(), # Returned value of function!
+    (context(), text(labellocs, [sty.xht + 0.25inch], ["$i" for i in 0:duration], 
+      [hcenter], [vcenter]), fontsize(5pt), font("TimesRoman"), ),
+    (context(), line([(0cx, sty.xht), ((duration)cx, sty.xht)]),
+      stroke(sty.scaff), linewidth(0.5mm) ),
+    (context(), line(tic_loc1), stroke(sty.scaff), linewidth(0.2mm)),
+    (context(), line(tic_loc2), stroke(sty.scaff), linewidth(0.1mm)),
+    (context(), line(tic_loc3), stroke(sty.scaff), linewidth(0.1mm)), )
+end ;
+```
+
+
+Now we define a function to draw all time-lines as black threads labelled by circled integers.
+```{julia}
+function time_threads(duration, population; sty=style)
+  circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
+
+  (context(), # Returned value of function!
+    (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
+      [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
+    (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
+      stroke(sty.scaff), linewidth(0.5mm), ), )
+end ;
+```
+
+
+::: {.callout-caution}
+The definition of `circlabels` below needs to be changed if `population > MAXPOP=20`,
+as unicode then runs out of circled integers!
+(Figure out how to use 
+one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers#>.)
+:::
+
+
+A third function constructs scaffolding (axes, time lines _etc_).
+```{julia}
+function scaffolding(duration, population; sty=style)
+  (context(), sty.region, time_axis(duration; sty=sty), 
+              time_threads(duration, population, sty=sty))
+end ;
+```
+
+# Drawing the underlying scaffolding
+@fig-scaffolding illustrates the kind of scaffolding used in (almost) all 
+following diagrams.
+```{julia}
+#| echo: false
+#| label: fig-scaffolding
+#| fig-cap: "Scaffolding: time axis and time-lines."
+Scaffolding = compose(context(units=coordinates), scaffolding(duration, population)) ;
+draw(PNG("image/Scaffolding.png"), Scaffolding)
+draw(PDF("image/Scaffolding.pdf"), Scaffolding)
+Scaffolding
+```
+
 
 # An innovation for an unconditioned \(\SIR\) epidemic
 Consider lists of potential incidents underlying
@@ -226,53 +204,54 @@ env0 = epi.Innovation(5,
 ```
 
 Here are functions to draw inactive (respectively, active) nodes for each of a list
-conposed of incidents from a prescribed composite type of `BasicIncident`, while doing nothing. 
-for `AbstractIncident[]` vectors.
+conposed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
+for all other `AbstractIncident[]` vectors.
 ```{julia}
-function draw_incident(xl::Vector{T}; sty=styles) where T<:BasicIncident
+function draw_incident(xl::Vector{T}; sty=style) where T<:BasicIncident
   if length(xl) > 0
+    colour = styles[eltype(xl)]
     (context(),
       (context(),
         text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
              map(x -> string(x), xl), [hcenter], [vcenter]), 
         fontsize(5pt), font("Helvetica")),
       (context(),
-        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty["radius"]]), 
-        fill(sty["blank"]), stroke(sty[eltype(xl)])), )
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
+        fill(sty.blank), stroke(colour)), )
   end
 end
 
-function draw_realized(xl::Vector{T}; sty=styles) where T<:BasicIncident
-  xtype = eltype(xl) ;
+function draw_realized(xl::Vector{T}; sty=style) where T<:BasicIncident
+  colour = styles[eltype(xl)]
   (context(),
     (context(),
-    circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty["radius"]]), 
-    sty["active"], fill(sty[xtype]), fillopacity(0.2), stroke(sty[xtype]) ),
-    if xtype<:epi.AbstractInfection
+    circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
+    sty.active, fill(colour), fillopacity(0.2), stroke(colour) ),
+    if eltype(xl)<:epi.AbstractInfection
       (context(),
-      circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty["smradius"]]),
-       sty["active"], fill(sty[xtype]), fillopacity(0.5), stroke(sty[xtype]))
+      circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
+       sty.active, fill(colour), fillopacity(0.5), stroke(colour))
     end, )
 end ;
 
-function draw_connect(xl::Vector{T}; activated=false, sty=styles) where T<:BasicIncident
-  xtype = eltype(xl)
-  if ! (xtype<:epi.AbstractInfection)
+function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:BasicIncident
+  if ! (eltype(xl)<:epi.AbstractInfection)
     return
   end
+  colour = styles[eltype(xl)]
   (context(), 
-    line(map(x -> [((x.t)cx, (x.target)cy+sty["radius"]), ((x.t)cx, (x.infectee)cy)], xl)),
-    line(map(x -> [((x.t)cx - 0.3sty["bit"], (x.infectee)cy-sty["bit"]), 
+    line(map(x -> [((x.t)cx, (x.target)cy+sty.radius), ((x.t)cx, (x.infectee)cy)], xl)),
+    line(map(x -> [((x.t)cx - 0.3sty.bit, (x.infectee)cy-sty.bit), 
                    ((x.t)cx,          (x.infectee)cy), 
-                   ((x.t)cx + 0.3sty["bit"], (x.infectee)cy-sty["bit"])], xl)), 
-    stroke(sty[xtype]), (activated ? sty["active"] : sty["dormant"]) )
+                   ((x.t)cx + 0.3sty.bit, (x.infectee)cy-sty.bit)], xl)), 
+    stroke(colour), (activated ? sty.active : sty.dormant) )
 end
 
-function draw_incident(xl::Vector{T}; sty=styles) where T<:epi.AbstractIncident 
+function draw_incident(xl::Vector{T}; sty=style) where T<:epi.AbstractIncident 
 end
-function draw_realized(xl::Vector{T}; sty=styles) where T<:epi.AbstractIncident
+function draw_realized(xl::Vector{T}; sty=style) where T<:epi.AbstractIncident
 end
-function draw_connect(xl::Vector{T}; activated=false, sty=styles) where T<:epi.AbstractIncident 
+function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:epi.AbstractIncident 
 end ;
 ```
 
@@ -280,19 +259,19 @@ We now add graphical depictions of the potential incidents supplied by the innov
 Elements are plotted in reverse-order: for example, the first in sequence overlays 
 all subsequent elements. @fig-potential illustrates the required plot.
 ```{julia}
-function draw_elements(env; I=I, P=P, R=R, C=C, sty=styles) 
+function draw_elements(env; I=I, P=P, R=R, C=C, sty=style) 
   (context(),
-    draw_incident([inc for inc in env.infections if isa(inc, I)]),
-    draw_incident([inc for inc in env.infections if isa(inc, P)]),
-    draw_incident([inc for inc in env.removals   if isa(inc, R)]),
-    draw_incident([inc for inc in env.cremovals  if isa(inc, C)]),
+    draw_incident([inc for inc in env.infections if isa(inc, I)], sty=sty),
+    draw_incident([inc for inc in env.infections if isa(inc, P)], sty=sty),
+    draw_incident([inc for inc in env.removals   if isa(inc, R)], sty=sty),
+    draw_incident([inc for inc in env.cremovals  if isa(inc, C)], sty=sty),
     draw_connect([inc for inc in  env.infections if isa(inc, I)]),
     draw_connect([inc for inc in  env.infections if isa(inc, P)]), )
 end
 function compose_nodes_view(duration, population, env; 
-            coordinates=coordinates, I=I, P=P, R=R, C=C, sty=styles)
+            coordinates=coordinates, I=I, P=P, R=R, C=C, sty=style)
   compose(context(units=coordinates), 
-    draw_elements(env, I=I, P=P, R=R, C=C, sty=styles), 
+    draw_elements(env, I=I, P=P, R=R, C=C, sty=sty), 
     scaffolding(duration, population))
 end ;
 ```
@@ -339,12 +318,12 @@ function trajectory_table(duration, initial, traj)
   DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
 end
 
-function plot_trajectories(flow; sty=styles)
-  inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[sty[I]], 
+function plot_trajectories(flow; sty=style)
+  inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[styles[I]], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:solid]))
-  rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[sty[R]], 
+  rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[styles[R]], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dash]))
-  sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[sty["scaff"]], 
+  sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[sty.scaff], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dot]))
   gf.plot(sus_layer, rem_layer, inf_layer,
     gf.style(panel_fill=colorant"bisque"), gf.Guide.xlabel("process time"), 
@@ -373,7 +352,7 @@ Amend @fig-potential: realized incident nodes have light-coloured backgrounds an
 thicker line-widths, producing @fig-realized.
 
 ```{julia}
-function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=styles)
+function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=style)
   active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
   enumerated_removals = collect(enumerate(active_removals))
 
@@ -387,16 +366,16 @@ function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=styles)
     (context(),          # Connecting removal nodes
       circle([(inc.t)cx for (k, inc) in enumerated_removals], 
              [(k + initial.r)cy for (k, inc) in enumerated_removals],
-             [sty["smradius"]]), stroke(sty[C]), 
-             sty["active"], fill(sty[C]), fillopacity(0.5) ),
+             [sty.smradius]), stroke(styles[C]), 
+             sty.active, fill(styles[C]), fillopacity(0.5) ),
     (context(),          # Connecting removal lines
-      line([[((inc.t)cx, (inc.target)cy - sty["radius"]), 
-             ((inc.t)cx, (k + initial.r)cy + sty["radius"])]
+      line([[((inc.t)cx, (inc.target)cy - sty.radius), 
+             ((inc.t)cx, (k + initial.r)cy + sty.radius)]
         for (k, inc) in enumerated_removals]), 
-      stroke(sty[R]), sty["trail"], strokedash([0.5mm, 0.5mm]) ) ) )
+      stroke(styles[R]), sty.trail, strokedash([0.5mm, 0.5mm]) ) ) )
 end
 
-function draw_realized_regions(duration, population, flow; sty=styles)
+function draw_realized_regions(duration, population, flow; sty=style)
   removed_fill = [(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]
   push!(removed_fill, (duration, 1))
   infected_fill = [(a,b) for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]
@@ -407,18 +386,18 @@ function draw_realized_regions(duration, population, flow; sty=styles)
     (context(),          # Trail of Removals
       line([(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]),
       line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Removals) if b>0]),
-      stroke(sty[R]), sty["bdry"] ),
+      stroke(styles[R]), sty.bdry ),
     (context(),          # Removals trail fill
       polygon(removed_fill),
-      fill(sty[R]), fillopacity(0.1) ),
+      fill(styles[R]), fillopacity(0.1) ),
     
   (context(),          # Trail of Epidemic
     line([zip(flow.t, flow.Infectives+flow.Removals)]),
     line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]),
-    stroke(sty[A]), sty["bdry"] ),
+    stroke(styles[A]), sty.bdry ),
   (context(),          # Epidemic trail fill
     polygon(infected_fill),
-    fill(sty[A]), stroke(sty[A]), fillopacity(0.1) ), )
+    fill(styles[A]), stroke(styles[A]), fillopacity(0.1) ), )
 end ;
 ```
 
@@ -544,6 +523,7 @@ compose_nodes_view(duration1, population1, env_figure1, coordinates=coordinates1
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes)."  
 draftfigure1b = plot_trajectories(flow1)
+draw(PNG("image/draftfigure1b.png"), draftfigure1b)
 draw(PDF("image/draftfigure1b.pdf"), draftfigure1b)
 draftfigure1b
 ```
@@ -555,6 +535,7 @@ draftfigure1b
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured yellow/brown."
 draftfigure1a = compose_epidemic_view(duration1, population1, env_figure1, flow1, active1; coordinates=coordinates1)
+draw(PNG("image/draftfigure1a.png"), draftfigure1a)
 draw(PDF("image/draftfigure1a.pdf"), draftfigure1a)
 draftfigure1a
 ```
@@ -609,6 +590,7 @@ compose_nodes_view(duration3, population3, env_figure3, coordinates=coordinates3
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes)."  
 draftfigure3b = plot_trajectories(flow3)
+draw(PNG("image/draftfigure3b.png"), draftfigure3b)
 draw(PDF("image/draftfigure3b.pdf"), draftfigure3b)
 draftfigure3b
 ```
@@ -620,6 +602,7 @@ draftfigure3b
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured yellow/brown."
 draftfigure3a = compose_epidemic_view(duration3, population3, env_figure3, flow3, active3; coordinates=coordinates3)
+draw(PNG("image/draftfigure3a.png"), draftfigure3a)
 draw(PDF("image/draftfigure3a.pdf"), draftfigure3a)
 draftfigure3a
 ```

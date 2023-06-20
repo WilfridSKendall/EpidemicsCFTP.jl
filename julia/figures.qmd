@@ -110,17 +110,13 @@ Various types of incident are styled using a `julia` structure and some convenie
 E = epi.AbstractIncident  ; R = epi.Removal   ; C = epi.CRemoval   ;
 A = epi.AbstractInfection ; I = epi.Infection ; P = epi.PInfection ;
 
-styles = Dict(
-  I => colorant"orange",       P => colorant"darkgreen",
-  R => colorant"tan",          C => colorant"purple",
-  A => colorant"yellow",
-) ;
+function csty(x::Vector{R}) colorant"tan"       end ;
+function csty(x::Vector{C}) colorant"purple"    end ;
+function csty(x::Vector{A}) colorant"yellow"    end ;
+function csty(x::Vector{I}) colorant"orange"    end ;
+function csty(x::Vector{P}) colorant"darkgreen" end ;
+function csty(x::Vector{E})                     end ;
 ```
-::: {.callout-caution}
-Using a dictionary here may not be type-stable!
-A function might be better.
-:::
-
 
 
 # Basic image template elements
@@ -209,7 +205,6 @@ for all other `AbstractIncident[]` vectors.
 ```{julia}
 function draw_incident(xl::Vector{T}; sty=style) where T<:BasicIncident
   if length(xl) > 0
-    colour = styles[eltype(xl)]
     (context(),
       (context(),
         text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
@@ -217,20 +212,19 @@ function draw_incident(xl::Vector{T}; sty=style) where T<:BasicIncident
         fontsize(5pt), font("Helvetica")),
       (context(),
         circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
-        fill(sty.blank), stroke(colour)), )
+        fill(sty.blank), stroke(csty(xl))), )
   end
 end
 
 function draw_realized(xl::Vector{T}; sty=style) where T<:BasicIncident
-  colour = styles[eltype(xl)]
   (context(),
     (context(),
     circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
-    sty.active, fill(colour), fillopacity(0.2), stroke(colour) ),
+    sty.active, fill(csty(xl)), fillopacity(0.2), stroke(csty(xl)) ),
     if eltype(xl)<:epi.AbstractInfection
       (context(),
       circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
-       sty.active, fill(colour), fillopacity(0.5), stroke(colour))
+       sty.active, fill(csty(xl)), fillopacity(0.5), stroke(csty(xl)))
     end, )
 end ;
 
@@ -238,13 +232,12 @@ function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:BasicI
   if ! (eltype(xl)<:epi.AbstractInfection)
     return
   end
-  colour = styles[eltype(xl)]
   (context(), 
     line(map(x -> [((x.t)cx, (x.target)cy+sty.radius), ((x.t)cx, (x.infectee)cy)], xl)),
     line(map(x -> [((x.t)cx - 0.3sty.bit, (x.infectee)cy-sty.bit), 
                    ((x.t)cx,          (x.infectee)cy), 
                    ((x.t)cx + 0.3sty.bit, (x.infectee)cy-sty.bit)], xl)), 
-    stroke(colour), (activated ? sty.active : sty.dormant) )
+    stroke(csty(xl)), (activated ? sty.active : sty.dormant) )
 end
 
 function draw_incident(xl::Vector{T}; sty=style) where T<:epi.AbstractIncident 
@@ -265,8 +258,8 @@ function draw_elements(env; I=I, P=P, R=R, C=C, sty=style)
     draw_incident([inc for inc in env.infections if isa(inc, P)], sty=sty),
     draw_incident([inc for inc in env.removals   if isa(inc, R)], sty=sty),
     draw_incident([inc for inc in env.cremovals  if isa(inc, C)], sty=sty),
-    draw_connect([inc for inc in  env.infections if isa(inc, I)]),
-    draw_connect([inc for inc in  env.infections if isa(inc, P)]), )
+    draw_connect([inc for inc in  env.infections if isa(inc, I)], sty=sty),
+    draw_connect([inc for inc in  env.infections if isa(inc, P)], sty=sty), )
 end
 function compose_nodes_view(duration, population, env; 
             coordinates=coordinates, I=I, P=P, R=R, C=C, sty=style)
@@ -317,11 +310,13 @@ function trajectory_table(duration, initial, traj)
   r = repeat([state.r for state in traj], inner=2)
   DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
 end
+```
 
+```{julia}
 function plot_trajectories(flow; sty=style)
-  inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[styles[I]], 
+  inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[csty(I[])], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:solid]))
-  rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[styles[R]], 
+  rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[csty(R[])], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dash]))
   sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[sty.scaff], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dot]))
@@ -366,13 +361,13 @@ function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=style)
     (context(),          # Connecting removal nodes
       circle([(inc.t)cx for (k, inc) in enumerated_removals], 
              [(k + initial.r)cy for (k, inc) in enumerated_removals],
-             [sty.smradius]), stroke(styles[C]), 
-             sty.active, fill(styles[C]), fillopacity(0.5) ),
+             [sty.smradius]), stroke(csty(C[])), 
+             sty.active, fill(csty(C[])), fillopacity(0.5) ),
     (context(),          # Connecting removal lines
       line([[((inc.t)cx, (inc.target)cy - sty.radius), 
              ((inc.t)cx, (k + initial.r)cy + sty.radius)]
         for (k, inc) in enumerated_removals]), 
-      stroke(styles[R]), sty.trail, strokedash([0.5mm, 0.5mm]) ) ) )
+      stroke(csty(R[])), sty.trail, strokedash([0.5mm, 0.5mm]) ) ) )
 end
 
 function draw_realized_regions(duration, population, flow; sty=style)
@@ -386,18 +381,18 @@ function draw_realized_regions(duration, population, flow; sty=style)
     (context(),          # Trail of Removals
       line([(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]),
       line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Removals) if b>0]),
-      stroke(styles[R]), sty.bdry ),
+      stroke(csty(R[])), sty.bdry ),
     (context(),          # Removals trail fill
       polygon(removed_fill),
-      fill(styles[R]), fillopacity(0.1) ),
+      fill(csty(R[])), fillopacity(0.1) ),
     
   (context(),          # Trail of Epidemic
     line([zip(flow.t, flow.Infectives+flow.Removals)]),
     line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]),
-    stroke(styles[A]), sty.bdry ),
+    stroke(csty(A[])), sty.bdry ),
   (context(),          # Epidemic trail fill
     polygon(infected_fill),
-    fill(styles[A]), stroke(styles[A]), fillopacity(0.1) ), )
+    fill(csty(A[])), stroke(csty(A[])), fillopacity(0.1) ), )
 end ;
 ```
 

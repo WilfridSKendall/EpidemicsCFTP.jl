@@ -5,7 +5,9 @@ using Test
 
 ## Testing `AbstractMarker`
 @testset "EpidemicsCFTP: AbstractMarker" begin
-    for inc in [MarkerInfection, MarkerRemoval, ContinuingSusceptible, ContinuingRemoved, ContinuingInfected]
+    for inc in [MarkerInfection, MarkerRemoval, 
+                 InitialSusceptible, InitialRemoved, InitialInfected,
+                 ContinuingSusceptible, ContinuingRemoved, ContinuingInfected]
         @test_throws DomainError    inc(0.05, -2)
         @test_throws DomainError    inc(0.05, 0)
         @test_throws InexactError   inc(0.05, 2.5)

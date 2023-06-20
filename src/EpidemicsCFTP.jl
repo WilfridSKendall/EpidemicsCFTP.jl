@@ -15,11 +15,14 @@ export AbstractRemoval
 export AbstractInfection
 export AbstractInnovation
 
-export MarkerInfection
+export InitialRemoved
+export InitialInfected
+export InitialSusceptible
 export MarkerRemoval
-export ContinuingSusceptible
+export MarkerInfection
 export ContinuingRemoved
 export ContinuingInfected
+export ContinuingSusceptible
 
 export Removal
 export CRemoval

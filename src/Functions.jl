@@ -247,6 +247,12 @@ Implementation of `show` for `AbstractMarker`, using subscripts and 2 decimal pl
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
+julia> InitialSusceptible(0.10, 3)
+i𝒮₀.₁₀³
+julia> InitialInfected(0.10, 3)
+iℐ₀.₁₀³
+julia> InitialRemoved(0.10, 3)
+iℛ₀.₁₀³
 julia> MarkerInfection(0.10, 3)
 mℐ₀.₁₀³
 julia> MarkerRemoval(0.10, 3)

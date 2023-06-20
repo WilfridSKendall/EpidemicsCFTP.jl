@@ -91,17 +91,25 @@ Infection
 PInfection
 ```
 
-### Five different kinds of `AbstractMarker`s
+### Eight different kinds of `AbstractMarker`s
 `MarkerInfection`,
 `MarkerRemoval` are added programmatically
 (_not_ by the user) to indicate state of each time-line at start of its 
 infection (respectively, removal).
 
+`InitialRemoved`,
+`InitialInfected`,
+`InitialSusceptible`,
 `ContinuingSusceptible`,
-`ContinuingInfected`, 
+`ContinuingInfected` and
 `ContinuingRemoved` are added programmatically
-(_not_ by the user) to indicate state of each time-line at end of its duration.
+(_not_ by the user) to indicate state of each time-line at start or end of 
+the simulated time-line.
 ```@docs
+InitialSusceptible
+InitialInfected
+InitialRemoved
+
 MarkerInfection
 MarkerRemoval
 

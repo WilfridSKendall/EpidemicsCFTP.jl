@@ -73,6 +73,111 @@ abstract type AbstractInfection <: AbstractIncident end
 ## Various kinds of marker
 
 """
+    InitialRemoved(t::Real, target::Integer)
+
+Implements a marker for a time-line initially removed using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline indicated by the marker incident: it must be a positive integer.  
+The `InitialRemoved` is realized if the specified timeline is removed at (initial) time `0`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> InitialRemoved(0.1, 4)
+iℛ₀.₁₀⁴
+```
+"""
+struct InitialRemoved <: AbstractMarker
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
+
+    function InitialRemoved(t, target)
+        noun = "InitialRemoved($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("iℛ", t, target))
+    end
+end
+
+
+"""
+    InitialInfected(t::Real, target::Integer)
+
+Implements a marker for a time-line initially infectious using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline indicated by the marker incident: it must be a positive integer.  
+The `InitialInfected` is realized if the specified timeline is infectious at (initial) time `0`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> InitialInfected(0.1, 4)
+iℐ₀.₁₀⁴
+```
+"""
+struct InitialInfected <: AbstractMarker
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
+
+    function InitialInfected(t, target)
+        noun = "InitialInfected($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("iℐ", t, target))
+    end
+end
+
+
+"""
+    InitialSusceptible(t::Real, target::Integer)
+
+Implements a marker for a time-line initially susceptible using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline indicated by the marker incident: it must be a positive integer.  
+The `InitialSusceptible` is realized if the specified timeline is susceptible at (initial) time `0`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> InitialSusceptible(0.1, 4)
+i𝒮₀.₁₀⁴
+```
+"""
+struct InitialSusceptible <: AbstractMarker
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
+
+    function InitialSusceptible(t, target)
+        noun = "InitialSusceptible($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("i𝒮", t, target))
+    end
+end
+
+
+
+"""
+    MarkerInfection(t::Real, target::Integer)
+
+Implements a marker for a time-line becoming infectious using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline infected by the marker incident: it must be a positive integer.  
+The `MarkerInfection` is realized if the specified timeline is infectious at (final) time `t`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> MarkerInfection(0.1, 4)
+mℐ₀.₁₀⁴
+```
+"""
+struct MarkerInfection <: AbstractMarker
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
+
+    function MarkerInfection(t, target)
+        noun = "MarkerInfection($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("mℐ", t, target))
+    end
+end
+
+
+"""
     MarkerInfection(t::Real, target::Integer)
 
 Implements a marker for a time-line becoming infection using a sub-type of `AbstractMarker`.  
@@ -260,7 +365,7 @@ end
 ## Various kinds of infection
 
 """
-    Infection(t::Real, infector::Integer, target::Integer)
+    Infection(t::Real, infectee::Integer, target::Integer)
 
 Represent a potential infection using a sub-type of `AbstractInfection`,
 using mark time `t` and another mark `target` and a further mark `infectee`.

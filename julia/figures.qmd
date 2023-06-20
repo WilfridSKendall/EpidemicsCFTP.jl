@@ -332,20 +332,30 @@ infect2 = [(epi.MarkerInfection(x.t, x.infectee-1), epi.MarkerInfection(x.t, x.i
 remove1 = [x for x in active if isa(x, C) || isa(x, R)]
 remove2 = [(k≤1 ? [epi.MarkerRemoval(x.t, k)] : (epi.MarkerRemoval(x.t, k-1), epi.MarkerRemoval(x.t, k))) for (k, x) in enumerate(remove1)]
 active2 = sort(vcat(infect2, remove2), lt=(x,y) -> epi.isearlier(x[1], y[1]))
-newtraj = collect(Iterators.flatten(active2));
+active_trajectory = collect(Iterators.flatten(active2));
 ```
 
-Compute indices for continuation markers.
+Compute indices for initial and continuation markers.
 
 ```{julia}
-rend = maximum(x.target for x in newtraj if isa(x, epi.MarkerRemoval))
-iend = maximum(x.target for x in newtraj if isa(x, epi.MarkerInfection))
-newtraj2 = collect(Iterators.flatten(
-  [newtraj, 
+initial0 = [0, 1, population - 1]
+
+initial_markers = Iterators.flatten([
+    [epi.InitialRemoved(0, k)     for k in 1:initial0[1]],
+    [epi.InitialInfected(0, k)    for k in (initial0[1]+1):(initial0[1]+initial0[2])],
+    [epi.InitialSusceptible(0, k) for k in (initial0[1]+initial0[2]+1):population]
+  ])
+
+rend = maximum(x.target for x in active_trajectory if isa(x, epi.MarkerRemoval))
+iend = maximum(x.target for x in active_trajectory if isa(x, epi.MarkerInfection))
+total_trajectory = collect(Iterators.flatten(
+  [ initial_markers, 
+    active_trajectory, 
     [epi.ContinuingRemoved(duration, k) for k in 1:rend], 
     [epi.ContinuingInfected(duration, k) for k in (rend+1):iend], 
     [epi.ContinuingSusceptibled(duration, k) for k in (iend+1):population]
   ]))
+[total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
 ```
 
 

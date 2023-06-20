@@ -73,79 +73,134 @@ abstract type AbstractInfection <: AbstractIncident end
 ## Various kinds of marker
 
 """
-    MarkerSusceptible(t::Real, target::Integer)
+    MarkerInfection(t::Real, target::Integer)
 
-Implements a marker for ongoing susceptibility using a sub-type of `AbstractMarker`.  
-The `target` field labels the timeline being considered as host for the marker incident: it must be a positive integer.  
-The `MarkerSusceptible` is realized if the specified timeline is susceptible at (final) time `t`.
+Implements a marker for a time-line becoming infection using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline infected by the marker incident: it must be a positive integer.  
+The `MarkerInfection` is realized if the specified timeline is infectious at (final) time `t`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> MarkerSusceptible(0.1, 4)
-ℳ₀.₁₀⁴
+julia> MarkerInfection(0.1, 4)
+mℐ₀.₁₀⁴
 ```
 """
-struct MarkerSusceptible <: AbstractMarker
+struct MarkerInfection <: AbstractMarker
     kind      ::String     
     t         ::Float64
     target    ::Int
 
-    function MarkerSusceptible(t, target)
-        noun = "MarkerSusceptible($t, $target)"
+    function MarkerInfection(t, target)
+        noun = "MarkerInfection($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("ℳ", t, target))
+                new("mℐ", t, target))
     end
 end
 
+
 """
-    MarkerRemoved(t::Real, target::Integer)
+    MarkerRemoval(t::Real, target::Integer)
 
 Implements a marker for ongoing removal using a sub-type of `AbstractMarker`.  
 The `target` field labels the timeline being considered as host for the marker incident: it must be a positive integer.  
-The `MarkerRemoved` is realized if the specified timeline is susceptible at (final) time `t`.
+The `MarkerRemoval` is realized if the specified timeline is susceptible at (final) time `t`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> MarkerRemoved(0.1, 4)
-ℳ₀.₁₀⁴
+julia> MarkerRemoval(0.1, 4)
+mℛ₀.₁₀⁴
 ```
 """
-struct MarkerRemoved <: AbstractMarker
+struct MarkerRemoval <: AbstractMarker
     kind      ::String     
     t         ::Float64
     target    ::Int
 
-    function MarkerRemoved(t, target)
-        noun = "MarkerRemoved($t, $target)"
+    function MarkerRemoval(t, target)
+        noun = "MarkerRemoval($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("ℳ", t, target))
+                new("mℛ", t, target))
+    end
+end
+
+
+"""
+    ContinuingSusceptible(t::Real, target::Integer)
+
+Implements a marker for ongoing susceptibility using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline being considered as host for the marker incident: it must be a positive integer.  
+The `ContinuingSusceptible` is realized if the specified timeline is susceptible at (final) time `t`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> ContinuingSusceptible(0.1, 4)
+c𝒮₀.₁₀⁴
+```
+"""
+struct ContinuingSusceptible <: AbstractMarker
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
+
+    function ContinuingSusceptible(t, target)
+        noun = "ContinuingSusceptible($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("c𝒮", t, target))
     end
 end
 
 """
-    MarkerInfected(t::Real, target::Integer)
+    ContinuingInfected(t::Real, target::Integer)
 
 Implements a marker for ongoing infection using a sub-type of `AbstractMarker`.  
 The `target` field labels the timeline being considered as host for the marker incident: it must be a positive integer.  
-The `MarkerInfected` is realized if the specified timeline is infectious at (final) time `t`.
+The `ContinuingInfected` is realized if the specified timeline is infectious at (final) time `t`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> MarkerInfected(0.1, 4)
-ℳ₀.₁₀⁴
+julia> ContinuingInfected(0.1, 4)
+cℐ₀.₁₀⁴
 ```
 """
-struct MarkerInfected <: AbstractMarker
+struct ContinuingInfected <: AbstractMarker
     kind      ::String     
     t         ::Float64
     target    ::Int
 
-    function MarkerInfected(t, target)
-        noun = "MarkerInfected($t, $target)"
+    function ContinuingInfected(t, target)
+        noun = "ContinuingInfected($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("ℳ", t, target))
+                new("cℐ", t, target))
     end
 end
+
+
+
+"""
+    ContinuingRemoved(t::Real, target::Integer)
+
+Implements a marker for ongoing removal using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline being considered as host for the marker incident: it must be a positive integer.  
+The `ContinuingRemoved` is realized if the specified timeline is susceptible at (final) time `t`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> ContinuingRemoved(0.1, 4)
+cℛ₀.₁₀⁴
+```
+"""
+struct ContinuingRemoved <: AbstractMarker
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
+
+    function ContinuingRemoved(t, target)
+        noun = "ContinuingRemoved($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("cℛ", t, target))
+    end
+end
+
 
 
 ## Various kinds of removal
@@ -275,10 +330,8 @@ Represent an entire innovation of environment for a single step of algorithmic t
 
 Should always possess field `n` (positive `Integer`) and
 `infections`, `removals`, `cremovals (`Vector{AbstractIncident}`),
-but displays `n`
-together with
-`infections`, `removals`, `cremovals` 
-as **time-ordered** lists of corresponding incidents.
+but displays `n` together with `infections`, `removals`, `cremovals` as 
+**time-ordered** lists of corresponding incidents.
 """
 abstract type AbstractEnvironment end
 
@@ -342,7 +395,8 @@ end
     SIR(t::Real, s::Integer, i::Integer, r::Integer)
 
 Represent a state of an S-I-R epidemic (`s`, `i`, `r`)
-(all non-negative integers adding up to a positive integer)
+(all non-negative integers adding up to a positive integer
+which is the population size)
 at a specified time `t` (a real number).
 
 ## Example

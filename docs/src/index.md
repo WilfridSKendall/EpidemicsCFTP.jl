@@ -91,14 +91,23 @@ Infection
 PInfection
 ```
 
-### Three different kinds of `AbstractMarker`s
-`MarkerSusceptible`, `MarkerRemoved`,
-`MarkerInfected` are added programmatically
+### Five different kinds of `AbstractMarker`s
+`MarkerInfection`,
+`MarkerRemoval` are added programmatically
+(_not_ by the user) to indicate state of each time-line at start of its 
+infection (respectively, removal).
+
+`ContinuingSusceptible`,
+`ContinuingInfected`, 
+`ContinuingRemoved` are added programmatically
 (_not_ by the user) to indicate state of each time-line at end of its duration.
 ```@docs
-MarkerSusceptible
-MarkerRemoved
-MarkerInfected
+MarkerInfection
+MarkerRemoval
+
+ContinuingSusceptible
+ContinuingInfected
+ContinuingRemoved
 ```
 
 ## Representing different kinds of environments and states
@@ -166,6 +175,6 @@ is_same_config
 update
 ```
 
-## Index 
+# Index 
 ```@index
 ```

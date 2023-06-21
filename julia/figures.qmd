@@ -24,10 +24,10 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 Run this notebook from the command-line using
+ `make figures.pdf` or even just `make`, which invokes
 ```bash
 quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
 ```
-or simply `make figures.pdf` or even just `make`.
 
 The untidy parameter `--from=markdown+tex_math_single_backslash` allows
 us to replace the unsophisticated \TeX\ `$` and `$$` toggles
@@ -45,9 +45,9 @@ import Cairo, Fontconfig, Gadfly, EpidemicsCFTP # EpidemicsCFTP under developmen
 gf = Gadfly ; epi = EpidemicsCFTP ; 
 ```
 
-For a laconic description of the `julia` package `Compose.jl` 
+A laconic description of the `julia` package `Compose.jl` 
 (the graphics package used for these figures),
-see
+is given by
 <https://giovineitalia.github.io/Compose.jl/latest/>.
 Further useful information is given in
 <https://shashi.biz/ijulia-notebooks/funcgeo/>.
@@ -80,7 +80,7 @@ style = (
   xht      =  0.5cy,              
   bdry     =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
   active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
-  blank    =  colorant"white",    scaff    =  colorant"grey",
+  blank    =  colorant"white",    scaffold =  colorant"grey",
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
 ) ;
 ```
@@ -105,7 +105,8 @@ end
 BasicIncident = unionize_composites(epi.AbstractIncident) ;
 ```
 
-Various types of incident are styled using a `julia` structure and some convenient variables.
+Various types of incident are styled using some variables
+for convenient abbreviations.
 ```{julia}
 E = epi.AbstractIncident  ; R = epi.Removal   ; C = epi.CRemoval   ;
 A = epi.AbstractInfection ; I = epi.Infection ; P = epi.PInfection ;
@@ -134,15 +135,15 @@ function time_axis(duration; sty=style)
     (context(), text(labellocs, [sty.xht + 0.25inch], ["$i" for i in 0:duration], 
       [hcenter], [vcenter]), fontsize(5pt), font("TimesRoman"), ),
     (context(), line([(0cx, sty.xht), ((duration)cx, sty.xht)]),
-      stroke(sty.scaff), linewidth(0.5mm) ),
-    (context(), line(tic_loc1), stroke(sty.scaff), linewidth(0.2mm)),
-    (context(), line(tic_loc2), stroke(sty.scaff), linewidth(0.1mm)),
-    (context(), line(tic_loc3), stroke(sty.scaff), linewidth(0.1mm)), )
+      stroke(sty.scaffold), linewidth(0.5mm) ),
+    (context(), line(tic_loc1), stroke(sty.scaffold), linewidth(0.2mm)),
+    (context(), line(tic_loc2), stroke(sty.scaffold), linewidth(0.1mm)),
+    (context(), line(tic_loc3), stroke(sty.scaffold), linewidth(0.1mm)), )
 end ;
 ```
 
 
-Now we define a function to draw all time-lines as black threads labelled by circled integers.
+Now we define a function to draw all time-lines as threads labelled by circled integers.
 ```{julia}
 function time_threads(duration, population; sty=style)
   circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
@@ -151,7 +152,7 @@ function time_threads(duration, population; sty=style)
     (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
       [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
     (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
-      stroke(sty.scaff), linewidth(0.5mm), ), )
+      stroke(sty.scaffold), linewidth(0.5mm), ), )
 end ;
 ```
 
@@ -167,7 +168,7 @@ one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-
 A third function constructs scaffolding (axes, time lines _etc_).
 ```{julia}
 function scaffolding(duration, population; sty=style)
-  (context(), sty.region, time_axis(duration; sty=sty), 
+  (context(), sty.region, time_axis(duration, sty=sty), 
               time_threads(duration, population, sty=sty))
 end ;
 ```
@@ -312,7 +313,7 @@ function plot_trajectories(flow; sty=style)
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:solid]))
   rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[csty(R[])], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dash]))
-  sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[sty.scaff], 
+  sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[sty.scaffold], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dot]))
   gf.plot(sus_layer, rem_layer, inf_layer,
     gf.style(panel_fill=colorant"bisque"), gf.Guide.xlabel("process time"), 

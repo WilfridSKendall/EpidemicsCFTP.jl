@@ -262,11 +262,11 @@ julia> MarkerInfectionB(0.10, 3)
 julia> MarkerRemovalB(0.10, 3)
 ⮣ℛ₀.₁₀³
 julia> ContinuingSusceptible(0.10, 3)
-⇨𝒮₀.₁₀³
+↠𝒮₀.₁₀³
 julia> ContinuingInfected(0.10, 3)
-⇨ℐ₀.₁₀³
+↠ℐ₀.₁₀³
 julia> ContinuingRemoved(0.10, 3)
-⇨ℛ₀.₁₀³
+↠ℛ₀.₁₀³
 ```
 """
 function Base.show(io::IO, z::AbstractMarker)

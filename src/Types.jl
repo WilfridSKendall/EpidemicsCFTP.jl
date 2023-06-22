@@ -266,7 +266,7 @@ The `ContinuingSusceptible` is realized if the specified timeline is susceptible
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> ContinuingSusceptible(0.1, 4)
-⇨𝒮₀.₁₀⁴
+↠𝒮₀.₁₀⁴
 ```
 """
 struct ContinuingSusceptible <: AbstractMarker
@@ -277,7 +277,7 @@ struct ContinuingSusceptible <: AbstractMarker
     function ContinuingSusceptible(t, target)
         noun = "ContinuingSusceptible($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("⇨𝒮", t, target))
+                new("↠𝒮", t, target))
     end
 end
 
@@ -291,7 +291,7 @@ The `ContinuingInfected` is realized if the specified timeline is infectious at 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> ContinuingInfected(0.1, 4)
-⇨ℐ₀.₁₀⁴
+↠ℐ₀.₁₀⁴
 ```
 """
 struct ContinuingInfected <: AbstractMarker
@@ -302,7 +302,7 @@ struct ContinuingInfected <: AbstractMarker
     function ContinuingInfected(t, target)
         noun = "ContinuingInfected($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("⇨ℐ", t, target))
+                new("↠ℐ", t, target))
     end
 end
 
@@ -318,7 +318,7 @@ The `ContinuingRemoved` is realized if the specified timeline is susceptible at 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> ContinuingRemoved(0.1, 4)
-⇨ℛ₀.₁₀⁴
+↠ℛ₀.₁₀⁴
 ```
 """
 struct ContinuingRemoved <: AbstractMarker
@@ -329,7 +329,7 @@ struct ContinuingRemoved <: AbstractMarker
     function ContinuingRemoved(t, target)
         noun = "ContinuingRemoved($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("⇨ℛ", t, target))
+                new("↠ℛ", t, target))
     end
 end
 

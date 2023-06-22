@@ -642,7 +642,7 @@ total_trajectory = collect(Iterators.flatten(
 ```
 
 
-Attempt at plot:
+Attempt at plot: note that marker labels omit time-line superscript as this is redundant!
 
 This could be improved by using a more refined type hierarchy!
 ```{julia}
@@ -664,11 +664,18 @@ function draw_marker(xl::Vector{T}; sty=style) where T<:epi.AbstractMarker
     (context(),
       (context(),
         text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
-             map(x -> string(x), xl), [hcenter], [vcenter]), 
-        fontsize(5pt), font("Helvetica")),
+             map(x -> chop(string(x)), xl), [hcenter], [vcenter]), 
+        fontsize(5pt), font("Helvetica")
+      ),
       (context(),
         circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
-        fillopacity(0.2), fill(csty(xl)), stroke(csty(xl))), )
+        fillopacity(0.2), fill(csty(xl)), stroke(csty(xl))
+      ), 
+      (context(),
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
+        fill(sty.blank),
+      ),
+    )
   end
 end ;
 ```
@@ -690,6 +697,7 @@ compose(context(units=coordinates),
   draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingSusceptible)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingInfected)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingRemoved)], sty=style),
-  scaffolding(duration, population)
+
+  scaffolding(duration, population),
   )
 ```

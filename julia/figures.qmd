@@ -77,8 +77,8 @@ See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful
 style = (
   radius   =  0.2cy,              smradius =  0.75 * 0.2cy,
   bit      = -0.02h,              tic      = -0.2cy,
-  xht      =  0.5cy,              
-  bdry     =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
+  xheight  =  0.5cy,              
+  boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
   active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
   blank    =  colorant"white",    scaffold =  colorant"grey",
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
@@ -127,21 +127,27 @@ Note, both here and following, the careful use of graphics area units (`cx`, `cy
 function time_axis(duration; sty=style)
   labellocs = [(x)cx for x in 0:duration]
   step = 10^floor(Int, log10(duration))
-  tic_loc1  = [(((x)cx,sty.xht), ((x)cx, sty.xht+sty.tic))    for x in 0:1.0step:duration]
-  tic_loc2  = [(((x)cx,sty.xht), ((x)cx, sty.xht+sty.tic))    for x in 0:0.5step:duration]
-  tic_loc3  = [(((x)cx,sty.xht), ((x)cx, sty.xht+0.5sty.tic)) for x in 0:0.1step:duration]
+  tic1  = [(((x)cx,sty.xheight), ((x)cx, sty.xheight+sty.tic))    for x in 0:1.0step:duration]
+  tic2  = [(((x)cx,sty.xheight), ((x)cx, sty.xheight+sty.tic))    for x in 0:0.5step:duration]
+  tic3  = [(((x)cx,sty.xheight), ((x)cx, sty.xheight+0.5sty.tic)) for x in 0:0.1step:duration]
 
   (context(), # Returned value of function!
-    (context(), text(labellocs, [sty.xht + 0.25inch], ["$i" for i in 0:duration], 
+    (context(), text(labellocs, [sty.xheight + 0.25inch], ["$i" for i in 0:duration], 
       [hcenter], [vcenter]), fontsize(5pt), font("TimesRoman"), ),
-    (context(), line([(0cx, sty.xht), ((duration)cx, sty.xht)]),
+    (context(), line([(0cx, sty.xheight), ((duration)cx, sty.xheight)]),
       stroke(sty.scaffold), linewidth(0.5mm) ),
-    (context(), line(tic_loc1), stroke(sty.scaffold), linewidth(0.2mm)),
-    (context(), line(tic_loc2), stroke(sty.scaffold), linewidth(0.1mm)),
-    (context(), line(tic_loc3), stroke(sty.scaffold), linewidth(0.1mm)), )
+    (context(), line(tic1), stroke(sty.scaffold), linewidth(0.2mm)),
+    (context(), line(tic2), stroke(sty.scaffold), linewidth(0.1mm)),
+    (context(), line(tic3), stroke(sty.scaffold), linewidth(0.1mm)), )
 end ;
 ```
 
+::: {.callout-caution}
+The definition of `circlabels` below needs to be changed if `population > MAXPOP=20`,
+as unicode then runs out of circled integers!
+(Figure out how to use 
+one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers#>.)
+:::
 
 Now we define a function to draw all time-lines as threads labelled by circled integers.
 ```{julia}
@@ -157,12 +163,6 @@ end ;
 ```
 
 
-::: {.callout-caution}
-The definition of `circlabels` below needs to be changed if `population > MAXPOP=20`,
-as unicode then runs out of circled integers!
-(Figure out how to use 
-one of the many ideas in <https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers#>.)
-:::
 
 
 A third function constructs scaffolding (axes, time lines _etc_).
@@ -326,42 +326,6 @@ traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], duration, 
 flow = trajectory_table(duration, initial, traj) ;
 ```
 
-And now another way to create a trajectory!
-```{julia}
-infect1 = [x for x in active if isa(x, I) || isa(x, P)]
-infect2 = [(epi.MarkerInfection(x.t, x.infectee-1), epi.MarkerInfection(x.t, x.infectee)) for x in infect1]
-remove1 = [x for x in active if isa(x, C) || isa(x, R)]
-remove2 = [(k≤1 ? [epi.MarkerRemoval(x.t, k)] : (epi.MarkerRemoval(x.t, k-1), epi.MarkerRemoval(x.t, k))) for (k, x) in enumerate(remove1)]
-active2 = sort(vcat(infect2, remove2), lt=(x,y) -> epi.isearlier(x[1], y[1]))
-active_trajectory = collect(Iterators.flatten(active2));
-```
-
-Compute indices for initial and continuation markers.
-
-```{julia}
-initial0 = [0, 1, population - 1]
-
-initial_markers = Iterators.flatten([
-    [epi.InitialRemoved(0, k)     for k in 1:initial0[1]],
-    [epi.InitialInfected(0, k)    for k in (initial0[1]+1):(initial0[1]+initial0[2])],
-    [epi.InitialSusceptible(0, k) for k in (initial0[1]+initial0[2]+1):population]
-  ])
-
-rend = maximum(x.target for x in active_trajectory if isa(x, epi.MarkerRemoval))
-iend = maximum(x.target for x in active_trajectory if isa(x, epi.MarkerInfection))
-total_trajectory = collect(Iterators.flatten(
-  [ initial_markers, 
-    active_trajectory, 
-    [epi.ContinuingRemoved(duration, k) for k in 1:rend], 
-    [epi.ContinuingInfected(duration, k) for k in (rend+1):iend], 
-    [epi.ContinuingSusceptibled(duration, k) for k in (iend+1):population]
-  ]))
-[total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
-```
-
-
-**Now figure out how to plot this.**
-
 ```{julia}
 #| echo: false
 #| label: fig-trajectories
@@ -415,7 +379,7 @@ function draw_realized_regions(duration, population, flow; sty=style)
     (context(),          # Trail of Removals
       line([(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]),
       line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Removals) if b>0]),
-      stroke(csty(R[])), sty.bdry ),
+      stroke(csty(R[])), sty.boundary ),
     (context(),          # Removals trail fill
       polygon(removed_fill),
       fill(csty(R[])), fillopacity(0.1) ),
@@ -423,7 +387,7 @@ function draw_realized_regions(duration, population, flow; sty=style)
   (context(),          # Trail of Epidemic
     line([zip(flow.t, flow.Infectives+flow.Removals)]),
     line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]),
-    stroke(csty(A[])), sty.bdry ),
+    stroke(csty(A[])), sty.boundary ),
   (context(),          # Epidemic trail fill
     polygon(infected_fill),
     fill(csty(A[])), stroke(csty(A[])), fillopacity(0.1) ), )
@@ -455,55 +419,6 @@ epidemics_view
 #| echo: false
 print(flow) ;
 ```
-
-\newpage
-
-# Computing the last viable epidemic
-First establish active removal incidents in time-decreasing order
-of _removed_ timeline
-(easily done: the \(i^\text{th}\) active removal listed in time-order
-will necessarily remove time-line \(i\)),
-and list potential infections prior to each active removal
-according to infection time.
-Notice we have not yet covered the possibility that some time-lines
-are never infected and others are not removed before `duration`
-(the end of the simulation). Notice too that the first time-line
-is (of course) infected at time \(0\) and is not otherwise infected.
-
-```{julia}
-active_removals = filter(x -> (isa(x, R) || isa(x, C)), active)
-reversed_removals = reverse(collect(enumerate(active_removals))[2:end])
-barrier = reversed_removals[1][2]
-last_viable = []
-for (k, rem) in reversed_removals
-  println("Timeline $k ends at $rem, at time $(rem.t)")
-  prior_removals = [pr for pr in env0.removals if pr.target==k && pr.t < rem.t]
-  println("  (prior rem) ", join([string(pr) for pr in prior_removals], " "))
-  prior_infections = [pf for pf in env0.infections if pf.infectee==k && pf.t < rem.t]
-  println("  (prior inf) ", join([string(pf) for pf in prior_infections], " "))
-  barrier =
-      sort( [pf for pf in prior_infections if pf.t < barrier.t], by=x -> x.t)[end]
-  println("  (last viable infection) ", barrier)
-  println("\n")
-  pushfirst!(last_viable, barrier)
-end
-println("  (last_viable) ", join([string(pr) for pr in last_viable], " "))
-```
-
-By the nature of the simulation, no prior potential infections will infect
-a time-line _after_ it has been removed, because by then the `target` time-line
-must also have been removed.
-
-::: {.callout-tip}
-## This has still to be done!
-
-1. List infection incidents targetting that time-line. **DONE**
-2. Select those lying between infection and removal.
-3. Figure out how to extract viable incidents.
-4. Tighten up so subsequent timelines also infected(!)
-5. Choose the latest.
-
-:::
 
 
 # Figures for the paper
@@ -636,3 +551,94 @@ draw(PDF("image/draftfigure3a.pdf"), draftfigure3a)
 draftfigure3a
 ```
 
+
+\newpage
+
+# Computing the last viable epidemic
+First establish active removal incidents in time-decreasing order
+of _removed_ timeline
+(easily done: the \(i^\text{th}\) active removal listed in time-order
+will necessarily remove time-line \(i\)),
+and list potential infections prior to each active removal
+according to infection time.
+Notice we have not yet covered the possibility that some time-lines
+are never infected and others are not removed before `duration`
+(the end of the simulation). Notice too that the first time-line
+is (of course) infected at time \(0\) and is not otherwise infected.
+
+```{julia}
+active_removals = filter(x -> (isa(x, R) || isa(x, C)), active)
+reversed_removals = reverse(collect(enumerate(active_removals))[2:end])
+barrier = reversed_removals[1][2]
+last_viable = []
+for (k, rem) in reversed_removals
+  println("Timeline $k ends at $rem, at time $(rem.t)")
+  prior_removals = [pr for pr in env0.removals if pr.target==k && pr.t < rem.t]
+  println("  (prior rem) ", join([string(pr) for pr in prior_removals], " "))
+  prior_infections = [pf for pf in env0.infections if pf.infectee==k && pf.t < rem.t]
+  println("  (prior inf) ", join([string(pf) for pf in prior_infections], " "))
+  barrier =
+      sort( [pf for pf in prior_infections if pf.t < barrier.t], by=x -> x.t)[end]
+  println("  (last viable infection) ", barrier)
+  println("\n")
+  pushfirst!(last_viable, barrier)
+end
+println("  (last_viable) ", join([string(pr) for pr in last_viable], " "))
+```
+
+By the nature of the simulation, no prior potential infections will infect
+a time-line _after_ it has been removed, because by then the `target` time-line
+must also have been removed.
+
+::: {.callout-tip}
+## This has still to be done!
+
+1. List infection incidents targetting that time-line. **DONE**
+2. Select those lying between infection and removal.
+3. Figure out how to extract viable incidents.
+4. Tighten up so subsequent timelines also infected(!)
+5. Choose the latest.
+
+:::
+
+
+# Experiments
+
+And now another way to create a trajectory!
+```{julia}
+MIA = epi.MarkerInfectionA ; MRA = epi.MarkerRemovalA
+MIB = epi.MarkerInfectionB ; MRB = epi.MarkerRemovalB
+
+infect1 = [x for x in active if isa(x, I) || isa(x, P)]
+infect2 = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
+remove1 = [x for x in active if isa(x, C) || isa(x, R)]
+remove2 = [(k≤1 ? [MRB(x.t, k)] : (MRA(x.t, k-1), MRB(x.t, k))) for (k, x) in enumerate(remove1)]
+active2 = sort(vcat(infect2, remove2), lt=(x,y) -> epi.isearlier(x[1], y[1]))
+active_trajectory = collect(Iterators.flatten(active2));
+```
+
+Compute indices for initial and continuation markers.
+
+```{julia}
+initial0 = [0, 1, population - 1]
+
+initial_markers = Iterators.flatten([
+    [epi.InitialRemoved(0, k)     for k in 1:initial0[1]],
+    [epi.InitialInfected(0, k)    for k in (initial0[1]+1):(initial0[1]+initial0[2])],
+    [epi.InitialSusceptible(0, k) for k in (initial0[1]+initial0[2]+1):population]
+  ])
+
+rend = maximum(x.target for x in active_trajectory if isa(x, MRB) )
+iend = maximum(x.target for x in active_trajectory if isa(x, MIB))
+total_trajectory = collect(Iterators.flatten(
+  [ initial_markers, 
+    active_trajectory, 
+    [epi.ContinuingRemoved(duration, k) for k in 1:rend], 
+    [epi.ContinuingInfected(duration, k) for k in (rend+1):iend], 
+    [epi.ContinuingSusceptibled(duration, k) for k in (iend+1):population]
+  ]))
+[total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
+```
+
+
+**Now figure out how to plot this.**

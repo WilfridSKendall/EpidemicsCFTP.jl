@@ -75,9 +75,10 @@ Collect drawing styles in the named tuple `style`.
 See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
 ```{julia}
 style = (
-  radius   =  0.2cy,              smradius =  0.75 * 0.2cy,
+  radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
   bit      = -0.02h,              tic      = -0.2cy,
-  xheight  =  0.5cy,              
+  xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
+  height   =  0.5cy,              
   boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
   active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
   blank    =  colorant"white",    scaffold =  colorant"grey",
@@ -127,14 +128,14 @@ Note, both here and following, the careful use of graphics area units (`cx`, `cy
 function time_axis(duration; sty=style)
   labellocs = [(x)cx for x in 0:duration]
   step = 10^floor(Int, log10(duration))
-  tic1  = [(((x)cx,sty.xheight), ((x)cx, sty.xheight+sty.tic))    for x in 0:1.0step:duration]
-  tic2  = [(((x)cx,sty.xheight), ((x)cx, sty.xheight+sty.tic))    for x in 0:0.5step:duration]
-  tic3  = [(((x)cx,sty.xheight), ((x)cx, sty.xheight+0.5sty.tic)) for x in 0:0.1step:duration]
+  tic1  = [(((x)cx,sty.height), ((x)cx, sty.height+sty.tic))    for x in 0:1.0step:duration]
+  tic2  = [(((x)cx,sty.height), ((x)cx, sty.height+sty.tic))    for x in 0:0.5step:duration]
+  tic3  = [(((x)cx,sty.height), ((x)cx, sty.height+0.5sty.tic)) for x in 0:0.1step:duration]
 
   (context(), # Returned value of function!
-    (context(), text(labellocs, [sty.xheight + 0.25inch], ["$i" for i in 0:duration], 
+    (context(), text(labellocs, [sty.height + sty.yloc], ["$i" for i in 0:duration], 
       [hcenter], [vcenter]), fontsize(5pt), font("TimesRoman"), ),
-    (context(), line([(0cx, sty.xheight), ((duration)cx, sty.xheight)]),
+    (context(), line([(0cx, sty.height), ((duration)cx, sty.height)]),
       stroke(sty.scaffold), linewidth(0.5mm) ),
     (context(), line(tic1), stroke(sty.scaffold), linewidth(0.2mm)),
     (context(), line(tic2), stroke(sty.scaffold), linewidth(0.1mm)),
@@ -155,7 +156,7 @@ function time_threads(duration, population; sty=style)
   circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
 
   (context(), # Returned value of function!
-    (context(), text([0cx-0.25inch], [(k)cy for k in 1:population], circlabels,
+    (context(), text([sty.xlab], [(k)cy for k in 1:population], circlabels,
       [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
     (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
       stroke(sty.scaffold), linewidth(0.5mm), ), )
@@ -641,4 +642,54 @@ total_trajectory = collect(Iterators.flatten(
 ```
 
 
-**Now figure out how to plot this.**
+Attempt at plot:
+
+This could be improved by using a more refined type hierarchy!
+```{julia}
+function csty(x::Vector{MIA}) colorant"orange" end;
+function csty(x::Vector{MIB}) colorant"orange" end;
+function csty(x::Vector{epi.InitialInfected})    colorant"orange" end;
+function csty(x::Vector{epi.ContinuingInfected}) colorant"orange" end;
+
+function csty(x::Vector{MRA}) colorant"tan" end;
+function csty(x::Vector{MRB}) colorant"tan" end;
+function csty(x::Vector{epi.InitialRemoved})    colorant"tan" end;
+function csty(x::Vector{epi.ContinuingRemoved}) colorant"tan" end;
+
+function csty(x::Vector{epi.InitialSusceptible})    colorant"blue" end;
+function csty(x::Vector{epi.ContinuingSusceptible}) colorant"blue" end;
+
+function draw_marker(xl::Vector{T}; sty=style) where T<:epi.AbstractMarker
+  if length(xl) > 0
+    (context(),
+      (context(),
+        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
+             map(x -> string(x), xl), [hcenter], [vcenter]), 
+        fontsize(5pt), font("Helvetica")),
+      (context(),
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
+        fillopacity(0.2), fill(csty(xl)), stroke(csty(xl))), )
+  end
+end ;
+```
+
+
+
+```{julia}
+compose(context(units=coordinates),
+  draw_marker([x for x in total_trajectory if isa(x, epi.InitialSusceptible)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, epi.InitialInfected)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, epi.InitialRemoved)], sty=style),
+
+  draw_marker([x for x in total_trajectory if isa(x, MIA)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, MIB)], sty=style),
+
+  draw_marker([x for x in total_trajectory if isa(x, MRA)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, MRB)], sty=style),
+  
+  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingSusceptible)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingInfected)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingRemoved)], sty=style),
+  scaffolding(duration, population)
+  )
+```

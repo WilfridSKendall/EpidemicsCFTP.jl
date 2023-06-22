@@ -22,8 +22,10 @@
     @test  isearlier(Removal(0.10, 2),      ContinuingSusceptible(0.5, 3))
     @test !isearlier(Removal(0.5, 2),       ContinuingInfected(0.1, 3))
     @test  isearlier(Removal(0.10, 2),      ContinuingRemoved(0.5, 3))
-    @test !isearlier(Removal(0.5, 2),       MarkerInfection(0.1, 3))
-    @test  isearlier(Removal(0.10, 2),      MarkerRemoval(0.5, 3))
+    @test !isearlier(Removal(0.5, 2),       MarkerInfectionA(0.1, 3))
+    @test  isearlier(Removal(0.10, 2),      MarkerRemovalA(0.5, 3))
+    @test !isearlier(Removal(0.5, 2),       MarkerInfectionB(0.1, 3))
+    @test  isearlier(Removal(0.10, 2),      MarkerRemovalB(0.5, 3))
 end
 
 ## Testing to do with eliciting epidemic trajectory

@@ -18,8 +18,10 @@ export AbstractInnovation
 export InitialRemoved
 export InitialInfected
 export InitialSusceptible
-export MarkerRemoval
-export MarkerInfection
+export MarkerRemovalA
+export MarkerInfectionA
+export MarkerRemovalB
+export MarkerInfectionB
 export ContinuingRemoved
 export ContinuingInfected
 export ContinuingSusceptible

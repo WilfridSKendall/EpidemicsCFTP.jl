@@ -82,7 +82,7 @@ The `InitialRemoved` is realized if the specified timeline is removed at (initia
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> InitialRemoved(0.1, 4)
-iℛ₀.₁₀⁴
+↦ℛ₀.₁₀⁴
 ```
 """
 struct InitialRemoved <: AbstractMarker
@@ -93,7 +93,7 @@ struct InitialRemoved <: AbstractMarker
     function InitialRemoved(t, target)
         noun = "InitialRemoved($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("iℛ", t, target))
+                new("↦ℛ", t, target))
     end
 end
 
@@ -108,7 +108,7 @@ The `InitialInfected` is realized if the specified timeline is infectious at (in
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> InitialInfected(0.1, 4)
-iℐ₀.₁₀⁴
+↦ℐ₀.₁₀⁴
 ```
 """
 struct InitialInfected <: AbstractMarker
@@ -119,7 +119,7 @@ struct InitialInfected <: AbstractMarker
     function InitialInfected(t, target)
         noun = "InitialInfected($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("iℐ", t, target))
+                new("↦ℐ", t, target))
     end
 end
 
@@ -134,7 +134,7 @@ The `InitialSusceptible` is realized if the specified timeline is susceptible at
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> InitialSusceptible(0.1, 4)
-i𝒮₀.₁₀⁴
+↦𝒮₀.₁₀⁴
 ```
 """
 struct InitialSusceptible <: AbstractMarker
@@ -145,86 +145,113 @@ struct InitialSusceptible <: AbstractMarker
     function InitialSusceptible(t, target)
         noun = "InitialSusceptible($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("i𝒮", t, target))
+                new("↦𝒮", t, target))
     end
 end
 
 
 
 """
-    MarkerInfection(t::Real, target::Integer)
+    MarkerInfectionA(t::Real, target::Integer)
 
 Implements a marker for a time-line becoming infectious using a sub-type of `AbstractMarker`.  
 The `target` field labels the timeline infected by the marker incident: it must be a positive integer.  
-The `MarkerInfection` is realized if the specified timeline is infectious at (final) time `t`.
+The `MarkerInfectionA` is realized if the specified timeline transits from top infection timeline at time `t`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> MarkerInfection(0.1, 4)
-mℐ₀.₁₀⁴
+julia> MarkerInfectionA(0.1, 4)
+⮥ℐ₀.₁₀⁴
 ```
 """
-struct MarkerInfection <: AbstractMarker
+struct MarkerInfectionA <: AbstractMarker
     kind      ::String     
     t         ::Float64
     target    ::Int
 
-    function MarkerInfection(t, target)
-        noun = "MarkerInfection($t, $target)"
+    function MarkerInfectionA(t, target)
+        noun = "MarkerInfectionA($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("mℐ", t, target))
+                new("⮥ℐ", t, target))
     end
 end
 
 
 """
-    MarkerInfection(t::Real, target::Integer)
+    MarkerInfectionB(t::Real, target::Integer)
 
 Implements a marker for a time-line becoming infection using a sub-type of `AbstractMarker`.  
 The `target` field labels the timeline infected by the marker incident: it must be a positive integer.  
-The `MarkerInfection` is realized if the specified timeline is infectious at (final) time `t`.
+The `MarkerInfectionB` is realized if the specified timeline becomes top infection timeline at time `t`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> MarkerInfection(0.1, 4)
-mℐ₀.₁₀⁴
+julia> MarkerInfectionB(0.1, 4)
+⮣ℐ₀.₁₀⁴
 ```
 """
-struct MarkerInfection <: AbstractMarker
+struct MarkerInfectionB <: AbstractMarker
     kind      ::String     
     t         ::Float64
     target    ::Int
 
-    function MarkerInfection(t, target)
-        noun = "MarkerInfection($t, $target)"
+    function MarkerInfectionB(t, target)
+        noun = "MarkerInfectionB($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("mℐ", t, target))
+                new("⮣ℐ", t, target))
     end
 end
 
 
 """
-    MarkerRemoval(t::Real, target::Integer)
+    MarkerRemovalA(t::Real, target::Integer)
 
 Implements a marker for ongoing removal using a sub-type of `AbstractMarker`.  
 The `target` field labels the timeline being considered as host for the marker incident: it must be a positive integer.  
-The `MarkerRemoval` is realized if the specified timeline is susceptible at (final) time `t`.
+The `MarkerRemovalA` is realized if the specified timeline transits from top removed timeline at time `t`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> MarkerRemoval(0.1, 4)
-mℛ₀.₁₀⁴
+julia> MarkerRemovalA(0.1, 4)
+⮥ℛ₀.₁₀⁴
 ```
 """
-struct MarkerRemoval <: AbstractMarker
+struct MarkerRemovalA <: AbstractMarker
     kind      ::String     
     t         ::Float64
     target    ::Int
 
-    function MarkerRemoval(t, target)
-        noun = "MarkerRemoval($t, $target)"
+    function MarkerRemovalA(t, target)
+        noun = "MarkerRemovalA($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("mℛ", t, target))
+                new("⮥ℛ", t, target))
+    end
+end
+
+
+
+"""
+    MarkerRemovalB(t::Real, target::Integer)
+
+Implements a marker for ongoing removal using a sub-type of `AbstractMarker`.  
+The `target` field labels the timeline being considered as host for the marker incident: it must be a positive integer.  
+The `MarkerRemovalB` is realized if the specified timeline becomes top removed timeline at time `t`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> MarkerRemovalB(0.1, 4)
+⮣ℛ₀.₁₀⁴
+```
+"""
+struct MarkerRemovalB <: AbstractMarker
+    kind      ::String     
+    t         ::Float64
+    target    ::Int
+
+    function MarkerRemovalB(t, target)
+        noun = "MarkerRemovalB($t, $target)"
+        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("⮣ℛ", t, target))
     end
 end
 
@@ -239,7 +266,7 @@ The `ContinuingSusceptible` is realized if the specified timeline is susceptible
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> ContinuingSusceptible(0.1, 4)
-c𝒮₀.₁₀⁴
+⇨𝒮₀.₁₀⁴
 ```
 """
 struct ContinuingSusceptible <: AbstractMarker
@@ -250,7 +277,7 @@ struct ContinuingSusceptible <: AbstractMarker
     function ContinuingSusceptible(t, target)
         noun = "ContinuingSusceptible($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("c𝒮", t, target))
+                new("⇨𝒮", t, target))
     end
 end
 
@@ -264,7 +291,7 @@ The `ContinuingInfected` is realized if the specified timeline is infectious at 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> ContinuingInfected(0.1, 4)
-cℐ₀.₁₀⁴
+⇨ℐ₀.₁₀⁴
 ```
 """
 struct ContinuingInfected <: AbstractMarker
@@ -275,7 +302,7 @@ struct ContinuingInfected <: AbstractMarker
     function ContinuingInfected(t, target)
         noun = "ContinuingInfected($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("cℐ", t, target))
+                new("⇨ℐ", t, target))
     end
 end
 
@@ -291,7 +318,7 @@ The `ContinuingRemoved` is realized if the specified timeline is susceptible at 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> ContinuingRemoved(0.1, 4)
-cℛ₀.₁₀⁴
+⇨ℛ₀.₁₀⁴
 ```
 """
 struct ContinuingRemoved <: AbstractMarker
@@ -302,7 +329,7 @@ struct ContinuingRemoved <: AbstractMarker
     function ContinuingRemoved(t, target)
         noun = "ContinuingRemoved($t, $target)"
         (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("cℛ", t, target))
+                new("⇨ℛ", t, target))
     end
 end
 

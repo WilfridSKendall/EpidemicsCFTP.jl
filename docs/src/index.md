@@ -91,9 +91,9 @@ Infection
 PInfection
 ```
 
-### Eight different kinds of `AbstractMarker`s
-`MarkerInfection`,
-`MarkerRemoval` are added programmatically
+### Ten different kinds of `AbstractMarker`s
+`MarkerInfectionA`, `MarkerInfectionB`,
+`MarkerRemovalA`, `MarkerRemovalB` are added programmatically
 (_not_ by the user) to indicate state of each time-line at start of its 
 infection (respectively, removal).
 
@@ -110,8 +110,10 @@ InitialSusceptible
 InitialInfected
 InitialRemoved
 
-MarkerInfection
-MarkerRemoval
+MarkerInfectionA
+MarkerInfectionB
+MarkerRemovalA
+MarkerRemovalB
 
 ContinuingSusceptible
 ContinuingInfected

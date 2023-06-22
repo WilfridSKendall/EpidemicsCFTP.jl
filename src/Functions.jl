@@ -248,21 +248,25 @@ Implementation of `show` for `AbstractMarker`, using subscripts and 2 decimal pl
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> InitialSusceptible(0.10, 3)
-i𝒮₀.₁₀³
+↦𝒮₀.₁₀³
 julia> InitialInfected(0.10, 3)
-iℐ₀.₁₀³
+↦ℐ₀.₁₀³
 julia> InitialRemoved(0.10, 3)
-iℛ₀.₁₀³
-julia> MarkerInfection(0.10, 3)
-mℐ₀.₁₀³
-julia> MarkerRemoval(0.10, 3)
-mℛ₀.₁₀³
+↦ℛ₀.₁₀³
+julia> MarkerInfectionA(0.10, 3)
+⮥ℐ₀.₁₀³
+julia> MarkerRemovalA(0.10, 3)
+⮥ℛ₀.₁₀³
+julia> MarkerInfectionB(0.10, 3)
+⮣ℐ₀.₁₀³
+julia> MarkerRemovalB(0.10, 3)
+⮣ℛ₀.₁₀³
 julia> ContinuingSusceptible(0.10, 3)
-c𝒮₀.₁₀³
+⇨𝒮₀.₁₀³
 julia> ContinuingInfected(0.10, 3)
-cℐ₀.₁₀³
+⇨ℐ₀.₁₀³
 julia> ContinuingRemoved(0.10, 3)
-cℛ₀.₁₀³
+⇨ℛ₀.₁₀³
 ```
 """
 function Base.show(io::IO, z::AbstractMarker)

@@ -681,9 +681,34 @@ end ;
 ```
 
 
+```{julia}
+population2 = 6
+coordinates2 = UnitBox(0, population2, duration, -population2,
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.25inch) ;
+
+function infected_areas(population, total_trajectory; sty=style)
+  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
+  for k in 1:population
+    level = [bb for bb in total_trajectory if bb.target==k]
+    disk1 = [bb for bb in level if (isa(bb, MIB) || isa(bb, epi.InitialInfected))][1]
+    disk2 = [bb for bb in level if (isa(bb, MRB) || isa(bb, epi.ContinuingInfected))][1]
+    append!(xx, disk1.t)
+    append!(yy, k-1)
+    append!(rw, disk2.t - disk1.t)
+    append!(rl, 1)
+  end
+  return xx, yy, rw, rl
+end ;
+```
+
+
+
 
 ```{julia}
-compose(context(units=coordinates),
+xx, yy, rw, rl = infected_areas(population, total_trajectory) ## NB fails at empty time-lines!
+
+
+compose(context(units=coordinates2),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialSusceptible)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialInfected)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialRemoved)], sty=style),
@@ -698,6 +723,12 @@ compose(context(units=coordinates),
   draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingInfected)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingRemoved)], sty=style),
 
-  scaffolding(duration, population),
+
+  (context(),
+    rectangle(xx, yy, rw, rl),
+    fill(csty(I[])), fillopacity(0.3),
+  ),
+ 
+  scaffolding(duration, population2),
   )
 ```

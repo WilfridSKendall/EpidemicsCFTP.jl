@@ -118,7 +118,7 @@ struct InitialInfected <: AbstractMarker
 
     function InitialInfected(t, target)
         noun = "InitialInfected($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("↦ℐ", t, target))
     end
 end
@@ -144,7 +144,7 @@ struct InitialSusceptible <: AbstractMarker
 
     function InitialSusceptible(t, target)
         noun = "InitialSusceptible($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("↦𝒮", t, target))
     end
 end
@@ -171,7 +171,7 @@ struct MarkerInfectionA <: AbstractMarker
 
     function MarkerInfectionA(t, target)
         noun = "MarkerInfectionA($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target < 0 ? throw(DomainError(noun, "negative mark")) :
                 new("⮥ℐ", t, target))
     end
 end
@@ -197,7 +197,7 @@ struct MarkerInfectionB <: AbstractMarker
 
     function MarkerInfectionB(t, target)
         noun = "MarkerInfectionB($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("⮣ℐ", t, target))
     end
 end
@@ -223,7 +223,7 @@ struct MarkerRemovalA <: AbstractMarker
 
     function MarkerRemovalA(t, target)
         noun = "MarkerRemovalA($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target < 0 ? throw(DomainError(noun, "negative mark")) :
                 new("⮥ℛ", t, target))
     end
 end
@@ -250,7 +250,7 @@ struct MarkerRemovalB <: AbstractMarker
 
     function MarkerRemovalB(t, target)
         noun = "MarkerRemovalB($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("⮣ℛ", t, target))
     end
 end
@@ -276,7 +276,7 @@ struct ContinuingSusceptible <: AbstractMarker
 
     function ContinuingSusceptible(t, target)
         noun = "ContinuingSusceptible($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("↠𝒮", t, target))
     end
 end
@@ -301,7 +301,7 @@ struct ContinuingInfected <: AbstractMarker
 
     function ContinuingInfected(t, target)
         noun = "ContinuingInfected($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("↠ℐ", t, target))
     end
 end
@@ -328,7 +328,7 @@ struct ContinuingRemoved <: AbstractMarker
 
     function ContinuingRemoved(t, target)
         noun = "ContinuingRemoved($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("↠ℛ", t, target))
     end
 end
@@ -357,7 +357,7 @@ struct Removal <: AbstractRemoval
 
     function Removal(t, target)
         noun = "Removal($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("ℛ", t, target))
     end
 end
@@ -383,7 +383,7 @@ struct CRemoval <: AbstractRemoval
 
     function CRemoval(t, target)
         noun = "CRemoval($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("𝒞", t, target))
     end
 end
@@ -412,9 +412,9 @@ struct Infection <: AbstractInfection
 
     function Infection(t, target, infectee)
         noun = "Infection($t, $target, $infectee)"
-        if infectee <= target
+        if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
-        elseif target <= 0
+        elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
             new("ℐ", t, target, infectee)
@@ -444,9 +444,9 @@ struct PInfection <: AbstractInfection
     
     function PInfection(t, target, infectee)
         noun = "PInfection($t, $target, $infectee)"
-        if infectee <= target
+        if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
-        elseif target <= 0
+        elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
             new("𝒫", t, target, infectee)
@@ -502,7 +502,7 @@ struct Innovation <: AbstractEnvironment
                                     removals::Vector{Removal},
                                     cremovals::Vector{CRemoval})
         noun = "Innovation(n, $infections, $removals, $cremovals)"
-        if n <= 0
+        if n ≤ 0
             throw(DomainError(noun, "non-positive population size n"))
         elseif length(cremovals) > n
             throw(ArgumentError("too many conditional removals in \n$noun"))

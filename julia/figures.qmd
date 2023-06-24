@@ -607,6 +607,12 @@ must also have been removed.
 
 And now another way to create a trajectory!
 ```{julia}
+population4 = 6
+coordinates4 = UnitBox(0, population4, duration, -population4,
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
+```
+
+```{julia}
 MIA = epi.MarkerInfectionA ; MRA = epi.MarkerRemovalA
 MIB = epi.MarkerInfectionB ; MRB = epi.MarkerRemovalB
 
@@ -621,12 +627,12 @@ active_trajectory = collect(Iterators.flatten(active2));
 Compute indices for initial and continuation markers.
 
 ```{julia}
-initial0 = [0, 1, population - 1]
+initial0 = [0, 1, population4]
 
 initial_markers = Iterators.flatten([
     [epi.InitialRemoved(0, k)     for k in 1:initial0[1]],
     [epi.InitialInfected(0, k)    for k in (initial0[1]+1):(initial0[1]+initial0[2])],
-    [epi.InitialSusceptible(0, k) for k in (initial0[1]+initial0[2]+1):population]
+    [epi.InitialSusceptible(0, k) for k in (initial0[1]+initial0[2]+1):population4]
   ])
 
 rend = maximum(x.target for x in active_trajectory if isa(x, MRB) )
@@ -636,7 +642,7 @@ total_trajectory = collect(Iterators.flatten(
     active_trajectory, 
     [epi.ContinuingRemoved(duration, k) for k in 1:rend], 
     [epi.ContinuingInfected(duration, k) for k in (rend+1):iend], 
-    [epi.ContinuingSusceptibled(duration, k) for k in (iend+1):population]
+    [epi.ContinuingSusceptible(duration, k) for k in (iend+1):population4]
   ]))
 [total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
 ```
@@ -682,10 +688,6 @@ end ;
 
 
 ```{julia}
-population4 = 6
-coordinates4 = UnitBox(0, population4, duration, -population4,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
-
 function infected_areas(population, total_trajectory; sty=style)
   xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
   for k in 1:population

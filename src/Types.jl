@@ -92,7 +92,7 @@ struct InitialRemoved <: AbstractMarker
 
     function InitialRemoved(t, target)
         noun = "InitialRemoved($t, $target)"
-        (target <= 0 ? throw(DomainError(noun, "non-positive mark")) :
+        (target < 0 ? throw(DomainError(noun, "negative mark")) :
                 new("↦ℛ", t, target))
     end
 end

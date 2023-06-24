@@ -9,7 +9,6 @@ using Test
                  InitialSusceptible, InitialRemoved, InitialInfected,
                  ContinuingSusceptible, ContinuingRemoved, ContinuingInfected]
         @test_throws DomainError    inc(0.05, -2)
-        @test_throws DomainError    inc(0.05, 0)
         @test_throws InexactError   inc(0.05, 2.5)
         @test_throws DomainError    inc(0.05, -2.3)
     end

@@ -726,6 +726,7 @@ xx1, yy1, rw1, rl1 = infected_areas(population, total_trajectory) ## NB fails at
 xx2, yy2, rw2, rl2 = removed_areas(population, total_trajectory) ## NB fails at empty time-lines!
 
 
+# should use "total_markers" and ensure "total_trajectory" actually is a trajectory!
 compose(context(units=coordinates4),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialSusceptible)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialInfected)], sty=style),
@@ -749,9 +750,25 @@ compose(context(units=coordinates4),
 
   (context(),
     rectangle(xx2, yy2, rw2, rl2),
-    fill(csty(R[])), fillopacity(0.3),
+    fill(csty(C[])), fillopacity(0.3),
   ),
-  
+
+  # Draw epidemic curve: misses last segment if not continuing and also first segment
+  # So need to append highest MIA and prepend lowest epi.InitialInfected.
+  (context(),
+  line([(x.t, x.target) for x in total_trajectory 
+    if (isa(x, MIA) || isa(x, MIB) || isa(x, epi.ContinuingInfected))]),
+    stroke(csty(I[])), style.trail
+  ),
+
+  # Draw removal curve: misses last segment
+  # So need to append highest MRB and introduce an initial epi.InitialRemoved.
+  (context(),
+    line([(x.t, x.target) for x in total_trajectory 
+      if (isa(x, epi.InitialRemoved) || isa(x, MRA) || isa(x, MRB))]),
+     stroke(csty(C[])), style.trail
+  ),
+
   scaffolding(duration, population4),
   )
 ```

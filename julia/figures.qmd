@@ -69,7 +69,7 @@ Set up and establish graphics size and coordinates.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
 coordinates = UnitBox(0, population, duration, -population, 
-                      leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
+                      leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch);
 ```
 Collect drawing styles in the named tuple `style`.
 See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
@@ -78,7 +78,7 @@ style = (
   radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
   bit      = -0.02h,              tic      = -0.2cy,
   xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
-  height   =  0.5cy,              
+  height   =  0.0cy,              
   boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
   active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
   blank    =  colorant"white",    scaffold =  colorant"grey",
@@ -433,7 +433,7 @@ We generate a precise equivalent of Figure 1 of Connor-Kendall (in preparation).
 ```{julia}
 duration1 = 15 ; population1 = 5 ;
 coordinates1 = UnitBox(0, population1, duration1, -population1,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
 ```
 
 Here is the set of innovations:
@@ -495,7 +495,7 @@ We generate a precise equivalent of Figure 3 of Connor-Kendall (in preparation).
 ```{julia}
 duration3 = duration1 ; population3 = population1 ;
 coordinates3 = UnitBox(0, population3, duration3, -population3,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch) ;
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
 ```
 
 ```{julia}
@@ -613,7 +613,7 @@ MIB = epi.MarkerInfectionB ; MRB = epi.MarkerRemovalB
 infect1 = [x for x in active if isa(x, I) || isa(x, P)]
 infect2 = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
 remove1 = [x for x in active if isa(x, C) || isa(x, R)]
-remove2 = [(k≤1 ? [MRB(x.t, k)] : (MRA(x.t, k-1), MRB(x.t, k))) for (k, x) in enumerate(remove1)]
+remove2 = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
 active2 = sort(vcat(infect2, remove2), lt=(x,y) -> epi.isearlier(x[1], y[1]))
 active_trajectory = collect(Iterators.flatten(active2));
 ```
@@ -682,9 +682,9 @@ end ;
 
 
 ```{julia}
-population2 = 6
-coordinates2 = UnitBox(0, population2, duration, -population2,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.25inch) ;
+population4 = 6
+coordinates4 = UnitBox(0, population4, duration, -population4,
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
 
 function infected_areas(population, total_trajectory; sty=style)
   xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
@@ -699,16 +699,32 @@ function infected_areas(population, total_trajectory; sty=style)
   end
   return xx, yy, rw, rl
 end ;
+
+
+function removed_areas(population, total_trajectory; sty=style)
+  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
+  for k in 1:population
+    level = [bb for bb in total_trajectory if bb.target==k]
+    disk1 = [bb for bb in level if (isa(bb, MRB) || isa(bb, epi.InitialRemoved))][1]
+    disk2 = [bb for bb in level if (isa(bb, epi.ContinuingRemoved))][1]
+    append!(xx, disk1.t)
+    append!(yy, k-1)
+    append!(rw, disk2.t - disk1.t)
+    append!(rl, 1)
+  end
+  return xx, yy, rw, rl
+end ;
 ```
 
 
 
 
 ```{julia}
-xx, yy, rw, rl = infected_areas(population, total_trajectory) ## NB fails at empty time-lines!
+xx1, yy1, rw1, rl1 = infected_areas(population, total_trajectory) ## NB fails at empty time-lines!
+xx2, yy2, rw2, rl2 = removed_areas(population, total_trajectory) ## NB fails at empty time-lines!
 
 
-compose(context(units=coordinates2),
+compose(context(units=coordinates4),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialSusceptible)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialInfected)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, epi.InitialRemoved)], sty=style),
@@ -725,10 +741,15 @@ compose(context(units=coordinates2),
 
 
   (context(),
-    rectangle(xx, yy, rw, rl),
+    rectangle(xx1, yy1, rw1, rl1),
     fill(csty(I[])), fillopacity(0.3),
   ),
- 
-  scaffolding(duration, population2),
+
+  (context(),
+    rectangle(xx2, yy2, rw2, rl2),
+    fill(csty(R[])), fillopacity(0.3),
+  ),
+  
+  scaffolding(duration, population4),
   )
 ```

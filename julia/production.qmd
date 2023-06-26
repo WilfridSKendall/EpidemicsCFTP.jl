@@ -1,5 +1,5 @@
 ---
-title:  "Figures for the Perfect Epidemics paper"
+title:  "Producing figures for the Perfect Epidemics paper"
 author: "Wilfrid Kendall"
 date:   today
 ---

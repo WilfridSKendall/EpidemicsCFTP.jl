@@ -3,7 +3,7 @@ SHELL := /usr/bin/bash
 QUARTO := /usr/local/bin/quarto
 QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash
 
-main: figures.pdf production.pdf
+main: figures.pdf production.pdf experiment.pdf
 
 production.qmd: preliminary.jl
 	

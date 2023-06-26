@@ -1,5 +1,5 @@
 ---
-title:  "Figures for Perfect Epidemics"
+title:  "Code base for figures for Perfect Epidemics"
 author: "Wilfrid Kendall"
 date:   today
 ---

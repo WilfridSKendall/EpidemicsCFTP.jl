@@ -26,7 +26,7 @@ jupyter:    julia-1.9
 # Set-up details
 
 ```{julia}
-include("preliminary.jl")
+include("preliminary.jl") ;
 ```
 
 ```{julia}
@@ -36,6 +36,45 @@ const MAXPOP  = 20 ;
 if population > MAXPOP
   error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
 end ;
+```
+
+
+
+
+# Style choices
+Set up and establish graphics size and coordinates.
+```{julia}
+set_default_graphic_size(6inch, 3.25inch) ;
+coordinates = UnitBox(0, population, duration, -population, 
+                      leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
+```
+
+Collect drawing styles in the named tuple `style`.
+See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
+```{julia}
+style = (
+  radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
+  bit      = -0.02h,              tic      = -0.2cy,
+  xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
+  height   =  0.0cy,              
+  boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
+  active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
+  blank    =  colorant"white",    scaffold =  colorant"grey",
+  region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
+) ;
+```
+
+# Convenient abbreviations, and colour styles
+```{julia}
+E = epi.AbstractIncident  ; R = epi.Removal   ; C = epi.CRemoval   
+A = epi.AbstractInfection ; I = epi.Infection ; P = epi.PInfection 
+
+function csty(x::Vector{R}) colorant"tan"       end 
+function csty(x::Vector{C}) colorant"purple"    end 
+function csty(x::Vector{A}) colorant"yellow"    end 
+function csty(x::Vector{I}) colorant"orange"    end 
+function csty(x::Vector{P}) colorant"darkgreen" end 
+function csty(x::Vector{E})                     end ;
 ```
 
 # Figure 1

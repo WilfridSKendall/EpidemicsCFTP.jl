@@ -228,7 +228,7 @@ function draw_realized(xl::Vector{T}; sty=style) where T<:BasicIncident
       circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
        sty.active, fill(csty(xl)), fillopacity(0.5), stroke(csty(xl)))
     end, )
-end ;
+end 
 
 function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:BasicIncident
   if ! (eltype(xl)<:epi.AbstractInfection)
@@ -346,7 +346,7 @@ Amend @fig-potential: realized incident nodes have light-coloured backgrounds an
 thicker line-widths, producing @fig-realized.
 
 ```{julia}
-function draw_active_elements(active; I=I, P=P, R=R, C=C, sty=style)
+function draw_active_elements(initial, active; I=I, P=P, R=R, C=C, sty=style)
   active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
   enumerated_removals = collect(enumerate(active_removals))
 
@@ -396,9 +396,9 @@ end ;
 ```
 
 ```{julia}
-function compose_epidemic_view(duration, population, env, flow, active; coordinates)
+function compose_epidemic_view(duration, population, env, flow, initial, active; coordinates)
   compose(context(units=coordinates),
-          draw_active_elements(active), draw_elements(env), 
+          draw_active_elements(initial, active), draw_elements(env), 
           draw_realized_regions(duration, population, flow),
           scaffolding(duration, population))
 end ;
@@ -410,7 +410,7 @@ end ;
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/brown."
-epidemics_view = compose_epidemic_view(duration, population, env0, flow, active; coordinates)
+epidemics_view = compose_epidemic_view(duration, population, env0, flow, initial, active; coordinates)
 draw(PNG("image/epidemics_view.png"), epidemics_view)
 draw(PDF("image/epidemics_view.pdf"), epidemics_view)
 epidemics_view
@@ -479,7 +479,7 @@ draftfigure1b
 #| fig-cap: "@fig-nodes1 plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured yellow/brown."
-draftfigure1a = compose_epidemic_view(duration1, population1, env_figure1, flow1, active1; coordinates=coordinates1)
+draftfigure1a = compose_epidemic_view(duration1, population1, env_figure1, flow1, initial1, active1; coordinates=coordinates1)
 draw(PNG("image/draftfigure1a.png"), draftfigure1a)
 draw(PDF("image/draftfigure1a.pdf"), draftfigure1a)
 draftfigure1a
@@ -546,7 +546,7 @@ draftfigure3b
 #| fig-cap: "@fig-nodes3 plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured yellow/brown."
-draftfigure3a = compose_epidemic_view(duration3, population3, env_figure3, flow3, active3; coordinates=coordinates3)
+draftfigure3a = compose_epidemic_view(duration3, population3, env_figure3, flow3, initial3, active3; coordinates=coordinates3)
 draw(PNG("image/draftfigure3a.png"), draftfigure3a)
 draw(PDF("image/draftfigure3a.pdf"), draftfigure3a)
 draftfigure3a
@@ -602,173 +602,3 @@ must also have been removed.
 
 :::
 
-
-# Experiments
-
-And now another way to create a trajectory!
-```{julia}
-population4 = 6
-coordinates4 = UnitBox(0, population4, duration, -population4,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
-```
-
-```{julia}
-MIA = epi.MarkerInfectionA ; MRA = epi.MarkerRemovalA
-MIB = epi.MarkerInfectionB ; MRB = epi.MarkerRemovalB
-
-infect1 = [x for x in active if isa(x, I) || isa(x, P)]
-infect2 = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
-remove1 = [x for x in active if isa(x, C) || isa(x, R)]
-remove2 = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
-active2 = sort(vcat(infect2, remove2), lt=(x,y) -> epi.isearlier(x[1], y[1]))
-active_trajectory = collect(Iterators.flatten(active2));
-```
-
-Compute indices for initial and continuation markers.
-
-```{julia}
-initial0 = [0, 1, population4]
-
-initial_markers = Iterators.flatten([
-    [epi.InitialRemoved(0, k)     for k in 1:initial0[1]],
-    [epi.InitialInfected(0, k)    for k in (initial0[1]+1):(initial0[1]+initial0[2])],
-    [epi.InitialSusceptible(0, k) for k in (initial0[1]+initial0[2]+1):population4]
-  ])
-
-rend = maximum(x.target for x in active_trajectory if isa(x, MRB) )
-iend = maximum(x.target for x in active_trajectory if isa(x, MIB))
-total_trajectory = collect(Iterators.flatten(
-  [ initial_markers, 
-    active_trajectory, 
-    [epi.ContinuingRemoved(duration, k) for k in 1:rend], 
-    [epi.ContinuingInfected(duration, k) for k in (rend+1):iend], 
-    [epi.ContinuingSusceptible(duration, k) for k in (iend+1):population4]
-  ]))
-[total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
-```
-
-
-Attempt at plot: note that marker labels omit time-line superscript as this is redundant!
-
-This could be improved by using a more refined type hierarchy!
-```{julia}
-function csty(x::Vector{MIA}) colorant"orange" end;
-function csty(x::Vector{MIB}) colorant"orange" end;
-function csty(x::Vector{epi.InitialInfected})    colorant"orange" end;
-function csty(x::Vector{epi.ContinuingInfected}) colorant"orange" end;
-
-function csty(x::Vector{MRA}) colorant"tan" end;
-function csty(x::Vector{MRB}) colorant"tan" end;
-function csty(x::Vector{epi.InitialRemoved})    colorant"tan" end;
-function csty(x::Vector{epi.ContinuingRemoved}) colorant"tan" end;
-
-function csty(x::Vector{epi.InitialSusceptible})    colorant"blue" end;
-function csty(x::Vector{epi.ContinuingSusceptible}) colorant"blue" end;
-
-function draw_marker(xl::Vector{T}; sty=style) where T<:epi.AbstractMarker
-  if length(xl) > 0
-    (context(),
-      (context(),
-        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
-             map(x -> chop(string(x)), xl), [hcenter], [vcenter]), 
-        fontsize(5pt), font("Helvetica")
-      ),
-      (context(),
-        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
-        fillopacity(0.2), fill(csty(xl)), stroke(csty(xl))
-      ), 
-      (context(),
-        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
-        fill(sty.blank),
-      ),
-    )
-  end
-end ;
-```
-
-
-```{julia}
-function infected_areas(population, total_trajectory; sty=style)
-  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
-  for k in 1:population
-    level = [bb for bb in total_trajectory if bb.target==k]
-    disk1 = [bb for bb in level if (isa(bb, MIB) || isa(bb, epi.InitialInfected))][1]
-    disk2 = [bb for bb in level if (isa(bb, MRB) || isa(bb, epi.ContinuingInfected))][1]
-    append!(xx, disk1.t)
-    append!(yy, k-1)
-    append!(rw, disk2.t - disk1.t)
-    append!(rl, 1)
-  end
-  return xx, yy, rw, rl
-end ;
-
-
-function removed_areas(population, total_trajectory; sty=style)
-  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
-  for k in 1:population
-    level = [bb for bb in total_trajectory if bb.target==k]
-    disk1 = [bb for bb in level if (isa(bb, MRB) || isa(bb, epi.InitialRemoved))][1]
-    disk2 = [bb for bb in level if (isa(bb, epi.ContinuingRemoved))][1]
-    append!(xx, disk1.t)
-    append!(yy, k-1)
-    append!(rw, disk2.t - disk1.t)
-    append!(rl, 1)
-  end
-  return xx, yy, rw, rl
-end ;
-```
-
-
-
-
-```{julia}
-xx1, yy1, rw1, rl1 = infected_areas(population, total_trajectory) ## NB fails at empty time-lines!
-xx2, yy2, rw2, rl2 = removed_areas(population, total_trajectory) ## NB fails at empty time-lines!
-
-
-# should use "total_markers" and ensure "total_trajectory" actually is a trajectory!
-compose(context(units=coordinates4),
-  draw_marker([x for x in total_trajectory if isa(x, epi.InitialSusceptible)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.InitialInfected)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.InitialRemoved)], sty=style),
-
-  draw_marker([x for x in total_trajectory if isa(x, MIA)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, MIB)], sty=style),
-
-  draw_marker([x for x in total_trajectory if isa(x, MRA)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, MRB)], sty=style),
-  
-  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingSusceptible)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingInfected)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingRemoved)], sty=style),
-
-
-  (context(),
-    rectangle(xx1, yy1, rw1, rl1),
-    fill(csty(I[])), fillopacity(0.3),
-  ),
-
-  (context(),
-    rectangle(xx2, yy2, rw2, rl2),
-    fill(csty(C[])), fillopacity(0.3),
-  ),
-
-  # Draw epidemic curve: misses last segment if not continuing and also first segment
-  # So need to append highest MIA and prepend lowest epi.InitialInfected.
-  (context(),
-  line([(x.t, x.target) for x in total_trajectory 
-    if (isa(x, MIA) || isa(x, MIB) || isa(x, epi.ContinuingInfected))]),
-    stroke(csty(I[])), style.trail
-  ),
-
-  # Draw removal curve: misses last segment
-  # So need to append highest MRB and introduce an initial epi.InitialRemoved.
-  (context(),
-    line([(x.t, x.target) for x in total_trajectory 
-      if (isa(x, epi.InitialRemoved) || isa(x, MRA) || isa(x, MRB))]),
-     stroke(csty(C[])), style.trail
-  ),
-
-  scaffolding(duration, population4),
-  )
-```

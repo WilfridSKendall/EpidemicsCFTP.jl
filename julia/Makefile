@@ -4,11 +4,13 @@ QUARTO := /usr/local/bin/quarto
 QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash
 
 figures.pdf: figures.qmd
-	$(QUARTO) render $^ --to pdf $(QUARTO_OPTIONS)
+production.pdf: production.qmd 
 
+production.qmd: preliminary.jl
+	
 clean: ; rm figures.ipynb
 
-verify: figures.pdf
+verify: figures.pdf production.pdf
 	@for f in $(wildcard image/REFERENCE-*.png) ; \
 	  do ( (cmp -s $$f $${f/REFERENCE-/}) || \
 	     ( \
@@ -20,3 +22,6 @@ verify: figures.pdf
 	@echo Checked $(wildcard image/REFERENCE-*.png)
 
 set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/REFERENCE-} ; done
+
+%.pdf: %.qmd
+	$(QUARTO) render $^ --to pdf $(QUARTO_OPTIONS)

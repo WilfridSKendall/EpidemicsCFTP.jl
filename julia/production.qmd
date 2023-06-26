@@ -1,0 +1,226 @@
+---
+title:  "Figures for the Perfect Epidemics paper"
+author: "Wilfrid Kendall"
+date:   today
+---
+
+---
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+jupyter:    julia-1.9
+---
+
+\newcommand{\SIR}{\operatorname{S-I-R}}
+
+# Set-up details
+
+```{julia}
+include("preliminary.jl")
+```
+
+```{julia}
+const population = 5 ;
+const duration   = 2 ;
+const MAXPOP  = 20 ;
+if population > MAXPOP
+  error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
+end ;
+```
+
+# Figure 1
+We generate a precise equivalent of Figure 1 of Connor-Kendall (in preparation).
+
+**Caption in draft paper:** 
+"Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
+```{julia}
+duration1 = 15 ; population1 = 5 ;
+coordinates1 = UnitBox(0, population1, duration1, -population1,
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
+```
+
+Here is the set of innovations:
+```{julia}
+env_figure1 = epi.Innovation(duration1, 
+  A[I(1,2,5),  I(2,1,2),  I(3,1,2),  I(4,2,4),  I(6,3,4),  I(7,2,3),  I(8,1,2), 
+    I(8,4,5),  I(9,1,4),  I(11,2,4), I(14.5,3,5)], 
+  R[R(3,5),    R(5,1),    R(7.5,5),  R(13,3),   R(14,3)],  C[]) ;
+```
+
+```{julia}
+initial1= epi.SIR(0.0, 4, 1, 0)
+chron1  = epi.chronology(env_figure1) ; states1 = [initial1] # both will be overwritten
+traj1, active1 = epi.evolution_recurse!(states1, epi.AbstractIncident[], duration1, chron1)
+
+
+flow1 = trajectory_table(duration1, initial1, traj1) ;
+print(flow1) ;
+```
+
+
+```{julia}
+#| echo: false
+#| label: fig-nodes1
+#| fig-cap: "Nodes used in Figure 1 of Connor-Kendall (in preparation)."
+compose_nodes_view(duration1, population1, env_figure1, coordinates=coordinates1)
+```
+
+```{julia}
+#| echo: false
+#| label: fig-trajectories1
+#| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
+#|           removals (grey short dashes)."  
+draftfigure1b = plot_trajectories(flow1)
+draw(PNG("image/draftfigure1b.png"), draftfigure1b)
+draw(PDF("image/draftfigure1b.pdf"), draftfigure1b)
+draftfigure1b
+```
+
+```{julia}
+#| echo: false
+#| label: realized1
+#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. Realized incidents have   \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
+#|           coloured yellow/brown."
+draftfigure1a = compose_epidemic_view(duration1, population1, env_figure1, flow1, initial1, active1; coordinates=coordinates1)
+draw(PNG("image/draftfigure1a.png"), draftfigure1a)
+draw(PDF("image/draftfigure1a.pdf"), draftfigure1a)
+draftfigure1a
+```
+
+\newpage
+
+# Figure 3
+We generate a precise equivalent of Figure 3 of Connor-Kendall (in preparation).
+
+**Caption in draft paper:** 
+"Modified graphical representation of \(\SIR\) epidemic, conditioned on removals. ..."
+```{julia}
+duration3 = duration1 ; population3 = population1 ;
+coordinates3 = UnitBox(0, population3, duration3, -population3,
+  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
+```
+
+```{julia}
+R[R(1,5),  R(2,4),  R(4,4),  R(7,5)]
+```
+
+Here is the set of innovations:
+```{julia}
+env_figure3 = epi.Innovation(duration3, 
+  A[I(0.5,2,5),I(2,1,2),  I(2.5,3,4),I(3,1,3),  I(5,2,4),  I(5.5,3,4),
+    I(6,2,3),  I(8,2,5),  I(9.5,1,3),I(10,4,5), I(11,4,5), I(12.5,3,5)],
+  R[R(1,5),   R(2,4),  R(4,4),  R(7,5)],
+  C[C(3.5,1), C(6.5,4),C(7,3),  C(12,5), C(13,5)]) ;
+```
+
+```{julia}
+initial3 = initial1
+chron3   = epi.chronology(env_figure3) ; states3 = [initial3] # both will be overwritten
+traj3, active3 = epi.evolution_recurse!(states3, epi.AbstractIncident[], duration3, chron3)
+
+
+flow3 = trajectory_table(duration3, initial3, traj3) ;
+print(flow3) ;
+```
+
+
+```{julia}
+#| echo: false
+#| label: fig-nodes3
+#| fig-cap: "Nodes used in Figure 3 of Connor-Kendall (in preparation)."
+compose_nodes_view(duration3, population3, env_figure3, coordinates=coordinates3)
+```
+
+```{julia}
+#| echo: false
+#| label: fig-trajectories3
+#| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
+#|           removals (grey short dashes)."  
+draftfigure3b = plot_trajectories(flow3)
+draw(PNG("image/draftfigure3b.png"), draftfigure3b)
+draw(PDF("image/draftfigure3b.pdf"), draftfigure3b)
+draftfigure3b
+```
+
+```{julia}
+#| echo: false
+#| label: realized3
+#| fig-cap: "@fig-nodes3 plus epidemic and removal curves. Realized incidents have   \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
+#|           coloured yellow/brown."
+draftfigure3a = compose_epidemic_view(duration3, population3, env_figure3, flow3, initial3, active3; coordinates=coordinates3)
+draw(PNG("image/draftfigure3a.png"), draftfigure3a)
+draw(PDF("image/draftfigure3a.pdf"), draftfigure3a)
+draftfigure3a
+```
+
+
+\newpage
+
+# Computing the last viable epidemic
+First establish active removal incidents in time-decreasing order
+of _removed_ timeline
+(easily done: the \(i^\text{th}\) active removal listed in time-order
+will necessarily remove time-line \(i\)),
+and list potential infections prior to each active removal
+according to infection time.
+Notice we have not yet covered the possibility that some time-lines
+are never infected and others are not removed before `duration`
+(the end of the simulation). Notice too that the first time-line
+is (of course) infected at time \(0\) and is not otherwise infected.
+```{julia}
+env0 = epi.Innovation(5, 
+  A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
+    I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
+    I(1.5,3,4)], 
+  R[R(0.3,5), R(0.42,3), R(0.7,3), R(0.55,3), R(0.95,5), R(1.4,2), R(1.55,1),
+    R(1.85,2)],
+  C[C(1.3,2), C(0.8,1), C(1.7,4), C(1.8,4), C(1.92,5)] ) ;
+```
+
+```{julia}
+active_removals = filter(x -> (isa(x, R) || isa(x, C)), active3)
+reversed_removals = reverse(collect(enumerate(active_removals))[2:end])
+barrier = reversed_removals[1][2]
+last_viable = []
+for (k, rem) in reversed_removals
+  println("Timeline $k ends at $rem, at time $(rem.t)")
+  prior_removals = [pr for pr in env0.removals if pr.target==k && pr.t < rem.t]
+  println("  (prior rem) ", join([string(pr) for pr in prior_removals], " "))
+  prior_infections = [pf for pf in env0.infections if pf.infectee==k && pf.t < rem.t]
+  println("  (prior inf) ", join([string(pf) for pf in prior_infections], " "))
+  barrier =
+      sort( [pf for pf in prior_infections if pf.t < barrier.t], by=x -> x.t)[end]
+  println("  (last viable infection) ", barrier)
+  println("\n")
+  pushfirst!(last_viable, barrier)
+end
+println("  (last_viable) ", join([string(pr) for pr in last_viable], " "))
+```
+
+By the nature of the simulation, no prior potential infections will infect
+a time-line _after_ it has been removed, because by then the `target` time-line
+must also have been removed.
+
+::: {.callout-tip}
+## This has still to be done!
+
+1. List infection incidents targetting that time-line. **DONE**
+2. Select those lying between infection and removal.
+3. Figure out how to extract viable incidents.
+4. Tighten up so subsequent timelines also infected(!)
+5. Choose the latest.
+
+:::
+

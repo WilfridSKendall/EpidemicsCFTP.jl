@@ -24,7 +24,6 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 # Set up details and utilities
-
 ```{julia}
 include("utilities.jl") ;
 ```
@@ -40,7 +39,7 @@ end ;
 ```
 
 
-# Style choices
+# Abbreviations and choices for style and style colour
 Set up and establish graphics size and coordinates.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
@@ -62,11 +61,15 @@ style = (
 ) ;
 ```
 
-
-# Convenient abbreviations, and colour styles
+Code colours for various kinds of incidents using a function `csty`.
 ```{julia}
-E = epi.AbstractIncident  ; R = epi.Removal   ; C = epi.CRemoval   
-A = epi.AbstractInfection ; I = epi.Infection ; P = epi.PInfection 
+E = epi.AbstractIncident   ; R = epi.Removal             ; C = epi.CRemoval   
+A = epi.AbstractInfection  ; I = epi.Infection           ; P = epi.PInfection
+IR = epi.InitialRemoved    ; II = epi.InitialInfected    ; IS = epi.InitialSusceptible
+CR = epi.ContinuingRemoved ; CI = epi.ContinuingInfected ; CS = epi.ContinuingSusceptible
+MIA = epi.MarkerInfectionA ; MRA = epi.MarkerRemovalA
+MIB = epi.MarkerInfectionB ; MRB = epi.MarkerRemovalB
+
 
 function csty(x::Vector{R}) colorant"tan"       end 
 function csty(x::Vector{C}) colorant"purple"    end 
@@ -79,9 +82,7 @@ function csty(x::Vector{E})                     end ;
 
 
 # Experiments
-
-And now another way to create a trajectory!
-
+Plot regions of infection and removal. First define an epidemic.
 ```{julia}
 env0 = epi.Innovation(5, 
   A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
@@ -94,9 +95,6 @@ env0 = epi.Innovation(5,
 
 
 ```{julia}
-MIA = epi.MarkerInfectionA ; MRA = epi.MarkerRemovalA
-MIB = epi.MarkerInfectionB ; MRB = epi.MarkerRemovalB
-
 initial= epi.SIR(0.0, 4, 1, 0)
 chron  = epi.chronology(env0) ; states = [initial] # both will be overwritten
 traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], duration, chron, conditioned=true)
@@ -115,9 +113,9 @@ Compute indices for initial and continuation markers.
 initial0 = [0, 1, population]
 
 initial_markers = Iterators.flatten([
-    [epi.InitialRemoved(0, k)     for k in 1:initial0[1]],
-    [epi.InitialInfected(0, k)    for k in (initial0[1]+1):(initial0[1]+initial0[2])],
-    [epi.InitialSusceptible(0, k) for k in (initial0[1]+initial0[2]+1):population]
+    [IR(0, k)     for k in 1:initial0[1]],
+    [II(0, k)    for k in (initial0[1]+1):(initial0[1]+initial0[2])],
+    [IS(0, k) for k in (initial0[1]+initial0[2]+1):population]
   ])
 
 rend = maximum(x.target for x in active_trajectory if isa(x, MRB) )
@@ -125,9 +123,9 @@ iend = maximum(x.target for x in active_trajectory if isa(x, MIB))
 total_trajectory = collect(Iterators.flatten(
   [ initial_markers, 
     active_trajectory, 
-    [epi.ContinuingRemoved(duration, k) for k in 1:rend], 
-    [epi.ContinuingInfected(duration, k) for k in (rend+1):iend], 
-    [epi.ContinuingSusceptible(duration, k) for k in (iend+1):population]
+    [CR(duration, k) for k in 1:rend], 
+    [CI(duration, k) for k in (rend+1):iend], 
+    [CS(duration, k) for k in (iend+1):population]
   ]))
 [total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
 ```
@@ -139,16 +137,16 @@ The following could be improved by using a more refined type hierarchy!
 ```{julia}
 function csty(x::Vector{MIA}) colorant"orange" end;
 function csty(x::Vector{MIB}) colorant"orange" end;
-function csty(x::Vector{epi.InitialInfected})    colorant"orange" end;
-function csty(x::Vector{epi.ContinuingInfected}) colorant"orange" end;
+function csty(x::Vector{II})    colorant"orange" end;
+function csty(x::Vector{CI}) colorant"orange" end;
 
 function csty(x::Vector{MRA}) colorant"tan" end;
 function csty(x::Vector{MRB}) colorant"tan" end;
-function csty(x::Vector{epi.InitialRemoved})    colorant"tan" end;
-function csty(x::Vector{epi.ContinuingRemoved}) colorant"tan" end;
+function csty(x::Vector{IR})    colorant"tan" end;
+function csty(x::Vector{CR}) colorant"tan" end;
 
-function csty(x::Vector{epi.InitialSusceptible})    colorant"blue" end;
-function csty(x::Vector{epi.ContinuingSusceptible}) colorant"blue" end;
+function csty(x::Vector{IS})    colorant"blue" end;
+function csty(x::Vector{CS}) colorant"blue" end;
 
 function draw_marker(xl::Vector{T}; sty=style) where T<:epi.AbstractMarker
   if length(xl) > 0
@@ -177,11 +175,11 @@ function infected_areas(population, total_trajectory; sty=style)
   xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
   for k in 1:population
     level = [bb for bb in total_trajectory if bb.target==k]
-    starts = [bb for bb in level if (isa(bb, MIB) || isa(bb, epi.InitialInfected))]
-    ends   = [bb for bb in level if (isa(bb, MRB) || isa(bb, epi.ContinuingInfected))]
+    starts = [bb for bb in level if (isa(bb, MIB) || isa(bb, II))]
+    ends   = [bb for bb in level if (isa(bb, MRB) || isa(bb, CI))]
     if length(starts) > 0 && length(ends) > 0
-      disk1 = [bb for bb in level if (isa(bb, MIB) || isa(bb, epi.InitialInfected))][1]
-      disk2 = [bb for bb in level if (isa(bb, MRB) || isa(bb, epi.ContinuingInfected))][1]
+      disk1 = [bb for bb in level if (isa(bb, MIB) || isa(bb, II))][1]
+      disk2 = [bb for bb in level if (isa(bb, MRB) || isa(bb, CI))][1]
       append!(xx, disk1.t)
       append!(yy, k-1)
       append!(rw, disk2.t - disk1.t)
@@ -196,8 +194,8 @@ function removed_areas(population, total_trajectory; sty=style)
   xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
   for k in 1:population
     level = [bb for bb in total_trajectory if bb.target==k]
-    starts = [bb for bb in level if (isa(bb, MRB) || isa(bb, epi.InitialRemoved))]
-    ends   = [bb for bb in level if (isa(bb, epi.ContinuingRemoved))]
+    starts = [bb for bb in level if (isa(bb, MRB) || isa(bb, IR))]
+    ends   = [bb for bb in level if (isa(bb, CR))]
     if length(starts) > 0 && length(ends) > 0
       disk1 = starts[1]
       disk2 = ends[1]
@@ -224,11 +222,11 @@ xx2, yy2, rw2, rl2 = removed_areas(population, total_trajectory)
 
 ```{julia}
 # Epidemic trajectory misses last segment if not continuing. Thus
-# append highest MRB if `epi.ContinuingInfected` is not at end.
+# append highest MRB if `CI` is not at end.
   
 epidemic_trajectory = [(x.t, x.target) for x in total_trajectory 
   if (isa(x, MIA) || isa(x, MIB)  || 
-      isa(x, epi.InitialInfected) || isa(x, epi.ContinuingInfected))]
+      isa(x, II) || isa(x, CI))]
 
 terminus = epidemic_trajectory[end]
 if (terminus[1] < duration)
@@ -241,7 +239,7 @@ end ;
 # Removal trajectory may miss last segment. Check, and if so then
 # append highest MRB.
 removal_trajectory = [(x.t, x.target) for x in total_trajectory 
-      if (isa(x, epi.InitialRemoved) || isa(x, MRA) || isa(x, MRB))]
+      if (isa(x, IR) || isa(x, MRA) || isa(x, MRB))]
 
 terminus = removal_trajectory[end]
 if (terminus[1] < duration)
@@ -250,9 +248,9 @@ end
 
 # should use "total_markers" and ensure "total_trajectory" actually is a trajectory!
 Regions = (context(),
-  draw_marker([x for x in total_trajectory if isa(x, epi.InitialSusceptible)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.InitialInfected)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.InitialRemoved)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, IS)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, II)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, IR)], sty=style),
 
   draw_marker([x for x in total_trajectory if isa(x, MIA)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, MIB)], sty=style),
@@ -260,9 +258,9 @@ Regions = (context(),
   draw_marker([x for x in total_trajectory if isa(x, MRA)], sty=style),
   draw_marker([x for x in total_trajectory if isa(x, MRB)], sty=style),
   
-  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingSusceptible)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingInfected)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, epi.ContinuingRemoved)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, CS)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, CI)], sty=style),
+  draw_marker([x for x in total_trajectory if isa(x, CR)], sty=style),
 
 
   (context(),
@@ -301,7 +299,7 @@ depict("Removals", coordinates, Removals_incidents, Regions)
 
 We now need to add linear segments corresponding to "no-infection zones".
 ```{julia}
-timelined_susceptibles = [x for x in total_trajectory if isa(x, epi.InitialSusceptible)]
+timelined_susceptibles = [x for x in total_trajectory if isa(x, IS)]
 timelined_removals = [[inc for inc in env0.removals if isa(inc, R)] for k in 1:population]
 ```
 

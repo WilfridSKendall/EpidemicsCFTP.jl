@@ -5,8 +5,6 @@ QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash
 
 main: figures.pdf production.pdf experiment.pdf
 
-production.qmd: preliminary.jl
-	
 clean: ; rm figures.ipynbmake
 
 verify: figures.pdf production.pdf
@@ -22,4 +20,4 @@ verify: figures.pdf production.pdf
 
 set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/REFERENCE_} ; done
 
-%.pdf: %.qmd   ; $(QUARTO) render $^ --to pdf $(QUARTO_OPTIONS)
+%.pdf: %.qmd utilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)

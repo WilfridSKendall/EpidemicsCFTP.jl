@@ -1,3 +1,4 @@
+# ## Set-up
 # Required modules
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly, EpidemicsCFTP # EpidemicsCFTP under development!
@@ -16,9 +17,20 @@ end
 
 BasicIncident = unionize_composites(epi.AbstractIncident) ;
 
-# 
+# ## Graphics utility
+# Here is a short utility function to display a `Compose` figure
+# and simultaneously create PNG and PDF renderings in directory `image`.
+function depict(title, coordinates, compose_list...)
+  composition = compose(context(units=coordinates), compose_list...)
+  draw(PNG("image/$title.png"), composition)
+  draw(PDF("image/$title.pdf"),  composition)
+  composition
+end
+
     
-# Basic image template elements
+# ## Basic image template elements
+# We define a function to draw the time axis, with tick marks at integer times.
+# Note, both here and following, the careful use of graphics area units (`cx`, `cy`).
 function time_axis(duration; sty=style)
   labellocs = [(x)cx for x in 0:duration]
   step = 10^floor(Int, log10(duration))
@@ -35,7 +47,17 @@ function time_axis(duration; sty=style)
     (context(), line(tic2), stroke(sty.scaffold), linewidth(0.1mm)),
     (context(), line(tic3), stroke(sty.scaffold), linewidth(0.1mm)), )
 end
-    
+
+# Now we define a function to draw all time-lines as threads labelled by circled integers.
+#
+# ::: {.callout-caution}
+# The definition of `circlabels` below needs to be changed if `population > MAXPOP=20`,
+# as unicode then runs out of circled integers!
+# (Figure out how to use 
+# one of the many ideas in 
+# <https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers>.)
+# :::
+
 function time_threads(duration, population; sty=style)
   circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
 
@@ -45,13 +67,17 @@ function time_threads(duration, population; sty=style)
     (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
       stroke(sty.scaffold), linewidth(0.5mm), ), )
 end 
-    
+
+# A third function constructs scaffolding (axes, time lines _etc_).
 function scaffolding(duration, population; sty=style)
   (context(), sty.region, time_axis(duration, sty=sty), 
               time_threads(duration, population, sty=sty))
 end 
 
-# Drawing functions (`Compose`)
+# ## Drawing functions (`Compose`)
+# Here are functions to draw inactive (respectively, active) nodes for each of a list
+# conposed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
+# for all other `AbstractIncident[]` vectors.
 function draw_incident(xl::Vector{T}; sty=style) where T<:BasicIncident
   if length(xl) > 0
     (context(),
@@ -95,6 +121,8 @@ function draw_realized(xl::Vector{T}; sty=style) where T<:epi.AbstractIncident
 end
 function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:epi.AbstractIncident 
 end 
+
+
 
 function draw_elements(env; I=I, P=P, R=R, C=C, sty=style) 
   (context(),
@@ -169,7 +197,11 @@ function compose_epidemic_view(duration, population, env, flow, initial, active;
 end 
 
 
-# Drawing functions (`Gadfly`)
+# ## Drawing functions (`Gadfly`)
+# Define functions to construct and plot a dataframe
+# of trajectories as knots of piecewise constant functions, using `evolution_recurse!`
+# to deliver the \(\SIR\) trajectory `traj`,
+# and realized incidents in `active`.
 function trajectory_table(duration, initial, traj)
   states = [initial]
   t = [state.t for state in traj] ; push!(t, duration)

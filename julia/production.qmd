@@ -23,10 +23,10 @@ jupyter:    julia-1.9
 
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
-# Set-up details
+# Set-up details and utilities
 
 ```{julia}
-include("preliminary.jl") ;
+include("utilities.jl") ;
 ```
 
 ```{julia}

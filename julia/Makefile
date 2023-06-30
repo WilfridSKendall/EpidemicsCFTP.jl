@@ -8,16 +8,16 @@ main: figures.pdf production.pdf experiment.pdf
 clean: ; rm figures.ipynbmake
 
 verify: figures.pdf production.pdf
-	@for f in $(wildcard image/REFERENCE_*.png) ; do  \
-	( if cmp -s $${f/REFERENCE_/} $$f ;               \
-	  then echo Checked $${f/REFERENCE_/};            \
+	@for f in $(wildcard image/VERIFY_*.png) ; do  \
+	( if cmp -s $${f/VERIFY_/} $$f ;               \
+	  then echo Checked $${f/VERIFY_/};            \
 	  else \
-	    ( ( compare $${f/REFERENCE_/} $$f  $${f/REFERENCE_/DIFF_} ) ;                          \
-	      ( convert +append $${f/REFERENCE_/}  $${f/REFERENCE_/DIFF_} $$f miff:- | display ) ; \
-	        echo Issue with $${f/REFERENCE_/} see $${f/REFERENCE_/DIFF_} ) ;                   \
+	    ( ( compare $${f/VERIFY_/} $$f  $${f/VERIFY_/DIFF_} ) ;                          \
+	      ( convert +append $${f/VERIFY_/}  $${f/VERIFY_/DIFF_} $$f miff:- | display ) ; \
+	        echo Issue with $${f/VERIFY_/} see $${f/VERIFY_/DIFF_} ) ;                   \
 	  fi ) ; \
 	done
 
-set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/REFERENCE_} ; done
+set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ; done
 
 %.pdf: %.qmd FigureUtilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)

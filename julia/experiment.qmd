@@ -28,8 +28,9 @@ Load required modules.
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
-using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
 gf = Gadfly
+
+using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
 
 include("FigureUtilities.jl") ;
 ```
@@ -68,10 +69,11 @@ style = (
 ```
 
 Code colours for various kinds of incidents using a function `csty`.
-A more refined type hierarchy _might_ be helpful here.
+Note issue that `FigureUtilities` refers to `csty`.
 ```{julia}
-E = AbstractIncident   ; R = Removal             ; C = CRemoval   
-A = AbstractInfection  ; I = Infection           ; P = PInfection
+A = AbstractInfection
+R = Removal            ; C = CRemoval   
+I = Infection          ; P = PInfection
 IR = InitialRemoved    ; II = InitialInfected    ; IS = InitialSusceptible
 CR = ContinuingRemoved ; CI = ContinuingInfected ; CS = ContinuingSusceptible
 MIA = MarkerInfectionA ; MRA = MarkerRemovalA
@@ -79,23 +81,14 @@ MIB = MarkerInfectionB ; MRB = MarkerRemovalB
 
 function csty(x::Vector{R}) colorant"tan"       end 
 function csty(x::Vector{C}) colorant"purple"    end 
-function csty(x::Vector{A}) colorant"yellow"    end 
 function csty(x::Vector{I}) colorant"orange"    end 
 function csty(x::Vector{P}) colorant"darkgreen" end 
-function csty(x::Vector{E})                     end
 
-function csty(x::Vector{MIA}) colorant"orange" end
-function csty(x::Vector{MIB}) colorant"orange" end
-function csty(x::Vector{II})  colorant"orange" end
-function csty(x::Vector{CI})  colorant"orange" end
-
-function csty(x::Vector{MRA}) colorant"tan"    end
-function csty(x::Vector{MRB}) colorant"tan"    end
-function csty(x::Vector{IR})  colorant"tan"    end
-function csty(x::Vector{CR})  colorant"tan"    end
-
-function csty(x::Vector{IS})  colorant"blue"   end
-function csty(x::Vector{CS})  colorant"blue"   end ;
+function csty(x::Vector{T}) where T<:AbstractInfection         colorant"yellow" end 
+function csty(x::Vector{T}) where T<:AbstractInfectionMarker   colorant"orange" end
+function csty(x::Vector{T}) where T<:AbstractRemovalMarker     colorant"tan"    end
+function csty(x::Vector{T}) where T<:AbstractSusceptibleMarker colorant"blue"   end 
+function csty(x::Vector{T}) where T<:AbstractIncident                           end ;
 ```
 
 

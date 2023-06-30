@@ -71,15 +71,17 @@ style = (
 
 # Convenient abbreviations, and colour styles
 ```{julia}
-E = AbstractIncident  ; R = Removal   ; C = CRemoval   
-A = AbstractInfection ; I = Infection ; P = PInfection 
+A = AbstractInfection
+R = Removal   ; C = CRemoval   
+I = Infection ; P = PInfection 
 
-function csty(x::Vector{R}) colorant"tan"       end 
+function csty(x::Vector{R}) colorant"tan"       end
 function csty(x::Vector{C}) colorant"purple"    end 
-function csty(x::Vector{A}) colorant"yellow"    end 
-function csty(x::Vector{I}) colorant"orange"    end 
-function csty(x::Vector{P}) colorant"darkgreen" end 
-function csty(x::Vector{E})                     end ;
+function csty(x::Vector{I}) colorant"orange"    end
+function csty(x::Vector{P}) colorant"darkgreen" end
+
+function csty(x::Vector{T}) where T<:AbstractInfection colorant"yellow" end 
+function csty(x::Vector{T}) where T<:AbstractIncident                   end ;
 ```
 
 # Figure 1

@@ -49,15 +49,21 @@ end ;
 ```
 
 
-# Abbreviations and choices for style and style colour
+## Style choices
 Set up and establish graphics size and coordinates.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
-coordinates = UnitBox(0, population, duration, -population,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
+coordinates = UnitBox(0, population, duration, -population, 
+                      leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch);
 ```
 
-Abbreviations for various kinds of incidents.
+For now, use default style from `FigureUtilities`.
+```{julia}
+style = defaultstyle
+```
+
+## Dealing with different kinds of incident
+Various types of incident are conveniently abbreviated.
 ```{julia}
 A = AbstractInfection
 R = Removal            ; C = CRemoval   
@@ -66,38 +72,6 @@ IR = InitialRemoved    ; II = InitialInfected    ; IS = InitialSusceptible
 CR = ContinuingRemoved ; CI = ContinuingInfected ; CS = ContinuingSusceptible
 MIA = MarkerInfectionA ; MRA = MarkerRemovalA
 MIB = MarkerInfectionB ; MRB = MarkerRemovalB ;
-```
-
-Code colours for various kinds of incidents using a function `csty`.
-See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
-```{julia}
-function csty(x::Vector{R}) colorant"tan"       end 
-function csty(x::Vector{C}) colorant"purple"    end 
-function csty(x::Vector{I}) colorant"orange"    end 
-function csty(x::Vector{P}) colorant"darkgreen" end 
-
-function csty(x::Vector{T}) where T<:AbstractInfection         colorant"yellow" end 
-function csty(x::Vector{T}) where T<:AbstractInfectionMarker   colorant"orange" end
-function csty(x::Vector{T}) where T<:AbstractRemovalMarker     colorant"tan"    end
-function csty(x::Vector{T}) where T<:AbstractSusceptibleMarker colorant"blue"   end 
-function csty(x::Vector{T}) where T<:AbstractIncident                           end ;
-```
-
-Collect drawing styles including `csty` in the named tuple `style`.
-Note that `FigureUtilities` functions frequently
-use this _via_ a keyword argument `style` defined there.
-```{julia}
-style = (
-  radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
-  bit      = -0.02h,              tic      = -0.2cy,
-  xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
-  height   =  0.0cy,              
-  boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
-  active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
-  blank    =  colorant"white",    scaffold =  colorant"grey",
-  region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
-  colour   =  csty,
-) ;
 ```
 
 # Experiments
@@ -179,7 +153,7 @@ end ;
 
 
 ```{julia}
-function infected_areas(population, total_trajectory; sty=style)
+function infected_areas(population, total_trajectory)
   xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
   for k in 1:population
     level = [bb for bb in total_trajectory if bb.target==k]
@@ -198,7 +172,7 @@ function infected_areas(population, total_trajectory; sty=style)
 end ;
 
 
-function removed_areas(population, total_trajectory; sty=style)
+function removed_areas(population, total_trajectory)
   xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
   for k in 1:population
     level = [bb for bb in total_trajectory if bb.target==k]

@@ -84,41 +84,11 @@ coordinates = UnitBox(0, population, duration, -population,
 ```
 
 ## Dealing with different kinds of incident
-Various types of incident are styled using some variables
-for convenient abbreviations.
-See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
+Various types of incident are conveniently abbreviated.
 ```{julia}
 A = AbstractInfection
 R = Removal   ; C = CRemoval   
-I = Infection ; P = PInfection 
-```
-
-Code colours for various kinds of incidents using a function `csty`.
-See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
-```{julia}
-function csty(x::Vector{R}) colorant"tan"       end
-function csty(x::Vector{C}) colorant"purple"    end 
-function csty(x::Vector{I}) colorant"orange"    end
-function csty(x::Vector{P}) colorant"darkgreen" end
-
-function csty(x::Vector{T}) where T<:AbstractInfection colorant"yellow" end 
-function csty(x::Vector{T}) where T<:AbstractIncident                   end ;
-```
-
-
-Collect drawing styles in the named tuple `style`.
-```{julia}
-style = (
-  radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
-  bit      = -0.02h,              tic      = -0.2cy,
-  xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
-  height   =  0.0cy,              
-  boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
-  active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
-  blank    =  colorant"white",    scaffold =  colorant"grey",
-  region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
-  colour   =  csty,
-) ;
+I = Infection ; P = PInfection ;
 ```
 
 # Drawing the underlying scaffolding

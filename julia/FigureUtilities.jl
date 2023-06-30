@@ -1,7 +1,10 @@
+# # Module supplying utilities for perfect epidemics simulation.
 # ## Set-up
-# Required modules
+
+# We need various modules
 using Colors, Compose, DataFrames, Measures
-import Cairo, Fontconfig, Gadfly, EpidemicsCFTP # EpidemicsCFTP under development!
+import Cairo, Fontconfig, Gadfly
+import EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
 gf = Gadfly ; epi = EpidemicsCFTP ; 
 
 # Create union of composite `AbstractIncident` types.

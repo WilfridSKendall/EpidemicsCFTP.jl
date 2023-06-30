@@ -24,9 +24,14 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 # Set-up details and utilities
-
+Load required modules.
 ```{julia}
-include("utilities.jl") ;
+using Colors, Compose, DataFrames, Measures
+import Cairo, Fontconfig, Gadfly
+import EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
+gf = Gadfly ; epi = EpidemicsCFTP ; 
+
+include("FigureUtilities.jl") ;
 ```
 
 ```{julia}

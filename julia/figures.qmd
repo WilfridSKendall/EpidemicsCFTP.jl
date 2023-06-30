@@ -37,6 +37,15 @@ Further cell execution options: see
 <https://quarto.org/docs/computations/execution-options.html>.
 
 # Initialisation and styling
+Load required modules.
+```{julia}
+using Colors, Compose, DataFrames, Measures
+import Cairo, Fontconfig, Gadfly
+import EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
+gf = Gadfly ; epi = EpidemicsCFTP ; 
+
+include("FigureUtilities.jl") ;
+```
 ## Set up details and utilities
 A laconic description of the `julia` package `Compose.jl` 
 (the graphics package used for these figures, loaded together with other

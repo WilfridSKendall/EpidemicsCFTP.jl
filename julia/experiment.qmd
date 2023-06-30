@@ -25,14 +25,17 @@ jupyter:    julia-1.9
 
 # Set up details and utilities
 Load required modules.
+Note that `EpidemicsCFTP` is under development, while `FigureUtilities` needs in due course
+to be pre-compiled!
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
 gf = Gadfly
 
-using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
+using EpidemicsCFTP 
 
-include("FigureUtilities.jl") ;
+include("./FigureUtilities.jl")
+using .FigureUtilities ;
 ```
 
 Here are some very basic features about the epidemic.
@@ -53,23 +56,8 @@ set_default_graphic_size(6inch, 3.25inch) ;
 coordinates = UnitBox(0, population, duration, -population,
   leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
 ```
-Collect drawing styles in the named tuple `style`.
-See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
-```{julia}
-style = (
-  radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
-  bit      = -0.02h,              tic      = -0.2cy,
-  xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
-  height   =  0.0cy,              
-  boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
-  active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
-  blank    =  colorant"white",    scaffold =  colorant"grey",
-  region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
-) ;
-```
 
-Abbreviations and code colours for various kinds of incidents using a function `csty`.
-Note issue that `FigureUtilities` refers to `csty`.
+Abbreviations for various kinds of incidents.
 ```{julia}
 A = AbstractInfection
 R = Removal            ; C = CRemoval   
@@ -77,8 +65,12 @@ I = Infection          ; P = PInfection
 IR = InitialRemoved    ; II = InitialInfected    ; IS = InitialSusceptible
 CR = ContinuingRemoved ; CI = ContinuingInfected ; CS = ContinuingSusceptible
 MIA = MarkerInfectionA ; MRA = MarkerRemovalA
-MIB = MarkerInfectionB ; MRB = MarkerRemovalB
+MIB = MarkerInfectionB ; MRB = MarkerRemovalB ;
+```
 
+Code colours for various kinds of incidents using a function `csty`.
+See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
+```{julia}
 function csty(x::Vector{R}) colorant"tan"       end 
 function csty(x::Vector{C}) colorant"purple"    end 
 function csty(x::Vector{I}) colorant"orange"    end 
@@ -91,7 +83,22 @@ function csty(x::Vector{T}) where T<:AbstractSusceptibleMarker colorant"blue"   
 function csty(x::Vector{T}) where T<:AbstractIncident                           end ;
 ```
 
-
+Collect drawing styles including `csty` in the named tuple `style`.
+Note that `FigureUtilities` functions frequently
+use this _via_ a keyword argument `style` defined there.
+```{julia}
+style = (
+  radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
+  bit      = -0.02h,              tic      = -0.2cy,
+  xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
+  height   =  0.0cy,              
+  boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
+  active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
+  blank    =  colorant"white",    scaffold =  colorant"grey",
+  region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
+  colour   =  csty,
+) ;
+```
 
 # Experiments
 Plot regions of infection and removal. First define an epidemic.
@@ -138,8 +145,12 @@ total_trajectory = collect(Iterators.flatten(
     [CR(duration, k) for k in 1:rend], 
     [CI(duration, k) for k in (rend+1):iend], 
     [CS(duration, k) for k in (iend+1):population]
-  ]))
-println([total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]);
+  ])) ;
+```
+
+Here is the total trajectory:
+```{julia}
+[total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
 ```
 
 ## Plotting regions of infection and removal
@@ -155,7 +166,7 @@ function draw_marker(xl::Vector{T}; sty=style) where T<:AbstractMarker
       ),
       (context(),
         circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
-        fillopacity(0.2), fill(csty(xl)), stroke(csty(xl))
+        fillopacity(0.2), fill(sty.colour(xl)), stroke(sty.colour(xl))
       ), 
       (context(),
         circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
@@ -254,22 +265,22 @@ Regions = (context(),
 
   (context(),
     rectangle(xx1, yy1, rw1, rl1),
-    fill(csty(I[])), fillopacity(0.3),
+    fill(style.colour(I[])), fillopacity(0.3),
   ),
 
   (context(),
     rectangle(xx2, yy2, rw2, rl2),
-    fill(csty(C[])), fillopacity(0.3),
+    fill(style.colour(C[])), fillopacity(0.3),
   ),
 
   (context(),
   line(epidemic_trajectory),
-    stroke(csty(I[])), style.trail
+    stroke(style.colour(I[])), style.trail
   ),
 
   (context(),
     line(removal_trajectory),
-     stroke(csty(C[])), style.trail
+     stroke(style.colour(C[])), style.trail
   ),
 
   scaffolding(duration, population),

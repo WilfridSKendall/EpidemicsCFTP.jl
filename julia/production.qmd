@@ -24,14 +24,18 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 # Set-up details and utilities
-Load required modules.
+Load required modules. 
+Note that `EpidemicsCFTP` is under development, while `FigureUtilities` needs in due course
+to be pre-compiled!
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
-using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
 gf = Gadfly
 
-include("FigureUtilities.jl") ;
+using EpidemicsCFTP
+
+include("./FigureUtilities.jl")
+using .FigureUtilities ;
 ```
 
 ```{julia}
@@ -54,8 +58,25 @@ coordinates = UnitBox(0, population, duration, -population,
                       leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
 ```
 
-Collect drawing styles in the named tuple `style`.
+```{julia}
+A = AbstractInfection
+R = Removal   ; C = CRemoval   
+I = Infection ; P = PInfection 
+```
+
+Code colours for various kinds of incidents using a function `csty`.
 See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
+```{julia}
+function csty(x::Vector{R}) colorant"tan"       end
+function csty(x::Vector{C}) colorant"purple"    end 
+function csty(x::Vector{I}) colorant"orange"    end
+function csty(x::Vector{P}) colorant"darkgreen" end
+
+function csty(x::Vector{T}) where T<:AbstractInfection colorant"yellow" end 
+function csty(x::Vector{T}) where T<:AbstractIncident                   end ;
+```
+
+Collect drawing styles in the named tuple `style`.
 ```{julia}
 style = (
   radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
@@ -66,22 +87,8 @@ style = (
   active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
   blank    =  colorant"white",    scaffold =  colorant"grey",
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
+  colour   =  csty,
 ) ;
-```
-
-# Convenient abbreviations, and colour styles
-```{julia}
-A = AbstractInfection
-R = Removal   ; C = CRemoval   
-I = Infection ; P = PInfection 
-
-function csty(x::Vector{R}) colorant"tan"       end
-function csty(x::Vector{C}) colorant"purple"    end 
-function csty(x::Vector{I}) colorant"orange"    end
-function csty(x::Vector{P}) colorant"darkgreen" end
-
-function csty(x::Vector{T}) where T<:AbstractInfection colorant"yellow" end 
-function csty(x::Vector{T}) where T<:AbstractIncident                   end ;
 ```
 
 # Figure 1

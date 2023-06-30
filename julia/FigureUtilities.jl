@@ -1,3 +1,31 @@
+# ---
+# title:  "FigureUtilities"
+# author: "Wilfrid Kendall"
+# ---
+# 
+# ---
+# date-format: "D MMMM YYYY"
+# papersize:  a4
+# 
+# format:
+#   html:
+#     toc: true
+#     toc-depth: 2
+#     code-fold: true
+#     self-contained: true
+#   pdf:
+#     link-citations: true
+#     numbersections: true
+#     mainfont: "Times New Roman"
+#     monofont: "JuliaMono"
+#     monofontoptions:
+#        - Scale=0.7
+# jupyter:    julia-1.9
+# ---
+#
+# 
+# \newcommand{\SIR}{\operatorname{S-I-R}}
+#
 # # Module supplying utilities for perfect epidemics simulation.
 # ## Set-up
 
@@ -7,7 +35,12 @@ import Cairo, Fontconfig, Gadfly
 using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
 gf = Gadfly ; 
 
-# Create union of composite `AbstractIncident` types.
+# Abbreviations for various incident types.
+A = AbstractInfection
+R = Removal   ; C = CRemoval   
+I = Infection ; P = PInfection ;
+
+# Creation of union of composite `AbstractIncident` types.
 function unionize_composites(a::Type)::Type
   xl = Type[x for x in subtypes(a)]
   if length(xl) == 0
@@ -16,7 +49,7 @@ function unionize_composites(a::Type)::Type
     xl = Type[unionize_composites(y) for y in xl]
     return reduce((t1, t2) -> Union{t1, t2}, xl) # return a union type
   end
-end
+end 
 
 BasicIncident = unionize_composites(AbstractIncident) ;
 
@@ -28,7 +61,7 @@ function depict(title, coordinates, compose_list...)
   draw(PNG("image/$title.png"), composition)
   draw(PDF("image/$title.pdf"),  composition)
   composition
-end
+end ;
 
     
 # ## Basic image template elements
@@ -49,7 +82,7 @@ function time_axis(duration; sty=style)
     (context(), line(tic1), stroke(sty.scaffold), linewidth(0.2mm)),
     (context(), line(tic2), stroke(sty.scaffold), linewidth(0.1mm)),
     (context(), line(tic3), stroke(sty.scaffold), linewidth(0.1mm)), )
-end
+end ;
 
 # Now we define a function to draw all time-lines as threads labelled by circled integers.
 #
@@ -69,13 +102,13 @@ function time_threads(duration, population; sty=style)
       [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
     (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
       stroke(sty.scaffold), linewidth(0.5mm), ), )
-end 
+end ;
 
 # A third function constructs scaffolding (axes, time lines _etc_).
 function scaffolding(duration, population; sty=style)
   (context(), sty.region, time_axis(duration, sty=sty), 
               time_threads(duration, population, sty=sty))
-end 
+end ;
 
 # ## Drawing functions (`Compose`)
 # Here are functions to draw inactive (respectively, active) nodes for each of a list
@@ -197,7 +230,7 @@ function compose_epidemic_view(duration, population, env, flow, initial, active;
           draw_active_elements(initial, active), draw_elements(env), 
           draw_realized_regions(duration, population, flow),
           scaffolding(duration, population))
-end 
+end ;
 
 
 # ## Drawing functions (`Gadfly`)
@@ -225,4 +258,4 @@ function plot_trajectories(flow; sty=style)
   gf.plot(sus_layer, rem_layer, inf_layer,
     gf.style(panel_fill=colorant"bisque"), gf.Guide.xlabel("process time"), 
     gf.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
-end
+end ;

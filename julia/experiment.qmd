@@ -68,7 +68,7 @@ style = (
 ) ;
 ```
 
-Code colours for various kinds of incidents using a function `csty`.
+Abbreviations and code colours for various kinds of incidents using a function `csty`.
 Note issue that `FigureUtilities` refers to `csty`.
 ```{julia}
 A = AbstractInfection

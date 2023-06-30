@@ -3,7 +3,7 @@ SHELL := /usr/bin/bash
 QUARTO := /usr/local/bin/quarto
 QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash
 
-main: figures.pdf production.pdf experiment.pdf
+main: figures.pdf production.pdf experiment.pdf FigureUtilities.pdf
 
 clean: ; rm figures.ipynbmake
 
@@ -19,5 +19,8 @@ verify: figures.pdf production.pdf
 	done
 
 set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ; done
+
+FigureUtilities.qmd: processFigureUtilities.jl FigureUtilities.jl
+	$(HOME)/.local/bin/julia $<
 
 %.pdf: %.qmd FigureUtilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)

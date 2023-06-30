@@ -37,16 +37,17 @@ Further cell execution options: see
 <https://quarto.org/docs/computations/execution-options.html>.
 
 # Initialisation and styling
+## Set up details and utilities
 Load required modules.
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
-import EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
-gf = Gadfly ; epi = EpidemicsCFTP ; 
+using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
+gf = Gadfly  
 
 include("FigureUtilities.jl") ;
 ```
-## Set up details and utilities
+
 A laconic description of the `julia` package `Compose.jl` 
 (the graphics package used for these figures, loaded together with other
 modules in the `include` statement below),
@@ -54,9 +55,8 @@ is given by
 <https://giovineitalia.github.io/Compose.jl/latest/>.
 Further useful information is given in
 <https://shashi.biz/ijulia-notebooks/funcgeo/>.
-```{julia}
-include("utilities.jl") ;
-```
+
+
 
 
 Basic simulation parameters are the `population` size 
@@ -97,8 +97,8 @@ style = (
 Various types of incident are styled using some variables
 for convenient abbreviations.
 ```{julia}
-E = epi.AbstractIncident  ; R = epi.Removal   ; C = epi.CRemoval   ;
-A = epi.AbstractInfection ; I = epi.Infection ; P = epi.PInfection ;
+E = AbstractIncident  ; R = Removal   ; C = CRemoval   ;
+A = AbstractInfection ; I = Infection ; P = PInfection ;
 
 function csty(x::Vector{R}) colorant"tan"       end ;
 function csty(x::Vector{C}) colorant"purple"    end ;
@@ -126,7 +126,7 @@ Scaffolding
 Consider lists of potential incidents underlying
 an unconditional epidemic.
 ```{julia}
-env0 = epi.Innovation(5, 
+env0 = Innovation(5, 
   A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
     I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
     I(1.5,3,4)], 
@@ -163,9 +163,9 @@ and history of realized incidents corresponding to a specific initial state at t
 given by an `SIR` structure. 
 
 ```{julia}
-initial= epi.SIR(0.0, 4, 1, 0)
-chron  = epi.chronology(env0) ; states = [initial] # both will be overwritten
-traj, active = epi.evolution_recurse!(states, epi.AbstractIncident[], duration, chron)
+initial= SIR(0.0, 4, 1, 0)
+chron  = chronology(env0) ; states = [initial] # both will be overwritten
+traj, active = evolution_recurse!(states, AbstractIncident[], duration, chron)
 flow = trajectory_table(duration, initial, traj) ;
 ```
 

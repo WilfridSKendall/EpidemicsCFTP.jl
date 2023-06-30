@@ -4,8 +4,8 @@
 # We need various modules
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
-import EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
-gf = Gadfly ; epi = EpidemicsCFTP ; 
+using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
+gf = Gadfly ; 
 
 # Create union of composite `AbstractIncident` types.
 function unionize_composites(a::Type)::Type
@@ -18,7 +18,7 @@ function unionize_composites(a::Type)::Type
   end
 end
 
-BasicIncident = unionize_composites(epi.AbstractIncident) ;
+BasicIncident = unionize_composites(AbstractIncident) ;
 
 # ## Graphics utility
 # Here is a short utility function to display a `Compose` figure
@@ -99,7 +99,7 @@ function draw_realized(xl::Vector{T}; sty=style) where T<:BasicIncident
     (context(),
     circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
     sty.active, fill(csty(xl)), fillopacity(0.2), stroke(csty(xl)) ),
-    if eltype(xl)<:epi.AbstractInfection
+    if eltype(xl)<:AbstractInfection
       (context(),
       circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
        sty.active, fill(csty(xl)), fillopacity(0.5), stroke(csty(xl)))
@@ -107,7 +107,7 @@ function draw_realized(xl::Vector{T}; sty=style) where T<:BasicIncident
 end 
 
 function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:BasicIncident
-  if ! (eltype(xl)<:epi.AbstractInfection)
+  if ! (eltype(xl)<:AbstractInfection)
     return
   end
   (context(), 
@@ -118,11 +118,11 @@ function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:BasicI
     stroke(csty(xl)), (activated ? sty.active : sty.dormant) )
 end
 
-function draw_incident(xl::Vector{T}; sty=style) where T<:epi.AbstractIncident 
+function draw_incident(xl::Vector{T}; sty=style) where T<:AbstractIncident 
 end
-function draw_realized(xl::Vector{T}; sty=style) where T<:epi.AbstractIncident
+function draw_realized(xl::Vector{T}; sty=style) where T<:AbstractIncident
 end
-function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:epi.AbstractIncident 
+function draw_connect(xl::Vector{T}; activated=false, sty=style) where T<:AbstractIncident 
 end 
 
 

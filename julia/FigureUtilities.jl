@@ -211,8 +211,7 @@ end ;
 # Here are functions to draw inactive (respectively, active) nodes for each of a list
 # conposed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
 # for all other `AbstractIncident[]` vectors.
-function draw_incident(xl::Vector{T}; sty=defaultstyle) 
-         where T<:BasicIncident
+function draw_incident(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
   if length(xl) > 0
     (context(),
       (context(),
@@ -225,8 +224,7 @@ function draw_incident(xl::Vector{T}; sty=defaultstyle)
   end
 end
 
-function draw_realized(xl::Vector{T}; sty=defaultstyle) 
-         where T<:BasicIncident
+function draw_realized(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
   (context(),
     (context(),
     circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
@@ -238,8 +236,7 @@ function draw_realized(xl::Vector{T}; sty=defaultstyle)
     end, )
 end 
 
-function draw_connect(xl::Vector{T}; activated=false, sty=defaultstyle) 
-         where T<:BasicIncident
+function draw_connect(xl::Vector{T}; activated=false, sty=defaultstyle) where T<:BasicIncident
   if ! (eltype(xl)<:AbstractInfection)
     return
   end

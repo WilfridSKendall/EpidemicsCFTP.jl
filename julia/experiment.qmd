@@ -35,8 +35,8 @@ gf = Gadfly
 using EpidemicsCFTP 
 ```
 
+Use `#| cache: true` in the following if it becomes necessary to force re-computation.
 ```{julia}
-#| cache: true
 include("./FigureUtilities.jl")
 using .FigureUtilities ;
 ```

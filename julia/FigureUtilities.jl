@@ -1,6 +1,7 @@
 # ---
 # title:  "FigureUtilities module"
 # author: "Wilfrid Kendall"
+# date:   today
 # ---
 # 
 # ---
@@ -28,48 +29,72 @@
 # 
 # \newcommand{\SIR}{\operatorname{S-I-R}}
 #
-# # Module supplying utilities for perfect epidemics simulation.
+# # Exports
+# We begin with a module declaration (terminated at end of this file!),
+# and then list exports.
 module FigureUtilities
 
-# ## ·Exports
-# A composite type made up of basic incidents.
+# ## Constructed types
+# Here is a composite type made up of basic incidents.
 export BasicIncident
 
-# A default style for the figures.
+# ## Default style
+# A default style for all figures (other than those generated using `Gadfly`).
 export defaultstyle
 
-# A convenient drawing function to create `PG` and `PDF` variants of a figure.
+# ## Producing various renditions of a drawing
+# A convenient drawing function to create `PNG` and `PDF` variants of a figure.
 export depict
 
+# ## Various drawing functions
 # A set of functions to draw the axes _et cetera_. 
 export time_axis, time_threads, scaffolding
 
 # A set of functions to draw nodes and regions and connectors.
-
 export draw_incident, draw_realized, draw_connect
 
 export draw_elements, compose_nodes_view, draw_active_elements
 
 export draw_realized_regions, compose_epidemic_view
 
-# Export `Gadfly` drawing functions
-
+# ## Functions using `Gadfly`
+# Specific `Gadfly` drawing functions
 export trajectory_table, plot_trajectories
 
-# ## Imports
-# We need various modules
+# # Imports
+# This module requires import of a number of other modules as follows. 
+# Note that we introduce a prefix for `Gadfly`, to avoid excessive name-space pollution.
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
-
-# The next modules is needed to define `subtypes`.
-using InteractiveUtils 
-
-using EpidemicsCFTP # Note that `EpidemicsCFTP` is under development!
 gf = Gadfly ; 
 
-# ## Abbreviations for various incident types.
-# Note that this repeats the work done in the calling scripts, in order to have
-# a default `style` available.
+# The next module is required in order to access the `subtypes` function.
+using InteractiveUtils 
+
+# Finally the `EpidemicsCFTP` is a module currently under development.
+using EpidemicsCFTP 
+
+# # Constructions and definitions
+# ## Creation of union of composite `AbstractIncident` type.
+# The composite type `BasicIncident` is computed when the module is imported / used.
+function unionize_composites(a::Type)::Type
+  coll = subtypes(a)
+  xl = Type[x for x in coll]
+  if length(xl) == 0
+    return a # return a composite type
+  else
+    xl = Type[unionize_composites(y) for y in xl]
+    return reduce((t1, t2) -> Union{t1, t2}, xl) # return a union type
+  end
+end
+
+BasicIncident = unionize_composites(AbstractIncident) ;
+
+
+
+# ## Colours related to various incidents, using function `csty`.
+# Various incidents and markers will be used sufficiently often to justify abbreviations.
+# These abbreviations (or an appropriate subset) are often repeated on scripts.
 A = AbstractInfection
 R = Removal   ; C = CRemoval   
 I = Infection ; P = PInfection
@@ -78,8 +103,9 @@ CR = ContinuingRemoved ; CI = ContinuingInfected ; CS = ContinuingSusceptible
 MIA = MarkerInfectionA ; MRA = MarkerRemovalA
 MIB = MarkerInfectionB ; MRB = MarkerRemovalB
 
-# ## Code colours for various kinds of incidents using a function `csty`.
-# See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful list of colours.
+# They are associated to colours as part of a general style. 
+# (Note the use of the style hierarchy here.)
+# See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful and extensive list of colours.
 function csty(x::Vector{R}) colorant"tan"       end 
 function csty(x::Vector{C}) colorant"purple"    end 
 function csty(x::Vector{I}) colorant"orange"    end 
@@ -90,11 +116,12 @@ function csty(x::Vector{T}) where T<:AbstractInfectionMarker   colorant"orange" 
 function csty(x::Vector{T}) where T<:AbstractRemovalMarker     colorant"tan"    end
 function csty(x::Vector{T}) where T<:AbstractSusceptibleMarker colorant"blue"   end 
 function csty(x::Vector{T}) where T<:AbstractIncident                           end ;
+  
 
-# ## Collect drawing styles including `csty` in the named tuple `defaultstyle`.
-# Note that this is frequently used by
+# ## Default drawing styles forming a structure `defaultstyle`.
+# This default style structyre is frequently used by
 # the `FigureUtilities` functions defined below,
-# _via_ a keyword argument `sty` defined there.
+# using a keyword argument `sty`.
 defaultstyle = (
   radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
   bit      = -0.02h,              tic      = -0.2cy,
@@ -106,7 +133,6 @@ defaultstyle = (
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
   colour   =  csty,
 ) ;
-# This ensures availability of a default `style`.
 
 # Creation of union of composite `AbstractIncident` types.
 # This computation is carried out within the module when it is called.
@@ -125,8 +151,9 @@ end
 BasicIncident = unionize_composites(AbstractIncident) ;
 
 # ## Graphics utility
-# Here is a short utility function to display a `Compose` figure
-# and simultaneously create PNG and PDF renderings in directory `image`.
+# The following short utility function is helpful.
+# It displays a `Compose` figure
+# and also creates corresponding PNG and PDF renderings in directory `image`.
 function depict(title, coordinates, compose_list...)
   composition = compose(context(units=coordinates), compose_list...)
   draw(PNG("image/$title.png"), composition)
@@ -164,7 +191,6 @@ end ;
 # one of the many ideas in 
 # <https://tex.stackexchange.com/questions/7032/good-way-to-make-textcircled-numbers>.)
 # :::
-
 function time_threads(duration, population; sty=defaultstyle)
   circlabels   = [string(Char(0x00002460+i-1)) for i in 1:population]
 
@@ -185,7 +211,8 @@ end ;
 # Here are functions to draw inactive (respectively, active) nodes for each of a list
 # conposed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
 # for all other `AbstractIncident[]` vectors.
-function draw_incident(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
+function draw_incident(xl::Vector{T}; sty=defaultstyle) 
+         where T<:BasicIncident
   if length(xl) > 0
     (context(),
       (context(),
@@ -198,7 +225,8 @@ function draw_incident(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
   end
 end
 
-function draw_realized(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
+function draw_realized(xl::Vector{T}; sty=defaultstyle) 
+         where T<:BasicIncident
   (context(),
     (context(),
     circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
@@ -210,7 +238,8 @@ function draw_realized(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
     end, )
 end 
 
-function draw_connect(xl::Vector{T}; activated=false, sty=defaultstyle) where T<:BasicIncident
+function draw_connect(xl::Vector{T}; activated=false, sty=defaultstyle) 
+         where T<:BasicIncident
   if ! (eltype(xl)<:AbstractInfection)
     return
   end
@@ -240,16 +269,17 @@ function draw_elements(env; I=I, P=P, R=R, C=C, sty=defaultstyle)
     draw_connect([inc for inc in  env.infections if isa(inc, P)], sty=sty), )
 end
 
-# Now a function to combine the elements with the axes.
+# The next function combines depiction of the incidents with the axes.
 function compose_nodes_view(duration, population, env; 
-            coordinates, I=I, P=P, R=R, C=C, sty=defaultstyle)
+                               coordinates, I=I, P=P, R=R, C=C, sty=defaultstyle)
   compose(context(units=coordinates), 
     draw_elements(env, I=I, P=P, R=R, C=C, sty=sty), 
     scaffolding(duration, population))
 end 
 
 # The next function draws the realized elements together with connectors.
-function draw_active_elements(initial, active; I=I, P=P, R=R, C=C, sty=defaultstyle)
+function draw_active_elements(initial, active; 
+            I=I, P=P, R=R, C=C, sty=defaultstyle)
   active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
   enumerated_removals = collect(enumerate(active_removals))
 
@@ -272,7 +302,11 @@ function draw_active_elements(initial, active; I=I, P=P, R=R, C=C, sty=defaultst
       stroke(sty.colour(R[])), sty.trail, strokedash([0.5mm, 0.5mm]) ) ) )
 end
 
-# Now a function which draws infected and removed regions. 
+# Here is a function which draws infected and removed regions. 
+#
+# :::{.callout-warning}
+# This function should now be superseded by work carried out in `experiment.qmd`.
+# :::
 function draw_realized_regions(duration, population, flow; sty=defaultstyle)
   removed_fill = [(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]
   push!(removed_fill, (duration, 1))
@@ -291,14 +325,15 @@ function draw_realized_regions(duration, population, flow; sty=defaultstyle)
     
   (context(),          # Trail of Epidemic
     line([zip(flow.t, flow.Infectives+flow.Removals)]),
-    line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]),
+    line([[(a,b), (duration, b)] 
+             for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]),
     stroke(sty.colour(A[])), sty.boundary ),
   (context(),          # Epidemic trail fill
     polygon(infected_fill),
     fill(sty.colour(A[])), stroke(sty.colour(A[])), fillopacity(0.1) ), )
 end
 
-# Finally a function which presents incidents, realized incidents,
+# Finally, here is a function which presents incidents, realized incidents,
 # connectors and regions on a single figure.
 function compose_epidemic_view(duration, population, env, flow, initial, active; 
                                   coordinates, sty=defaultstyle)
@@ -337,4 +372,7 @@ function plot_trajectories(flow; sty=defaultstyle)
     gf.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
 end ;
 
-end # of module `FigureUtilities`
+
+# # Conclusion of module
+# The following terminates the material forming the module `FigureUtilities`.
+end

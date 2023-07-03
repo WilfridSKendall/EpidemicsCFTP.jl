@@ -24,3 +24,5 @@ FigureUtilities.qmd: processFigureUtilities.jl FigureUtilities.jl
 	$(HOME)/.local/bin/julia $<
 
 %.pdf: %.qmd FigureUtilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+
+.INTERMEDIATE: FigureUtilities.qmd

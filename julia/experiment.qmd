@@ -33,7 +33,10 @@ import Cairo, Fontconfig, Gadfly
 gf = Gadfly
 
 using EpidemicsCFTP 
+```
 
+```{julia}
+#| cache: true
 include("./FigureUtilities.jl")
 using .FigureUtilities ;
 ```
@@ -59,7 +62,7 @@ coordinates = UnitBox(0, population, duration, -population,
 
 For now, use default style from `FigureUtilities`.
 ```{julia}
-style = defaultstyle
+style = defaultstyle ;
 ```
 
 ## Dealing with different kinds of incident
@@ -128,147 +131,18 @@ Here is the total trajectory:
 ```
 
 ## Plotting regions of infection and removal
-Note that marker labels omit time-line superscript as this is redundant!
 ```{julia}
-function draw_marker(xl::Vector{T}; sty=style) where T<:AbstractMarker
-  if length(xl) > 0
-    (context(),
-      (context(),
-        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
-             map(x -> chop(string(x)), xl), [hcenter], [vcenter]), 
-        fontsize(5pt), font("Helvetica")
-      ),
-      (context(),
-        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
-        fillopacity(0.2), fill(sty.colour(xl)), stroke(sty.colour(xl))
-      ), 
-      (context(),
-        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
-        fill(sty.blank),
-      ),
-    )
-  end
-end ;
+regions = region_plot(duration, population, total_trajectory)
+
+depict("Regions", coordinates, regions)
 ```
-
-
+We now add removals and conditional removals.
 ```{julia}
-function infected_areas(population, total_trajectory)
-  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
-  for k in 1:population
-    level = [bb for bb in total_trajectory if bb.target==k]
-    starts = [bb for bb in level if (isa(bb, MIB) || isa(bb, II))]
-    ends   = [bb for bb in level if (isa(bb, MRB) || isa(bb, CI))]
-    if length(starts) > 0 && length(ends) > 0
-      disk1 = [bb for bb in level if (isa(bb, MIB) || isa(bb, II))][1]
-      disk2 = [bb for bb in level if (isa(bb, MRB) || isa(bb, CI))][1]
-      append!(xx, disk1.t)
-      append!(yy, k-1)
-      append!(rw, disk2.t - disk1.t)
-      append!(rl, 1)
-    end
-  end
-  return xx, yy, rw, rl
-end ;
-
-
-function removed_areas(population, total_trajectory)
-  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
-  for k in 1:population
-    level = [bb for bb in total_trajectory if bb.target==k]
-    starts = [bb for bb in level if (isa(bb, MRB) || isa(bb, IR))]
-    ends   = [bb for bb in level if (isa(bb, CR))]
-    if length(starts) > 0 && length(ends) > 0
-      disk1 = starts[1]
-      disk2 = ends[1]
-      append!(xx, disk1.t)
-      append!(yy, k-1)
-      append!(rw, disk2.t - disk1.t)
-      append!(rl, 1)
-    end
-  end
-  return xx, yy, rw, rl
-end ;
-
-xx1, yy1, rw1, rl1 = infected_areas(population, total_trajectory)
-xx2, yy2, rw2, rl2 = removed_areas(population, total_trajectory) ;
-```
-
-```{julia}
-# Epidemic trajectory misses last segment if not continuing. Thus
-# append highest MRB if `CI` is not at end.
-  
-epidemic_trajectory = [(x.t, x.target) for x in total_trajectory 
-  if (isa(x, MIA) || isa(x, MIB)  || 
-      isa(x, II) || isa(x, CI))]
-
-terminus = epidemic_trajectory[end]
-if (terminus[1] < duration)
-  end_marker = [x for x in total_trajectory if x.target == terminus[2]][3]
-  push!(epidemic_trajectory, (end_marker.t, end_marker.target))
-end ;
-```
-
-```{julia}
-# Removal trajectory may miss last segment. Check, and if so then
-# append highest MRB.
-removal_trajectory = [(x.t, x.target) for x in total_trajectory 
-      if (isa(x, IR) || isa(x, MRA) || isa(x, MRB))]
-
-terminus = removal_trajectory[end]
-if (terminus[1] < duration)
-  push!(removal_trajectory, (duration, terminus[2]))
-end
-
-# should use "total_markers" and ensure "total_trajectory" actually is a trajectory!
-Regions = (context(),
-  draw_marker([x for x in total_trajectory if isa(x, IS)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, II)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, IR)], sty=style),
-
-  draw_marker([x for x in total_trajectory if isa(x, MIA)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, MIB)], sty=style),
-
-  draw_marker([x for x in total_trajectory if isa(x, MRA)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, MRB)], sty=style),
-  
-  draw_marker([x for x in total_trajectory if isa(x, CS)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, CI)], sty=style),
-  draw_marker([x for x in total_trajectory if isa(x, CR)], sty=style),
-
-
-  (context(),
-    rectangle(xx1, yy1, rw1, rl1),
-    fill(style.colour(I[])), fillopacity(0.3),
-  ),
-
-  (context(),
-    rectangle(xx2, yy2, rw2, rl2),
-    fill(style.colour(C[])), fillopacity(0.3),
-  ),
-
-  (context(),
-  line(epidemic_trajectory),
-    stroke(style.colour(I[])), style.trail
-  ),
-
-  (context(),
-    line(removal_trajectory),
-     stroke(style.colour(C[])), style.trail
-  ),
-
-  scaffolding(duration, population),
+removal_incidents = (context(),
+  draw_incident([inc for inc in env0.removals  if isa(inc, R)]),
+  draw_incident([inc for inc in env0.cremovals if isa(inc, C)]),
   )
-depict("Regions", coordinates, Regions)
-```
-
-## Plotting removals and conditional removals.
-```{julia}
-Removals_incidents = (context(),
-  draw_incident([inc for inc in env0.removals  if isa(inc, R)], sty=style),
-  draw_incident([inc for inc in env0.cremovals if isa(inc, C)], sty=style),
-  )
-depict("Removals", coordinates, Removals_incidents, Regions)
+depict("Removals", coordinates, removal_incidents, regions)
 ```
 
 We now need to add linear segments corresponding to "no-infection zones".

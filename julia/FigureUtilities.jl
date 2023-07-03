@@ -52,14 +52,18 @@ export time_axis, time_threads, scaffolding
 
 # A set of functions to draw nodes and regions and connectors.
 export draw_incident, draw_realized, draw_connect
-
 export draw_elements, compose_nodes_view, draw_active_elements
-
 export draw_realized_regions, compose_epidemic_view
 
 # ## Functions using `Gadfly`
 # Specific `Gadfly` drawing functions
 export trajectory_table, plot_trajectories
+
+# ##Further drawing functions using markers
+export draw_marker
+export infected_areas, removed_areas
+export epidemic_trajectory, removal_trajectory
+export region_plot
 
 # # Imports
 # This module requires import of a number of other modules as follows. 
@@ -369,7 +373,149 @@ function plot_trajectories(flow; sty=defaultstyle)
     gf.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
 end ;
 
+# ## Drawing regions
+# First a function to draw a marker node. 
+# Note that marker labels omit time-line superscript as this is redundant!
+function draw_marker(xl::Vector{T}; sty=defaultstyle) where T<:AbstractMarker
+  if length(xl) > 0
+    (context(),
+      (context(),
+        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
+             map(x -> chop(string(x)), xl), [hcenter], [vcenter]), 
+        fontsize(5pt), font("Helvetica")
+      ),
+      (context(),
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
+        fillopacity(0.2), fill(sty.colour(xl)), stroke(sty.colour(xl))
+      ), 
+      (context(),
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.smradius]), 
+        fill(sty.blank),
+      ),
+    )
+  end
+end ;
 
+# Representing infected area as collection of rectangles
+function infected_areas(population, total_trajectory)
+  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
+  for k in 1:population
+    level = [bb for bb in total_trajectory if bb.target==k]
+    starts = [bb for bb in level if (isa(bb, MIB) || isa(bb, II))]
+    ends   = [bb for bb in level if (isa(bb, MRB) || isa(bb, CI))]
+    if length(starts) > 0 && length(ends) > 0
+      disk1 = [bb for bb in level if (isa(bb, MIB) || isa(bb, II))][1]
+      disk2 = [bb for bb in level if (isa(bb, MRB) || isa(bb, CI))][1]
+      append!(xx, disk1.t)
+      append!(yy, k-1)
+      append!(rw, disk2.t - disk1.t)
+      append!(rl, 1)
+    end
+  end
+  return xx, yy, rw, rl
+end ;
+
+# Representing removed area as collection of rectangles
+function removed_areas(population, total_trajectory)
+  xx= Float64[] ; yy = Integer[] ; rw = Float64[] ; rl = Integer[] ;
+  for k in 1:population
+    level = [bb for bb in total_trajectory if bb.target==k]
+    starts = [bb for bb in level if (isa(bb, MRB) || isa(bb, IR))]
+    ends   = [bb for bb in level if (isa(bb, CR))]
+    if length(starts) > 0 && length(ends) > 0
+      disk1 = starts[1]
+      disk2 = ends[1]
+      append!(xx, disk1.t)
+      append!(yy, k-1)
+      append!(rw, disk2.t - disk1.t)
+      append!(rl, 1)
+    end
+  end
+  return xx, yy, rw, rl
+end ;
+
+# Compute epidemic trajectory, adding a final segment 
+# by appending highest `MRB`  if proposed trajectory doesn't extend to full duration.
+function epidemic_trajectory(duration, total_trajectory)
+  e_trajectory = [(x.t, x.target) for x in total_trajectory 
+  if (isa(x, MIA) || isa(x, MIB)  || 
+      isa(x, II) || isa(x, CI))]
+
+  terminus = e_trajectory[end]
+  if (terminus[1] < duration)
+    end_marker = [x for x in total_trajectory if x.target == terminus[2]][3]
+    push!(e_trajectory, (end_marker.t, end_marker.target))
+  end 
+  
+  e_trajectory
+end
+
+# Compute removal trajectory, adding a final segment 
+# by appending highest `MRB` if proposed trajectory doesn't extend to full duration.
+function removal_trajectory(duration, total_trajectory)
+  r_trajectory = [(x.t, x.target) for x in total_trajectory 
+      if (isa(x, IR) || isa(x, MRA) || isa(x, MRB))]
+
+  terminus = r_trajectory[end]
+  if (terminus[1] < duration)
+    push!(r_trajectory, (duration, terminus[2]))
+  
+  r_trajectory
+  end
+end
+
+# Now a function to plot infected and removed regions together with epidemic
+# and removal trajectories.
+#
+# :::{.callout-note}
+# Consider using "total_markers" and 
+# ensuring "total_trajectory" actually is a trajectory!
+# :::
+function region_plot(duration, population, total_trajectory; sty=defaultstyle)
+  xx1, yy1, rw1, rl1 = infected_areas(population, total_trajectory)
+  xx2, yy2, rw2, rl2 = removed_areas(population, total_trajectory)
+ 
+  (context(),
+    draw_marker([x for x in total_trajectory if isa(x, IS)], sty=sty),
+    draw_marker([x for x in total_trajectory if isa(x, II)], sty=sty),
+    draw_marker([x for x in total_trajectory if isa(x, IR)], sty=sty),
+
+    draw_marker([x for x in total_trajectory if isa(x, MIA)], sty=sty),
+    draw_marker([x for x in total_trajectory if isa(x, MIB)], sty=sty),
+
+    draw_marker([x for x in total_trajectory if isa(x, MRA)], sty=sty),
+    draw_marker([x for x in total_trajectory if isa(x, MRB)], sty=sty),
+  
+    draw_marker([x for x in total_trajectory if isa(x, CS)], sty=sty),
+    draw_marker([x for x in total_trajectory if isa(x, CI)], sty=sty),
+    draw_marker([x for x in total_trajectory if isa(x, CR)], sty=sty),
+
+    (context(),
+      rectangle(xx1, yy1, rw1, rl1),
+      fill(sty.colour(I[])), fillopacity(0.3),
+    ),
+
+    (context(),
+      rectangle(xx2, yy2, rw2, rl2),
+      fill(sty.colour(C[])), fillopacity(0.3),
+    ),
+
+    (context(),
+    line(epidemic_trajectory(duration, total_trajectory)),
+      stroke(sty.colour(I[])), sty.trail
+    ),
+
+    (context(),
+      line(removal_trajectory(duration, total_trajectory)),
+      stroke(sty.colour(C[])), sty.trail
+    ),
+
+    scaffolding(duration, population),
+  )
+end
+
+      
+      
 # # Conclusion of module
 # The following terminates the material forming the module `FigureUtilities`.
 end

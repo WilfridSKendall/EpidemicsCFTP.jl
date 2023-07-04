@@ -51,7 +51,7 @@ export depict
 export time_axis, time_threads, scaffolding
 
 # A set of functions to draw nodes and regions and connectors.
-export draw_incident, draw_realized, draw_connect
+export draw_incident, draw_connect
 export draw_elements, compose_nodes_view, draw_active_elements
 export draw_realized_regions, compose_epidemic_view
 
@@ -107,9 +107,8 @@ CR = ContinuingRemoved ; CI = ContinuingInfected ; CS = ContinuingSusceptible
 MIA = MarkerInfectionA ; MRA = MarkerRemovalA
 MIB = MarkerInfectionB ; MRB = MarkerRemovalB
 
-# They are associated to colours as part of a general style. 
-# (Note the use of the style hierarchy here.)
-# See <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/> for a useful and extensive list of colours.
+# A function `csty` associates these to colours, using the type hierarchy.
+# A useful list of colours is given in <juliagraphics.github.io/Colors.jl/stable/namedcolors/>.
 function csty(x::Vector{R}) colorant"tan"       end 
 function csty(x::Vector{C}) colorant"purple"    end 
 function csty(x::Vector{I}) colorant"orange"    end 
@@ -123,9 +122,9 @@ function csty(x::Vector{T}) where T<:AbstractIncident                           
   
 
 # ## Default drawing styles forming a structure `defaultstyle`.
-# This default style structyre is frequently used by
+# The following default style structure is frequently used by
 # the `FigureUtilities` functions defined below,
-# using a keyword argument `sty`.
+# _via_ a keyword argument `sty`.
 defaultstyle = (
   radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
   bit      = -0.02h,              tic      = -0.2cy,
@@ -138,9 +137,8 @@ defaultstyle = (
   colour   =  csty,
 ) ;
 
-# Creation of union of composite `AbstractIncident` types.
-# This computation is carried out within the module when it is called.
-
+# We need a union type, `BasicIncident`, based on composite `AbstractIncident` types.
+# This is computed within the module.
 function unionize_composites(a::Type)::Type
   coll = subtypes(a)
   xl = Type[x for x in coll]
@@ -167,7 +165,7 @@ end ;
 
     
 # ## Basic image template elements
-# We define a function to draw the time axis, with tick marks at integer times.
+# We need a function to draw the time axis, with tick marks at integer times.
 # Note, both here and following, the careful use of graphics area units (`cx`, `cy`).
 function time_axis(duration; sty=defaultstyle)
   labellocs = [(x)cx for x in 0:duration]
@@ -205,27 +203,28 @@ function time_threads(duration, population; sty=defaultstyle)
       stroke(sty.scaffold), linewidth(0.5mm), ), )
 end ;
 
-# A third function constructs scaffolding (axes, time lines _etc_).
+# These two functions are put together in a third, which constructs scaffolding (axes, time lines _etc_).
 function scaffolding(duration, population; sty=defaultstyle)
   (context(), sty.region, time_axis(duration, sty=sty), 
               time_threads(duration, population, sty=sty))
 end ;
 
 # ## Drawing functions (`Compose`)
-# Here are functions to draw inactive (respectively, active) nodes for each of a list
-# conposed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
+# Here are functions to draw nodes (optionally as realized or not) for each of a list
+# composed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
 # for all other `AbstractIncident[]` vectors.
-function draw_incident(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
-  if length(xl) > 0
-    (context(),
-      (context(),
-        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
-             map(x -> string(x), xl), [hcenter], [vcenter]), 
-        fontsize(5pt), font("Helvetica")),
-      (context(),
-        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
-        fill(sty.blank), stroke(sty.colour(xl))), )
+function draw_incident(xl::Vector{T}; sty=defaultstyle, realized=false) where T<:BasicIncident
+  if length(xl) == 0
+    return
   end
+  (context(),
+    (context(),
+      text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
+           map(x -> string(x), xl), [hcenter], [vcenter]), 
+      fontsize(5pt), font("Helvetica")),
+    (context(),
+      circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
+      fill(sty.blank), stroke(sty.colour(xl))), )
 end
 
 function draw_realized(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident

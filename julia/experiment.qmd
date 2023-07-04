@@ -145,11 +145,29 @@ removal_incidents = (context(),
 depict("Removals", coordinates, removal_incidents, regions)
 ```
 
-We now need to add linear segments corresponding to "no-infection zones".
+Consider now the construction of "no-infection" zones.
+
+First: construct the separate timelines.
 ```{julia}
-timelined_susceptibles = [x for x in total_trajectory if isa(x, IS)]
-timelined_removals = [[inc for inc in env0.removals if isa(inc, R)] for k in 1:population]
+removal_list_of_lists = [Float64[] for k in (1:population)]
+cremoval_list = C[]
+for incident in chronology(env0)
+  if isa(incident, R)
+    push!(removal_list_of_lists[incident.target], incident.t)
+  elseif isa(incident, C)
+    push!(cremoval_list, incident)
+  end
+end
+
+println(cremoval_list)
+
+println(traj[0])
+
+removal_list_of_lists
 ```
+
+Now isolate the time-lines containing a `C` and beginning with an `IS`.
+
 
 # Computing the last viable epidemic
 First establish active removal incidents in time-decreasing order

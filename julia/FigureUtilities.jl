@@ -63,6 +63,7 @@ export trajectory_table, plot_trajectories
 export draw_marker
 export infected_areas, removed_areas
 export epidemic_trajectory, removal_trajectory
+export compute_total_trajectory
 export region_plot
 
 # # Imports
@@ -213,33 +214,33 @@ end ;
 # Here are functions to draw nodes (optionally as realized or not) for each of a list
 # composed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
 # for all other `AbstractIncident[]` vectors.
-function draw_incident(xl::Vector{T}; sty=defaultstyle, realized=false) where T<:BasicIncident
+function draw_incident(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:BasicIncident
   if length(xl) == 0
     return
   end
-  (context(),
+  if realized
     (context(),
-      text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
-           map(x -> string(x), xl), [hcenter], [vcenter]), 
-      fontsize(5pt), font("Helvetica")),
-    (context(),
+      (context(),
       circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
-      fill(sty.blank), stroke(sty.colour(xl))), )
+      sty.active, fill(sty.colour(xl)), fillopacity(0.2), stroke(sty.colour(xl)) ),
+      if eltype(xl)<:AbstractInfection
+        (context(),
+        circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
+          sty.active, fill(sty.colour(xl)), fillopacity(0.5), stroke(sty.colour(xl)))
+      end, )  
+  else
+    (context(),
+      (context(),
+        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
+             map(x -> string(x), xl), [hcenter], [vcenter]), 
+        fontsize(5pt), font("Helvetica")),
+      (context(),
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
+        fill(sty.blank), stroke(sty.colour(xl))), )
+  end
 end
 
-function draw_realized(xl::Vector{T}; sty=defaultstyle) where T<:BasicIncident
-  (context(),
-    (context(),
-    circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
-    sty.active, fill(sty.colour(xl)), fillopacity(0.2), stroke(sty.colour(xl)) ),
-    if eltype(xl)<:AbstractInfection
-      (context(),
-      circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
-       sty.active, fill(sty.colour(xl)), fillopacity(0.5), stroke(sty.colour(xl)))
-    end, )
-end 
-
-function draw_connect(xl::Vector{T}; activated=false, sty=defaultstyle) where T<:BasicIncident
+function draw_connect(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:BasicIncident
   if ! (eltype(xl)<:AbstractInfection)
     return
   end
@@ -248,18 +249,17 @@ function draw_connect(xl::Vector{T}; activated=false, sty=defaultstyle) where T<
     line(map(x -> [((x.t)cx - 0.3sty.bit, (x.infectee)cy-sty.bit), 
                    ((x.t)cx,          (x.infectee)cy), 
                    ((x.t)cx + 0.3sty.bit, (x.infectee)cy-sty.bit)], xl)), 
-    stroke(sty.colour(xl)), (activated ? sty.active : sty.dormant) )
+    stroke(sty.colour(xl)), (realized ? sty.active : sty.dormant) )
 end
 
-function draw_incident(xl::Vector{T}; sty=defaultstyle) where T<:AbstractIncident 
+function draw_incident(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:AbstractIncident 
 end
-function draw_realized(xl::Vector{T}; sty=defaultstyle) where T<:AbstractIncident
-end
-function draw_connect(xl::Vector{T}; activated=false, sty=defaultstyle) where T<:AbstractIncident 
+function draw_connect(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:AbstractIncident 
 end 
 
 # The next function draws the various incidents.
 function draw_elements(env; I=I, P=P, R=R, C=C, sty=defaultstyle) 
+
   (context(),
     draw_incident([inc for inc in env.infections if isa(inc, I)], sty=sty),
     draw_incident([inc for inc in env.infections if isa(inc, P)], sty=sty),
@@ -284,11 +284,11 @@ function draw_active_elements(initial, active;
   enumerated_removals = collect(enumerate(active_removals))
 
   (context(),
-    draw_realized([inc for inc in active if isa(inc, I)], sty=sty),
-    draw_realized([inc for inc in active if isa(inc, P)], sty=sty),
-    draw_realized([inc for inc in active if isa(inc, C)], sty=sty),
-    draw_connect( [inc for inc in active if isa(inc, I)], activated=true, sty=sty),
-    draw_connect( [inc for inc in active if isa(inc, P)], activated=true, sty=sty),
+    draw_incident([inc for inc in active if isa(inc, I)], realized=true, sty=sty),
+    draw_incident([inc for inc in active if isa(inc, P)], realized=true, sty=sty),
+    draw_incident([inc for inc in active if isa(inc, C)], realized=true, sty=sty),
+    draw_connect( [inc for inc in active if isa(inc, I)], realized=true, sty=sty),
+    draw_connect( [inc for inc in active if isa(inc, P)], realized=true, sty=sty),
     (context(), # Could this be cleaned up?
     (context(),          # Connecting removal nodes
       circle([(inc.t)cx for (k, inc) in enumerated_removals], 
@@ -308,6 +308,7 @@ end
 # This function should now be superseded by work carried out in `experiment.qmd`.
 # :::
 function draw_realized_regions(duration, population, flow; sty=defaultstyle)
+
   removed_fill = [(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]
   push!(removed_fill, (duration, 1))
   infected_fill = [(a,b) for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]
@@ -394,6 +395,32 @@ function draw_marker(xl::Vector{T}; sty=defaultstyle) where T<:AbstractMarker
     )
   end
 end ;
+
+# Compute total trajectory
+function compute_total_trajectory(duration, population, initial_state, active)
+  initial_markers = Iterators.flatten([
+    [IR(0, k) for k in 1:initial_state.r],
+    [II(0, k) for k in (initial_state.r+1):(initial_state.r+initial_state.i)],
+    [IS(0, k) for k in (initial_state.r+initial_state.i+1):population]
+  ])
+  
+  infect1 = [x for x in active if isa(x, I) || isa(x, P)]
+  infect2 = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
+  remove1 = [x for x in active if isa(x, C) || isa(x, R)]
+  remove2 = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
+  active2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
+  active_trajectory = collect(Iterators.flatten(active2));
+
+  rend = maximum(x.target for x in active_trajectory if isa(x, MRB) )
+  iend = maximum(x.target for x in active_trajectory if isa(x, MIB))
+
+  collect(Iterators.flatten(
+    [initial_markers, active_trajectory,
+    [CR(duration, k) for k in 1:rend],
+    [CI(duration, k) for k in (rend+1):iend],
+    [CS(duration, k) for k in (iend+1):population]
+  ])) ;
+end
 
 # Representing infected area as collection of rectangles
 function infected_areas(population, total_trajectory)

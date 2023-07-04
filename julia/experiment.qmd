@@ -35,7 +35,7 @@ gf = Gadfly
 using EpidemicsCFTP 
 ```
 
-Use `#| cache: true` in the following if it becomes necessary to force re-computation.
+Use `#| execute: true` in the following if it becomes necessary to force re-compation.
 ```{julia}
 include("./FigureUtilities.jl")
 using .FigureUtilities ;
@@ -66,7 +66,7 @@ style = defaultstyle ;
 ```
 
 ## Dealing with different kinds of incident
-Various types of incident are conveniently abbreviated.
+It is convenient to abbreviate various types of incident.
 ```{julia}
 A = AbstractInfection
 R = Removal            ; C = CRemoval   
@@ -78,7 +78,8 @@ MIB = MarkerInfectionB ; MRB = MarkerRemovalB ;
 ```
 
 # Experiments
-Plot regions of infection and removal. First define an epidemic.
+Plot regions of infection and removal. First define an epidemic
+and compute its total trajectory.
 ```{julia}
 env0 = Innovation(5, 
   A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
@@ -101,42 +102,16 @@ remove1 = [x for x in active if isa(x, C) || isa(x, R)]
 remove2 = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
 active2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
 active_trajectory = collect(Iterators.flatten(active2));
+total_trajectory = compute_total_trajectory(duration, population, initial, active);
 ```
 
-Compute indices for initial and continuation markers.
-
-```{julia}
-initial0 = [0, 1, population]
-
-initial_markers = Iterators.flatten([
-    [IR(0, k) for k in 1:initial0[1]],
-    [II(0, k) for k in (initial0[1]+1):(initial0[1]+initial0[2])],
-    [IS(0, k) for k in (initial0[1]+initial0[2]+1):population]
-  ])
-
-rend = maximum(x.target for x in active_trajectory if isa(x, MRB) )
-iend = maximum(x.target for x in active_trajectory if isa(x, MIB))
-total_trajectory = collect(Iterators.flatten(
-  [ initial_markers, 
-    active_trajectory, 
-    [CR(duration, k) for k in 1:rend], 
-    [CI(duration, k) for k in (rend+1):iend], 
-    [CS(duration, k) for k in (iend+1):population]
-  ])) ;
-```
-
-Here is the total trajectory:
-```{julia}
-[total_trajectory[1:10], total_trajectory[11:20], total_trajectory[21:end]]
-```
-
-## Plotting regions of infection and removal
+## Plot regions of infection and removal
 ```{julia}
 regions = region_plot(duration, population, total_trajectory)
 
 depict("Regions", coordinates, regions)
 ```
-We now add removals and conditional removals.
+Add removals and conditional removals.
 ```{julia}
 removal_incidents = (context(),
   draw_incident([inc for inc in env0.removals  if isa(inc, R)]),
@@ -145,7 +120,7 @@ removal_incidents = (context(),
 depict("Removals", coordinates, removal_incidents, regions)
 ```
 
-Consider now the construction of "no-infection" zones.
+## Consider now the construction of "no-infection" zones.
 
 First: construct the separate timelines.
 ```{julia}
@@ -160,14 +135,24 @@ for incident in chronology(env0)
 end
 
 println(cremoval_list)
-
-println(traj[0])
-
-removal_list_of_lists
+removal_structure = collect(enumerate(removal_list_of_lists))
 ```
 
-Now isolate the time-lines containing a `C` and beginning with an `IS`.
+Now isolate the time-lines containing a `MIB`, and insert a `0.0` at start.
+```{julia}
+proto_no_infections_zones = [Float64[] for k in (1:population)]
+for marker in total_trajectory
+  if isa(marker, MIB)
+    timeline = removal_structure[marker.target][2]
+    banned_removals = [x for x in timeline if x < marker.t]
+    if length(banned_removals) > 0
+      proto_no_infections_zones[marker.target] = [0.0, maximum(banned_removals)]
+    end
+  end
+end
 
+proto_no_infections_zones
+```
 
 # Computing the last viable epidemic
 First establish active removal incidents in time-decreasing order

@@ -6,7 +6,7 @@ QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
 main: figures.pdf production.pdf experiment.pdf FigureUtilities.pdf
 
-clean: ; rm figures.ipynbmake
+clean: ; rm $(wildcard *.ipynb)
 
 verify: figures.pdf production.pdf experiment.pdf
 	@for f in $(wildcard image/VERIFY_*.png) ; do  \

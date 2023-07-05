@@ -109,7 +109,7 @@ MIA = MarkerInfectionA ; MRA = MarkerRemovalA
 MIB = MarkerInfectionB ; MRB = MarkerRemovalB
 
 # A function `csty` associates these to colours, using the type hierarchy.
-# A useful list of colours is given in <juliagraphics.github.io/Colors.jl/stable/namedcolors/>.
+# A useful list of colours is given in <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/>.
 function csty(x::Vector{R}) colorant"tan"       end 
 function csty(x::Vector{C}) colorant"purple"    end 
 function csty(x::Vector{I}) colorant"orange"    end 
@@ -127,13 +127,15 @@ function csty(x::Vector{T}) where T<:AbstractIncident                           
 # the `FigureUtilities` functions defined below,
 # _via_ a keyword argument `sty`.
 defaultstyle = (
-  radius   =  0.2cy,              smradius =  0.9 * 0.2cy,
-  bit      = -0.02h,              tic      = -0.2cy,
-  xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
+  radius   =  0.2cy,               smradius =  0.9 * 0.2cy,
+  bit      = -0.02h,               tic      = -0.2cy,
+  xlab     =  0cx-0.4inch,         yloc     = 0.25inch,
   height   =  0.0cy,              
-  boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
-  realized   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
-  blank    =  colorant"white",    scaffold =  colorant"grey",
+  boundary =  linewidth(1.00mm),   trail    =  linewidth(0.75mm),
+  broad    =  linewidth(2.00mm),
+  realized =  linewidth(0.75mm),   dormant  =  linewidth(0.25mm),
+  blank    =  colorant"white",     scaffold =  colorant"grey",
+  forbid   =  colorant"steelblue", 
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
   colour   =  csty,
 ) ;

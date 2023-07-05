@@ -35,7 +35,9 @@ gf = Gadfly
 using EpidemicsCFTP 
 ```
 
-Use `#| execute: true` in the following if it becomes necessary to force re-compation.
+Use `make clean` if it becomes necessary to force re-compilation of all cells,
+including this one in particular. (Though this still seems flakey! best way
+seems to be to force a new computation in the relevant cell.)
 ```{julia}
 include("./FigureUtilities.jl")
 using .FigureUtilities ;
@@ -151,8 +153,22 @@ for marker in total_trajectory
   end
 end
 
-proto_no_infections_zones
+pniz = enumerate(proto_no_infections_zones)
+
+zone1 = (context(), 
+          line([[(pp, xl[1]) for pp in xl[2]] for xl in pniz if length(xl[2])>0]),
+          defaultstyle.broad, stroke(defaultstyle.forbid), fillopacity(0.25),
+        )
+
+depict("TestNoInfection", compose(context(units=coordinates),
+                                 (removal_incidents, 
+                                  FigureUtilities.draw_realized_elements(initial, realized),
+                                  FigureUtilities.draw_elements(env0),
+                                  regions, zone1)...)
+      )
 ```
+
+Now also add in the potential infections.
 
 # Computing the last viable epidemic
 First establish realized removal incidents in time-decreasing order

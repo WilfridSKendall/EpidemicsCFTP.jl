@@ -52,7 +52,7 @@ export time_axis, time_threads, scaffolding
 
 # A set of functions to draw nodes and regions and connectors.
 export draw_incident, draw_connect
-export draw_elements, compose_nodes_view, draw_active_elements
+export draw_elements, compose_nodes_view, draw_realized_elements
 export draw_realized_regions, compose_epidemic_view
 
 # ## Functions using `Gadfly`
@@ -132,7 +132,7 @@ defaultstyle = (
   xlab     =  0cx-0.4inch,        yloc     = 0.25inch,
   height   =  0.0cy,              
   boundary =  linewidth(1.00mm),  trail    =  linewidth(0.75mm),
-  active   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
+  realized   =  linewidth(0.75mm),  dormant  =  linewidth(0.25mm),
   blank    =  colorant"white",    scaffold =  colorant"grey",
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
   colour   =  csty,
@@ -222,11 +222,11 @@ function draw_incident(xl::Vector{T}; realized=false, sty=defaultstyle) where T<
     (context(),
       (context(),
       circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
-      sty.active, fill(sty.colour(xl)), fillopacity(0.2), stroke(sty.colour(xl)) ),
+      sty.realized, fill(sty.colour(xl)), fillopacity(0.2), stroke(sty.colour(xl)) ),
       if eltype(xl)<:AbstractInfection
         (context(),
         circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
-          sty.active, fill(sty.colour(xl)), fillopacity(0.5), stroke(sty.colour(xl)))
+          sty.realized, fill(sty.colour(xl)), fillopacity(0.5), stroke(sty.colour(xl)))
       end, )  
   else
     (context(),
@@ -249,7 +249,7 @@ function draw_connect(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:
     line(map(x -> [((x.t)cx - 0.3sty.bit, (x.infectee)cy-sty.bit), 
                    ((x.t)cx,          (x.infectee)cy), 
                    ((x.t)cx + 0.3sty.bit, (x.infectee)cy-sty.bit)], xl)), 
-    stroke(sty.colour(xl)), (realized ? sty.active : sty.dormant) )
+    stroke(sty.colour(xl)), (realized ? sty.realized : sty.dormant) )
 end
 
 function draw_incident(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:AbstractIncident 
@@ -278,23 +278,23 @@ function compose_nodes_view(duration, population, env;
 end 
 
 # The next function draws the realized elements together with connectors.
-function draw_active_elements(initial, active; 
+function draw_realized_elements(initial, realized; 
             I=I, P=P, R=R, C=C, sty=defaultstyle)
-  active_removals   = [inc for inc in active if (isa(inc, R) || isa(inc, C))]
-  enumerated_removals = collect(enumerate(active_removals))
+  realized_removals   = [inc for inc in realized if (isa(inc, R) || isa(inc, C))]
+  enumerated_removals = collect(enumerate(realized_removals))
 
   (context(),
-    draw_incident([inc for inc in active if isa(inc, I)], realized=true, sty=sty),
-    draw_incident([inc for inc in active if isa(inc, P)], realized=true, sty=sty),
-    draw_incident([inc for inc in active if isa(inc, C)], realized=true, sty=sty),
-    draw_connect( [inc for inc in active if isa(inc, I)], realized=true, sty=sty),
-    draw_connect( [inc for inc in active if isa(inc, P)], realized=true, sty=sty),
+    draw_incident([inc for inc in realized if isa(inc, I)], realized=true, sty=sty),
+    draw_incident([inc for inc in realized if isa(inc, P)], realized=true, sty=sty),
+    draw_incident([inc for inc in realized if isa(inc, C)], realized=true, sty=sty),
+    draw_connect( [inc for inc in realized if isa(inc, I)], realized=true, sty=sty),
+    draw_connect( [inc for inc in realized if isa(inc, P)], realized=true, sty=sty),
     (context(), # Could this be cleaned up?
     (context(),          # Connecting removal nodes
       circle([(inc.t)cx for (k, inc) in enumerated_removals], 
              [(k + initial.r)cy for (k, inc) in enumerated_removals],
              [sty.smradius]), stroke(sty.colour(C[])), 
-             sty.active, fill(sty.colour(C[])), fillopacity(0.5) ),
+             sty.realized, fill(sty.colour(C[])), fillopacity(0.5) ),
     (context(),          # Connecting removal lines
       line([[((inc.t)cx, (inc.target)cy - sty.radius), 
              ((inc.t)cx, (k + initial.r)cy + sty.radius)]
@@ -336,10 +336,10 @@ end
 
 # Finally, here is a function which presents incidents, realized incidents,
 # connectors and regions on a single figure.
-function compose_epidemic_view(duration, population, env, flow, initial, active; 
+function compose_epidemic_view(duration, population, env, flow, initial, realized; 
                                   coordinates, sty=defaultstyle)
   compose(context(units=coordinates),
-          draw_active_elements(initial, active, sty=sty), 
+          draw_realized_elements(initial, realized, sty=sty), 
           draw_elements(env, sty=sty), 
           draw_realized_regions(duration, population, flow, sty=sty),
           scaffolding(duration, population))
@@ -350,7 +350,7 @@ end ;
 # Define functions to construct and plot a dataframe
 # of trajectories as knots of piecewise constant functions, using `evolution_recurse!`
 # to deliver the \(\SIR\) trajectory `traj`,
-# and realized incidents in `active`.
+# and realized incidents in `realized`.
 function trajectory_table(duration, initial, traj)
   states = [initial]
   t = [state.t for state in traj] ; push!(t, duration)
@@ -397,25 +397,25 @@ function draw_marker(xl::Vector{T}; sty=defaultstyle) where T<:AbstractMarker
 end ;
 
 # Compute total trajectory
-function compute_total_trajectory(duration, population, initial_state, active)
+function compute_total_trajectory(duration, population, initial_state, realized)
   initial_markers = Iterators.flatten([
     [IR(0, k) for k in 1:initial_state.r],
     [II(0, k) for k in (initial_state.r+1):(initial_state.r+initial_state.i)],
     [IS(0, k) for k in (initial_state.r+initial_state.i+1):population]
   ])
   
-  infect1 = [x for x in active if isa(x, I) || isa(x, P)]
+  infect1 = [x for x in realized if isa(x, I) || isa(x, P)]
   infect2 = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
-  remove1 = [x for x in active if isa(x, C) || isa(x, R)]
+  remove1 = [x for x in realized if isa(x, C) || isa(x, R)]
   remove2 = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
-  active2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
-  active_trajectory = collect(Iterators.flatten(active2));
+  realized2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
+  realized_trajectory = collect(Iterators.flatten(realized2));
 
-  rend = maximum(x.target for x in active_trajectory if isa(x, MRB) )
-  iend = maximum(x.target for x in active_trajectory if isa(x, MIB))
+  rend = maximum(x.target for x in realized_trajectory if isa(x, MRB) )
+  iend = maximum(x.target for x in realized_trajectory if isa(x, MIB))
 
   collect(Iterators.flatten(
-    [initial_markers, active_trajectory,
+    [initial_markers, realized_trajectory,
     [CR(duration, k) for k in 1:rend],
     [CI(duration, k) for k in (rend+1):iend],
     [CS(duration, k) for k in (iend+1):population]

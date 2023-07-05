@@ -20,8 +20,11 @@ verify: figures.pdf production.pdf experiment.pdf
 
 set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ; done
 
-FigureUtilities.qmd: processFigureUtilities.jl FigureUtilities.jl
-	$(HOME)/.local/bin/julia $<
+# The following translation is not yet perfect!
+# It doesn't include directives "#|" in codeblocks.
+FigureUtilities.qmd: FigureUtilities.jl
+	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("FigureUtilities.jl",flavor = Literate.CommonMarkFlavor(), codefence="```{julia}" => "```")'
+	mv FigureUtilities.md FigureUtilities.qmd
 
 %.pdf: %.qmd FigureUtilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 

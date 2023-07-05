@@ -94,15 +94,15 @@ env0 = Innovation(5,
 ```{julia}
 initial= SIR(0.0, 4, 1, 0)
 chron  = chronology(env0) ; states = [initial] # both will be overwritten
-traj, active = evolution_recurse!(states, AbstractIncident[], duration, chron, conditioned=true)
+traj, realized = evolution_recurse!(states, AbstractIncident[], duration, chron, conditioned=true)
 
-infect1 = [x for x in active if isa(x, I) || isa(x, P)]
-infect2 = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
-remove1 = [x for x in active if isa(x, C) || isa(x, R)]
-remove2 = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
-active2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
-active_trajectory = collect(Iterators.flatten(active2));
-total_trajectory = compute_total_trajectory(duration, population, initial, active);
+infect1   = [x for x in realized if isa(x, I) || isa(x, P)]
+infect2   = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
+remove1   = [x for x in realized if isa(x, C) || isa(x, R)]
+remove2   = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
+realized2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
+realized_trajectory = collect(Iterators.flatten(realized2));
+total_trajectory = compute_total_trajectory(duration, population, initial, realized);
 ```
 
 ## Plot regions of infection and removal
@@ -155,11 +155,11 @@ proto_no_infections_zones
 ```
 
 # Computing the last viable epidemic
-First establish active removal incidents in time-decreasing order
+First establish realized removal incidents in time-decreasing order
 of _removed_ timeline
-(easily done: the \(i^\text{th}\) active removal listed in time-order
+(easily done: the \(i^\text{th}\) realized removal listed in time-order
 will necessarily remove time-line \(i\)),
-and list potential infections prior to each active removal
+and list potential infections prior to each realized removal
 according to infection time.
 Notice we have not yet covered the possibility that some time-lines
 are never infected and others are not removed before `duration`
@@ -167,8 +167,8 @@ are never infected and others are not removed before `duration`
 is (of course) infected at time \(0\) and is not otherwise infected.
 
 ```{julia}
-active_removals = filter(x -> (isa(x, R) || isa(x, C)), active)
-reversed_removals = reverse(collect(enumerate(active_removals))[2:end])
+realized_removals = filter(x -> (isa(x, R) || isa(x, C)), realized)
+reversed_removals = reverse(collect(enumerate(realized_removals))[2:end])
 barrier = reversed_removals[1][2]
 last_viable = []
 for (k, rem) in reversed_removals

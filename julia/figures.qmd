@@ -148,7 +148,7 @@ given by an `SIR` structure.
 ```{julia}
 initial= SIR(0.0, 4, 1, 0)
 chron  = chronology(env0) ; states = [initial] # both will be overwritten
-traj, active = evolution_recurse!(states, AbstractIncident[], duration, chron)
+traj, realized = evolution_recurse!(states, AbstractIncident[], duration, chron)
 flow = trajectory_table(duration, initial, traj) ;
 ```
 
@@ -178,7 +178,7 @@ thicker line-widths, producing @fig-realized.
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/brown."
-epidemics_view = compose_epidemic_view(duration, population, env0, flow, initial, active; coordinates)
+epidemics_view = compose_epidemic_view(duration, population, env0, flow, initial, realized; coordinates)
 draw(PNG("image/epidemics_view.png"), epidemics_view)
 draw(PDF("image/epidemics_view.pdf"), epidemics_view)
 epidemics_view

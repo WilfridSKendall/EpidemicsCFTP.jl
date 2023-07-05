@@ -52,8 +52,8 @@ export time_axis, time_threads, scaffolding
 
 # A set of functions to draw nodes and regions and connectors.
 export draw_incident, draw_connect
-export draw_elements, compose_nodes_view, draw_realized_elements
-export draw_realized_regions, compose_epidemic_view
+export draw_elements, create_nodes_view, draw_realized_elements
+export draw_realized_regions, create_epidemic_view
 
 # ## Functions using `Gadfly`
 # Specific `Gadfly` drawing functions
@@ -155,13 +155,12 @@ BasicIncident = unionize_composites(AbstractIncident) ;
 
 # ## Graphics utility
 # The following short utility function is helpful.
-# It displays a `Compose` figure
+# It displays a figure produced using `Compose` or `Gadfly`,
 # and also creates corresponding PNG and PDF renderings in directory `image`.
-function depict(title, coordinates, compose_list...)
-  composition = compose(context(units=coordinates), compose_list...)
-  draw(PNG("image/$title.png"), composition)
-  draw(PDF("image/$title.pdf"),  composition)
-  composition
+function depict(title, image)
+  draw(PNG("image/$title.png"), image)
+  draw(PDF("image/$title.pdf"),  image)
+  image
 end ;
 
     
@@ -270,9 +269,8 @@ function draw_elements(env; I=I, P=P, R=R, C=C, sty=defaultstyle)
 end
 
 # The next function combines depiction of the incidents with the axes.
-function compose_nodes_view(duration, population, env; 
-                               coordinates, I=I, P=P, R=R, C=C, sty=defaultstyle)
-  compose(context(units=coordinates), 
+function create_nodes_view(duration, population, env; I=I, P=P, R=R, C=C, sty=defaultstyle)
+  (context(), 
     draw_elements(env, I=I, P=P, R=R, C=C, sty=sty), 
     scaffolding(duration, population))
 end 
@@ -336,12 +334,15 @@ end
 
 # Finally, here is a function which presents incidents, realized incidents,
 # connectors and regions on a single figure.
-function compose_epidemic_view(duration, population, env, flow, initial, realized; 
-                                  coordinates, sty=defaultstyle)
-  compose(context(units=coordinates),
+function create_epidemic_view(duration, population, env, flow, initial, realized; 
+                                  sty=defaultstyle)
+  total_trajectory = compute_total_trajectory(duration, population, initial, realized)
+  
+  (context(),
           draw_realized_elements(initial, realized, sty=sty), 
           draw_elements(env, sty=sty), 
-          draw_realized_regions(duration, population, flow, sty=sty),
+          # draw_realized_regions(duration, population, flow, sty=sty),
+          region_plot(duration, population, total_trajectory),
           scaffolding(duration, population))
 end ;
 

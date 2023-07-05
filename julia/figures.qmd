@@ -98,10 +98,7 @@ following diagrams.
 #| echo: false
 #| label: fig-scaffolding
 #| fig-cap: "Scaffolding: time axis and time-lines."
-Scaffolding = compose(context(units=coordinates), scaffolding(duration, population)) ;
-draw(PNG("image/Scaffolding.png"), Scaffolding)
-draw(PDF("image/Scaffolding.pdf"), Scaffolding)
-Scaffolding
+depict("Scaffolding", compose(context(units=coordinates), scaffolding(duration, population)))
 ```
 
 
@@ -132,10 +129,8 @@ all subsequent elements. @fig-potential illustrates the required plot.
 #|           Orange arrows connect infector time-lines                                  \
 #|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
-nodes_view = compose_nodes_view(duration, population, env0, coordinates=coordinates)
-draw(PNG("image/nodes_view.png"), nodes_view)
-draw(PDF("image/nodes_view.pdf"), nodes_view)
-nodes_view
+image = create_nodes_view(duration, population, env0)
+depict("nodes_view", compose(context(units=coordinates), image))
 ```
 
 # Evolving the epidemic in process time
@@ -178,10 +173,8 @@ thicker line-widths, producing @fig-realized.
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/brown."
-epidemics_view = compose_epidemic_view(duration, population, env0, flow, initial, realized; coordinates)
-draw(PNG("image/epidemics_view.png"), epidemics_view)
-draw(PDF("image/epidemics_view.pdf"), epidemics_view)
-epidemics_view
+image = create_epidemic_view(duration, population, env0, flow, initial, realized)
+depict("epidemics_view", compose(context(units=coordinates), image))
 ```
 
 ```{julia}

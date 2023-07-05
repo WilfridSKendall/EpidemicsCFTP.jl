@@ -109,7 +109,7 @@ total_trajectory = compute_total_trajectory(duration, population, initial, reali
 ```{julia}
 regions = region_plot(duration, population, total_trajectory)
 
-depict("Regions", coordinates, regions)
+depict("Regions", compose(context(units=coordinates), regions))
 ```
 Add removals and conditional removals.
 ```{julia}
@@ -117,7 +117,7 @@ removal_incidents = (context(),
   draw_incident([inc for inc in env0.removals  if isa(inc, R)]),
   draw_incident([inc for inc in env0.cremovals if isa(inc, C)]),
   )
-depict("Removals", coordinates, removal_incidents, regions)
+depict("Removals", compose(context(units=coordinates), (removal_incidents, regions)...))
 ```
 
 ## Consider now the construction of "no-infection" zones.

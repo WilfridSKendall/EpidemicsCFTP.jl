@@ -1,7 +1,8 @@
 SHELL := /usr/bin/bash
 
-QUARTO := /usr/local/bin/quarto
-QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash
+QUARTO         := /usr/local/bin/quarto
+CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
+QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
 main: figures.pdf production.pdf experiment.pdf FigureUtilities.pdf
 

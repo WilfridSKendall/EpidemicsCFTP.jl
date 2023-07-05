@@ -1,7 +1,9 @@
 ---
-title:  "Producing figures for the Perfect Epidemics paper"
+title:  "Producing figures for Perfect Epidemics"
 author: "Wilfrid Kendall"
 date:   today
+bibliography: references.bib
+csl: nature.csl
 ---
 
 ---
@@ -33,7 +35,9 @@ import Cairo, Fontconfig, Gadfly
 gf = Gadfly
 
 using EpidemicsCFTP
+```
 
+```{julia}
 include("./FigureUtilities.jl")
 using .FigureUtilities ;
 ```
@@ -67,7 +71,7 @@ I = Infection ; P = PInfection ;
 ```
 
 # Figure 1
-We generate a precise equivalent of Figure 1 of Connor-Kendall (in preparation).
+We generate a precise equivalent of @ConnorKendall-2023 [Figure 1].
 
 **Caption in draft paper:** 
 "Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
@@ -99,37 +103,35 @@ print(flow1) ;
 ```{julia}
 #| echo: false
 #| label: fig-nodes1
-#| fig-cap: "Nodes used in Figure 1 of Connor-Kendall (in preparation)."
-compose_nodes_view(duration1, population1, env_figure1, coordinates=coordinates1)
+#| fig-cap: "Nodes used in Figure 1 of @ConnorKendall-2023."
+compose(context(units=coordinates1), create_nodes_view(duration1, population1, env_figure1))
+```
+
+
+```{julia}
+#| echo: false
+#| label: realized1
+#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. Realized incidents have          \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
+#|           coloured orange/purple.                                                        \
+#|           This is a candidate for Figure 1a of @ConnorKendall-2023."
+image = create_epidemic_view(duration1, population1, env_figure1, flow1, initial1, realized1)
+depict("draftfigure1a", compose(context(units=coordinates1), image))
 ```
 
 ```{julia}
 #| echo: false
 #| label: fig-trajectories1
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
-#|           removals (grey short dashes)."  
-draftfigure1b = plot_trajectories(flow1)
-draw(PNG("image/draftfigure1b.png"), draftfigure1b)
-draw(PDF("image/draftfigure1b.pdf"), draftfigure1b)
-draftfigure1b
-```
-
-```{julia}
-#| echo: false
-#| label: realized1
-#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. Realized incidents have   \
-#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
-#|           coloured yellow/brown."
-draftfigure1a = compose_epidemic_view(duration1, population1, env_figure1, flow1, initial1, realized1; coordinates=coordinates1)
-draw(PNG("image/draftfigure1a.png"), draftfigure1a)
-draw(PDF("image/draftfigure1a.pdf"), draftfigure1a)
-draftfigure1a
+#|           removals (grey short dashes).                                 \
+#|           This is a candidate for Figure 1b of @ConnorKendall-2023."   
+depict("draftfigure1b", plot_trajectories(flow1))
 ```
 
 \newpage
 
 # Figure 3
-We generate a precise equivalent of Figure 3 of Connor-Kendall (in preparation).
+We generate a precise equivalent of @ConnorKendall-2023 [Figure 3].
 
 **Caption in draft paper:** 
 "Modified graphical representation of \(\SIR\) epidemic, conditioned on removals. ..."
@@ -166,29 +168,28 @@ print(flow3) ;
 ```{julia}
 #| echo: false
 #| label: fig-nodes3
-#| fig-cap: "Nodes used in Figure 3 of Connor-Kendall (in preparation)."
-compose_nodes_view(duration3, population3, env_figure3, coordinates=coordinates3)
+#| fig-cap: "Nodes used in Figure 3 of @ConnorKendall-2023."
+compose(context(units=coordinates3), create_nodes_view(duration3, population3, env_figure3))
+```
+
+```{julia}
+#| echo: false
+#| label: realized3
+#| fig-cap: "@fig-nodes3 plus epidemic and removal curves. Realized incidents have          \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
+#|           coloured orange/purple.                                                        \
+#|           This is a candidate for Figure 3a of @ConnorKendall-2023." 
+image = create_epidemic_view(duration3, population3, env_figure3, flow3, initial3, realized3)
+depict("draftfigure3a", compose(context(units=coordinates3), image))
 ```
 
 ```{julia}
 #| echo: false
 #| label: fig-trajectories3
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
-#|           removals (grey short dashes)."  
-draftfigure3b = plot_trajectories(flow3)
-draw(PNG("image/draftfigure3b.png"), draftfigure3b)
-draw(PDF("image/draftfigure3b.pdf"), draftfigure3b)
-draftfigure3b
+#|           removals (grey short dashes).                                 \
+#|           This is a candidate for Figure 3b of @ConnorKendall-2023."  
+depict("draftfigure3b", plot_trajectories(flow3))
 ```
 
-```{julia}
-#| echo: false
-#| label: realized3
-#| fig-cap: "@fig-nodes3 plus epidemic and removal curves. Realized incidents have   \
-#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
-#|           coloured yellow/brown."
-draftfigure3a = compose_epidemic_view(duration3, population3, env_figure3, flow3, initial3, realized3; coordinates=coordinates3)
-draw(PNG("image/draftfigure3a.png"), draftfigure3a)
-draw(PDF("image/draftfigure3a.pdf"), draftfigure3a)
-draftfigure3a
-```
+# References

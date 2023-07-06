@@ -135,7 +135,7 @@ defaultstyle = (
   broad    =  linewidth(2.00mm),
   realized =  linewidth(0.75mm),   dormant  =  linewidth(0.25mm),
   blank    =  colorant"white",     scaffold =  colorant"grey",
-  forbid   =  colorant"steelblue", 
+  forbid1  =  colorant"steelblue", forbid2  =  colorant"lightsteelblue", 
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
   colour   =  csty,
 ) ;
@@ -305,7 +305,8 @@ end
 # Here is a function which draws infected and removed regions. 
 #
 # :::{.callout-warning}
-# This function should now be superseded by work carried out in `experiment.qmd`.
+# This function should now be superseded by work carried out in `experiment.qmd`:
+# delete and remove from exports, as it is replaced by `region_plot`.
 # :::
 function draw_realized_regions(duration, population, flow; sty=defaultstyle)
 
@@ -343,7 +344,6 @@ function create_epidemic_view(duration, population, env, flow, initial, realized
   (context(),
           draw_realized_elements(initial, realized, sty=sty), 
           draw_elements(env, sty=sty), 
-          # draw_realized_regions(duration, population, flow, sty=sty),
           region_plot(duration, population, total_trajectory),
           scaffolding(duration, population))
 end ;
@@ -351,9 +351,9 @@ end ;
 
 # ## Drawing functions (`Gadfly`)
 # Define functions to construct and plot a dataframe
-# of trajectories as knots of piecewise constant functions, using `evolution_recurse!`
-# to deliver the \(\SIR\) trajectory `traj`,
-# and realized incidents in `realized`.
+# of trajectories as knots of piecewise constant functions, having used `evolution_recurse!`
+# to deliver the \(\SIR\) trajectory `traj`
+# and a sorted list of realized incidents in `realized`.
 function trajectory_table(duration, initial, traj)
   states = [initial]
   t = [state.t for state in traj] ; push!(t, duration)

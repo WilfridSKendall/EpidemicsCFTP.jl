@@ -37,7 +37,7 @@ using EpidemicsCFTP
 
 Use `make clean` if it becomes necessary to force re-compilation of all cells,
 including this one in particular. (Though this still seems flakey! best way
-seems to be to force a new computation in the relevant cell.)
+seems to be to force a new computation in the cell which is reporting the error.)
 ```{julia}
 include("./FigureUtilities.jl")
 using .FigureUtilities ;
@@ -142,29 +142,52 @@ removal_structure = collect(enumerate(removal_list_of_lists))
 
 Now isolate the time-lines containing a `MIB`, and insert a `0.0` at start.
 ```{julia}
-proto_no_infections_zones = [Float64[] for k in (1:population)]
+proto_no_infections_zones1 = [Float64[] for k in (1:population)]
+
 for marker in total_trajectory
   if isa(marker, MIB)
     timeline = removal_structure[marker.target][2]
     banned_removals = [x for x in timeline if x < marker.t]
     if length(banned_removals) > 0
-      proto_no_infections_zones[marker.target] = [0.0, maximum(banned_removals)]
+      proto_no_infections_zones1[marker.target] = [0.0, maximum(banned_removals)]
     end
   end
 end
 
-pniz = enumerate(proto_no_infections_zones)
+proto_no_infections_zones2 = [Float64[] for k in (1:population)]
 
+k = 1
+while length(proto_no_infections_zones1[k]) == 0
+  proto_no_infections_zones2[k] = [0.0, 0.0]
+  k += 1
+end
+
+for j in k:population
+  if length(proto_no_infections_zones1[j]) == 0
+    proto_no_infections_zones2[j] = proto_no_infections_zones2[j-1]
+  else
+    boundary = max(proto_no_infections_zones1[j][2], proto_no_infections_zones2[j-1][2])
+    proto_no_infections_zones2[j] = [0.0, boundary]
+  end
+end
+
+pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
 zone1 = (context(), 
-          line([[(pp, xl[1]) for pp in xl[2]] for xl in pniz if length(xl[2])>0]),
-          defaultstyle.broad, stroke(defaultstyle.forbid), fillopacity(0.25),
+          line(pniz1),
+          defaultstyle.broad, stroke(defaultstyle.forbid1),
+        )
+
+pniz2 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones2)]
+zone2 = (context(), 
+          line(pniz2),
+          defaultstyle.broad, stroke(defaultstyle.forbid2),
         )
 
 depict("TestNoInfection", compose(context(units=coordinates),
                                  (removal_incidents, 
                                   FigureUtilities.draw_realized_elements(initial, realized),
                                   FigureUtilities.draw_elements(env0),
-                                  regions, zone1)...)
+                                  regions, zone1, zone2)...)
       )
 ```
 

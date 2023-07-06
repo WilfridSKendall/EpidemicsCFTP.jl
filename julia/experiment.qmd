@@ -84,9 +84,9 @@ Plot regions of infection and removal. First define an epidemic
 and compute its total trajectory.
 ```{julia}
 env0 = Innovation(5, 
-  A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
-    I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
-    I(1.5,3,4)], 
+  A[I(0.21,2,3), I(0.3,1,5), P(0.4,1,2), I(0.5,2,5), I(0.55,3,6), I(0.6,1,4), 
+    I(0.8,2,5), I(0.85,3,4), I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), 
+    I(1.2,2,4), I(1.6,3,5), I(1.5,3,4)], 
   R[R(0.3,5), R(0.42,3), R(0.7,3), R(0.55,3), R(0.95,5), R(1.4,2), R(1.55,1),
     R(1.85,2)],
   C[C(1.3,2), C(0.8,1), C(1.7,4), C(1.8,4), C(1.92,5)] ) ;
@@ -109,22 +109,36 @@ total_trajectory = compute_total_trajectory(duration, population, initial, reali
 
 ## Plot regions of infection and removal
 ```{julia}
-regions = region_plot(duration, population, total_trajectory)
+regions = region_plot(duration, population, total_trajectory) ;
+```      
 
+```{julia}
+#| echo: false
+#| label: fig-regions
+#| fig-cap: "Infected and removed regions (determined by markers)."
 depict("Regions", compose(context(units=coordinates), regions))
 ```
-Add removals and conditional removals.
+Add removals and conditional removals (see @fig-removals).
 ```{julia}
 removal_incidents = (context(),
   draw_incident([inc for inc in env0.removals  if isa(inc, R)]),
   draw_incident([inc for inc in env0.cremovals if isa(inc, C)]),
-  )
+  ) ;
+```      
+
+```{julia}
+#| echo: false
+#| label: fig-removals
+#| fig-cap: "Infected and removed regions with removals and conditional removals."
 depict("Removals", compose(context(units=coordinates), (removal_incidents, regions)...))
 ```
 
 ## Consider now the construction of "no-infection" zones.
 
 First: construct the separate timelines.
+We produce a figure depicting the realized and un-realized infections
+(as well as removals) together
+with infected and removed regions (@fig-testnoinfection).
 ```{julia}
 removal_list_of_lists = [Float64[] for k in (1:population)]
 cremoval_list = C[]
@@ -140,7 +154,23 @@ println(cremoval_list)
 removal_structure = collect(enumerate(removal_list_of_lists))
 ```
 
+
+```{julia}
+#| echo: false
+#| label: fig-testnoinfection
+#| fig-cap: "Realized and un-realized infections together with infected and removed regions."
+depict("TestNoInfection", compose(context(units=coordinates),
+                                 (removal_incidents, 
+                                  FigureUtilities.draw_realized_elements(initial, realized),
+                                  FigureUtilities.draw_elements(env0),
+                                  regions)...)
+      )
+```      
+
+```{julia}
 Now isolate the time-lines containing a `MIB`, and insert a `0.0` at start.
+Then construct first take on "no-infection zone" based purely on unrealized removals in 
+each time-line (@fig-testnoinfection1).
 ```{julia}
 proto_no_infections_zones1 = [Float64[] for k in (1:population)]
 
@@ -154,6 +184,27 @@ for marker in total_trajectory
   end
 end
 
+pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
+zone1 = (context(), 
+          line(pniz1),
+          defaultstyle.broad, stroke(defaultstyle.forbid1),
+        ) ;
+```      
+
+```{julia}
+#| echo: false
+#| label: fig-testnoinfection1
+#| fig-cap: "First take on no-infection zone based purely on unrealized removals in each time-line."
+depict("TestNoInfection1", compose(context(units=coordinates),
+                                 (removal_incidents, 
+                                  FigureUtilities.draw_realized_elements(initial, realized),
+                                  FigureUtilities.draw_elements(env0),
+                                  regions, zone1)...)
+      )
+```
+
+Now extend "no-infection zones" by monotonicity: see @fig-testnoinfection2.
+```{julia}
 proto_no_infections_zones2 = [Float64[] for k in (1:population)]
 
 k = 1
@@ -171,19 +222,18 @@ for j in k:population
   end
 end
 
-pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
-zone1 = (context(), 
-          line(pniz1),
-          defaultstyle.broad, stroke(defaultstyle.forbid1),
-        )
-
 pniz2 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones2)]
 zone2 = (context(), 
           line(pniz2),
           defaultstyle.broad, stroke(defaultstyle.forbid2),
-        )
+        ) ;
+```      
 
-depict("TestNoInfection", compose(context(units=coordinates),
+```{julia}
+#| echo: false
+#| label: fig-testnoinfection2
+#| fig-cap: "Second take on no-infection zone, imposing monotonic growth in time-line."
+depict("TestNoInfection2", compose(context(units=coordinates),
                                  (removal_incidents, 
                                   FigureUtilities.draw_realized_elements(initial, realized),
                                   FigureUtilities.draw_elements(env0),
@@ -191,7 +241,9 @@ depict("TestNoInfection", compose(context(units=coordinates),
       )
 ```
 
-Now also add in the potential infections.
+::: {.callout-note}
+Now we must also add in effect of the potential infections.
+:::
 
 # Computing the last viable epidemic
 First establish realized removal incidents in time-decreasing order

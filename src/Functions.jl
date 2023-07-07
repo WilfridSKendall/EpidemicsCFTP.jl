@@ -291,8 +291,7 @@ function evolution_recurse!(states::Vector{SIR}, history::Vector{AbstractInciden
 end
 
 
- ## Compact printing
-using Formatting
+## Compact printing
 
 ### Helper functions and format specifications for subscripts and superscripts
 subs = split("₀₁₂₃₄₅₆₇₈₉._ ", "")

@@ -5,6 +5,11 @@ Note that this is a re-working of original version!
 """
 module EpidemicsCFTP
 
+# Other modules
+# -------------
+# The `Formatting` module is required in order to define `show` methods for the various types.
+using Formatting
+
 # Exports
 # =======
 # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.

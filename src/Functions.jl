@@ -42,6 +42,7 @@ chronology(Innovation(n, infections, removals, cremovals))
  ℛ₀.₂₀³
  𝒫₀.₅₀¹⁻²
  ℐ₀.₇₀¹⁻²
+ 
 ```
 """
 function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}

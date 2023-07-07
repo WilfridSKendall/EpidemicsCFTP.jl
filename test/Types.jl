@@ -85,11 +85,3 @@ end
 end
 
 
-# 
-# crem = CRemoval(0.15, 1, 1)
-#     @test_throws ArgumentError   resample(crem, -100)
-#     @test_throws MethodError     resample(crem,  100.5) # No signature available for non-integer second argument!
-#     @test_throws MethodError     resample(crem, -100.5) # No signature available for non-integer second argument!
-# end
-# 
-

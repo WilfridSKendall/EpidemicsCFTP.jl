@@ -49,6 +49,51 @@ function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
     [inc::AbstractIncident for inc in sort(collect(chron), lt=isearlier)]
 end
 
+## Re-sampling `CRemoval` mark
+"""
+    resample(crem::CRemoval, population::Integer)::CRemoval
+
+Produce a new `CRemoval`: same time `t` but re-sampling
+the mark `target` of `crem::CRemoval` from the range `1:population`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> using Random
+
+julia> Random.seed!(1) ;
+
+julia> crem = CRemoval(0.15, 4)
+𝒞₀.₁₅⁴
+
+julia> resample(crem, 20)
+𝒞₀.₁₅²
+
+julia> crem
+𝒞₀.₁₅⁴
+```
+"""
+function resample(crem::CRemoval, population::Integer)::CRemoval
+    CRemoval(crem.t, rand(1:population))
+end
+
+## Converting `Infection` to `PInfection`
+"""
+    perpetuate(pinf::Infection)::PInfection
+
+Produce a new `PInfection` from an `Infection` using the same marks.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> infection_incident = Infection(0.04, 1, 4)
+ℐ₀.₀₄¹⁻⁴
+julia> perpetuate(infection_incident)
+𝒫₀.₀₄¹⁻⁴
+```
+"""
+function perpetuate(infection_incident::Infection)::PInfection
+    PInfection(infection_incident.t, infection_incident.target, infection_incident.infectee)
+end
+
 
 """
     EpidemicsCFTP.infect(t::Real, state::SIR)::SIR

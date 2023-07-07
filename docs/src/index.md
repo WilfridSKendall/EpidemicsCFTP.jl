@@ -71,6 +71,9 @@ AbstractIncident
 AbstractRemoval
 AbstractInfection
 AbstractMarker
+AbstractSusceptibleMarker
+AbstractInfectionMarker
+AbstractRemovalMarker
 ```
 
 
@@ -157,6 +160,12 @@ instances of
 isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 ```
 
+### Conversion methods
+A couple of methods concern conversion of one incident into another, possibly of a different type.
+```@docs
+resample
+perpetuate
+```
 ### Other methods
 The method `chronology` converts an `AbstractEnvironment` 
 into a time-ordered list of incidents. 

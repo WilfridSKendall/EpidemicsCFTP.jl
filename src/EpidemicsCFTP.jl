@@ -9,11 +9,16 @@ module EpidemicsCFTP
 # =======
 # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
 export AbstractTimedOccurrence
-export AbstractMarker
+
 export AbstractIncident
 export AbstractRemoval
 export AbstractInfection
 export AbstractInnovation
+
+export AbstractMarker
+export AbstractSusceptibleMarker
+export AbstractInfectionMarker
+export AbstractRemovalMarker
 
 export InitialRemoved
 export InitialInfected
@@ -39,6 +44,9 @@ export chronology
 export evolution_recurse!
 
 export isearlier
+
+export resample
+export perpetuate
 
 # Included files
 # ==============

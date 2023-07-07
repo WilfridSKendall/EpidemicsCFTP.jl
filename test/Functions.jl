@@ -28,7 +28,18 @@
     @test  isearlier(Removal(0.10, 2),      MarkerRemovalB(0.5, 3))
 end
 
-## Testing to do with eliciting epidemic trajectory
+## Testing `resample`
+# -------------------
+@testset "EpidemicsCFTP: resample      " begin
+crem = CRemoval(0.15, 1)
+@test_throws ArgumentError   resample(crem, -100)
+@test_throws MethodError     resample(crem,  100.5) # No signature for non-integer second argument!
+@test_throws MethodError     resample(crem, -100.5) # No signature for non-integer second argument!
+end
+# LATER this should use seeded rng to test for valid resampling.
+
+
+## Testing elicitation of epidemic trajectory
 # =================================
 @testset "EpidemicsCFTP: chronology    " begin
     P, I, R, C = PInfection, Infection, Removal, CRemoval
@@ -43,7 +54,7 @@ end
     # Correct result from `chronology`
     inn = Innovation(3, allinfects, removals, cremovals)
     chr = chronology(inn)
-    for i in 1:length(chr)
+    for i in eachindex(chr)
         @test chr[i] == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), P(0.70, 1, 2)][i]
     end
 end

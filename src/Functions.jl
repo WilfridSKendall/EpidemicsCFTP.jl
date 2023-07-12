@@ -24,7 +24,13 @@ end
 """
     chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
     
-Returns  time-ordered list of incidents from an `AbstractEnvironment`.
+Returns time-ordered list of incidents from an `AbstractEnvironment`.
+
+:::{ .callout-note}
+
+**Deprecated:** `chronology` is now constructed as a field for `Innovation` 
+
+:::
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)

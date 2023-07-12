@@ -521,6 +521,9 @@ corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals).
 
+Note that there is a computed field `chronology` holding a
+time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
+
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 n = 3 ;
@@ -538,9 +541,10 @@ Innovation(3,
 """
 struct Innovation <: AbstractEnvironment
     n::Int
-    infections::Vector{<:AbstractInfection}
-    removals::Vector{Removal}
-    cremovals::Vector{CRemoval}
+    infections ::Vector{<:AbstractInfection}
+    removals   ::Vector{Removal}
+    cremovals  ::Vector{CRemoval}
+    chronology ::Vector{<:AbstractIncident}
 
     function Innovation(n::Integer, infections::Vector{<:AbstractInfection},
                                     removals::Vector{Removal},
@@ -557,9 +561,11 @@ struct Innovation <: AbstractEnvironment
         elseif any(i.target > n for i in infections)
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
+            chron = Iterators.flatten([infections, removals, cremovals])
             new(n, sort(infections, lt=isearlier), 
                    sort(removals,   lt=isearlier), 
-                   sort(cremovals,  lt=isearlier))
+                   sort(cremovals,  lt=isearlier),
+                   [x::AbstractIncident for x in sort(collect(chron), lt=isearlier)])
         end
     end
 end

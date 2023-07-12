@@ -56,10 +56,10 @@ end
     AI = AbstractIncident
 
     n = 3
-    infects   = I[I(0.70, 1, 2)]
+    infects     = I[I(0.70, 1, 2)]
     allinfects  = Union{I, P}[P(0.70, 1, 2)]
-    removals  = R[R(0.20, 3), R(0.10, 2)]
-    cremovals = C[C(0.00, 1), C(0.05, 1)]
+    removals    = R[R(0.20, 3), R(0.10, 2)]
+    cremovals   = C[C(0.00, 1), C(0.05, 1)]
     
     inn = Innovation(3, allinfects, removals, cremovals)
     @test inn.removals == R[R(0.10, 2), R(0.20, 3)]

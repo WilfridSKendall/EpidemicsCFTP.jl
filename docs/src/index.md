@@ -167,9 +167,6 @@ resample
 perpetuate
 ```
 ### Other methods
-The method `chronology` converts an `AbstractEnvironment` 
-into a time-ordered list of incidents. 
-
 The method
 `evolution_recurse!` 
 **(NOT YET FULLY TESTED)**
@@ -183,6 +180,8 @@ using a chronology of incidents.
 chronology
 evolution_recurse!
 ```
+
+**NOTE** that this method alters the list structures which are its arguments.
 
 Various private methods relating to updating a trajectory:
 ```@docs

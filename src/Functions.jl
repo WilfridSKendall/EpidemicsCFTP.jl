@@ -19,43 +19,6 @@ function isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)
   inc1.t < inc2.t
 end
 
-## Produce a time-ordered list of incidents from an `AbstractEnvironment`.
-
-"""
-    chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
-    
-Returns time-ordered list of incidents from an `AbstractEnvironment`.
-
-:::{ .callout-note}
-
-**Deprecated:** `chronology` is now constructed as a field for `Innovation` 
-
-:::
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-n = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.1, 2), Removal(0.2, 3)] ;
-cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)] ;
-chronology(Innovation(n, infections, removals, cremovals))
-
-# output
-6-element Vector{AbstractIncident}:
- 𝒞₀.₀₀¹
- 𝒞₀.₀₅²
- ℛ₀.₁₀²
- ℛ₀.₂₀³
- 𝒫₀.₅₀¹⁻²
- ℐ₀.₇₀¹⁻²
- 
-```
-"""
-function chronology(env::AbstractEnvironment)::Vector{AbstractIncident}
-    chron = Iterators.flatten([env.infections, env.removals, env.cremovals]) ;
-    [inc::AbstractIncident for inc in sort(collect(chron), lt=isearlier)]
-end
-
 ## Re-sampling `CRemoval` mark
 """
     resample(crem::CRemoval, population::Integer)::CRemoval

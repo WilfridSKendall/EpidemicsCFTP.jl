@@ -76,6 +76,28 @@ end
             C[C(0.00, 1), C(0.01, 1), C(0.02, 1), C(0.05, 1)])
 end
 
+
+## Testing `chronology` field of `Innovation`
+# =================================
+@testset "EpidemicsCFTP: chronology    " begin
+    P, I, R, C = PInfection, Infection, Removal, CRemoval
+    AI = AbstractIncident
+
+    n = 3
+    infects   = I[I(0.70, 1, 2)]
+    allinfects  = Union{I, P}[P(0.70, 1, 2)]
+    removals  = R[R(0.20, 3), R(0.10, 2)]
+    cremovals = C[C(0.00, 1), C(0.05, 1)]
+    
+    # Correct result from `chronology`
+    inn = Innovation(3, allinfects, removals, cremovals)
+    chr = inn.chronology
+    for i in eachindex(chr)
+        @test chr[i] == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), P(0.70, 1, 2)][i]
+    end
+end
+
+
 ## Testing `SIR`, state of epidemic
 @testset "EpidemicsCFTP: SIR           " begin
     @test_throws DomainError SIR(0.0,-1, 2, 3)

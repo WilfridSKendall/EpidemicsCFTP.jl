@@ -45,7 +45,6 @@ export PInfection
 export Innovation
 export SIR
 
-export chronology
 export evolution_recurse!
 
 export isearlier

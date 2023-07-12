@@ -39,26 +39,6 @@ end
 # LATER this should use seeded rng to test for valid resampling.
 
 
-## Testing elicitation of epidemic trajectory
-# =================================
-@testset "EpidemicsCFTP: chronology    " begin
-    P, I, R, C = PInfection, Infection, Removal, CRemoval
-    AI = AbstractIncident
-
-    n = 3
-    infects   = I[I(0.70, 1, 2)]
-    allinfects  = Union{I, P}[P(0.70, 1, 2)]
-    removals  = R[R(0.20, 3), R(0.10, 2)]
-    cremovals = C[C(0.00, 1), C(0.05, 1)]
-    
-    # Correct result from `chronology`
-    inn = Innovation(3, allinfects, removals, cremovals)
-    chr = chronology(inn)
-    for i in eachindex(chr)
-        @test chr[i] == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), P(0.70, 1, 2)][i]
-    end
-end
-
 # =================================
 @testset "EpidemicsCFTP: actions       " begin
     infect = EpidemicsCFTP.infect

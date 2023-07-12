@@ -91,7 +91,7 @@ env_figure1 = Innovation(duration1,
 
 ```{julia}
 initial1= SIR(0.0, 4, 1, 0)
-chron1  = chronology(env_figure1) ; states1 = [initial1] # both will be overwritten
+chron1  = copy(env_figure1.chronology) ; states1 = [initial1] # both will be overwritten
 traj1, realized1 = evolution_recurse!(states1, AbstractIncident[], duration1, chron1)
 
 
@@ -156,7 +156,7 @@ env_figure3 = Innovation(duration3,
 
 ```{julia}
 initial3 = initial1
-chron3   = chronology(env_figure3) ; states3 = [initial3] # both will be overwritten
+chron3   = copy(env_figure3.chronology) ; states3 = [initial3] # both will be overwritten
 traj3, realized3 = evolution_recurse!(states3, AbstractIncident[], duration3, chron3)
 
 

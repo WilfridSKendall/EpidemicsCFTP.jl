@@ -134,17 +134,17 @@ depict("nodes_view", compose(context(units=coordinates), image))
 ```
 
 # Evolving the epidemic in process time
-Now plot epidemics using the time-sequence `chron` of potential incidents, 
-derived
-from the innovation using the `chronology` function. Compute trajectory
-and history of realized incidents corresponding to a specific initial state at time \(0.0\),
+Now plot epidemics using a shallow copy of the time-sequence field `chronology` of potential incidents
+which is computed for an `Innovation`, 
+and the history of realized incidents corresponding to a specific initial state at time \(0.0\),
 given by an `SIR` structure. 
 
 ```{julia}
 initial= SIR(0.0, 4, 1, 0)
-chron  = chronology(env0) ; states = [initial] # both will be overwritten
+chron  = copy(env0.chronology) ; states = [initial] # both will be overwritten
 traj, realized = evolution_recurse!(states, AbstractIncident[], duration, chron)
 flow = trajectory_table(duration, initial, traj) ;
+
 ```
 
 ```{julia}

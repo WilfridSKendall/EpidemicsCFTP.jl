@@ -95,7 +95,7 @@ env0 = Innovation(5,
 
 ```{julia}
 initial= SIR(0.0, 4, 1, 0)
-chron  = chronology(env0) ; states = [initial] # both will be overwritten
+chron  = copy(env0.chronology) ; states = [initial] # both will be overwritten
 traj, realized = evolution_recurse!(states, AbstractIncident[], duration, chron, conditioned=true)
 
 infect1   = [x for x in realized if isa(x, I) || isa(x, P)]
@@ -142,7 +142,7 @@ with infected and removed regions (@fig-testnoinfection).
 ```{julia}
 removal_list_of_lists = [Float64[] for k in (1:population)]
 cremoval_list = C[]
-for incident in chronology(env0)
+for incident in env0.chronology
   if isa(incident, R)
     push!(removal_list_of_lists[incident.target], incident.t)
   elseif isa(incident, C)

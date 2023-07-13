@@ -168,21 +168,12 @@ perpetuate
 ```
 ### Other methods
 The method
-`evolution_recurse!` 
-**(NOT YET FULLY TESTED)**
-extends a pair of lists of
+`evolution` 
+produces a pair of lists:
 
 1. a trajectory of states, and
-2. a history of events
+2. a history of realized incidents.
 
-using a chronology of incidents.
-```@docs
-evolution_recurse!
-```
-
-**NOTE** that this method alters the list structures which are its arguments.
-It is therefore deprecated in favour of the method
-`evolution` given below.
 ```@docs
 evolution
 ```

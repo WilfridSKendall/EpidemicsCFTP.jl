@@ -502,22 +502,21 @@ end
 """
     AbstractEnvironment
 
-Represent an entire innovation of environment for a single step of algorithmic time.
+Represent variants of an entire innovation of environment for a single step of algorithmic time.
 
-Should always possess field `n` (positive `Integer`) and
+Should always possess field `population` (positive `Integer`) and
 `infections`, `removals`, `cremovals (`Vector{AbstractIncident}`),
-but displays `n` together with `infections`, `removals`, `cremovals` as 
+but displays `population` together with `infections`, `removals`, `cremovals` as 
 **time-ordered** lists of corresponding incidents.
 """
 abstract type AbstractEnvironment end
 
 """
-    Innovation(n::Integer, infections::Vector{<:AbstractInfection},
-                           removals::Vector{Removal},
-                           cremovals::Vector{CRemoval})
+    Innovation(population::Integer, infections::Vector{T},
+               removals::Vector{Removal},
+               cremovals::Vector{CRemoval}) where T<:AbstractInfection
 
-Represent an entire innovation
-corresponding to a single step of _algorithmic_ time,
+Represent an entire innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals).
 
@@ -526,11 +525,11 @@ time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-n = 3 ;
+population = 3 ;
 infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
 removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
 cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)] ;
-Innovation(n, infections, removals, cremovals)
+Innovation(population, infections, removals, cremovals)
 
 # output
 Innovation(3,
@@ -540,34 +539,40 @@ Innovation(3,
 ```
 """
 struct Innovation <: AbstractEnvironment
-    n::Int
+    population ::Int
     infections ::Vector{<:AbstractInfection}
     removals   ::Vector{Removal}
     cremovals  ::Vector{CRemoval}
     chronology ::Vector{<:AbstractIncident}
 
-    function Innovation(n::Integer, infections::Vector{<:AbstractInfection},
-                                    removals::Vector{Removal},
-                                    cremovals::Vector{CRemoval})
-        noun = "Innovation(n, $infections, $removals, $cremovals)"
-        if n ≤ 0
-            throw(DomainError(noun, "non-positive population size n"))
-        elseif length(cremovals) > n
+    function Innovation(population::Integer, infections::Vector{T},
+                        removals::Vector{Removal},
+                        cremovals::Vector{CRemoval}) where T<:AbstractInfection
+        noun = "Innovation($population, $infections, $removals, $cremovals)"
+        if population ≤ 0
+            throw(DomainError(noun, "non-positive population size $population"))
+        elseif length(cremovals) > population
             throw(ArgumentError("too many conditional removals in \n$noun"))
-        elseif any(cr.target > n for cr in cremovals)
+        elseif any(cr.target > population for cr in cremovals)
             throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
-        elseif any(r.target > n for r in removals)
+        elseif any(r.target > population for r in removals)
             throw(ArgumentError("some removal timelines too high in \n$noun"))
-        elseif any(i.target > n for i in infections)
+        elseif any(i.target > population for i in infections)
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
             chron = Iterators.flatten([infections, removals, cremovals])
-            new(n, sort(infections, lt=isearlier), 
-                   sort(removals,   lt=isearlier), 
-                   sort(cremovals,  lt=isearlier),
-                   [x::AbstractIncident for x in sort(collect(chron), lt=isearlier)])
+            new(population, sort(infections, lt=isearlier), 
+                sort(removals,   lt=isearlier), 
+                sort(cremovals,  lt=isearlier),
+                [x::AbstractIncident for x in sort(collect(chron), lt=isearlier)])
         end
     end
+
+    function Innovation(population::Integer, infections::Vector{T},
+                        removals::Vector{Removal}) where T<:AbstractInfection
+        Innovation(population, infections, removals, CRemoval[])
+    end
+
 end
 
         

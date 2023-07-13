@@ -55,42 +55,34 @@ end
     P, I, R, C = PInfection, Infection, Removal, CRemoval
     AI = AbstractIncident
 
-    n = 3
-    infects     = I[I(0.70, 1, 2)]
-    allinfects  = Union{I, P}[P(0.70, 1, 2)]
-    removals    = R[R(0.20, 3), R(0.10, 2)]
-    cremovals   = C[C(0.00, 1), C(0.05, 1)]
+    population = 3
+    infects    = I[I(0.70, 1, 2)]
+    allinfects = Union{I, P}[P(0.70, 1, 2)]
+    removals   = R[R(0.20, 3), R(0.10, 2)]
+    cremovals  = C[C(0.00, 1), C(0.05, 1)]
     
-    inn = Innovation(3, allinfects, removals, cremovals)
+    inn = Innovation(population, allinfects, removals, cremovals)
     @test inn.removals == R[R(0.10, 2), R(0.20, 3)]
     
     # Population size not positive
     @test_throws DomainError Innovation(0, allinfects, removals, cremovals)
 
     # Signature violations
-    @test_throws MethodError Innovation(n, allinfects, cremovals, removals)
-    @test_throws MethodError Innovation(n, removals, allinfects, cremovals)
+    @test_throws MethodError Innovation(population, allinfects, cremovals, removals)
+    @test_throws MethodError Innovation(population, removals, allinfects, cremovals)
  
     # Too many conditional removals
-    @test_throws ArgumentError Innovation(n, allinfects, removals, 
+    @test_throws ArgumentError Innovation(population, allinfects, removals, 
             C[C(0.00, 1), C(0.01, 1), C(0.02, 1), C(0.05, 1)])
-end
 
-
-## Testing `chronology` field of `Innovation`
-# =================================
-@testset "EpidemicsCFTP: chronology    " begin
-    P, I, R, C = PInfection, Infection, Removal, CRemoval
-    AI = AbstractIncident
-
-    n = 3
+    # Testing `chronology` field of `Innovation`
     infects   = I[I(0.70, 1, 2)]
     allinfects  = Union{I, P}[P(0.70, 1, 2)]
     removals  = R[R(0.20, 3), R(0.10, 2)]
     cremovals = C[C(0.00, 1), C(0.05, 1)]
     
     # Correct result from `chronology`
-    inn = Innovation(3, allinfects, removals, cremovals)
+    inn = Innovation(population, allinfects, removals, cremovals)
     chr = inn.chronology
     for i in eachindex(chr)
         @test chr[i] == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), P(0.70, 1, 2)][i]
@@ -105,5 +97,3 @@ end
     @test_throws DomainError SIR(0.0, 1, 2,-3)
     @test_throws DomainError SIR(0.0, 0, 0, 0)
 end
-
-

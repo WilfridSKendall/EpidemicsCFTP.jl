@@ -45,7 +45,8 @@ export PInfection
 export Innovation
 export SIR
 
-export evolution_recurse!
+export evolution_recurse! # Deprecated
+export evolution
 
 export isearlier
 

@@ -177,11 +177,15 @@ extends a pair of lists of
 
 using a chronology of incidents.
 ```@docs
-chronology
 evolution_recurse!
 ```
 
 **NOTE** that this method alters the list structures which are its arguments.
+It is therefore deprecated in favour of the method
+`evolution` given below.
+```@docs
+evolution
+```
 
 Various private methods relating to updating a trajectory:
 ```@docs

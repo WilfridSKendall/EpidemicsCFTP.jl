@@ -195,6 +195,8 @@ then an error is raised whenever the function attempts to activate a `Removal`
 **IMPORTANT:** Note that this function changes the contents
 of `states`, `history` and `chron`.
 
+**NOTE:** deprecated in favour of non-recursinve, non-destructive `evolution`.
+
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> states = SIR[SIR(0.01, 1, 2, 3)] ; t1 = 1.0 ;
@@ -257,6 +259,76 @@ function evolution_recurse!(states::Vector{SIR}, history::Vector{AbstractInciden
         end
         return evolution_recurse!(states, history, t1, chron, conditioned=conditioned)
     end
+end
+
+
+"""
+    evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+
+Evolves an S-I-R epidemic from an initial `SIR` state using
+an `Innovation`. Returns
+a list of `SIR` states and a history `Vector{AbstractIncident}`.
+
+If the keyword argument `conditioned` is set to its non-default value of `true`
+then an error is raised whenever the function attempts to activate a `Removal`
+(as opposed to a `CRemoval`).
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
+
+julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[Removal(0.5, 4)], CRemoval[]) ;
+
+julia> states, history = evolution(initial_state, innovation) ;
+
+julia> states
+3-element Vector{SIR}:
+ SIR₀.₀₁(1:2:3)
+ SIR₀.₅₀(1:1:4)
+ SIR₀.₆₀(0:2:4)
+
+julia> history
+2-element Vector{AbstractIncident}:
+ ℛ₀.₅₀⁴
+ ℐ₀.₆₀⁵⁻⁶
+
+julia> states, history = evolution(initial_state, innovation, conditioned=true) ;
+ERROR: evolution, conditioned=true, tries to activate (unconditioned) removal ℛ₀.₅₀⁴
+
+julia> states = SIR[SIR(0.01, 1, 2, 3)] ; t1 = 1.0 ;
+
+julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
+
+julia> states, history = evolution(initial_state, innovation) ;
+
+julia> states
+3-element Vector{SIR}:
+ SIR₀.₀₁(1:2:3)
+ SIR₀.₅₀(1:1:4)
+ SIR₀.₆₀(0:2:4)
+
+julia> history
+2-element Vector{AbstractIncident}:
+ 𝒞₀.₅₀⁴
+ ℐ₀.₆₀⁵⁻⁶
+```
+"""
+function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+    states  = SIR[initial_state]
+    history = AbstractIncident[]
+    if ! isempty(innovation.chronology)
+        for event in innovation.chronology
+            new_state = update(states[end], event)
+            if ! is_same_config(new_state, states[end])
+                if conditioned && isa(event, Removal)
+                    error("evolution, conditioned=$conditioned, tries to activate (unconditioned) removal $(event)")
+                end
+                push!(states, new_state)
+                push!(history, event)
+            end
+        end
+    end
+    return states, history
 end
 
 
@@ -355,10 +427,10 @@ Implementation of `show` for `Innovation` as three rows of lists of incidents
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-n = 3 ;
+population = 3 ;
 infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
 removals   = [Removal(0.1, 2), Removal(0.2, 3)] ;
-Innovation(n, infections, removals, CRemoval[])
+Innovation(population, infections, removals, CRemoval[])
 
 # output
 Innovation(3,
@@ -369,10 +441,10 @@ Innovation(3,
 function Base.show(io::IO, z::Innovation)
     if isempty(z.cremovals)
         printfmt(io, "{1}({2},\n  {3},\n  {4})",
-                    typeof(z), z.n, z.infections, z.removals)
+                    typeof(z), z.population, z.infections, z.removals)
     else
         printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5})",
-                    typeof(z), z.n, z.infections, z.removals, z.cremovals)
+                    typeof(z), z.population, z.infections, z.removals, z.cremovals)
     end
 end
 

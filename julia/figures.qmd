@@ -106,7 +106,7 @@ depict("Scaffolding", compose(context(units=coordinates), scaffolding(duration, 
 Consider lists of potential incidents underlying
 an unconditional epidemic.
 ```{julia}
-env0 = Innovation(5, 
+innov = Innovation(5, 
   A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
     I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
     I(1.5,3,4)], 
@@ -129,7 +129,7 @@ all subsequent elements. @fig-potential illustrates the required plot.
 #|           Orange arrows connect infector time-lines                                  \
 #|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
-image = create_nodes_view(duration, population, env0)
+image = create_nodes_view(duration, innov)
 depict("nodes_view", compose(context(units=coordinates), image))
 ```
 
@@ -140,9 +140,8 @@ and the history of realized incidents corresponding to a specific initial state 
 given by an `SIR` structure. 
 
 ```{julia}
-initial= SIR(0.0, 4, 1, 0)
-chron  = copy(env0.chronology) ; states = [initial] # both will be overwritten
-traj, realized = evolution_recurse!(states, AbstractIncident[], duration, chron)
+initial = SIR(0.0, 4, 1, 0)
+traj, realized = evolution(initial, innov)
 flow = trajectory_table(duration, initial, traj) ;
 
 ```
@@ -156,11 +155,6 @@ print(flow) ;
 plot_trajectories(flow)
 ```
 
-::: {.callout-tip}
-In the following, it might help to have a version of `evolution_recurse!` which is non-destructive of its arguments!
-:::
-
-
 Now examine which of the potential incidents have been realized. 
 Amend @fig-potential: realized incident nodes have light-coloured backgrounds and 
 thicker line-widths, producing @fig-realized.
@@ -173,7 +167,7 @@ thicker line-widths, producing @fig-realized.
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/brown."
-image = create_epidemic_view(duration, population, env0, flow, initial, realized)
+image = create_epidemic_view(duration, innov, flow, initial, realized)
 depict("epidemics_view", compose(context(units=coordinates), image))
 ```
 

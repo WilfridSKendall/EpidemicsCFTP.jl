@@ -83,7 +83,7 @@ coordinates1 = UnitBox(0, population1, duration1, -population1,
 
 Here is the set of innovations:
 ```{julia}
-env_figure1 = Innovation(duration1, 
+innov_figure1 = Innovation(duration1, 
   A[I(1,2,5),  I(2,1,2),  I(3,1,2),  I(4,2,4),  I(6,3,4),  I(7,2,3),  I(8,1,2), 
     I(8,4,5),  I(9,1,4),  I(11,2,4), I(14.5,3,5)], 
   R[R(3,5),    R(5,1),    R(7.5,5),  R(13,3),   R(14,3)],  C[]) ;
@@ -91,9 +91,7 @@ env_figure1 = Innovation(duration1,
 
 ```{julia}
 initial1= SIR(0.0, 4, 1, 0)
-chron1  = copy(env_figure1.chronology) ; states1 = [initial1] # both will be overwritten
-traj1, realized1 = evolution_recurse!(states1, AbstractIncident[], duration1, chron1)
-
+traj1, realized1 = evolution(initial1, innov_figure1)
 
 flow1 = trajectory_table(duration1, initial1, traj1) ;
 print(flow1) ;
@@ -104,7 +102,7 @@ print(flow1) ;
 #| echo: false
 #| label: fig-nodes1
 #| fig-cap: "Nodes used in Figure 1 of @ConnorKendall-2023."
-compose(context(units=coordinates1), create_nodes_view(duration1, population1, env_figure1))
+compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1))
 ```
 
 
@@ -115,7 +113,7 @@ compose(context(units=coordinates1), create_nodes_view(duration1, population1, e
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 1a of @ConnorKendall-2023."
-image = create_epidemic_view(duration1, population1, env_figure1, flow1, initial1, realized1)
+image = create_epidemic_view(duration1, innov_figure1, flow1, initial1, realized1)
 depict("draftfigure1a", compose(context(units=coordinates1), image))
 ```
 
@@ -147,7 +145,7 @@ R[R(1,5),  R(2,4),  R(4,4),  R(7,5)]
 
 Here is the set of innovations:
 ```{julia}
-env_figure3 = Innovation(duration3, 
+innov_figure3 = Innovation(duration3, 
   A[I(0.5,2,5),I(2,1,2),  I(2.5,3,4),I(3,1,3),  I(5,2,4),  I(5.5,3,4),
     I(6,2,3),  I(8,2,5),  I(9.5,1,3),I(10,4,5), I(11,4,5), I(12.5,3,5)],
   R[R(1,5),   R(2,4),  R(4,4),  R(7,5)],
@@ -156,8 +154,8 @@ env_figure3 = Innovation(duration3,
 
 ```{julia}
 initial3 = initial1
-chron3   = copy(env_figure3.chronology) ; states3 = [initial3] # both will be overwritten
-traj3, realized3 = evolution_recurse!(states3, AbstractIncident[], duration3, chron3)
+#chron3   = copy(innov_figure3.chronology) ; states3 = [initial3] # both will be overwritten
+traj3, realized3 = evolution(initial3, innov_figure3)
 
 
 flow3 = trajectory_table(duration3, initial3, traj3) ;
@@ -169,7 +167,7 @@ print(flow3) ;
 #| echo: false
 #| label: fig-nodes3
 #| fig-cap: "Nodes used in Figure 3 of @ConnorKendall-2023."
-compose(context(units=coordinates3), create_nodes_view(duration3, population3, env_figure3))
+compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3))
 ```
 
 ```{julia}
@@ -179,7 +177,7 @@ compose(context(units=coordinates3), create_nodes_view(duration3, population3, e
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 3a of @ConnorKendall-2023." 
-image = create_epidemic_view(duration3, population3, env_figure3, flow3, initial3, realized3)
+image = create_epidemic_view(duration3, innov_figure3, flow3, initial3, realized3)
 depict("draftfigure3a", compose(context(units=coordinates3), image))
 ```
 

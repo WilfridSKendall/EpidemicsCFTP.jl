@@ -53,7 +53,7 @@ export time_axis, time_threads, scaffolding
 # A set of functions to draw nodes and regions and connectors.
 export draw_incident, draw_connect
 export draw_elements, create_nodes_view, draw_realized_elements
-export draw_realized_regions, create_epidemic_view
+export create_epidemic_view
 
 # ## Functions using `Gadfly`
 # Specific `Gadfly` drawing functions
@@ -259,22 +259,22 @@ function draw_connect(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:
 end 
 
 # The next function draws the various incidents.
-function draw_elements(env; I=I, P=P, R=R, C=C, sty=defaultstyle) 
+function draw_elements(innov; I=I, P=P, R=R, C=C, sty=defaultstyle) 
 
   (context(),
-    draw_incident([inc for inc in env.infections if isa(inc, I)], sty=sty),
-    draw_incident([inc for inc in env.infections if isa(inc, P)], sty=sty),
-    draw_incident([inc for inc in env.removals   if isa(inc, R)], sty=sty),
-    draw_incident([inc for inc in env.cremovals  if isa(inc, C)], sty=sty),
-    draw_connect([inc for inc in  env.infections if isa(inc, I)], sty=sty),
-    draw_connect([inc for inc in  env.infections if isa(inc, P)], sty=sty), )
+    draw_incident([inc for inc in innov.infections if isa(inc, I)], sty=sty),
+    draw_incident([inc for inc in innov.infections if isa(inc, P)], sty=sty),
+    draw_incident([inc for inc in innov.removals   if isa(inc, R)], sty=sty),
+    draw_incident([inc for inc in innov.cremovals  if isa(inc, C)], sty=sty),
+    draw_connect([inc for inc in  innov.infections if isa(inc, I)], sty=sty),
+    draw_connect([inc for inc in  innov.infections if isa(inc, P)], sty=sty), )
 end
 
 # The next function combines depiction of the incidents with the axes.
-function create_nodes_view(duration, population, env; I=I, P=P, R=R, C=C, sty=defaultstyle)
+function create_nodes_view(duration, innov; I=I, P=P, R=R, C=C, sty=defaultstyle)
   (context(), 
-    draw_elements(env, I=I, P=P, R=R, C=C, sty=sty), 
-    scaffolding(duration, population))
+    draw_elements(innov, I=I, P=P, R=R, C=C, sty=sty), 
+    scaffolding(duration, innov.population))
 end 
 
 # The next function draws the realized elements together with connectors.
@@ -302,56 +302,23 @@ function draw_realized_elements(initial, realized;
       stroke(sty.colour(R[])), sty.trail, strokedash([0.5mm, 0.5mm]) ) ) )
 end
 
-# Here is a function which draws infected and removed regions. 
-#
-# :::{.callout-warning}
-# This function should now be superseded by work carried out in `experiment.qmd`:
-# delete and remove from exports, as it is replaced by `region_plot`.
-# :::
-function draw_realized_regions(duration, population, flow; sty=defaultstyle)
-
-  removed_fill = [(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]
-  push!(removed_fill, (duration, 1))
-  infected_fill = [(a,b) for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]
-  removed1_fill = [(a,b + 1) for (a,b) in zip(flow.t, flow.Removals) if b < population]
-  append!(infected_fill, reverse(removed1_fill))
-
-  (context(),
-    (context(),          # Trail of Removals
-      line([(a,b) for (a,b) in zip(flow.t, flow.Removals) if b>0]),
-      line([[(a,b), (duration, b)] for (a,b) in zip(flow.t, flow.Removals) if b>0]),
-      stroke(sty.colour(R[])), sty.boundary ),
-    (context(),          # Removals trail fill
-      polygon(removed_fill),
-      fill(sty.colour(R[])), fillopacity(0.1) ),
-    
-  (context(),          # Trail of Epidemic
-    line([zip(flow.t, flow.Infectives+flow.Removals)]),
-    line([[(a,b), (duration, b)] 
-             for (a,b) in zip(flow.t, flow.Infectives+flow.Removals) if b>0]),
-    stroke(sty.colour(A[])), sty.boundary ),
-  (context(),          # Epidemic trail fill
-    polygon(infected_fill),
-    fill(sty.colour(A[])), stroke(sty.colour(A[])), fillopacity(0.1) ), )
-end
-
 # Finally, here is a function which presents incidents, realized incidents,
 # connectors and regions on a single figure.
-function create_epidemic_view(duration, population, env, flow, initial, realized; 
+function create_epidemic_view(duration, innov, flow, initial, realized; 
                                   sty=defaultstyle)
-  total_trajectory = compute_total_trajectory(duration, population, initial, realized)
+  total_trajectory = compute_total_trajectory(duration, innov.population, initial, realized)
   
   (context(),
           draw_realized_elements(initial, realized, sty=sty), 
-          draw_elements(env, sty=sty), 
-          region_plot(duration, population, total_trajectory),
-          scaffolding(duration, population))
+          draw_elements(innov, sty=sty), 
+          region_plot(duration, innov.population, total_trajectory),
+          scaffolding(duration, innov.population))
 end ;
 
 
 # ## Drawing functions (`Gadfly`)
 # Define functions to construct and plot a dataframe
-# of trajectories as knots of piecewise constant functions, having used `evolution_recurse!`
+# of trajectories as knots of piecewise constant functions, having used `evolution`
 # to deliver the \(\SIR\) trajectory `traj`
 # and a sorted list of realized incidents in `realized`.
 function trajectory_table(duration, initial, traj)

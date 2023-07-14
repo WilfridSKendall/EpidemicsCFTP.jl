@@ -40,7 +40,7 @@ including this one in particular. (Though this still seems flakey! best way
 seems to be to force a new computation in the cell which is reporting the error.)
 ```{julia}
 include("./FigureUtilities.jl")
-using .FigureUtilities ;
+using .FigureUtilities
 ```
 
 Here are some very basic features about the epidemic.
@@ -95,15 +95,16 @@ innov = Innovation(5,
 
 ```{julia}
 initial= SIR(0.0, 4, 1, 0)
-traj, realized = evolution(initial, innov, conditioned=true)
+ev = Evolution(initial, innov) # Note we want conditional evolution here!
 
-infect1   = [x for x in realized if isa(x, I) || isa(x, P)]
+# Smuggle this into `Evolution`?!
+infect1   = [x for x in ev.history if isa(x, I) || isa(x, P)]
 infect2   = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
-remove1   = [x for x in realized if isa(x, C) || isa(x, R)]
+remove1   = [x for x in ev.history if isa(x, C) || isa(x, R)]
 remove2   = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
 realized2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
 realized_trajectory = collect(Iterators.flatten(realized2));
-total_trajectory = compute_total_trajectory(duration, population, initial, realized);
+total_trajectory = compute_total_trajectory(duration, population, initial, ev.history);
 ```
 
 ## Plot regions of infection and removal
@@ -160,7 +161,7 @@ removal_structure = collect(enumerate(removal_list_of_lists))
 #| fig-cap: "Realized and un-realized infections together with infected and removed regions."
 depict("TestNoInfection", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  FigureUtilities.draw_realized_elements(initial, realized),
+                                  FigureUtilities.draw_realized_elements(initial, ev.history),
                                   FigureUtilities.draw_elements(innov),
                                   regions)...)
       )
@@ -196,7 +197,7 @@ zone1 = (context(),
 #| fig-cap: "First take on no-infection zone based purely on unrealized removals in each time-line."
 depict("TestNoInfection1", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  FigureUtilities.draw_realized_elements(initial, realized),
+                                  FigureUtilities.draw_realized_elements(initial, ev.history),
                                   FigureUtilities.draw_elements(innov),
                                   regions, zone1)...)
       )
@@ -234,7 +235,7 @@ zone2 = (context(),
 #| fig-cap: "Second take on no-infection zone, imposing monotonic growth in time-line."
 depict("TestNoInfection2", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  FigureUtilities.draw_realized_elements(initial, realized),
+                                  FigureUtilities.draw_realized_elements(initial, ev.history),
                                   FigureUtilities.draw_elements(innov),
                                   regions, zone1, zone2)...)
       )
@@ -257,7 +258,7 @@ are never infected and others are not removed before `duration`
 is (of course) infected at time \(0\) and is not otherwise infected.
 
 ```{julia}
-realized_removals = filter(x -> (isa(x, R) || isa(x, C)), realized)
+realized_removals = filter(x -> (isa(x, R) || isa(x, C)), ev.history)
 reversed_removals = reverse(collect(enumerate(realized_removals))[2:end])
 barrier = reversed_removals[1][2]
 last_viable = []

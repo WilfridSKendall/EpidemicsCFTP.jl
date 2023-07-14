@@ -49,7 +49,7 @@ gf = Gadfly
 using EpidemicsCFTP 
 
 include("./FigureUtilities.jl")
-using .FigureUtilities ;
+using .FigureUtilities
 ```
 
 A laconic description of the `julia` package `Compose.jl` 
@@ -134,15 +134,14 @@ depict("nodes_view", compose(context(units=coordinates), image))
 ```
 
 # Evolving the epidemic in process time
-Now plot epidemics using a shallow copy of the time-sequence field `chronology` of potential incidents
-which is computed for an `Innovation`, 
-and the history of realized incidents corresponding to a specific initial state at time \(0.0\),
-given by an `SIR` structure. 
+Now plot epidemics using an specific initial state at time \(0.0\),
+given by an `SIR` structure, and the structure of `Innovations`,
+computed using `Evolution`. 
 
 ```{julia}
 initial = SIR(0.0, 4, 1, 0)
-traj, realized = evolution(initial, innov)
-flow = trajectory_table(duration, initial, traj) ;
+ev = Evolution(initial, innov)
+flow = trajectory_table(duration, initial, ev.trajectory) ;
 
 ```
 
@@ -167,7 +166,7 @@ thicker line-widths, producing @fig-realized.
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/brown."
-image = create_epidemic_view(duration, innov, flow, initial, realized)
+image = create_epidemic_view(duration, innov, flow, initial, ev.history)
 depict("epidemics_view", compose(context(units=coordinates), image))
 ```
 

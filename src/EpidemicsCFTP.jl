@@ -19,6 +19,7 @@ export AbstractIncident
 export AbstractRemoval
 export AbstractInfection
 export AbstractInnovation
+export AbstractEvolution
 
 export AbstractMarker
 export AbstractSusceptibleMarker
@@ -43,6 +44,7 @@ export Infection
 export PInfection
 
 export Innovation
+export Evolution
 export SIR
 
 # export evolution_recurse! # Now in deprecated.jl, no longer compiled

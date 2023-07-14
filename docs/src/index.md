@@ -6,6 +6,9 @@ end
 ```
 
 
+\newcommand{\SIR}{\operatorname{S-I-R}}
+
+
 # Julia module `EpidemicsCFTP` 
 
 Here is a brief description of the following module (under development):
@@ -128,18 +131,22 @@ ContinuingRemoved
 `removals` and `cremovals` (conditioned removals).
 ```@docs
 AbstractEnvironment
+AbstractEvolution
 ```
 
-`Innovations` fills the lists of an abstract environment with simulated contents
+`Innovation` fills the lists of an abstract environment with simulated contents
 of lists of the requisite infections or removals.
+`Evolution` also carries out the simulation from a given initial value. 
 ```@docs
 Innovation
+Evolution
 ```
 
-`SIR` records the state of an \(SIR\) epidemic at a stipulated time.
+`SIR` records the state of an $SIR$ epidemic at a stipulated time.
 ```@docs
 SIR
 ```
+
 
 ## Associated methods
 
@@ -151,7 +158,9 @@ show(::IO, ::AbstractInfection)
 show(::IO, ::AbstractMarker)
 show(::IO, ::Innovation)
 show(::IO, ::SIR)
+show(::IO, ::AbstractEvolution)
 ```
+
 ### Comparison method
 A partial order is provided by `isearlier`, based on time `t` of occurrence of the relevant 
 instances of
@@ -166,19 +175,9 @@ A couple of methods concern conversion of one incident into another, possibly of
 resample
 perpetuate
 ```
+
 ### Other methods
-The method
-`evolution` 
-produces a pair of lists:
-
-1. a trajectory of states, and
-2. a history of realized incidents.
-
-```@docs
-evolution
-```
-
-Various private methods relating to updating a trajectory:
+Various methods relating to updating a trajectory (some private):
 ```@docs
 infect
 is_infectable
@@ -186,6 +185,7 @@ remove
 is_removeable
 is_same_config
 update
+evolution
 ```
 
 # Index 

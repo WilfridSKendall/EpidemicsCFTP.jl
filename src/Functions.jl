@@ -181,8 +181,8 @@ an `Innovation`. Returns
 a list of `SIR` states and a history `Vector{AbstractIncident}` of realized incidents.
 
 If the keyword argument `conditioned` is set to its non-default value of `true`
-then an error is raised whenever the function attempts to activate a `Removal`
-(as opposed to a `CRemoval`).
+then an error is raised when the function attempts to realize a `Removal`
+or fails to realize a `CRemoval`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -204,7 +204,7 @@ julia> history
  ℐ₀.₆₀⁵⁻⁶
 
 julia> states, history = evolution(initial_state, innovation, conditioned=true) ;
-ERROR: evolution, conditioned=true, tries to activate (unconditioned) removal ℛ₀.₅₀⁴
+ERROR: evolution, conditioned=true, tries to realize (unconditioned) removal ℛ₀.₅₀⁴
 
 julia> states = SIR[SIR(0.01, 1, 2, 3)] ; t1 = 1.0 ;
 
@@ -225,21 +225,23 @@ julia> history
 ```
 """
 function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
-    states  = SIR[initial_state]
-    history = AbstractIncident[]
+    trajectory  = SIR[initial_state]
+    history     = AbstractIncident[]
     if ! isempty(innovation.chronology)
         for event in innovation.chronology
-            new_state = update(states[end], event)
-            if ! is_same_config(new_state, states[end])
+            new_state = update(trajectory[end], event)
+            if ! is_same_config(new_state, trajectory[end])
                 if conditioned && isa(event, Removal)
-                    error("evolution, conditioned=$conditioned, tries to activate (unconditioned) removal $(event)")
+                    error("evolution, conditioned=$conditioned, tries to realize (unconditioned) removal $(event)")
                 end
-                push!(states, new_state)
+                push!(trajectory, new_state)
                 push!(history, event)
+            elseif conditioned && isa(event, CRemoval)
+                    error("evolution, conditioned=$conditioned, fails to realize (conditioned) removal $(event)")
             end
         end
     end
-    return states, history
+    return trajectory, history
 end
 
 
@@ -375,3 +377,38 @@ function Base.show(io::IO, z::SIR)
                  timespec(z.t), z.s, z.i, z.r)
 end
 
+
+"""
+Implementation of `show` for `AbstractEvolution` as three rows of lists of incidents
+-- or two rows if no `CRemoval`s -- together with further calculations. 
+We illustrate this second version here.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+population = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.1, 2), Removal(0.2, 3)] ;
+initial    = SIR(0.0, 2,1,0) ;
+innovation = Innovation(population, infections, removals, CRemoval[]) ;
+Evolution(initial, innovation) 
+
+# output
+Evolution(3,
+  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  Removal[ℛ₀.₁₀², ℛ₀.₂₀³]
+  AbstractIncident[ℛ₀.₁₀², ℛ₀.₂₀³, 𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²]
+  SIR[SIR₀.₀₀(2:1:0), SIR₀.₅₀(1:2:0)]
+  AbstractIncident[𝒫₀.₅₀¹⁻²])
+```
+"""
+function Base.show(io::IO, z::AbstractEvolution)
+    if isempty(z.cremovals)
+        printfmt(io, "{1}({2},\n  {3},\n  {4}\n  {5}\n  {6}\n  {7})",
+                    typeof(z), z.population, z.infections, z.removals, 
+                               z.chronology, z.trajectory, z.history)
+    else
+        printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5}\n  {6}\n  {7}\n  {8})",
+                    typeof(z), z.population, z.infections, z.removals, z.cremovals, 
+                               z.chronology, z.trajectory, z.history)
+    end
+end

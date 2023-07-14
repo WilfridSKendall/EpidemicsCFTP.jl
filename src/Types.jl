@@ -2,7 +2,7 @@
 """
     AbstractTimedOccurrence
 
-Represents an abstract incident or a state as occurring
+This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 
 Expects field `t<:Real` (used by function `isearlier`
@@ -25,7 +25,7 @@ abstract type AbstractIncident <: AbstractTimedOccurrence end
 """
     AbstractRemoval
 
-Represents an abstract removal using a sub-type of `AbstractIncident`.  
+This represents an abstract removal using a sub-type of `AbstractIncident`.  
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects field `target<:Integer`.
 
@@ -38,7 +38,7 @@ abstract type AbstractRemoval <: AbstractIncident end
 """
     AbstractInfection
 
-Represents an abstract infection using a sub-type of `AbstractIncident`.
+This represents an abstract infection using a sub-type of `AbstractIncident`.
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects fields `target<:Integer` and `infectee<:Integer`,
 such that `target < infectee`.
@@ -59,7 +59,7 @@ abstract type AbstractInfection <: AbstractIncident end
 """
     AbstractMarker
 
-Represents an abstract marker for the epidemic graph using a sub-type of `AbstractIncident`.  
+This represents an abstract marker for the epidemic graph using a sub-type of `AbstractIncident`.  
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  Normally this field `t`
 should be given by the duration of the epidemic simulation!
 Also expects field `target<:Integer` which identifies the time-line being considered.
@@ -502,7 +502,7 @@ end
 """
     AbstractEnvironment
 
-Represent variants of an entire innovation of environment for a single step of algorithmic time.
+Represents variants of an entire innovation of environment for a single step of algorithmic time.
 
 Should always possess field `population` (positive `Integer`) and
 `infections`, `removals`, `cremovals (`Vector{AbstractIncident}`),
@@ -516,7 +516,7 @@ abstract type AbstractEnvironment end
                removals::Vector{Removal},
                cremovals::Vector{CRemoval}) where T<:AbstractInfection
 
-Represent an entire innovation corresponding to a single step of _algorithmic_ time,
+This represents an entire innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals).
 
@@ -572,16 +572,14 @@ struct Innovation <: AbstractEnvironment
                         removals::Vector{Removal}) where T<:AbstractInfection
         Innovation(population, infections, removals, CRemoval[])
     end
-
 end
 
-        
-        
-## An `SIR` state for an S-I-R epidemic and associated functions
+
+## An `SIR` state for an $\SIR$ epidemic and associated functions
 """
     SIR(t::Real, s::Integer, i::Integer, r::Integer)
 
-Represent a state of an S-I-R epidemic (`s`, `i`, `r`)
+This represents a state of an S-I-R epidemic (`s`, `i`, `r`)
 (all non-negative integers adding up to a positive integer
 which is the population size)
 at a specified time `t` (a real number).
@@ -611,5 +609,71 @@ struct SIR <: AbstractTimedOccurrence
         else
             new(t, s, i, r)
         end
+    end
+end
+
+## Structures capturing $SIR$ epidemics
+
+"""
+    `AbstractEvolution` 
+
+This represents variants of evolution of an `S-I-R` epidemic..
+
+It should always possess fields `population` (positive `Integer`),
+`infections`, `removals`, `cremovals (`Vector{AbstractIncident}`),
+and computed `chronology`, `trajectory` and `history`.
+"""
+abstract type AbstractEvolution <: AbstractEnvironment end
+
+"""
+    Evolution(initial_state::SIR, innovation::Innovation)
+
+This implements _unconditional_ evolution of an SIR epidemic 
+based on a given `Innovation` 
+for innovations,
+and starting from a given `SIR` for initial state.
+
+It represents an entire simuation corresponding to a single step of _algorithmic_ time,
+stored as a sequence of three **time-ordered** lists 
+(realized and unrealized infections, unrealized removals, conditional removals)
+and also computed fields `chronology`, `trajectory` and `history`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+population = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
+cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)] ;
+innov      = Innovation(population, infections, removals, cremovals) ;
+initial    = SIR(0.0, 2, 1, 0)
+Evolution(initial, innov)
+
+# output
+Evolution(3,
+  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  Removal[ℛ₀.₁₀², ℛ₀.₂₀³],
+  CRemoval[𝒞₀.₀₀¹, 𝒞₀.₀₅²]
+  AbstractIncident[𝒞₀.₀₀¹, 𝒞₀.₀₅², ℛ₀.₁₀², ℛ₀.₂₀³, 𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²]
+  SIR[SIR₀.₀₀(2:1:0), SIR₀.₀₀(2:0:1)]
+  AbstractIncident[𝒞₀.₀₀¹])
+```
+"""
+struct Evolution <: AbstractEvolution
+    population ::Int
+    infections ::Vector{<:AbstractInfection}
+    removals   ::Vector{Removal}
+    cremovals  ::Vector{CRemoval}
+    chronology ::Vector{<:AbstractIncident}
+    trajectory ::Vector{SIR}
+    history    ::Vector{AbstractIncident}
+    
+    function Evolution(initial_state::SIR, innovation::Innovation)
+        population = innovation.population
+        infections = innovation.infections
+        removals   = innovation.removals
+        cremovals  = innovation.cremovals   
+        chronology = innovation.chronology
+        trajectory, history = evolution(initial_state, innovation)
+        new(population, infections, removals, cremovals, chronology, trajectory, history)
     end
 end

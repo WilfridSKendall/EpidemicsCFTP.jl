@@ -102,33 +102,40 @@ end
     population     = 6
     initial_state1 = SIR(0.0, 1, 2, 3)
     innov1a        = Innovation(population, I[], R[R(0.5, 4)])
-    outcome1a      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.5, 1, 1, 4)], AI[R(0.5, 4)])
+    outcome1a      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.5, 1, 1, 4)], 
+                      AI[R(0.5, 4)])
     innov1b        = Innovation(population, I[], R[], C[C(0.5, 4)])
-    outcome1b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.5, 1, 1, 4)], AI[C(0.5, 4)])
+    outcome1b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.5, 1, 1, 4)], 
+                      AI[C(0.5, 4)])
     
     initial_state2 = SIR(0.6, 1, 2, 3)
     outcome2       = (SIR[SIR(0.6, 1, 2, 3)], AI[])
     
     initial_state3 = SIR(-0.6, 1, 2, 3)
-    outcome3a      = (SIR[SIR(-0.6, 1, 2, 3), SIR(0.5, 1, 1, 4)], AI[R(0.5, 4)])
-    outcome3b      = (SIR[SIR(-0.6, 1, 2, 3), SIR(0.5, 1, 1, 4)], AI[C(0.5, 4)])
+    outcome3a      = (SIR[SIR(-0.6, 1, 2, 3), SIR(0.5, 1, 1, 4)], 
+                      AI[R(0.5, 4)])
+    outcome3b      = (SIR[SIR(-0.6, 1, 2, 3), SIR(0.5, 1, 1, 4)], 
+                      AI[C(0.5, 4)])
     
     initial_state4 = initial_state1
     innov4a        = Innovation(population, AIF[I(0.4, 4, 6)], R[])
-    outcome4a      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3)], AI[I(0.4, 4, 6)])
+    outcome4a      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3)], 
+                      AI[I(0.4, 4, 6)])
     innov4b        = Innovation(population, AIF[P(0.4, 4, 6)], R[], C[])
-    outcome4b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3)], AI[P(0.4, 4, 6)])
+    outcome4b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3)], 
+                      AI[P(0.4, 4, 6)])
     innov4c        = Innovation(population, AIF[P(0.4, 4, 6)], R[R(0.5, 4)])
-    outcome4c      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4)], AI[P(0.4, 4, 6), R(0.5, 4)])
+    outcome4c      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4)], 
+                      AI[P(0.4, 4, 6), R(0.5, 4)])
     
     initial_state5 = initial_state1
     innov5a        = Innovation(population, AIF[I(0.4, 4, 6), I(0.6, 3, 5)], R[R(0.5, 4)])
-    outcome5a      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4)], AI[I(0.4, 4, 6), R(0.5, 4)])
+    outcome5a      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4)], 
+                      AI[I(0.4, 4, 6), R(0.5, 4)])
     
     innov5b        = Innovation(population, AIF[I(0.4, 4, 6), I(0.6, 3, 5)], R[R(0.5, 4), R(0.7, 6)])
-    outcome5b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4), SIR(0.7, 0, 1, 5)], AI[I(0.4, 4, 6), R(0.5, 4), R(0.7, 6)])
-    
-
+    outcome5b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4), SIR(0.7, 0, 1, 5)], 
+                      AI[I(0.4, 4, 6), R(0.5, 4), R(0.7, 6)])
     
     @test evolution(initial_state1, innov1a) == outcome1a
     @test evolution(initial_state1, innov1b) == outcome1b

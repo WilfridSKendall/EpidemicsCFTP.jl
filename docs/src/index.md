@@ -140,6 +140,7 @@ of lists of the requisite infections or removals.
 ```@docs
 Innovation
 Evolution
+CEvolution
 ```
 
 `SIR` records the state of an $SIR$ epidemic at a stipulated time.
@@ -159,6 +160,7 @@ show(::IO, ::AbstractMarker)
 show(::IO, ::Innovation)
 show(::IO, ::SIR)
 show(::IO, ::AbstractEvolution)
+show(::IO, ::BadIncident)
 ```
 
 ### Comparison method

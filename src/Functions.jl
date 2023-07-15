@@ -179,6 +179,7 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
 Evolves an S-I-R epidemic from an initial `SIR` state using
 an `Innovation`. Returns
 a list of `SIR` states and a history `Vector{AbstractIncident}` of realized incidents.
+**NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
 
 If the keyword argument `conditioned` is set to its non-default value of `true`
 then an error is raised when the function attempts to realize a `Removal`
@@ -203,10 +204,8 @@ julia> history
  ℛ₀.₅₀⁴
  ℐ₀.₆₀⁵⁻⁶
 
-julia> states, history = evolution(initial_state, innovation, conditioned=true) ;
-ERROR: evolution, conditioned=true, tries to realize (unconditioned) removal ℛ₀.₅₀⁴
-
-julia> states = SIR[SIR(0.01, 1, 2, 3)] ; t1 = 1.0 ;
+julia> evolution(initial_state, innovation, conditioned=true)
+ERROR: The (conditioned) evolution misused ℛ₀.₅₀⁴
 
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
 
@@ -222,22 +221,33 @@ julia> history
 2-element Vector{AbstractIncident}:
  𝒞₀.₅₀⁴
  ℐ₀.₆₀⁵⁻⁶
+ 
+julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
+
+julia> evolution(initial_state, innovation, conditioned=true) ;
+ERROR: The (conditioned) evolution misused 𝒞₀.₅₀¹
+
+julia> initial_state = SIR(0.55, 1, 2, 3) ;
+
+julia> evolution(initial_state, innovation, conditioned=true)
+(SIR[SIR₀.₅₅(1:2:3), SIR₀.₆₀(0:3:3)], AbstractIncident[ℐ₀.₆₀⁵⁻⁶])
 ```
 """
 function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
     trajectory  = SIR[initial_state]
     history     = AbstractIncident[]
-    if ! isempty(innovation.chronology)
-        for event in innovation.chronology
+    chronology  = [event for event in innovation.chronology if event.t ≥ initial_state.t]
+    if ! isempty(chronology)
+        for event in chronology
             new_state = update(trajectory[end], event)
             if ! is_same_config(new_state, trajectory[end])
                 if conditioned && isa(event, Removal)
-                    error("evolution, conditioned=$conditioned, tries to realize (unconditioned) removal $(event)")
+                    throw(EmployedRemoval(event))
                 end
                 push!(trajectory, new_state)
                 push!(history, event)
             elseif conditioned && isa(event, CRemoval)
-                    error("evolution, conditioned=$conditioned, fails to realize (conditioned) removal $(event)")
+                    throw(MissedCRemoval(event))
             end
         end
     end
@@ -412,3 +422,11 @@ function Base.show(io::IO, z::AbstractEvolution)
                                z.chronology, z.trajectory, z.history)
     end
 end
+
+"""
+Printing a `BadIncident` exception.
+"""
+function Base.show(io::IO, e::BadIncident)
+    printfmt(io, "The (conditioned) evolution misused $(e.incident)")
+end
+

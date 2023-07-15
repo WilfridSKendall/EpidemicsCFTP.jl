@@ -45,6 +45,7 @@ export PInfection
 
 export Innovation
 export Evolution
+export CEvolution
 export SIR
 
 # export evolution_recurse! # Now in deprecated.jl, no longer compiled

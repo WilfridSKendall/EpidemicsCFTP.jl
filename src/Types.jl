@@ -626,6 +626,48 @@ and computed `chronology`, `trajectory` and `history`.
 abstract type AbstractEvolution <: AbstractEnvironment end
 
 """
+    `BadIncident`
+
+An exception to report misuse of an incident.
+"""
+abstract type BadIncident <: Exception end
+        
+"""
+    `MissedCRemoval`
+
+This is an exception encountered when a `CRemoval` is missed by
+`evolution`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+population = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
+cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 1)] ;
+innov      = Innovation(population, infections, removals, cremovals) ;
+initial    = SIR(0.0, 2, 1, 0)
+CEvolution(initial, innov)
+
+# output
+ERROR: The (conditioned) evolution misused 𝒞₀.₀₅¹
+```
+"""
+struct MissedCRemoval <: BadIncident
+    incident ::AbstractIncident
+end
+
+"""
+    `EmployedRemoval`
+
+This is an exception encountered when a `Removal` is not missed by
+`evolution`.
+```
+"""
+struct EmployedRemoval <: BadIncident
+    incident ::AbstractIncident
+end
+
+"""
     Evolution(initial_state::SIR, innovation::Innovation)
 
 This implements _unconditional_ evolution of an SIR epidemic 
@@ -633,7 +675,7 @@ based on a given `Innovation`
 for innovations,
 and starting from a given `SIR` for initial state.
 
-It represents an entire simuation corresponding to a single step of _algorithmic_ time,
+It represents an entire simulation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals)
 and also computed fields `chronology`, `trajectory` and `history`.
@@ -674,6 +716,80 @@ struct Evolution <: AbstractEvolution
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
+        new(population, infections, removals, cremovals, chronology, trajectory, history)
+    end
+end
+
+"""
+    CEvolution(initial_state::SIR, innovation::Innovation)
+
+This implements _conditional_ evolution of an SIR epidemic 
+based on a given `Innovation` 
+for innovations,
+and starting from a given `SIR` for initial state.
+
+It represents an entire simulation corresponding to a single step of _algorithmic_ time,
+stored as a sequence of three **time-ordered** lists 
+(realized and unrealized infections, unrealized removals, conditional removals)
+and also computed fields `chronology`, `trajectory` and `history`.
+
+## Example
+Three cases: straightforward, missing a conditioned removal, employing an (unconditioned) removal:
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> initial    = SIR(0.0, 2, 1, 0) ;
+
+julia> population = 3 ;
+
+julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+
+julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
+
+julia> cremovals  = [CRemoval(0.0, 1)] ;
+
+julia> innov      = Innovation(population, infections, removals, cremovals) ;
+
+julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
+CEvolution(3,
+  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  Removal[ℛ₀.₁₀², ℛ₀.₂₀³],
+  CRemoval[𝒞₀.₀₀¹]
+  AbstractIncident[𝒞₀.₀₀¹, ℛ₀.₁₀², ℛ₀.₂₀³, 𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²]
+  SIR[SIR₀.₀₀(2:1:0), SIR₀.₀₀(2:0:1)]
+  AbstractIncident[𝒞₀.₀₀¹])
+
+julia> cremovals  = [CRemoval(0.0, 2)] ;
+
+julia> innov      = Innovation(population, infections, removals, cremovals) ;
+
+julia> CEvolution(initial, innov)
+ERROR: The (conditioned) evolution misused 𝒞₀.₀₀²
+
+julia> removals   = [Removal(0.1, 1), Removal(0.1, 2)] ;
+
+julia> cremovals  = [CRemoval(0.2, 1)] ;
+
+julia> innov      = Innovation(population, infections, removals, cremovals) ;
+
+julia> CEvolution(initial, innov)
+ERROR: The (conditioned) evolution misused ℛ₀.₁₀¹
+```
+"""
+struct CEvolution <: AbstractEvolution
+    population ::Int
+    infections ::Vector{<:AbstractInfection}
+    removals   ::Vector{Removal}
+    cremovals  ::Vector{CRemoval}
+    chronology ::Vector{<:AbstractIncident}
+    trajectory ::Vector{SIR}
+    history    ::Vector{AbstractIncident}
+    
+    function CEvolution(initial_state::SIR, innovation::Innovation)
+        population = innovation.population
+        infections = innovation.infections
+        removals   = innovation.removals
+        cremovals  = innovation.cremovals   
+        chronology = innovation.chronology
+        trajectory, history = evolution(initial_state, innovation, conditioned=true)
         new(population, infections, removals, cremovals, chronology, trajectory, history)
     end
 end

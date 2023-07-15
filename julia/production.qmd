@@ -27,18 +27,16 @@ jupyter:    julia-1.9
 
 # Set-up details and utilities
 Load required modules. 
-Note that `EpidemicsCFTP` is under development, while `FigureUtilities` needs in due course
-to be pre-compiled!
+**Note** that `EpidemicsCFTP` and (less significantly)
+`FigureUtilities` are under development.
+
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
 gf = Gadfly
 
 using EpidemicsCFTP
-```
-
-```{julia}
-include("./FigureUtilities.jl")
+using FigureUtilities
 ```
 
 ```{julia}

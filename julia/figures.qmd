@@ -39,17 +39,16 @@ Further cell execution options: see
 # Initialisation and styling
 ## Set up details and utilities
 Load required modules.
-Note that `EpidemicsCFTP` is under development, while `FigureUtilities` needs in due course
-to be pre-compiled!
+Note that `EpidemicsCFTP` and (less significantly)
+`FigureUtilities` are under development.
+
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
-gf = Gadfly  
+gf = Gadfly
 
-using EpidemicsCFTP 
-
-include("./FigureUtilities.jl")
-using .FigureUtilities
+using EpidemicsCFTP
+using FigureUtilities
 ```
 
 A laconic description of the `julia` package `Compose.jl` 

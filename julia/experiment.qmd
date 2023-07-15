@@ -25,22 +25,16 @@ jupyter:    julia-1.9
 
 # Set up details and utilities
 Load required modules.
-Note that `EpidemicsCFTP` is under development, while `FigureUtilities` needs in due course
-to be pre-compiled!
+Note that `EpidemicsCFTP` and (less significantly)
+`FigureUtilities` are under development.
+
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
 gf = Gadfly
 
-using EpidemicsCFTP 
-```
-
-Use `make clean` if it becomes necessary to force re-compilation of all cells,
-including this one in particular. (Though this still seems flakey! best way
-seems to be to force a new computation in the cell which is reporting the error.)
-```{julia}
-include("./FigureUtilities.jl")
-using .FigureUtilities
+using EpidemicsCFTP
+using FigureUtilities
 ```
 
 Here are some very basic features about the epidemic.
@@ -161,8 +155,8 @@ removal_structure = collect(enumerate(removal_list_of_lists))
 #| fig-cap: "Realized and un-realized infections together with infected and removed regions."
 depict("TestNoInfection", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  FigureUtilities.draw_realized_elements(initial, ev.history),
-                                  FigureUtilities.draw_elements(innov),
+                                  draw_realized_elements(initial, ev.history),
+                                  draw_elements(innov),
                                   regions)...)
       )
 ```      
@@ -197,8 +191,8 @@ zone1 = (context(),
 #| fig-cap: "First take on no-infection zone based purely on unrealized removals in each time-line."
 depict("TestNoInfection1", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  FigureUtilities.draw_realized_elements(initial, ev.history),
-                                  FigureUtilities.draw_elements(innov),
+                                  draw_realized_elements(initial, ev.history),
+                                  draw_elements(innov),
                                   regions, zone1)...)
       )
 ```
@@ -235,8 +229,8 @@ zone2 = (context(),
 #| fig-cap: "Second take on no-infection zone, imposing monotonic growth in time-line."
 depict("TestNoInfection2", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  FigureUtilities.draw_realized_elements(initial, ev.history),
-                                  FigureUtilities.draw_elements(innov),
+                                  draw_realized_elements(initial, ev.history),
+                                  draw_elements(innov),
                                   regions, zone1, zone2)...)
       )
 ```

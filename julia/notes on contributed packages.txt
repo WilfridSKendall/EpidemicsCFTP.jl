@@ -1,0 +1,21 @@
+using Pkg
+Pkg.develop(path="/home/wilfrid/ms/PerfectEpidemics/julia/FigureUtilities")
+Pkg.build("FigureUtilities")
+
+===
+
+Add a symbolic link to directory ./FigureUtilities
+
+] dev ./EpidemicsCFTP	
+] dev ./FigureUtilities
+
+And I think we may need a symbolic link to FigureUtilities.jl at top level? 
+OR in ~/.julia/dev?
+
+using FigureUtilities
+
+The issue here may be that we need to add (for example) Colors as a formal dependency of FigureUtilities
+in Manifest.toml. Within the directory do
+activate .
+add Colors, Compose, DataFrames, Measures, Cairo, Fontconfig, Gadfly, InteractiveUtils
+dev EpidemicsCFTP

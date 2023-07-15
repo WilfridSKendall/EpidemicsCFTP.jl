@@ -30,8 +30,7 @@
 # \newcommand{\SIR}{\operatorname{S-I-R}}
 #
 # # Exports
-# We begin with a module declaration (terminated at end of this file!),
-# and then list exports.
+# We begin with a module declaration (terminated at end of this file!).
 module FigureUtilities
 
 # ## Constructed types
@@ -82,6 +81,7 @@ using EpidemicsCFTP
 # # Constructions and definitions
 # ## Creation of union of composite `AbstractIncident` type.
 # The composite type `BasicIncident` is computed when the module is imported / used.
+# **ISSUE:** this changes the state of the package internally, which is **BAD**.
 function unionize_composites(a::Type)::Type
   coll = subtypes(a)
   xl = Type[x for x in coll]

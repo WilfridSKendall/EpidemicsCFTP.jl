@@ -58,7 +58,7 @@ export create_epidemic_view
 # Specific `Gadfly` drawing functions
 export trajectory_table, plot_trajectories
 
-# ##Further drawing functions using markers
+# ## Further drawing functions using markers
 export draw_marker
 export infected_areas, removed_areas
 export epidemic_trajectory, removal_trajectory

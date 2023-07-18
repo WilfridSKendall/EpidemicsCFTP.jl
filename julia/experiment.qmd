@@ -115,6 +115,7 @@ depict("Regions", compose(context(units=coordinates), regions))
 Add removals and conditional removals (see @fig-removals).
 ```{julia}
 removal_incidents = (context(),
+#  draw_incident_new([inc for inc in innov.removals]),
   draw_incident([inc for inc in innov.removals  if isa(inc, R)]),
   draw_incident([inc for inc in innov.cremovals if isa(inc, C)]),
   ) ;

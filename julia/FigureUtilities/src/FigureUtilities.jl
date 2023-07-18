@@ -79,9 +79,15 @@ using InteractiveUtils
 using EpidemicsCFTP 
 
 # # Constructions and definitions
-# ## Creation of union of composite `AbstractIncident` type.
-# The composite type `BasicIncident` is computed when the module is imported / used.
-# **ISSUE:** this changes the state of the package internally, which is **BAD**.
+# ## Creation of union of composite `AbstractIIncident` types
+# We will use a union type, `BasicIncident`, based on composite `AbstractIncident` types.
+# This is computed within the module.
+#
+# ::: {.callout-caution}
+# Computation of type within module counts as altering internal state!
+#
+# Try to avoid this.
+# :::
 function unionize_composites(a::Type)::Type
   coll = subtypes(a)
   xl = Type[x for x in coll]
@@ -91,11 +97,9 @@ function unionize_composites(a::Type)::Type
     xl = Type[unionize_composites(y) for y in xl]
     return reduce((t1, t2) -> Union{t1, t2}, xl) # return a union type
   end
-end
+end 
 
-BasicIncident = unionize_composites(AbstractIncident) ;
-
-
+BasicIncident = unionize_composites(AbstractIncident)
 
 # ## Colours related to various incidents, using function `csty`.
 # Various incidents and markers will be used sufficiently often to justify abbreviations.
@@ -110,6 +114,10 @@ MIB = MarkerInfectionB ; MRB = MarkerRemovalB
 
 # A function `csty` associates these to colours, using the type hierarchy.
 # A useful list of colours is given in <https://juliagraphics.github.io/Colors.jl/stable/namedcolors/>.
+#
+# ::: {.callout-note}
+# Might be better to choose colour based on `T` rather than `Vector{T}`?
+# :::
 function csty(x::Vector{R}) colorant"tan"       end 
 function csty(x::Vector{C}) colorant"purple"    end 
 function csty(x::Vector{I}) colorant"orange"    end 
@@ -119,7 +127,7 @@ function csty(x::Vector{T}) where T<:AbstractInfection         colorant"yellow" 
 function csty(x::Vector{T}) where T<:AbstractInfectionMarker   colorant"orange" end
 function csty(x::Vector{T}) where T<:AbstractRemovalMarker     colorant"tan"    end
 function csty(x::Vector{T}) where T<:AbstractSusceptibleMarker colorant"blue"   end 
-function csty(x::Vector{T}) where T<:AbstractIncident                           end ;
+function csty(x::Vector{T}) where T<:AbstractIncident          colorant"white"  end
   
 
 # ## Default drawing styles forming a structure `defaultstyle`.
@@ -138,32 +146,18 @@ defaultstyle = (
   forbid1  =  colorant"steelblue", forbid2  =  colorant"lightsteelblue", 
   region   =  (context(), rectangle(), fill(colorant"bisque"), fillopacity(0.3)),
   colour   =  csty,
-) ;
+)
 
-# We need a union type, `BasicIncident`, based on composite `AbstractIncident` types.
-# This is computed within the module.
-function unionize_composites(a::Type)::Type
-  coll = subtypes(a)
-  xl = Type[x for x in coll]
-  if length(xl) == 0
-    return a # return a composite type
-  else
-    xl = Type[unionize_composites(y) for y in xl]
-    return reduce((t1, t2) -> Union{t1, t2}, xl) # return a union type
-  end
-end 
-
-BasicIncident = unionize_composites(AbstractIncident) ;
 
 # ## Graphics utility
 # The following short utility function is helpful.
 # It displays a figure produced using `Compose` or `Gadfly`,
-# and also creates corresponding PNG and PDF renderings in directory `image`.
+# and also creates corresponding `PNG` and `PDF` renderings in directory `image`.
 function depict(title, image)
   draw(PNG("image/$title.png"), image)
   draw(PDF("image/$title.pdf"),  image)
   image
-end ;
+end
 
     
 # ## Basic image template elements
@@ -184,7 +178,7 @@ function time_axis(duration; sty=defaultstyle)
     (context(), line(tic1), stroke(sty.scaffold), linewidth(0.2mm)),
     (context(), line(tic2), stroke(sty.scaffold), linewidth(0.1mm)),
     (context(), line(tic3), stroke(sty.scaffold), linewidth(0.1mm)), )
-end ;
+end
 
 # Now we define a function to draw all time-lines as threads labelled by circled integers.
 #
@@ -203,18 +197,18 @@ function time_threads(duration, population; sty=defaultstyle)
       [hleft], [vcenter]), fontsize(10pt), font("TimesRoman"), ),
     (context(), line([[(0cx, (k)cy), ((duration)cx, (k)cy)] for k in 1:population]), 
       stroke(sty.scaffold), linewidth(0.5mm), ), )
-end ;
+end
 
 # These two functions are put together in a third, which constructs scaffolding (axes, time lines _etc_).
 function scaffolding(duration, population; sty=defaultstyle)
   (context(), sty.region, time_axis(duration, sty=sty), 
               time_threads(duration, population, sty=sty))
-end ;
+end
 
 # ## Drawing functions (`Compose`)
 # Here are functions to draw nodes (optionally as realized or not) for each of a list
 # composed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
-# for all other `AbstractIncident[]` vectors.
+# for all other `AbstractIncident[]` vectors. (**VECTORIZE COLOURS?)
 function draw_incident(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:BasicIncident
   if length(xl) == 0
     return
@@ -241,6 +235,37 @@ function draw_incident(xl::Vector{T}; realized=false, sty=defaultstyle) where T<
   end
 end
 
+# ::: {.callout-warning}
+# Experimental!
+# :::
+function draw_incident_test(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:BasicIncident
+  if length(xl) == 0
+    return
+  end
+  if realized
+    (context(),
+      (context(),
+      circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
+        sty.realized, fill(sty.colour(xl)), 
+        fillopacity(0.2), stroke(sty.colour(xl)) ),
+      if eltype(xl)<:AbstractInfection
+        (context(),
+        circle(map(x->(x.t)cx, xl), map(x -> x.infectee, xl), [sty.smradius]),
+          sty.realized, fill(sty.colour(xl)), fillopacity(0.5), stroke(sty.colour(xl)))
+      end, )  
+  else
+    (context(),
+      (context(),
+        text(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), 
+             map(x -> string(x), xl), [hcenter], [vcenter]), 
+        fontsize(5pt), font("Helvetica")),
+      (context(),
+        circle(map(x -> (x.t)cx, xl), map(x -> (x.target)cy, xl), [sty.radius]), 
+        fill(sty.blank), stroke(sty.colour(xl))), )
+  end
+end
+
+# Draw incidents with connections. (**VECTORIZE COLOURS?)
 function draw_connect(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:BasicIncident
   if ! (eltype(xl)<:AbstractInfection)
     return
@@ -313,7 +338,7 @@ function create_epidemic_view(duration, innov, flow, initial, realized;
           draw_elements(innov, sty=sty), 
           region_plot(duration, innov.population, total_trajectory),
           scaffolding(duration, innov.population))
-end ;
+end
 
 
 # ## Drawing functions (`Gadfly`)
@@ -341,7 +366,7 @@ function plot_trajectories(flow; sty=defaultstyle)
   gf.plot(sus_layer, rem_layer, inf_layer,
     gf.style(panel_fill=colorant"bisque"), gf.Guide.xlabel("process time"), 
     gf.Guide.ylabel("removals, infectives, susceptibles", orientation=:vertical))
-end ;
+end
 
 # ## Drawing regions
 # First a function to draw a marker node. 
@@ -364,7 +389,7 @@ function draw_marker(xl::Vector{T}; sty=defaultstyle) where T<:AbstractMarker
       ),
     )
   end
-end ;
+end
 
 # Compute total trajectory
 function compute_total_trajectory(duration, population, initial_state, realized)
@@ -389,7 +414,7 @@ function compute_total_trajectory(duration, population, initial_state, realized)
     [CR(duration, k) for k in 1:rend],
     [CI(duration, k) for k in (rend+1):iend],
     [CS(duration, k) for k in (iend+1):population]
-  ])) ;
+  ]))
 end
 
 # Representing infected area as collection of rectangles
@@ -409,7 +434,7 @@ function infected_areas(population, total_trajectory)
     end
   end
   return xx, yy, rw, rl
-end ;
+end
 
 # Representing removed area as collection of rectangles
 function removed_areas(population, total_trajectory)
@@ -428,7 +453,7 @@ function removed_areas(population, total_trajectory)
     end
   end
   return xx, yy, rw, rl
-end ;
+end
 
 # Compute epidemic trajectory, adding a final segment 
 # by appending highest `MRB`  if proposed trajectory doesn't extend to full duration.

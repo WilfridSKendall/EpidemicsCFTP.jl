@@ -84,7 +84,7 @@ using EpidemicsCFTP
 # This is computed within the module.
 #
 # ::: {.callout-caution}
-# Computation of type within module counts as altering internal state!
+# Computation of a new type within module counts as altering internal state!
 #
 # Try to avoid this.
 # :::
@@ -118,16 +118,29 @@ MIB = MarkerInfectionB ; MRB = MarkerRemovalB
 # ::: {.callout-note}
 # Might be better to choose colour based on `T` rather than `Vector{T}`?
 # :::
-function csty(x::Vector{R}) colorant"tan"       end 
-function csty(x::Vector{C}) colorant"purple"    end 
-function csty(x::Vector{I}) colorant"orange"    end 
-function csty(x::Vector{P}) colorant"darkgreen" end 
+function csty(x::R) colorant"tan"       end 
+function csty(x::C) colorant"purple"    end 
+function csty(x::I) colorant"orange"    end 
+function csty(x::P) colorant"darkgreen" end 
+function csty(x::T) where T<:AbstractInfectionMarker   colorant"orange"      end
+function csty(x::T) where T<:AbstractRemovalMarker     colorant"tan"         end
+function csty(x::T) where T<:AbstractSusceptibleMarker colorant"blue"        end
+function csty(x::T) where T<:AbstractIncident          colorant"white"       end
 
-function csty(x::Vector{T}) where T<:AbstractInfection         colorant"yellow" end 
-function csty(x::Vector{T}) where T<:AbstractInfectionMarker   colorant"orange" end
-function csty(x::Vector{T}) where T<:AbstractRemovalMarker     colorant"tan"    end
-function csty(x::Vector{T}) where T<:AbstractSusceptibleMarker colorant"blue"   end 
-function csty(x::Vector{T}) where T<:AbstractIncident          colorant"white"  end
+function csty(xl::Vector{T}) where T<:AbstractIncident 
+  return [csty(x) for x in xl]
+end
+  
+#function csty(x::Vector{R}) colorant"tan"       end 
+#function csty(x::Vector{C}) colorant"purple"    end 
+#function csty(x::Vector{I}) colorant"orange"    end 
+#function csty(x::Vector{P}) colorant"darkgreen" end 
+#
+#function csty(x::Vector{T}) where T<:AbstractInfection         colorant"yellow" end 
+#function csty(x::Vector{T}) where T<:AbstractInfectionMarker   colorant"orange" end
+#function csty(x::Vector{T}) where T<:AbstractRemovalMarker     colorant"tan"    end
+#function csty(x::Vector{T}) where T<:AbstractSusceptibleMarker colorant"blue"   end 
+#function csty(x::Vector{T}) where T<:AbstractIncident          colorant"white"  end
   
 
 # ## Default drawing styles forming a structure `defaultstyle`.
@@ -206,9 +219,8 @@ function scaffolding(duration, population; sty=defaultstyle)
 end
 
 # ## Drawing functions (`Compose`)
-# Here are functions to draw nodes (optionally as realized or not) for each of a list
-# composed of incidents from some prescribed composite sub-types of `BasicIncident`, while doing nothing 
-# for all other `AbstractIncident[]` vectors. (**VECTORIZE COLOURS?)
+# Here are functions to draw nodes (optionally as realized or not) for 
+# incidents (or vectors of incidents) of `BasicIncident`. (**VECTORIZE COLOURS?)
 function draw_incident(xl::Vector{T}; realized=false, sty=defaultstyle) where T<:BasicIncident
   if length(xl) == 0
     return
@@ -318,13 +330,13 @@ function draw_realized_elements(initial, realized;
     (context(),          # Connecting removal nodes
       circle([(inc.t)cx for (k, inc) in enumerated_removals], 
              [(k + initial.r)cy for (k, inc) in enumerated_removals],
-             [sty.smradius]), stroke(sty.colour(C[])), 
-             sty.realized, fill(sty.colour(C[])), fillopacity(0.5) ),
+             [sty.smradius]), stroke(sty.colour(C(0.0, 1))), 
+             sty.realized, fill(sty.colour(C(0.0, 1))), fillopacity(0.5) ),
     (context(),          # Connecting removal lines
       line([[((inc.t)cx, (inc.target)cy - sty.radius), 
              ((inc.t)cx, (k + initial.r)cy + sty.radius)]
         for (k, inc) in enumerated_removals]), 
-      stroke(sty.colour(R[])), sty.trail, strokedash([0.5mm, 0.5mm]) ) ) )
+      stroke(sty.colour(R(0.0,1))), sty.trail, strokedash([0.5mm, 0.5mm]) ) ) )
 end
 
 # Finally, here is a function which presents incidents, realized incidents,
@@ -357,9 +369,9 @@ function trajectory_table(duration, initial, traj)
 end
 
 function plot_trajectories(flow; sty=defaultstyle)
-  inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[sty.colour(I[])], 
+  inf_layer = gf.layer(flow, x=:t, y=:Infectives, color=[sty.colour(I(0.0,1,2))], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:solid]))
-  rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[sty.colour(R[])], 
+  rem_layer = gf.layer(flow, x=:t, y=:Removals, color=[sty.colour(R(0.0, 1))], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dash]))
   sus_layer = gf.layer(flow, x=:t, y=:Susceptibles, color=[sty.scaffold], 
     gf.Geom.line, gf.style(line_width=1mm, line_style=[:dot]))
@@ -513,22 +525,22 @@ function region_plot(duration, population, total_trajectory; sty=defaultstyle)
 
     (context(),
       rectangle(xx1, yy1, rw1, rl1),
-      fill(sty.colour(I[])), fillopacity(0.3),
+      fill(sty.colour(I(0.0, 1,2))), fillopacity(0.3),
     ),
 
     (context(),
       rectangle(xx2, yy2, rw2, rl2),
-      fill(sty.colour(C[])), fillopacity(0.3),
+      fill(sty.colour(C(0.0, 1))), fillopacity(0.3),
     ),
 
     (context(),
     line(epidemic_trajectory(duration, total_trajectory)),
-      stroke(sty.colour(I[])), sty.trail
+      stroke(sty.colour(I(0.0, 1,2))), sty.trail
     ),
 
     (context(),
       line(removal_trajectory(duration, total_trajectory)),
-      stroke(sty.colour(C[])), sty.trail
+      stroke(sty.colour(C(0.0, 1))), sty.trail
     ),
 
     scaffolding(duration, population),

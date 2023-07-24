@@ -4,9 +4,16 @@ QUARTO         := /usr/local/bin/quarto
 CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
+UTILITIES      := $(wildcard EpidemicsUtilities/src/*.jl)
+
 main: figures.pdf production.pdf experiment.pdf docs
 
-docs: EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
+docs: EpidemicsUtilities/docs/build/EpidemicsUtilities.pdf EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.pdf
+
+EpidemicsUtilities/docs/build/EpidemicsUtilities.pdf: EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
+	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+
+EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.pdf: EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd
 	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
 clean:
@@ -35,6 +42,10 @@ EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd: EpidemicsUtilities/src/Epi
 	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$^",flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
 	mv EpidemicsUtilities.md EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
 
-%.pdf: %.qmd EpidemicsUtilities/src/EpidemicsUtilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd: EpidemicsUtilities/src/EpidemicsUtilitiesFunctions.jl	
+	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$^",flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
+	mv EpidemicsUtilitiesFunctions.md EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd
 
-.INTERMEDIATE: EpidemicsUtilities.qmd EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
+%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+
+.INTERMEDIATE: EpidemicsUtilities.qmd EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd EpidemicsUtilitiesFunctions.qmd EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd

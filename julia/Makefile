@@ -5,22 +5,18 @@ CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematic
 QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
 UTILITIES      := $(wildcard EpidemicsUtilities/src/*.jl)
+DOCUMENT       := EpidemicsUtilities/docs/build/EpidemicsUtilities
+SOURCE         := EpidemicsUtilities/src/EpidemicsUtilities.jl $(wildcard EpidemicsUtilities/src/0*.jl)
 
 main: figures.pdf production.pdf experiment.pdf docs
-
-docs: EpidemicsUtilities/docs/build/EpidemicsUtilities.pdf EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.pdf
-
-EpidemicsUtilities/docs/build/EpidemicsUtilities.pdf: EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
-	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
-
-EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.pdf: EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd
-	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
 clean:
 	-rm $(wildcard image/DIFF_*.png)
 	-rm $(wildcard *.ipynb)
 	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsUtilities"))'
 
+# ====================
+# Verification support
 verify: figures.pdf production.pdf experiment.pdf
 	@for f in $(wildcard image/VERIFY_*.png) ; do  \
 	( if cmp -s $${f/VERIFY_/} $$f ;               \
@@ -36,16 +32,25 @@ verify: figures.pdf production.pdf experiment.pdf
 
 set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ; done
 
-# The following translation is not yet perfect!
+# ====================
+# Documents support
+docs: $(DOCUMENT).pdf
+
+# The following translations is not yet perfect!
 # It doesn't include directives "#|" in codeblocks.
-EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd: EpidemicsUtilities/src/EpidemicsUtilities.jl	
-	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$^",flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
-	mv EpidemicsUtilities.md EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
+$(DOCUMENT).qmd: EpidemicsUtilities/docs/build/INTERMEDIATE.jl	
+	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$<", name="$@", documenter=false, flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
+	mv $(DOCUMENT).qmd.md $(DOCUMENT).qmd
 
-EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd: EpidemicsUtilities/src/EpidemicsUtilitiesFunctions.jl	
-	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$^",flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
-	mv EpidemicsUtilitiesFunctions.md EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd
+# Concatenate source files into a temporary intermediate file 
+# for construction of documentation.
+EpidemicsUtilities/docs/build/INTERMEDIATE.jl: $(SOURCE)
+	@cat $(SOURCE) > $@
 
+# ====================
+# Intermediate files
+.INTERMEDIATE: EpidemicsUtilities/docs/build/INTERMEDIATE.jl
+
+# ====================
+# Automatic conversion of qmd to pdf
 %.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
-
-.INTERMEDIATE: EpidemicsUtilities.qmd EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd EpidemicsUtilitiesFunctions.qmd EpidemicsUtilities/docs/build/EpidemicsUtilitiesFunctions.qmd

@@ -6,12 +6,13 @@ QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
 main: figures.pdf production.pdf experiment.pdf docs
 
-docs: FigureUtilities/docs/build/FigureUtilities.qmd
+docs: EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
 	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
 clean:
+	-rm $(wildcard image/DIFF_*.png)
 	-rm $(wildcard *.ipynb)
-	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("FigureUtilities"))'
+	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsUtilities"))'
 
 verify: figures.pdf production.pdf experiment.pdf
 	@for f in $(wildcard image/VERIFY_*.png) ; do  \
@@ -30,10 +31,10 @@ set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ;
 
 # The following translation is not yet perfect!
 # It doesn't include directives "#|" in codeblocks.
-FigureUtilities/docs/build/FigureUtilities.qmd: FigureUtilities/src/FigureUtilities.jl	
+EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd: EpidemicsUtilities/src/EpidemicsUtilities.jl	
 	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$^",flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
-	mv FigureUtilities.md FigureUtilities/docs/build/FigureUtilities.qmd
+	mv EpidemicsUtilities.md EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd
 
-%.pdf: %.qmd FigureUtilities/src/FigureUtilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+%.pdf: %.qmd EpidemicsUtilities/src/EpidemicsUtilities.jl ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
-.INTERMEDIATE: FigureUtilities.qmd FigureUtilities/docs/build/FigureUtilities.qmd
+.INTERMEDIATE: EpidemicsUtilities.qmd EpidemicsUtilities/docs/build/EpidemicsUtilities.qmd

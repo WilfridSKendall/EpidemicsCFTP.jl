@@ -26,15 +26,17 @@ jupyter:    julia-1.9
 # Set up details and utilities
 Load required modules.
 Note that `EpidemicsCFTP` and (less significantly)
-`FigureUtilities` are under development.
+`EpidemicsUtilities` are under development.
 
 ```{julia}
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
-gf = Gadfly
 
 using EpidemicsCFTP
-using FigureUtilities
+using EpidemicsUtilities
+
+gf = Gadfly
+fig = EpidemicsUtilities ;
 ```
 
 Here are some very basic features about the epidemic.
@@ -48,17 +50,12 @@ end ;
 ```
 
 
-## Style choices
+## Graphical choices
 Set up and establish graphics size and coordinates.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
 coordinates = UnitBox(0, population, duration, -population, 
                       leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch);
-```
-
-For now, use default style from `FigureUtilities`.
-```{julia}
-style = defaultstyle ;
 ```
 
 ## Dealing with different kinds of incident
@@ -182,7 +179,7 @@ end
 pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
 zone1 = (context(), 
           line(pniz1),
-          defaultstyle.broad, stroke(defaultstyle.forbid1),
+          fig.defaultstyle.broad, stroke(fig.defaultstyle.forbid1),
         ) ;
 ```      
 
@@ -220,7 +217,7 @@ end
 pniz2 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones2)]
 zone2 = (context(), 
           line(pniz2),
-          defaultstyle.broad, stroke(defaultstyle.forbid2),
+          fig.defaultstyle.broad, stroke(fig.defaultstyle.forbid2),
         ) ;
 ```      
 

@@ -40,7 +40,7 @@ Further cell execution options: see
 ## Set up details and utilities
 Load required modules.
 Note that `EpidemicsCFTP` and (less significantly)
-`FigureUtilities` are under development.
+`EpidemicsUtilities` are under development.
 
 ```{julia}
 using Colors, Compose, DataFrames, Measures
@@ -48,7 +48,9 @@ import Cairo, Fontconfig, Gadfly
 gf = Gadfly
 
 using EpidemicsCFTP
-using FigureUtilities
+using EpidemicsUtilities
+
+fig = EpidemicsUtilities
 ```
 
 A laconic description of the `julia` package `Compose.jl` 

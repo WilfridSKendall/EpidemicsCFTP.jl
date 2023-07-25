@@ -7,7 +7,7 @@ QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 UTILITIES      := $(wildcard EpidemicsUtilities/src/*.jl)
 DOCUMENT       := EpidemicsUtilities/docs/build/EpidemicsUtilities
 SOURCE         := EpidemicsUtilities/src/EpidemicsUtilities.jl
-SECTIONS       := $(filter-out $SOURCE, $(wildcard EpidemicsUtilities/src/0*.jl))
+SECTIONS       := $(wildcard EpidemicsUtilities/src/0*.jl)
 
 # ====================
 # Main targets
@@ -46,18 +46,21 @@ $(DOCUMENT).qmd: EpidemicsUtilities/docs/build/INTERMEDIATE.jl
 #	mv $(DOCUMENT).qmd.md $(DOCUMENT).qmd
 	
 
-# Concatenate source files into a temporary intermediate file 
+
+# ====================
+# Intermediate files
+.INTERMEDIATE: EpidemicsUtilities/docs/build/INTERMEDIATE.jl
+
+# Concatenation source files into a temporary intermediate file 
 # for construction of documentation.
 EpidemicsUtilities/docs/build/INTERMEDIATE.jl: $(SOURCE) $(SECTIONS)
 	@cat $(SOURCE) $(SECTIONS) > $@
 	@echo $(shell date +"%-d %B %Y")
 	sed -i -e's/# date: today/# date: $(shell date +"%d %B %Y")/' $@
-
+	@echo $(SECTIONS)
 
 # ====================
-# Clean-up and intermediate files
-.INTERMEDIATE: EpidemicsUtilities/docs/build/INTERMEDIATE.jl
-
+# Clean-up
 clean:
 	-rm $(wildcard image/DIFF_*.png)
 	-rm $(wildcard *.ipynb)

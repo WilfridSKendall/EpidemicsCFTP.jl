@@ -179,7 +179,7 @@ end
 pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
 zone1 = (context(), 
           line(pniz1),
-          fig.defaultstyle.broad, stroke(fig.defaultstyle.forbid1),
+          fig.default_style.broad, stroke(fig.default_style.forbid1),
         ) ;
 ```      
 
@@ -217,7 +217,7 @@ end
 pniz2 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones2)]
 zone2 = (context(), 
           line(pniz2),
-          fig.defaultstyle.broad, stroke(fig.defaultstyle.forbid2),
+          fig.default_style.broad, stroke(fig.default_style.forbid2),
         ) ;
 ```      
 

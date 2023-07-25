@@ -90,8 +90,8 @@ innov_figure1 = Innovation(duration1,
 initial1= SIR(0.0, 4, 1, 0)
 ev1 = Evolution(initial1, innov_figure1)
 
-# flow1 = trajectory_table(duration1, initial1, traj1) ;
-flow1 = trajectory_table(duration1, initial1, ev1.trajectory) ;
+# flow1 = table_trajectories(duration1, initial1, traj1) ;
+flow1 = table_trajectories(duration1, initial1, ev1.trajectory) ;
 print(flow1) ;
 ```
 
@@ -154,7 +154,7 @@ innov_figure3 = Innovation(duration3,
 initial3 = initial1
 ev3 = Evolution(initial3, innov_figure3)
 
-flow3 = trajectory_table(duration3, initial3, ev3.trajectory) ;
+flow3 = table_trajectories(duration3, initial3, ev3.trajectory) ;
 print(flow3) ;
 ```
 

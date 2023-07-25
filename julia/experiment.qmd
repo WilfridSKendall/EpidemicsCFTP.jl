@@ -1,5 +1,5 @@
 ---
-title:  "Experimenting with figures for Perfect Epidemics"
+title:  "Experimenting with figures"
 author: "Wilfrid Kendall"
 date:   today
 ---

@@ -142,7 +142,7 @@ computed using `Evolution`.
 ```{julia}
 initial = SIR(0.0, 4, 1, 0)
 ev = Evolution(initial, innov)
-flow = trajectory_table(duration, initial, ev.trajectory) ;
+flow = table_trajectories(duration, initial, ev.trajectory) ;
 
 ```
 

@@ -47,14 +47,56 @@ using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
 gf = Gadfly
 
-using EpidemicsCFTP
-using EpidemicsUtilities
+using EpidemicsCFTP, EpidemicsUtilities
+```
 
+```{julia}
 yaml_file = "EpidemicsUtilities/data/default_style.yml"
-EpidemicsUtilities.load_style(yaml_file)
-#
-#import JSON3
-#JSON3.pretty(style_data)
+data = EpidemicsUtilities.load_style(yaml_file)
+```
+
+```{julia}
+tag = "colour_x"
+println("heading [$tag]")
+for item in data[tag]
+  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))  
+  b = parse(Colorant, item[2])
+  println("$(item[1]): \t$a \t== \t$b \t[$(a==b)]")
+end
+```
+
+```{julia}
+tag = "length_cy"
+println("heading [$tag]")
+for item in data[tag]
+  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))
+  b = (item[2])cy
+  println("$(item[1]): \t$a \t== \t$b \t[$(a==b)]")
+end
+
+tag = "length_inch"
+println("heading [$tag]")
+for item in data[tag]
+  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))
+  b = (item[2])inch
+  println("$(item[1]): \t$a \t== \t$b \t[$(a==b)]")
+end
+
+tag = "thickness_mm"
+println("heading [$tag]")
+for item in data[tag]
+  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))
+  b = linewidth((item[2])mm)
+  println("$(item[1]): \n\t $a \n\t $b")
+end
+
+# tag = "opacity" not covered
+# tag = "length_factor" not covered
+
+# NEED TO TEST COLOUR TAG
+
+# May be useful later!
+# macro datatype(str); :($(Symbol(str))); end
 ```
 
 A laconic description of the `julia` package `Compose.jl` 

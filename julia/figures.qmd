@@ -50,7 +50,11 @@ gf = Gadfly
 using EpidemicsCFTP
 using EpidemicsUtilities
 
-fig = EpidemicsUtilities
+yaml_file = "EpidemicsUtilities/data/default_style.yml"
+EpidemicsUtilities.load_style(yaml_file)
+#
+#import JSON3
+#JSON3.pretty(style_data)
 ```
 
 A laconic description of the `julia` package `Compose.jl` 

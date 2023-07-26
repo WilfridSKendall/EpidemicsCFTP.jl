@@ -2,7 +2,7 @@
 
 julia_version = "1.9.0"
 manifest_format = "2.0"
-project_hash = "e461b4ee492e7469f4eb452d4110d010006c20a6"
+project_hash = "8dc48759813fd4b92305570aa516d553c51eedaa"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -215,10 +215,10 @@ uuid = "e9e582aa-fa14-4cd8-84f3-d59ae741ce27"
 version = "1.0.0-DEV"
 
 [[deps.EpidemicsUtilities]]
-deps = ["Cairo", "Colors", "Compose", "DataFrames", "EpidemicsCFTP", "Fontconfig", "Gadfly", "InteractiveUtils", "Measures"]
-path = "/home/wilfrid/.julia/dev/EpidemicsUtilities"
+deps = ["Cairo", "Colors", "Compose", "DataFrames", "EpidemicsCFTP", "Fontconfig", "Gadfly", "InteractiveUtils", "Measures", "YAML"]
+path = "EpidemicsUtilities"
 uuid = "d79373c3-2486-448b-9ea6-4dbd084dee00"
-version = "0.1.0-DEV"
+version = "0.1.2-DEV"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -237,12 +237,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "c6033cc3892d0ef5bb9cd29b7f2f0331ea5184ea"
 uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
 version = "3.3.10+0"
-
-[[deps.FigureUtilities]]
-deps = ["Cairo", "Colors", "Compose", "DataFrames", "EpidemicsCFTP", "Fontconfig", "Gadfly", "InteractiveUtils", "Measures"]
-path = "/home/wilfrid/ms/PerfectEpidemics/julia/FigureUtilities"
-uuid = "1d6cf60f-f90d-4d95-a222-a8098121c037"
-version = "0.1.2"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
@@ -410,6 +404,12 @@ deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.4"
+
+[[deps.JSON3]]
+deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
+git-tree-sha1 = "5b62d93f2582b09e469b3099d839c2d2ebf5066d"
+uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+version = "1.13.1"
 
 [[deps.Juno]]
 deps = ["Base64", "Logging", "Media", "Profile"]
@@ -824,10 +824,22 @@ version = "1.3.0"
     ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
     InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
 
+[[deps.StringEncodings]]
+deps = ["Libiconv_jll"]
+git-tree-sha1 = "b765e46ba27ecf6b44faf70df40c57aa3a547dcb"
+uuid = "69024149-9ee7-55f6-a4c4-859efe599b68"
+version = "0.3.7"
+
 [[deps.StringManipulation]]
 git-tree-sha1 = "46da2434b41f41ac3594ee9816ce5541c6096123"
 uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
 version = "0.3.0"
+
+[[deps.StructTypes]]
+deps = ["Dates", "UUIDs"]
+git-tree-sha1 = "ca4bccb03acf9faaf4137a9abc1881ed1841aa70"
+uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+version = "1.10.0"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -936,6 +948,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "e92a1a012a10506618f10b7047e478403a046c77"
 uuid = "c5fb5394-a638-5e4d-96e5-b29de1b5cf10"
 version = "1.5.0+0"
+
+[[deps.YAML]]
+deps = ["Base64", "Dates", "Printf", "StringEncodings"]
+git-tree-sha1 = "e6330e4b731a6af7959673621e91645eb1356884"
+uuid = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
+version = "0.4.9"
 
 [[deps.Zlib_jll]]
 deps = ["Libdl"]

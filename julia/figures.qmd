@@ -23,6 +23,15 @@ jupyter:    julia-1.9
 
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
+
+```{julia}
+#| echo: false
+using Markdown
+Markdown.parse("""
+The following code uses `julia` version $VERSION.
+""")
+```
+
 Run this notebook from the command-line using
  `make figures.pdf` or even just `make`, which invokes
 ```bash
@@ -43,6 +52,7 @@ Note that `EpidemicsCFTP` and (less significantly)
 `EpidemicsUtilities` are under development.
 
 ```{julia}
+println("Julia version $VERSION")
 using Colors, Compose, DataFrames, Measures
 import Cairo, Fontconfig, Gadfly
 gf = Gadfly
@@ -51,7 +61,7 @@ using EpidemicsCFTP, EpidemicsUtilities
 ```
 
 ```{julia}
-yaml_file = "EpidemicsUtilities/data/default_style.yml"
+yaml_file = pkgdir(EpidemicsUtilities, "data", "default_style.yml")
 data = EpidemicsUtilities.load_style(yaml_file)
 ```
 

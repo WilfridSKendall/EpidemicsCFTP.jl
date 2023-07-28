@@ -23,6 +23,14 @@ jupyter:    julia-1.9
 
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
+```{julia}
+#| echo: false
+using Markdown
+Markdown.parse("""
+The following code uses `julia` version $VERSION.
+""")
+```
+
 # Set up details and utilities
 Load required modules.
 Note that `EpidemicsCFTP` and (less significantly)

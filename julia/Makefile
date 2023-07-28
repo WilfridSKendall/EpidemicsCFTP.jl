@@ -17,17 +17,17 @@ docs: $(DOCUMENT).pdf
 
 # ====================
 # Verification support
+# verify: figures.pdf production.pdf experiment.pdf 
 verify: figures.pdf production.pdf experiment.pdf 
-	@for f in $(wildcard image/VERIFY_*.png) ; do  \
-	( if cmp -s $${f/VERIFY_/} $$f ;               \
-	  then echo Checked $${f/VERIFY_/};            \
-	  else \
-	    ( ( compare $${f/VERIFY_/} $$f  $${f/VERIFY_/DIFF_} ) ;                   \
-	      ( convert +append $${f/VERIFY_/}  $${f/VERIFY_/DIFF_} "$${f/VERIFY_/}"  \
-			-annotate +0+10 $$f  miff:-                                   \
-			| display ) ;                                                 \
-	        echo Issue with $${f/VERIFY_/} see $${f/VERIFY_/DIFF_} ) ;            \
-	  fi ) ;                                                                      \
+	@for f in $(wildcard image/VERIFY_*.png) ; do                                                         \
+	( if cmp -s $${f/VERIFY_/} $$f ;                                                                      \
+	  then echo Checked $${f/VERIFY_/};                                                                   \
+	  else                                                                                                \
+	    ( ( compare $${f/VERIFY_/} $$f  $${f/VERIFY_/DIFF_} ) ;                                           \
+	      ( montage -label '%f' -geometry '360x360>+1+1' $${f/VERIFY_/}  $${f/VERIFY_/DIFF_} $$f  miff:-  \
+			| display ) ;                                                                         \
+	        echo Issue with $${f/VERIFY_/} see $${f/VERIFY_/DIFF_} ) ;                                    \
+	  fi ) ;                                                                                              \
 	done
 
 set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ; done

@@ -27,7 +27,6 @@ jupyter:    julia-1.9
 Load required modules, compute style, and set simulation parameters.
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Compose
-fig = EpidemicsUtilities ;
 
 style = create_style(load_style("style.yml"))
 
@@ -168,7 +167,7 @@ end
 pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
 zone1 = (context(), 
           line(pniz1),
-          fig.default_style.broad, stroke(fig.default_style.forbid1),
+          style.broad, stroke(style.forbid1),
         ) ;
 ```      
 
@@ -206,7 +205,7 @@ end
 pniz2 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones2)]
 zone2 = (context(), 
           line(pniz2),
-          fig.default_style.broad, stroke(fig.default_style.forbid2),
+          style.broad, stroke(style.forbid2),
         ) ;
 ```      
 

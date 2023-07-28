@@ -1,0 +1,47 @@
+# named colours for incidents and markers
+colour:
+    Removal:                   "white"
+    CRemoval:                  "white"
+    Infection:                 "white"
+    PInfection:                "white"
+    AbstractInfectionMarker:   "white"
+    AbstractRemovalMarker:     "white"
+    AbstractSusceptibleMarker: "white"
+
+# named colour for other purposes
+colour_x:
+    blank:                     "white"    
+    scaffold:                  "white"
+    forbid1:                   "white" 
+    forbid2:                   "white"
+    background:                "white"
+    default:                   "white"
+
+length_cy:
+    # node radius in `cy` units
+    radius:                0.20
+    # vertical offset in `cy` units
+    height:                0.00
+    # tic size in `cy` units
+    tic:                  -0.20
+length_h:
+    bit:                  -0.02
+# label offsets in inches
+length_inch:
+    xlab:                 -0.40
+    yloc:                  0.25
+# shrinkage factor for small radius
+length_factor:
+    smradius:              0.90
+
+#  line thicknesses in mm
+thickness_mm:
+    boundary:              1.00
+    trail:                 0.75
+    dormant:               0.25
+    broad:                 2.00
+    realized:              0.75
+
+# background opacity
+opacity:
+    background:            0.30

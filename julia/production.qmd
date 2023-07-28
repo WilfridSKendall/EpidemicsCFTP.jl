@@ -30,7 +30,7 @@ Load required modules, compute style, and set simulation parameters.·
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Compose
 
-style = create_style(load_style("style.yml"))
+style = create_style(load_style("style.yml")) ;
 
 const population = 5 ;
 const duration   = 2 ;

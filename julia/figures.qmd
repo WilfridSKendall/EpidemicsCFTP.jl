@@ -47,9 +47,9 @@ See also
 Load modules (these are both under development).
 
 ```{julia}
-using EpidemicsCFTP, EpidemicsUtilities
+using EpidemicsCFTP, EpidemicsUtilities, Compose
 ```
-Load and compute style.
+Load and compute style. (Use `style-blank.yml` to test colours.)
 ```{julia}
 style = create_style(load_style("style.yml")) ;
 ```

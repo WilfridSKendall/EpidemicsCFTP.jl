@@ -17,7 +17,7 @@ docs: $(DOCUMENT).pdf
 
 # ====================
 # Verification support
-verify: figures.pdf production.pdf experiment.pdf
+verify: figures.pdf production.pdf experiment.pdf 
 	@for f in $(wildcard image/VERIFY_*.png) ; do  \
 	( if cmp -s $${f/VERIFY_/} $$f ;               \
 	  then echo Checked $${f/VERIFY_/};            \

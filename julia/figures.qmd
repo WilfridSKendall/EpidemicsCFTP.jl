@@ -24,102 +24,35 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 
-```{julia}
-#| echo: false
-using Markdown
-Markdown.parse("""
-The following code uses `julia` version $VERSION.
-""")
-```
-
-Run this notebook from the command-line using
- `make figures.pdf` or even just `make`, which invokes
+Run this notebook using `make figures.pdf`, invoking (in `bash`)
 ```bash
 quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
 ```
-
 The untidy parameter `--from=markdown+tex_math_single_backslash` allows
 us to replace the unsophisticated \TeX\ `$` and `$$` toggles
 by the \LaTeX\ pairs `\(`\(\cdots\)`\)` and `\[`\(\cdots\)`\]`.
 
-Further cell execution options: see
+For cell execution options, see
 <https://quarto.org/docs/computations/execution-options.html>.
-
-# Initialisation and styling
-## Set up details and utilities
-Load required modules.
-Note that `EpidemicsCFTP` and (less significantly)
-`EpidemicsUtilities` are under development.
-
-```{julia}
-println("Julia version $VERSION")
-using Colors, Compose, DataFrames, Measures
-import Cairo, Fontconfig, Gadfly
-gf = Gadfly
-
-using EpidemicsCFTP, EpidemicsUtilities
-```
-
-```{julia}
-yaml_file = pkgdir(EpidemicsUtilities, "data", "default_style.yml")
-data = EpidemicsUtilities.load_style(yaml_file)
-```
-
-```{julia}
-tag = "colour_x"
-println("heading [$tag]")
-for item in data[tag]
-  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))  
-  b = parse(Colorant, item[2])
-  println("$(item[1]): \t$a \t== \t$b \t[$(a==b)]")
-end
-```
-
-```{julia}
-tag = "length_cy"
-println("heading [$tag]")
-for item in data[tag]
-  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))
-  b = (item[2])cy
-  println("$(item[1]): \t$a \t== \t$b \t[$(a==b)]")
-end
-
-tag = "length_inch"
-println("heading [$tag]")
-for item in data[tag]
-  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))
-  b = (item[2])inch
-  println("$(item[1]): \t$a \t== \t$b \t[$(a==b)]")
-end
-
-tag = "thickness_mm"
-println("heading [$tag]")
-for item in data[tag]
-  a = getproperty(EpidemicsUtilities.default_style, Symbol(item[1]))
-  b = linewidth((item[2])mm)
-  println("$(item[1]): \n\t $a \n\t $b")
-end
-
-# tag = "opacity" not covered
-# tag = "length_factor" not covered
-
-# NEED TO TEST COLOUR TAG
-
-# May be useful later!
-# macro datatype(str); :($(Symbol(str))); end
-```
 
 A laconic description of the `julia` package `Compose.jl` 
 (the graphics package used for these figures, loaded together with other
 modules in the `include` statement below),
 is given by
 <https://giovineitalia.github.io/Compose.jl/latest/>.
-Further useful information is given in
+See also
 <https://shashi.biz/ijulia-notebooks/funcgeo/>.
 
+# Initialisation and styling
+Load modules (these are both under development).
 
-
-
+```{julia}
+using EpidemicsCFTP, EpidemicsUtilities
+```
+Load and compute style.
+```{julia}
+style = create_style(load_style("style.yml")) ;
+```
 Basic simulation parameters are the `population` size 
 and the `duration` (assume epidemic simulation commences at time `0`).
 Note that (trivial) labelling issues arise if `population > MAXPOP=20`.
@@ -141,11 +74,9 @@ coordinates = UnitBox(0, population, duration, -population,
 ```
 
 ## Dealing with different kinds of incident
-Various types of incident are conveniently abbreviated.
+Convenient abbreviations of various types of incident.
 ```{julia}
-A = AbstractInfection
-R = Removal   ; C = CRemoval   
-I = Infection ; P = PInfection ;
+A = AbstractInfection ; R = Removal ; C = CRemoval ; I = Infection ; P = PInfection ;
 ```
 
 # Drawing the underlying scaffolding
@@ -155,7 +86,8 @@ following diagrams.
 #| echo: false
 #| label: fig-scaffolding
 #| fig-cap: "Scaffolding: time axis and time-lines."
-depict("Scaffolding", compose(context(units=coordinates), scaffolding(duration, population)))
+depict("Scaffolding", compose(context(units=coordinates), 
+                              scaffolding(duration, population; sty=style)))
 ```
 
 
@@ -186,7 +118,7 @@ all subsequent elements. @fig-potential illustrates the required plot.
 #|           Orange arrows connect infector time-lines                                  \
 #|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
-image = create_nodes_view(duration, innov)
+image = create_nodes_view(duration, innov; sty=style)
 depict("nodes_view", compose(context(units=coordinates), image))
 ```
 
@@ -208,7 +140,7 @@ flow = table_trajectories(duration, initial, ev.trajectory) ;
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes)."  
 print(flow) ;
-plot_trajectories(flow)
+plot_trajectories(flow; sty=style)
 ```
 
 Now examine which of the potential incidents have been realized. 
@@ -223,11 +155,19 @@ thicker line-widths, producing @fig-realized.
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/brown."
-image = create_epidemic_view(duration, innov, flow, initial, ev.history)
+image = create_epidemic_view(duration, innov, flow, initial, ev.history; sty=style)
 depict("epidemics_view", compose(context(units=coordinates), image))
 ```
 
 ```{julia}
 #| echo: false
 print(flow) ;
+```
+
+
+
+```{julia}
+#| echo: false
+using Markdown
+Markdown.parse("This `jupyter` notebook was run using `julia` version $VERSION.")
 ```

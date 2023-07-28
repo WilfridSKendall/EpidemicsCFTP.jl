@@ -23,32 +23,14 @@ jupyter:    julia-1.9
 
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
-```{julia}
-#| echo: false
-using Markdown
-Markdown.parse("""
-The following code uses `julia` version $VERSION.
-""")
-```
-
 # Set up details and utilities
-Load required modules.
-Note that `EpidemicsCFTP` and (less significantly)
-`EpidemicsUtilities` are under development.
-
+Load required modules, compute style, and set simulation parameters.
 ```{julia}
-using Colors, Compose, DataFrames, Measures
-import Cairo, Fontconfig, Gadfly
-
-using EpidemicsCFTP
-using EpidemicsUtilities
-
-gf = Gadfly
+using EpidemicsCFTP, EpidemicsUtilities, Compose
 fig = EpidemicsUtilities ;
-```
 
-Here are some very basic features about the epidemic.
-```{julia}
+style = create_style(load_style("style.yml"))
+
 const population = 6 ;
 const duration   = 3 ;
 const MAXPOP  = 20 ;
@@ -69,9 +51,8 @@ coordinates = UnitBox(0, population, duration, -population,
 ## Dealing with different kinds of incident
 It is convenient to abbreviate various types of incident.
 ```{julia}
-A = AbstractInfection
-R = Removal            ; C = CRemoval   
-I = Infection          ; P = PInfection
+A = AbstractInfection  ;
+R = Removal            ; C = CRemoval ; I = Infection       ; P = PInfection
 IR = InitialRemoved    ; II = InitialInfected    ; IS = InitialSusceptible
 CR = ContinuingRemoved ; CI = ContinuingInfected ; CS = ContinuingSusceptible
 MIA = MarkerInfectionA ; MRA = MarkerRemovalA
@@ -108,7 +89,7 @@ total_trajectory = compute_total_trajectory(duration, population, initial, ev.hi
 
 ## Plot regions of infection and removal
 ```{julia}
-regions = region_plot(duration, population, total_trajectory) ;
+regions = region_plot(duration, population, total_trajectory; sty=style) ;
 ```      
 
 ```{julia}
@@ -120,9 +101,9 @@ depict("Regions", compose(context(units=coordinates), regions))
 Add removals and conditional removals (see @fig-removals).
 ```{julia}
 removal_incidents = (context(),
-#  draw_incident_new([inc for inc in innov.removals]),
-  draw_incident([inc for inc in innov.removals  if isa(inc, R)]),
-  draw_incident([inc for inc in innov.cremovals if isa(inc, C)]),
+#  draw_incident_new([inc for inc in innov.removals]; sty=style),
+  draw_incident([inc for inc in innov.removals  if isa(inc, R)]; sty=style),
+  draw_incident([inc for inc in innov.cremovals if isa(inc, C)]; sty=style),
   ) ;
 ```      
 
@@ -161,8 +142,8 @@ removal_structure = collect(enumerate(removal_list_of_lists))
 #| fig-cap: "Realized and un-realized infections together with infected and removed regions."
 depict("TestNoInfection", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history),
-                                  draw_elements(innov),
+                                  draw_realized_elements(initial, ev.history; sty=style),
+                                  draw_elements(innov; sty=style),
                                   regions)...)
       )
 ```      
@@ -197,8 +178,8 @@ zone1 = (context(),
 #| fig-cap: "First take on no-infection zone based purely on unrealized removals in each time-line."
 depict("TestNoInfection1", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history),
-                                  draw_elements(innov),
+                                  draw_realized_elements(initial, ev.history; sty=style),
+                                  draw_elements(innov; sty=style),
                                   regions, zone1)...)
       )
 ```
@@ -235,8 +216,8 @@ zone2 = (context(),
 #| fig-cap: "Second take on no-infection zone, imposing monotonic growth in time-line."
 depict("TestNoInfection2", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history),
-                                  draw_elements(innov),
+                                  draw_realized_elements(initial, ev.history; sty=style),
+                                  draw_elements(innov; sty=style),
                                   regions, zone1, zone2)...)
       )
 ```
@@ -291,4 +272,13 @@ must also have been removed.
 5. Choose the latest.
 
 :::
+
+
+
+```{julia}
+#| echo: false
+using Markdown
+Markdown.parse("This `jupyter` notebook was run using `julia` version $VERSION.")
+```
+
 

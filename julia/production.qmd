@@ -25,29 +25,13 @@ jupyter:    julia-1.9
 
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
-```{julia}
-#| echo: false
-using Markdown
-Markdown.parse("""
-The following code uses `julia` version $VERSION.
-""")
-```
-
 # Set-up details and utilities
-Load required modules. 
-**Note** that `EpidemicsCFTP` and (less significantly)
-`EpidemicsUtilities` are under development.
-
+Load required modules, compute style, and set simulation parameters.·
 ```{julia}
-using Colors, Compose, DataFrames, Measures
-import Cairo, Fontconfig, Gadfly
-gf = Gadfly
+using EpidemicsCFTP, EpidemicsUtilities, Compose
 
-using EpidemicsCFTP
-using EpidemicsUtilities
-```
+style = create_style(load_style("style.yml"))
 
-```{julia}
 const population = 5 ;
 const duration   = 2 ;
 const MAXPOP  = 20 ;
@@ -70,9 +54,7 @@ coordinates = UnitBox(0, population, duration, -population,
 ## Dealing with different kinds of incident
 Various types of incident are conveniently abbreviated.
 ```{julia}
-A = AbstractInfection
-R = Removal   ; C = CRemoval   
-I = Infection ; P = PInfection ;
+A = AbstractInfection ; R = Removal ; C = CRemoval ; I = Infection ; P = PInfection ;
 ```
 
 # Figure 1
@@ -108,7 +90,7 @@ print(flow1) ;
 #| echo: false
 #| label: fig-nodes1
 #| fig-cap: "Nodes used in Figure 1 of @ConnorKendall-2023."
-compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1))
+compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1; sty=style))
 ```
 
 
@@ -119,7 +101,7 @@ compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1)
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 1a of @ConnorKendall-2023."
-image = create_epidemic_view(duration1, innov_figure1, flow1, initial1, ev1.history)
+image = create_epidemic_view(duration1, innov_figure1, flow1, initial1, ev1.history; sty=style)
 depict("draftfigure1a", compose(context(units=coordinates1), image))
 ```
 
@@ -129,7 +111,7 @@ depict("draftfigure1a", compose(context(units=coordinates1), image))
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes).                                 \
 #|           This is a candidate for Figure 1b of @ConnorKendall-2023."   
-depict("draftfigure1b", plot_trajectories(flow1))
+depict("draftfigure1b", plot_trajectories(flow1; sty=style))
 ```
 
 \newpage
@@ -171,7 +153,7 @@ print(flow3) ;
 #| echo: false
 #| label: fig-nodes3
 #| fig-cap: "Nodes used in Figure 3 of @ConnorKendall-2023."
-compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3))
+compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3; sty=style))
 ```
 
 ```{julia}
@@ -181,7 +163,7 @@ compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3)
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 3a of @ConnorKendall-2023." 
-image = create_epidemic_view(duration3, innov_figure3, flow3, initial3, ev3.history)
+image = create_epidemic_view(duration3, innov_figure3, flow3, initial3, ev3.history; sty=style)
 depict("draftfigure3a", compose(context(units=coordinates3), image))
 ```
 
@@ -191,7 +173,18 @@ depict("draftfigure3a", compose(context(units=coordinates3), image))
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes).                                 \
 #|           This is a candidate for Figure 3b of @ConnorKendall-2023."  
-depict("draftfigure3b", plot_trajectories(flow3))
+depict("draftfigure3b", plot_trajectories(flow3; sty=style))
 ```
 
+
+
+```{julia}
+#| echo: false
+using Markdown
+Markdown.parse("This `jupyter` notebook was run using `julia` version $VERSION.")
+```
+
+
 # References
+
+

@@ -1,59 +1,38 @@
-SHELL := /usr/bin/bash
+SHELL          := /usr/bin/bash
+MODULE         := EpidemicsUtilities
+BUILD          := $(MODULE)/docs/build
 
 QUARTO         := /usr/local/bin/quarto
 CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
 UTILITIES      := $(wildcard EpidemicsUtilities/src/*.jl)
-DOCUMENT       := EpidemicsUtilities/docs/build/EpidemicsUtilities
+DOCUMENT       := $(BUILD)/EpidemicsUtilities
 SOURCE         := EpidemicsUtilities/src/EpidemicsUtilities.jl
 SECTIONS       := $(wildcard EpidemicsUtilities/src/0*.jl)
+
+MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
+
+PRODUCTS       := figures.pdf production.pdf experiment.pdf
 
 # ====================
 # Main targets
 main: docs
-work: figures.pdf production.pdf experiment.pdf
+work: $(PRODUCTS)
 docs: $(DOCUMENT).pdf
-
-# ====================
-# Verification support
-# verify: figures.pdf production.pdf experiment.pdf 
-verify: figures.pdf production.pdf experiment.pdf 
-	@for f in $(wildcard image/VERIFY_*.png) ; do                                                         \
-	( if cmp -s $${f/VERIFY_/} $$f ;                                                                      \
-	  then echo Checked $${f/VERIFY_/};                                                                   \
-	  else                                                                                                \
-	    ( ( compare $${f/VERIFY_/} $$f  $${f/VERIFY_/DIFF_} ) ;                                           \
-	      ( montage -label '%f' -geometry '360x360>+1+1' $${f/VERIFY_/}  $${f/VERIFY_/DIFF_} $$f  miff:-  \
-			| display ) ;                                                                         \
-	        echo Issue with $${f/VERIFY_/} see $${f/VERIFY_/DIFF_} ) ;                                    \
-	  fi ) ;                                                                                              \
-	done
-
-set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ; done
+verify: $(PRODUCTS) $(wildcard image/VERIFY_*.png)
 
 # ====================
 # Documents support
 #
 # The following translations is not yet perfect!
 # It doesn't include directives "#|" in codeblocks.
-$(DOCUMENT).qmd: EpidemicsUtilities/docs/build/INTERMEDIATE.jl	
+$(DOCUMENT).qmd: $(BUILD)/INTERMEDIATE.jl	
 	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$<", name="$@", documenter=false, flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
 	mv $(DOCUMENT).qmd.md $(DOCUMENT).qmd
 
-#$(DOCUMENT).qmd: EpidemicsUtilities/docs/build/INTERMEDIATE.jl	
-#	$(HOME)/.local/bin/julia -e 'using Literate; Literate.markdown("$<", name="$@", documenter=false, flavor = Literate.DocumenterFlavor(), codefence="```{julia}" => "```")'
-#	mv $(DOCUMENT).qmd.md $(DOCUMENT).qmd
-	
-
-
-# ====================
-# Intermediate files
-.INTERMEDIATE: EpidemicsUtilities/docs/build/INTERMEDIATE.jl
-
-# Concatenation source files into a temporary intermediate file 
-# for construction of documentation.
-EpidemicsUtilities/docs/build/INTERMEDIATE.jl: $(SOURCE) $(SECTIONS)
+# Concatenate ordered source files into temporary intermediate file for documentation.
+$(BUILD)/INTERMEDIATE.jl: $(SOURCE) $(SECTIONS)
 	@cat $(SOURCE) $(SECTIONS) > $@
 	@echo $(shell date +"%-d %B %Y")
 	sed -i -e's/# date: today/# date: $(shell date +"%d %B %Y")/' $@
@@ -62,9 +41,28 @@ EpidemicsUtilities/docs/build/INTERMEDIATE.jl: $(SOURCE) $(SECTIONS)
 # ====================
 # Clean-up
 clean:
-	-rm $(wildcard image/DIFF_*.png)
+	-rm $(wildcard image/.DIFF.*.png)
 	-rm $(wildcard *.ipynb)
 	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsUtilities"))'
+
+# ====================
+# Verification
+set-up-verify: ; for f in image/*.png ; do cp $$f $${f/image\//image\/VERIFY_} ; done
+
+image/VERIFY_%.png: image/%.png
+	@if /usr/bin/cmp -s $@ $<  ;                                       \
+	then                                                               \
+	    echo No change in image $< ;                                   \
+	    touch $@ ;                                                     \
+	else                                                               \
+	    /usr/bin/compare $< $@ $(<D)/.diff.$(<F) ;                     \
+	    $(MONTAGE) $< $(<D)/.diff.$(<F) $@ miff:- | /usr/bin/display ; \
+	    rm $(<D)/.diff.$(<F) ;                                         \
+	fi
+
+# ====================
+# Intermediate files
+.INTERMEDIATE: $(BUILD)/INTERMEDIATE.jl
 
 # ====================
 # Automatic conversion of qmd to pdf

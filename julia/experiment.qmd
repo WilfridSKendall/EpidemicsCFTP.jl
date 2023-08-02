@@ -36,6 +36,8 @@ const MAXPOP  = 20 ;
 if population > MAXPOP
   error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
 end ;
+
+println(EpidemicsUtilities.clue)
 ```
 
 

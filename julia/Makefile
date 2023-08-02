@@ -66,4 +66,8 @@ image/VERIFY_%.png: image/%.png
 
 # ====================
 # Automatic conversion of qmd to pdf
-%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) # --no-cache
+
+# ====================
+# Automatic conversion of qmd to pdf without using cache
+# %.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --no-cache

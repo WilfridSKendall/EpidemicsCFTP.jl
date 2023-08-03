@@ -131,7 +131,6 @@ computed using `Evolution`.
 initial = SIR(0.0, 4, 1, 0)
 ev = Evolution(initial, innov)
 flow = table_trajectories(duration, initial, ev.trajectory) ;
-
 ```
 
 ```{julia}
@@ -146,16 +145,13 @@ plot_trajectories(flow; sty=style)
 Now examine which of the potential incidents have been realized. 
 Amend @fig-potential: realized incident nodes have light-coloured backgrounds and 
 thicker line-widths, producing @fig-realized.
-
-
-
 ```{julia}
 #| echo: false
 #| label: fig-realized
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
-#|           coloured yellow/brown."
-image = create_epidemic_view(duration, innov, flow, initial, ev.history; sty=style)
+#|           coloured yellow/purple."
+image = create_epidemic_view(duration, innov, flow, initial, ev.history; sty=style) ;
 depict("epidemics_view", compose(context(units=coordinates), image))
 ```
 
@@ -164,10 +160,11 @@ depict("epidemics_view", compose(context(units=coordinates), image))
 print(flow) ;
 ```
 
-
-
 ```{julia}
 #| echo: false
 using Markdown
-Markdown.parse("This `jupyter` notebook was run using `julia` version $VERSION.")
+Markdown.parse("""
+This `jupyter` notebook was run using `julia` version `$VERSION`, with  
+`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
+""")
 ```

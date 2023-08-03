@@ -178,12 +178,15 @@ depict("draftfigure3b", plot_trajectories(flow3; sty=style))
 
 
 
+
 ```{julia}
 #| echo: false
 using Markdown
-Markdown.parse("This `jupyter` notebook was run using `julia` version $VERSION.")
+Markdown.parse("""
+This `jupyter` notebook was run using `julia` version `$VERSION`, with  
+`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
+""")
 ```
-
 
 # References
 

@@ -36,8 +36,6 @@ const MAXPOP  = 20 ;
 if population > MAXPOP
   error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
 end ;
-
-println(EpidemicsUtilities.clue)
 ```
 
 
@@ -279,7 +277,10 @@ must also have been removed.
 ```{julia}
 #| echo: false
 using Markdown
-Markdown.parse("This `jupyter` notebook was run using `julia` version $VERSION.")
+Markdown.parse("""
+This `jupyter` notebook was run using `julia` version `$VERSION`, with  
+`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
+""")
 ```
 
 

@@ -94,8 +94,8 @@ julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 5))
 false
 ```
 """
-function is_infectable(state::SIR, inc::AbstractInfection)::Bool
-    inc.t >= state.t && inc.target > state.r && inc.infectee == state.i + state.r + 1
+function is_infectable(state::SIR, event::AbstractInfection)::Bool
+    event.t >= state.t && event.target > state.r && event.infectee == state.i + state.r + 1
 end
 
 """
@@ -127,13 +127,13 @@ julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 6))
 false
 ```
 """
-function is_removeable(state::SIR, inc::AbstractRemoval)::Bool
-    inc.t >= state.t && inc.target > state.r && inc.target <= state.i + state.r
+function is_removeable(state::SIR, event::AbstractRemoval)::Bool
+    event.t >= state.t && event.target > state.r && event.target <= state.i + state.r
 end
 
 
 """
-    EpidemicsCFTP.update(state::SIR, event::Union{Removal, CRemoval, Infection, PInfection})::SIR
+    EpidemicsCFTP.update(state::SIR, event::AbstractIncident)::SIR
 
 Applies incident to a given state and returns resulting incident.
 
@@ -143,7 +143,7 @@ julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), Removal(0.2, 4))
 SIR₀.₂₀(1:1:4)
 ```
 """
-function update(state::SIR, event::Union{Removal, CRemoval, Infection, PInfection})::SIR
+function update(state::SIR, event::AbstractIncident)::SIR
     inc = typeof(event)
     if state.t > event.t
         return state
@@ -234,9 +234,8 @@ julia> evolution(initial_state, innovation, conditioned=true)
 ```
 """
 function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
-    trajectory  = SIR[initial_state]
-    history     = AbstractIncident[]
-    chronology  = [event for event in innovation.chronology if event.t ≥ initial_state.t]
+    trajectory, history = SIR[initial_state], AbstractIncident[]
+    chronology  = [x for x in innovation.chronology if x.t ≥ initial_state.t]
     if ! isempty(chronology)
         for event in chronology
             new_state = update(trajectory[end], event)

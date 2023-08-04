@@ -178,7 +178,7 @@ resample
 perpetuate
 ```
 
-### Other methods
+### Methods relating to epidemic dynamics
 Various methods relating to updating a trajectory (some private):
 ```@docs
 infect

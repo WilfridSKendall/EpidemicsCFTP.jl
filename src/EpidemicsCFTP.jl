@@ -5,6 +5,10 @@ Note that this is a re-working of original version!
 """
 module EpidemicsCFTP
 
+# The current version is `2.2.169` on branch `main`.
+version = "$(read(`git describe --tags`, String)[1:end-1])"
+branch  = "$(read(`git branch --show-current`, String)[1:end-1])"
+
 # Other modules
 # -------------
 # The `Formatting` module is required in order to define `show` methods for the various types.

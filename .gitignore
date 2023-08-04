@@ -1,5 +1,7 @@
 VERSION.txt
 
+Manifest.toml
+
 *.stamp
 
 TEMP-*

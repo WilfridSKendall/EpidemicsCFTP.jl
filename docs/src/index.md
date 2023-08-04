@@ -5,10 +5,6 @@ DocTestSetup = quote
 end
 ```
 
-
-\newcommand{\SIR}{\operatorname{S-I-R}}
-
-
 # Julia module `EpidemicsCFTP` 
 
 Here is a brief description of the following module (under development):
@@ -146,6 +142,12 @@ CEvolution
 `SIR` records the state of an $SIR$ epidemic at a stipulated time.
 ```@docs
 SIR
+```
+## Various exceptions
+```@docs
+BadIncident
+MissedCRemoval
+EmployedRemoval
 ```
 
 

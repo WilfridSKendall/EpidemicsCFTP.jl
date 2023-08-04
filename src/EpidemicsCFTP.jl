@@ -1,11 +1,13 @@
 """
 This module implements a CFTP algorithm for epidemic S-I-R trajectories conditional on observation of all removals.
 
+This is version $(EpidemicsCFTP.version) on branch $(EpidemicsCFTP.branch).
+
 Note that this is a re-working of original version!
 """
 module EpidemicsCFTP
 
-# The current version is `2.2.169` on branch `main`.
+# The current version is `2.2.170` on branch `main`.
 version = "$(read(`git describe --tags`, String)[1:end-1])"
 branch  = "$(read(`git branch --show-current`, String)[1:end-1])"
 

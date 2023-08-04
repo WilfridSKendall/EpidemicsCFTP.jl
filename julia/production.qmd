@@ -25,6 +25,21 @@ jupyter:    julia-1.9
 
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
+
+
+::: {.callout-note}
+```{julia}
+#| echo: false
+using Markdown
+Markdown.parse("""
+This `jupyter` notebook was run under `julia` version `$VERSION`, using  
+`EpidemicsCFTP` version `$(EpidemicsCFTP.version)` branch `$(EpidemicsCFTP.branch)`,  
+`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
+""")
+```
+:::
+
+
 # Set-up details and utilities
 Load required modules, compute style, and set simulation parameters.·
 ```{julia}
@@ -176,17 +191,6 @@ depict("draftfigure3a", compose(context(units=coordinates3), image))
 depict("draftfigure3b", plot_trajectories(flow3; sty=style))
 ```
 
-
-
-
-```{julia}
-#| echo: false
-using Markdown
-Markdown.parse("""
-This `jupyter` notebook was run using `julia` version `$VERSION`, with  
-`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
-""")
-```
 
 # References
 

@@ -24,6 +24,18 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 
+::: {.callout-note}
+```{julia}
+#| echo: false
+using Markdown
+Markdown.parse("""
+This `jupyter` notebook was run under `julia` version `$VERSION`, using  
+`EpidemicsCFTP` version `$(EpidemicsCFTP.version)` branch `$(EpidemicsCFTP.branch)`,  
+`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
+""")
+```
+:::
+
 Run this notebook using `make figures.pdf`, invoking (in `bash`)
 ```bash
 quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
@@ -158,13 +170,4 @@ depict("epidemics_view", compose(context(units=coordinates), image))
 ```{julia}
 #| echo: false
 print(flow) ;
-```
-
-```{julia}
-#| echo: false
-using Markdown
-Markdown.parse("""
-This `jupyter` notebook was run using `julia` version `$VERSION`, with  
-`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
-""")
 ```

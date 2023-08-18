@@ -23,19 +23,22 @@ jupyter:    julia-1.9
 
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
-
 ::: {.callout-note}
+# This `jupyter` notebook was run using the following versions:
 ```{julia}
 #| echo: false
-using Markdown
+#| eval: true
+#| cache: false
+import Markdown, EpidemicsCFTP, EpidemicsUtilities
 Markdown.parse("""
-This `jupyter` notebook was run under `julia` version `$VERSION`, using  
-`EpidemicsCFTP` version `$(EpidemicsCFTP.version)` branch `$(EpidemicsCFTP.branch)`,  
-`EpidemicsUtilities` version `$(EpidemicsUtilities.version)` branch `$(EpidemicsUtilities.branch)`.
+| Module                | Version                         | Branch                         |
+|:----------------------|:--------------------------------|-------------------------------:|
+| `julia`               | `$VERSION`                      |                                |
+| `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
 """)
 ```
 :::
-
 
 # Set up details and utilities
 Load required modules, compute style, and set simulation parameters.

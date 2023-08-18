@@ -28,9 +28,9 @@ jupyter:    julia-1.9
 
 
 ```{julia}
-#| echo: false
+#| include: false
 #| tags: [parameters]
-source = "[current file not set]"
+source = "[current file not set]" ;
 ```
 
 ::: {.callout-note}
@@ -45,10 +45,10 @@ branch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
 | Software                    | Version                         | Branch                         |
 |:----------------------------|:--------------------------------|-------------------------------:|
-| Quarto script `$(source  )` | `$(version)`                    | `$(branch)`                    |
+| Quarto script `$(source)`   | `$(version)`                    | `$(branch)`                    |
 | Module `EpidemicsUtilities` | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
 | Module `EpidemicsCFTP`      | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
-| Running under `julia`       | `$VERSION`                      |                                |
+| Running under `julia`       | `$VERSION`                      | ---                            |
 """)
 ```
 :::

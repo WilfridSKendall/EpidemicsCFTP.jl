@@ -45,3 +45,11 @@ image/VERIFY_%.png: image/%.png
 # ====================
 # NOTE
 # To ensure `papermill` works for the -P option:
+# First, in `bash`, do
+# bash> pip3 install papermill
+# then in `julia`, do
+#  julia> ENV["JUPYTER"]=""; Pkg.build("IJulia") 
+# to rebuild IJulia to use Julia's own Conda-based Jupyter, and then
+# julia> using Conda; Conda.add("papermill") 
+# as discussed in
+# https://github.com/quarto-dev/quarto-cli/discussions/5833

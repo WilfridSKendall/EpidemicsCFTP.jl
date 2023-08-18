@@ -1,15 +1,8 @@
 SHELL          := /usr/bin/bash
-#MODULE         := EpidemicsUtilities
-#BUILD          := $(MODULE)/docs/build
 
 QUARTO         := /usr/local/bin/quarto
 CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
-
-#UTILITIES      := $(wildcard EpidemicsUtilities/src/*.jl)
-#DOCUMENT       := $(BUILD)/EpidemicsUtilities
-#SOURCE         := EpidemicsUtilities/src/EpidemicsUtilities.jl
-#SECTIONS       := $(wildcard EpidemicsUtilities/src/0*.jl)
 
 MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
@@ -43,9 +36,12 @@ image/VERIFY_%.png: image/%.png
 	    rm $(<D)/.diff.$(<F) ;                                         \
 	fi
 
-
 # ====================
 # Automatic conversion of qmd to pdf
 # %.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache-refresh
-%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --no-cache
+%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< -P source:$< --to pdf $(QUARTO_OPTIONS) --no-cache
 # %.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache
+
+# ====================
+# NOTE
+# To ensure `papermill` works for the -P option:

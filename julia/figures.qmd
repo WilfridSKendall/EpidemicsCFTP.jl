@@ -8,6 +8,9 @@ date:   today
 date-format: "D MMMM YYYY"
 papersize:  a4
 
+params:
+  filename: "figures.qmd"
+
 format:
   html:
     code-fold: true
@@ -24,19 +27,28 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 
+```{julia}
+#| echo: false
+#| tags: [parameters]
+source = "[current file not set]"
+```
+
 ::: {.callout-note}
-# This `jupyter` notebook was run using the following versions:
+# Software versions:
 ```{julia}
 #| echo: false
 #| eval: true
 #| cache: false
 import Markdown, EpidemicsCFTP, EpidemicsUtilities
+version = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
+branch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
-| Module                | Version                         | Branch                         |
-|:----------------------|:--------------------------------|-------------------------------:|
-| `julia`               | `$VERSION`                      |                                |
-| `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
-| `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Software                    | Version                         | Branch                         |
+|:----------------------------|:--------------------------------|-------------------------------:|
+| Quarto script `$(source  )` | `$(version)`                    | `$(branch)`                    |
+| Module `EpidemicsUtilities` | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`      | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`       | `$VERSION`                      |                                |
 """)
 ```
 :::

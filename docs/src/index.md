@@ -13,6 +13,16 @@ Here is a brief description of the following module (under development):
 EpidemicsCFTP
 ```
 
+```@eval
+import Markdown, EpidemicsCFTP
+Markdown.parse("""
+| Module                | Version                         | Branch                         |
+|:----------------------|:--------------------------------|-------------------------------:|
+| `julia`               | `$VERSION`                      |                                |
+| `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+""")
+```
+
 The module aims to provide perfect simulation for a ``$\text{S-I-R}$`` system obeying the Markov chain transition rates
 ```math
 \begin{align*}

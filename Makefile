@@ -32,7 +32,9 @@ test: tested.stamp
 	@touch tested.stamp
 
 virgin: ; rm -rf docs/build/*
-	
+
+rebuild:
+	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsCFTP"))'
 # ========================
 
 tested.stamp: $(src_files) $(test_files)

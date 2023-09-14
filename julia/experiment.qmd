@@ -24,16 +24,15 @@ jupyter:    julia-1.9
 \newcommand{\SIR}{\operatorname{S-I-R}}
 
 ```{julia}
-#| echo: false
+#| include: false
 #| tags: [parameters]
-source = "[current file not set]" ;
+source = "[current file not set]"
 ```
 
 ::: {.callout-note}
 # Software versions:
 ```{julia}
 #| echo: false
-#| eval: true
 #| cache: false
 import Markdown, EpidemicsCFTP, EpidemicsUtilities
 version = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"

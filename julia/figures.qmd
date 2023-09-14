@@ -30,7 +30,7 @@ jupyter:    julia-1.9
 ```{julia}
 #| include: false
 #| tags: [parameters]
-source = "[current file not set]" ;
+source = "[current file not set]"
 ```
 
 ::: {.callout-note}

@@ -79,9 +79,9 @@ Load modules (`EpidemicsCFTP` and `EpidemicsUtilities` are both under developmen
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Compose
 ```
-Load and compute style. (Use `style-blank.yml` to test colours.)
+Load and compute deco[ration]. (Use `deco-blank.yml` to test colours.)
 ```{julia}
-style = create_style(load_style("style.yml")) ;
+deco = create_deco(load_deco("deco.yml")) ;
 ```
 Basic simulation parameters are the `population` size 
 and the `duration` (assume epidemic simulation commences at time `0`).
@@ -95,7 +95,7 @@ if population > MAXPOP
 end ;
 ```
 
-## Style choices
+## Plot style choices
 Set up and establish graphics size and coordinates.
 ```{julia}
 set_default_graphic_size(6inch, 3.25inch) ;
@@ -117,7 +117,7 @@ following diagrams.
 #| label: fig-scaffolding
 #| fig-cap: "Scaffolding: time axis and time-lines."
 depict("Scaffolding", compose(context(units=coordinates), 
-                              scaffolding(duration, population; sty=style)))
+                              scaffolding(duration, population; deco=deco)))
 ```
 
 
@@ -148,7 +148,7 @@ all subsequent elements. @fig-potential illustrates the required plot.
 #|           Orange arrows connect infector time-lines                                  \
 #|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
-image = create_nodes_view(duration, innov; sty=style)
+image = create_nodes_view(duration, innov; deco=deco)
 depict("nodes_view", compose(context(units=coordinates), image))
 ```
 
@@ -169,7 +169,7 @@ flow = table_trajectories(duration, initial, ev.trajectory) ;
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes)."  
 print(flow) ;
-plot_trajectories(flow; sty=style)
+plot_trajectories(flow; deco=deco)
 ```
 
 Now examine which of the potential incidents have been realized. 
@@ -181,7 +181,7 @@ thicker line-widths, producing @fig-realized.
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/purple."
-image = create_epidemic_view(duration, innov, flow, initial, ev.history; sty=style) ;
+image = create_epidemic_view(duration, innov, flow, initial, ev.history; deco=deco) ;
 depict("epidemics_view", compose(context(units=coordinates), image))
 ```
 

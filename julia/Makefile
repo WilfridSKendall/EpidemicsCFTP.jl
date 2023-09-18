@@ -6,7 +6,7 @@ QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
 MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
-PRODUCTS       := figures.pdf production.pdf experiment.pdf
+PRODUCTS       := figures.pdf production.pdf experiment.pdf introduction.pdf
 
 # ====================
 # Main targets

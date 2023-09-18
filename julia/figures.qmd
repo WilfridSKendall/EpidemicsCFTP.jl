@@ -81,7 +81,7 @@ using EpidemicsCFTP, EpidemicsUtilities, Compose
 ```
 Load and compute theme[ration]. (Use `theme-blank.yml` to test colours.)
 ```{julia}
-theme = create_theme(load_theme("theme.yml")) ;
+theme = create_theme(load_theme("config/theme.yml")) ;
 ```
 Basic simulation parameters are the `population` size 
 and the `duration` (assume epidemic simulation commences at time `0`).

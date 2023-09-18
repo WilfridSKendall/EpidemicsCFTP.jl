@@ -54,7 +54,7 @@ Load required modules, compute theme choices, and set simulation parameters.
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Compose
 
-theme = create_theme(load_theme("theme.yml"))
+theme = create_theme(load_theme("config/theme.yml"))
 
 const population = 6 ;
 const duration   = 3 ;

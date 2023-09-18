@@ -54,11 +54,11 @@ Markdown.parse("""
 
 
 # Set-up details and utilities
-Load required modules, compute deco[rations], and set simulation parameters.·
+Load required modules, compute theme[rations], and set simulation parameters.·
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Compose
 
-deco = create_deco(load_deco("deco.yml")) ;
+theme = create_theme(load_theme("theme.yml")) ;
 
 const population = 5 ;
 const duration   = 2 ;
@@ -118,7 +118,7 @@ print(flow1) ;
 #| echo: false
 #| label: fig-nodes1
 #| fig-cap: "Nodes used in Figure 1 of @ConnorKendall-2023."
-compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1; deco=deco))
+compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1; theme=theme))
 ```
 
 
@@ -129,7 +129,7 @@ compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1;
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 1a of @ConnorKendall-2023."
-image = create_epidemic_view(duration1, innov_figure1, flow1, initial1, ev1.history; deco=deco)
+image = create_epidemic_view(duration1, innov_figure1, flow1, initial1, ev1.history; theme=theme)
 depict("draftfigure1a", compose(context(units=coordinates1), image))
 ```
 
@@ -139,7 +139,7 @@ depict("draftfigure1a", compose(context(units=coordinates1), image))
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes).                                 \
 #|           This is a candidate for Figure 1b of @ConnorKendall-2023."   
-depict("draftfigure1b", plot_trajectories(flow1; deco=deco))
+depict("draftfigure1b", plot_trajectories(flow1; theme=theme))
 ```
 
 \newpage
@@ -181,7 +181,7 @@ print(flow3) ;
 #| echo: false
 #| label: fig-nodes3
 #| fig-cap: "Nodes used in Figure 3 of @ConnorKendall-2023."
-compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3; deco=deco))
+compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3; theme=theme))
 ```
 
 ```{julia}
@@ -191,7 +191,7 @@ compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3;
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 3a of @ConnorKendall-2023." 
-image = create_epidemic_view(duration3, innov_figure3, flow3, initial3, ev3.history; deco=deco)
+image = create_epidemic_view(duration3, innov_figure3, flow3, initial3, ev3.history; theme=theme)
 depict("draftfigure3a", compose(context(units=coordinates3), image))
 ```
 
@@ -201,7 +201,7 @@ depict("draftfigure3a", compose(context(units=coordinates3), image))
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes).                                 \
 #|           This is a candidate for Figure 3b of @ConnorKendall-2023."  
-depict("draftfigure3b", plot_trajectories(flow3; deco=deco))
+depict("draftfigure3b", plot_trajectories(flow3; theme=theme))
 ```
 
 

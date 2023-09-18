@@ -79,9 +79,9 @@ Load modules (`EpidemicsCFTP` and `EpidemicsUtilities` are both under developmen
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Compose
 ```
-Load and compute deco[ration]. (Use `deco-blank.yml` to test colours.)
+Load and compute theme[ration]. (Use `theme-blank.yml` to test colours.)
 ```{julia}
-deco = create_deco(load_deco("deco.yml")) ;
+theme = create_theme(load_theme("theme.yml")) ;
 ```
 Basic simulation parameters are the `population` size 
 and the `duration` (assume epidemic simulation commences at time `0`).
@@ -117,7 +117,7 @@ following diagrams.
 #| label: fig-scaffolding
 #| fig-cap: "Scaffolding: time axis and time-lines."
 depict("Scaffolding", compose(context(units=coordinates), 
-                              scaffolding(duration, population; deco=deco)))
+                              scaffolding(duration, population; theme=theme)))
 ```
 
 
@@ -148,13 +148,14 @@ all subsequent elements. @fig-potential illustrates the required plot.
 #|           Orange arrows connect infector time-lines                                  \
 #|           to corresponding infectee time-lines.                                      \
 #|           Each disk is annotated by a summary description of its incident."
-image = create_nodes_view(duration, innov; deco=deco)
+image = create_nodes_view(duration, innov; theme=theme)
 depict("nodes_view", compose(context(units=coordinates), image))
 ```
 
 # Evolving the epidemic in process time
-Now plot epidemics using an specific initial state at time \(0.0\),
-given by an `SIR` structure, and the structure of `Innovations`,
+Now plot an epidemic using a specific initial state at time \(0.0\),
+driven by an `SIR` structure and the structure of `Innovations`.
+The epidemic simulation is
 computed using `Evolution`. 
 
 ```{julia}
@@ -169,7 +170,7 @@ flow = table_trajectories(duration, initial, ev.trajectory) ;
 #| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
 #|           removals (grey short dashes)."  
 print(flow) ;
-plot_trajectories(flow; deco=deco)
+plot_trajectories(flow; theme=theme)
 ```
 
 Now examine which of the potential incidents have been realized. 
@@ -181,7 +182,7 @@ thicker line-widths, producing @fig-realized.
 #| fig-cap: "@fig-potential plus epidemic and removal curves. Realized incidents have   \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
 #|           coloured yellow/purple."
-image = create_epidemic_view(duration, innov, flow, initial, ev.history; deco=deco) ;
+image = create_epidemic_view(duration, innov, flow, initial, ev.history; theme=theme) ;
 depict("epidemics_view", compose(context(units=coordinates), image))
 ```
 

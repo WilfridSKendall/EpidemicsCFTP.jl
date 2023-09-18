@@ -50,11 +50,11 @@ Markdown.parse("""
 
 
 # Set up details and utilities
-Load required modules, compute decoration choices, and set simulation parameters.
+Load required modules, compute theme choices, and set simulation parameters.
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Compose
 
-deco = create_deco(load_deco("deco.yml"))
+theme = create_theme(load_theme("theme.yml"))
 
 const population = 6 ;
 const duration   = 3 ;
@@ -203,7 +203,7 @@ println(ev.history)
 The regions of infection and removal are now plotted by `region_plot` from
 the module `EpidemicsUtilities`. 
 ```{julia}
-regions = region_plot(duration, population, total_trajectory; deco=deco) ;
+regions = region_plot(duration, population, total_trajectory; theme=theme) ;
 ```      
 
 ```{julia}
@@ -215,9 +215,9 @@ depict("Regions", compose(context(units=coordinates), regions))
 Add removals and conditional removals (see @fig-removals).
 ```{julia}
 removal_incidents = (context(),
-#  draw_incident_new([inc for inc in innov.removals]; deco=deco),
-  draw_incident([inc for inc in innov.removals  if isa(inc, R)]; deco=deco),
-  draw_incident([inc for inc in innov.cremovals if isa(inc, C)]; deco=deco),
+#  draw_incident_new([inc for inc in innov.removals]; theme=theme),
+  draw_incident([inc for inc in innov.removals  if isa(inc, R)]; theme=theme),
+  draw_incident([inc for inc in innov.cremovals if isa(inc, C)]; theme=theme),
   ) ;
 ```      
 
@@ -256,8 +256,8 @@ removal_structure = collect(enumerate(removal_list_of_lists))
 #| fig-cap: "Realized and un-realized infections together with infected and removed regions."
 depict("TestNoInfection", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history; deco=deco),
-                                  draw_elements(innov; deco=deco),
+                                  draw_realized_elements(initial, ev.history; theme=theme),
+                                  draw_elements(innov; theme=theme),
                                   regions)...)
       )
 ```      
@@ -282,7 +282,7 @@ end
 pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
 zone1 = (context(), 
           line(pniz1),
-          deco.broad, stroke(deco.forbid1),
+          theme.broad, stroke(theme.forbid1),
         ) ;
 ```      
 
@@ -292,8 +292,8 @@ zone1 = (context(),
 #| fig-cap: "First take on no-infection zone based purely on unrealized removals in each time-line."
 depict("TestNoInfection1", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history; deco=deco),
-                                  draw_elements(innov; deco=deco),
+                                  draw_realized_elements(initial, ev.history; theme=theme),
+                                  draw_elements(innov; theme=theme),
                                   regions, zone1)...)
       )
 ```
@@ -320,7 +320,7 @@ end
 pniz2 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones2)]
 zone2 = (context(), 
           line(pniz2),
-          deco.broad, stroke(deco.forbid2),
+          theme.broad, stroke(theme.forbid2),
         ) ;
 ```      
 
@@ -330,8 +330,8 @@ zone2 = (context(),
 #| fig-cap: "Second take on no-infection zone, imposing monotonic growth in time-line."
 depict("TestNoInfection2", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history; deco=deco),
-                                  draw_elements(innov; deco=deco),
+                                  draw_realized_elements(initial, ev.history; theme=theme),
+                                  draw_elements(innov; theme=theme),
                                   regions, zone1, zone2)...)
       )
 ```

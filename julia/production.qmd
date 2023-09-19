@@ -10,6 +10,12 @@ csl: nature.csl
 date-format: "D MMMM YYYY"
 papersize:  a4
 
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+
 format:
   html:
     code-fold: true
@@ -22,8 +28,6 @@ format:
        - Scale=0.7
 jupyter:    julia-1.9
 ---
-
-\newcommand{\SIR}{\operatorname{S-I-R}}
 
 
 ```{julia}

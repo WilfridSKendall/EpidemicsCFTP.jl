@@ -11,6 +11,12 @@ papersize:  a4
 params:
   filename: "figures.qmd"
 
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+
 format:
   html:
     code-fold: true
@@ -23,8 +29,6 @@ format:
        - Scale=0.7
 jupyter:    julia-1.9
 ---
-
-\newcommand{\SIR}{\operatorname{S-I-R}}
 
 
 ```{julia}
@@ -56,12 +60,8 @@ Markdown.parse("""
 
 Run this notebook using `make figures.pdf`, invoking (in `bash`)
 ```bash
-quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
+quarto render figures.qmd --to pdf
 ```
-The untidy parameter `--from=markdown+tex_math_single_backslash` allows
-us to replace the unsophisticated \TeX\ `$` and `$$` toggles
-by the \LaTeX\ pairs `\(`\(\cdots\)`\)` and `\[`\(\cdots\)`\]`.
-
 For cell execution options, see
 <https://quarto.org/docs/computations/execution-options.html>.
 

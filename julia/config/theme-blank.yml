@@ -14,6 +14,7 @@ colour_x:
     scaffold:                  "white"
     forbid1:                   "white" 
     forbid2:                   "white"
+    legend:                    "black"
     background:                "white"
     default:                   "white"
 
@@ -45,3 +46,7 @@ thickness_mm:
 # background opacity
 opacity:
     background:            0.30
+
+# jitter
+jitter:
+    ϵ:                     1e-7

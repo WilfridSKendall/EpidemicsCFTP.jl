@@ -11,6 +11,12 @@ papersize:  a4
 params:
   filename: "introduction.qmd"
 
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+
 format:
   html:
     code-fold: true
@@ -21,10 +27,10 @@ format:
     monofont: "JuliaMono"
     monofontoptions:
        - Scale=0.7
+
 jupyter:    julia-1.9
 ---
 
-\newcommand{\SIR}{\operatorname{S-I-R}\xspace}
 
 
 ```{julia}
@@ -43,12 +49,12 @@ import Markdown, EpidemicsCFTP, EpidemicsUtilities
 version = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
 branch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
-| Software                    | Version                         | Branch                         |
-|:----------------------------|:--------------------------------|-------------------------------:|
-| Quarto script `$(source)`   | `$(version)`                    | `$(branch)`                    |
-| Module `EpidemicsUtilities` | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
-| Module `EpidemicsCFTP`      | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
-| Running under `julia`       | `$VERSION`                      | ---                            |
+| Software                    | Version                                 | Branch                         |
+|:----------------------------|:----------------------------------------|-------------------------------:|
+| Quarto script `$(source)`   | version `$(version)`                    | `$(branch)`                    |
+| Module `EpidemicsUtilities` | version `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`      | version `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`       | version `$VERSION`                      | ---                            |
 """)
 ```
 :::
@@ -57,45 +63,52 @@ Markdown.parse("""
 #| include: false
 using EpidemicsCFTP, EpidemicsUtilities, Gadfly, DataFrames
 
-const ϵ = 1e-7 ;
-const theme = create_theme(load_theme("config/theme.yml"))
+theme = create_theme(load_theme("config/theme.yml"))
 
-my_theme = Theme(
-     panel_fill=theme.blank,
-     default_color=theme.default,
-     background_color=theme.background,
-     major_label_font="CMU Serif", minor_label_font="CMU Serif", minor_label_color=colorant"black",
-     major_label_font_size=10pt, minor_label_font_size=8pt, major_label_color=colorant"black",
-     grid_line_width=0mm
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=10pt,     minor_label_font_size=8pt,
+    grid_line_width=0mm
 )
 
-set_default_plot_size(6inch, (3.25inch))
-
+set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-# Introduction to the $\SIR$ epidemic
-The $\SIR$ epidemic in a population of fixed size runs as follows:
+# Introduction to the \(\SIR\) epidemic
+The \(\SIR\) epidemic in a population of fixed size runs under the following stochastic dynamics:
 
- * Infections $S\to S-1\,, I \to I+1$ occur at rate $\alpha \, S \, I$;
- * Removals  $I \to I-1\,, R \to R+1$  occur at rate $\beta \, I$.
+ * _Infections_ 
+   \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\);
+ * _Removals_ 
+   \(I \to I-1\,, R \to R+1\)  occur at rate \(\beta \, I\).
 
-Epidemic duration and population size are fixed as constants.
+Epidemic duration and population size are given by
 ```{julia}
 const duration = 3.0;
 const population = 5;
 ```
+note that they are represented by `julia` constants.
 
 ```{julia}
 #| echo: false
-circlabels = [string(Char(0x00002460 + i - 1)) for i in 1:population]
-timelinelabels = i -> (i > 0 ? circlabels[i] : "") ;
+const MAXPOP = 20
+if population > MAXPOP
+    circlabels = ["[$i]" for i in 1:population]
+else
+    circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:population]
+end
+function timelinelabels(i) i > 0 ? circlabels[i] : "" end ;
 ```
 
 # Structure of potential infections and removals
 Here is a structure recording times of potential infections (`I`),
 perpetuated infections (`P`),
-and of potential and conditioned removals (`R` and `C`).
-We use the convenient abbreviations
+and of potential and conditioned removals (`R` and `C`),
+using convenient abbreviations
 ```{julia}
 A = AbstractInfection;
 R = Removal;
@@ -116,91 +129,130 @@ innov = Innovation(5,
 An epidemic can be constructed using a specific `initial` state at time \(0.0\)
 (specified as an `SIR` structure) and the structure of `Innovations`.
 The epidemic simulation is
-computed using `Evolution`. 
-The function `table_trajectories1` needs to find its place in `EpidemicsUtilities`.
+computed as part of the construction of an instance
+of the  `Evolution` type based on the initial state
+and the potential incidents from the `Innovations` structure. 
+The function `table_trajectories1` should eventually
+find a place in the `EpidemicsUtilities` module.
 ```{julia}
 function table_trajectories1(duration, initial, trajectory)
     t = [state.t for state in trajectory]
     s = [state.s for state in trajectory]
     i = [state.i for state in trajectory]
     r = [state.r for state in trajectory]
-    final = trajectory[end]
+    
     push!(t, duration)
     push!(s, s[end])
     push!(i, i[end])
     push!(r, r[end])
-    DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
-end
 
+    flow = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
+    flow[:, :Population] .= population
+    flow[:, :Empty] .= 0
+    flow[:, :Epidemic] = flow.Removals + flow.Infectives
+   
+    return flow
+end
+```
+
+```{julia}
 initial = SIR(0.0, 4, 1, 0)
 ev = Evolution(initial, innov)
 
 flow = table_trajectories1(duration, initial, ev.trajectory)
-flow[:, :Population] .= population
-flow[:, :Empty] .= 0;
 ```
 
 # Various plots
-First draw epidemic curve together with removals and susceptibles trajectories.
+The next step is to produce good graphical visualization of
+the epidemic, and to explain how one starts to evolve
+an \(\SIR\) epidemic in algorithmic time subject to conditioning
+on observed removals.
+
+The assumption that all removals are observed is of course
+unrealistic. However it is significantly _more_ realistic than assuming
+all infections are observed!
+
+## The epidemic curve
+First we draw the epidemic curve together with removals and susceptibles trajectories.
 ```{julia}
 timelines = layer(flow, yintercept=1:population,
     Geom.hline(style=:dot, size=0.25mm),
     style(default_color=theme.scaffold))
 ll0 = layer(flow, x=:t, y=:Empty, Geom.line,
-    style(line_width=0.75mm, default_color=theme.scaffold))
+    style(line_width=theme.trail, 
+    default_color=theme.scaffold))
 ll1 = layer(flow, x=:t, y=:Infectives, Geom.step,
-    style(line_width=0.75mm, default_color=theme.colour(I(0.0, 1, 2))))
+    style(line_width=theme.trail, 
+    default_color=theme.colour(I)))
 ll2 = layer(flow, x=:t, y=:Removals, Geom.step,
-    style(line_style=[:dashdot], line_width=1mm, default_color=theme.colour(R(0.0, 1))))
+    style(line_style=[:dashdot], line_width=theme.boundary, 
+    default_color=theme.colour(R)))
 ll3 = layer(flow[flow.Susceptibles.!=0, :], x=:t, y=:Susceptibles, Geom.step,
-    style(line_style=[:dash], line_width=1mm, default_color=theme.scaffold))
+    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
 fig1 = plot(ll0, ll3, ll2, ll1, timelines,
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population + 1),
     Coord.cartesian(xmin=0, xmax=duration),
     Scale.y_discrete(labels=timelinelabels, levels=0:population),
-    my_theme,
+    gadfly_theme,
     Guide.title("Epidemic curve with removals and susceptibles"),
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal))
 ```
 
-Now plot boundaries for the coupling construction.
+## Boundary based plot
+For the coupling construction it is convenient to suppose the
+various timelines are infected in increasing index order (By
+re-labelling symmetry this will not affect the statistics of the
+evolutions of numbers of Suceptibles, Infectives and Removals).
+The following rather different plot illustrates this.
 ```{julia}
-flow[:, :Epidemic] = flow.Removals + flow.Infectives
 ll4 = layer(flow, x=:t, y=:Epidemic, Geom.step,
-    style(line_width=0.75mm, default_color=theme.colour(I(0.0, 1, 2))))
+    style(line_width=theme.trail, default_color=theme.colour(I)))
 ll5 = layer(flow, x=:t, y=:Population, Geom.line,
-    style(line_width=0.75mm, default_color=theme.scaffold))
+    style(line_width=theme.trail, default_color=theme.scaffold))
 fig2 = plot(ll4, ll2, ll5, ll0, timelines,
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population + 1),
     Coord.cartesian(xmin=0, xmax=duration),
     Scale.y_discrete(labels=timelinelabels, levels=0:population),
-    my_theme,
+    gadfly_theme,
     Guide.title("Boundaries for the coupling construction"),
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal))
 ```
 
-Create a lag and blend with original dataset.
-```{julia}
-flowlag = deepcopy(flow)
-flowlag.t = circshift(flow.t, (-1)) .- ϵ
-flowlag.t[end] = flowlag.t[end-1]
-flow2 = sort!(append!(flow, flowlag));
-```
+## Plotting infectious and removed regions
+To plot the resulting space-time regions of infection and removal, 
+it is necessary to create a dataset
+which doubles the data-points by adding a point immediately prior
+to each transition.
 
-Now plot regions of infectivity and removal.
+We need to create a lag and blend this with the original dataframe.
+The function to do this, `table_trajectories2`,
+should also eventually
+find a place in the `EpidemicsUtilities` module.
+
+```{julia}
+function table_trajectories2(flow)
+    flowlag = deepcopy(flow)
+    flowlag.t = circshift(flow.t, (-1)) .- theme.ϵ
+    flowlag.t[end] = flowlag.t[end-1]
+    return sort!(append!(flow, flowlag))
+end
+
+flow2 = table_trajectories2(flow)
+```
+Now we plot the regions of infectivity and removal.
 ```{julia}
 ll6 = layer(flow2, x=:t, ymin=:Removals, ymax=:Epidemic, Geom.ribbon,
-    alpha=[0.3], style(default_color=theme.colour(I(0.0, 1, 2))))
+    alpha=[theme.opacity], style(default_color=theme.colour(I)))
 ll7 = layer(flow2, x=:t, ymin=:Empty, ymax=:Removals, Geom.ribbon,
-    alpha=[0.6], style(default_color=theme.colour(R(0.0, 1))))
+    alpha=[2theme.opacity], style(default_color=theme.colour(R)))
 
-fig3 = plot(ll6, ll7, ll4, ll2, ll5, ll0, timelines,
+fig3 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population + 1),
     Coord.cartesian(xmin=0, xmax=duration),
     Scale.y_discrete(labels=timelinelabels, levels=0:population),
-    my_theme,
+    gadfly_theme,
     Guide.title("Regions of infectivity and removal"),
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal))

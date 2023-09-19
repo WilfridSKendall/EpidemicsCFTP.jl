@@ -8,6 +8,12 @@ date:   today
 date-format: "D MMMM YYYY"
 papersize:  a4
 
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+
 format:
   html:
     code-fold: true
@@ -21,7 +27,6 @@ format:
 jupyter:    julia-1.9
 ---
 
-\newcommand{\SIR}{\operatorname{S-I-R}}
 
 ```{julia}
 #| include: false
@@ -282,7 +287,7 @@ end
 pniz1 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones1) if length(xl[2])>0]
 zone1 = (context(), 
           line(pniz1),
-          theme.broad, stroke(theme.forbid1),
+          linewidth(theme.broad), stroke(theme.forbid1),
         ) ;
 ```      
 
@@ -320,7 +325,7 @@ end
 pniz2 = [[(pp, xl[1]) for pp in xl[2]] for xl in enumerate(proto_no_infections_zones2)]
 zone2 = (context(), 
           line(pniz2),
-          theme.broad, stroke(theme.forbid2),
+          linewidth(theme.broad), stroke(theme.forbid2),
         ) ;
 ```      
 

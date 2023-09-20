@@ -59,36 +59,18 @@ Markdown.parse("""
 ```
 :::
 
-```{julia}
-#| include: false
-using EpidemicsCFTP, EpidemicsUtilities, Gadfly, DataFrames
-
-theme = create_theme(load_theme("config/theme.yml"))
-
-gadfly_theme = Theme(
-    panel_fill=theme.blank,
-    default_color=theme.default,
-    background_color=theme.background,
-    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
-    minor_label_color=theme.legend, major_label_color=theme.legend,
-    major_label_font_size=10pt,     minor_label_font_size=8pt,
-    grid_line_width=0mm
-)
-
-set_default_plot_size(theme.figwidth, theme.figheight)
-```
 
 # Introduction to the \(\SIR\) epidemic
 The \(\SIR\) epidemic in a population of fixed size runs under the following stochastic dynamics:
 
  * _Infections_ 
    \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\);
- * _Removals_ 
+ * _removals_ 
    \(I \to I-1\,, R \to R+1\)  occur at rate \(\beta \, I\).
 
 Epidemic duration and population size are given by
 ```{julia}
-const duration = 3.0;
+const duration = 2.0;
 const population = 5;
 ```
 note that they are represented by `julia` constants.
@@ -103,6 +85,29 @@ else
 end
 function timelinelabels(i) i > 0 ? circlabels[i] : "" end ;
 ```
+```{julia}
+#| include: false
+using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames
+
+theme = create_theme(load_theme("config/theme.yml"))
+
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=10pt,     minor_label_font_size=8pt,
+    grid_line_width=0mm
+)
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+
+coordinates = UnitBox(float(0),        float(population), 
+                      float(duration), float(-population), 
+                      leftpad=0.5inch, rightpad=0.5inch, 
+                      toppad=0.25inch, bottompad=0.3inch)
+```
 
 # Structure of potential infections and removals
 Here is a structure recording times of potential infections (`I`),
@@ -116,7 +121,7 @@ C = CRemoval;
 I = Infection;
 P = PInfection;
 
-innov = Innovation(5,
+innovation = Innovation(5,
     A[I(0.11, 2, 3), I(0.2, 2, 5), P(0.4, 1, 2), I(0.5, 2, 5), I(0.6, 2, 4), I(0.85, 3, 4),
         I(0.9, 2, 3), I(1.0, 2, 5), P(1.1, 2, 3), I(1.05, 4, 5), I(1.2, 2, 4), I(1.6, 3, 5),
         I(1.5, 3, 4)],
@@ -146,10 +151,10 @@ function table_trajectories1(duration, initial, trajectory)
     push!(i, i[end])
     push!(r, r[end])
 
-    flow = DataFrame(t=t, Susceptibles=s, Infectives=i, Removals=r)
+    flow = DataFrame(t=t, susceptibles=s, infectives=i, removals=r)
     flow[:, :Population] .= population
     flow[:, :Empty] .= 0
-    flow[:, :Epidemic] = flow.Removals + flow.Infectives
+    flow[:, :Epidemic] = flow.removals + flow.infectives
    
     return flow
 end
@@ -157,7 +162,7 @@ end
 
 ```{julia}
 initial = SIR(0.0, 4, 1, 0)
-ev = Evolution(initial, innov)
+ev = Evolution(initial, innovation)
 
 flow = table_trajectories1(duration, initial, ev.trajectory)
 ```
@@ -173,46 +178,49 @@ unrealistic. However it is significantly _more_ realistic than assuming
 all infections are observed!
 
 ## The epidemic curve
-First we draw the epidemic curve together with removals and susceptibles trajectories.
+First we draw the epidemic curve together with removals and susceptibles trajectories. In this example the epidemic curve peaks at two distinct
+locations, as annotated.
 ```{julia}
 timelines = layer(flow, yintercept=1:population,
     Geom.hline(style=:dot, size=0.25mm),
     style(default_color=theme.scaffold))
 ll0 = layer(flow, x=:t, y=:Empty, Geom.line,
-    style(line_width=theme.trail, 
+    style(line_width=2theme.trail, 
     default_color=theme.scaffold))
-ll1 = layer(flow, x=:t, y=:Infectives, Geom.step,
+ll1 = layer(flow, x=:t, y=:infectives, Geom.step,
     style(line_width=theme.trail, 
     default_color=theme.colour(I)))
-ll2 = layer(flow, x=:t, y=:Removals, Geom.step,
+ll2 = layer(flow, x=:t, y=:removals, Geom.step,
     style(line_style=[:dashdot], line_width=theme.boundary, 
     default_color=theme.colour(R)))
-ll3 = layer(flow[flow.Susceptibles.!=0, :], x=:t, y=:Susceptibles, Geom.step,
+ll3 = layer(flow[flow.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
     style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
 fig1 = plot(ll0, ll3, ll2, ll1, timelines,
+    Guide.annotation(compose(context(),
+     text(1.2, 4.2, "Peak #1"),
+     text(1.6, 4.2, "Peak #2"))),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population + 1),
-    Coord.cartesian(xmin=0, xmax=duration),
+#    Coord.cartesian(xmin=0, xmax=duration),
     Scale.y_discrete(labels=timelinelabels, levels=0:population),
-    gadfly_theme,
     Guide.title("Epidemic curve with removals and susceptibles"),
     Guide.ylabel("Time lines"),
-    Guide.xlabel("Process time", orientation=:horizontal))
+    Guide.xlabel("Process time", orientation=:horizontal),
+    gadfly_theme)
 ```
 
 ## Boundary based plot
 For the coupling construction it is convenient to suppose the
-various timelines are infected in increasing index order (By
-re-labelling symmetry this will not affect the statistics of the
-evolutions of numbers of Suceptibles, Infectives and Removals).
+various timelines are infected in increasing index order (Because of the
+re-labelling symmetry, this will not affect the statistics of the
+evolutions of total numbers of `susceptibles`, `infectives` and `removals`).
 The following rather different plot illustrates this.
 ```{julia}
 ll4 = layer(flow, x=:t, y=:Epidemic, Geom.step,
     style(line_width=theme.trail, default_color=theme.colour(I)))
 ll5 = layer(flow, x=:t, y=:Population, Geom.line,
     style(line_width=theme.trail, default_color=theme.scaffold))
-fig2 = plot(ll4, ll2, ll5, ll0, timelines,
+fig2 = plot(ll0, ll4, ll2, ll5, timelines,
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population + 1),
-    Coord.cartesian(xmin=0, xmax=duration),
     Scale.y_discrete(labels=timelinelabels, levels=0:population),
     gadfly_theme,
     Guide.title("Boundaries for the coupling construction"),
@@ -243,9 +251,9 @@ flow2 = table_trajectories2(flow)
 ```
 Now we plot the regions of infectivity and removal.
 ```{julia}
-ll6 = layer(flow2, x=:t, ymin=:Removals, ymax=:Epidemic, Geom.ribbon,
+ll6 = layer(flow2, x=:t, ymin=:removals, ymax=:Epidemic, Geom.ribbon,
     alpha=[theme.opacity], style(default_color=theme.colour(I)))
-ll7 = layer(flow2, x=:t, ymin=:Empty, ymax=:Removals, Geom.ribbon,
+ll7 = layer(flow2, x=:t, ymin=:Empty, ymax=:removals, Geom.ribbon,
     alpha=[2theme.opacity], style(default_color=theme.colour(R)))
 
 fig3 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
@@ -256,4 +264,28 @@ fig3 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
     Guide.title("Regions of infectivity and removal"),
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal))
+```
+
+## Adding incidents to the plot
+We now want to add incidents corresponding to the underlying `innovation`.
+The annotation is not perfectly aligned: need to capture exactly
+how `UnitBox` and/or `context` does the transformation!
+```{julia}
+fig4 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
+    Guide.annotation(compose(context(0.0w, -0.18h, 1.0w, 1.0h),
+        EpidemicsUtilities.draw_elements(innovation, theme=theme))),
+#    Guide.annotation(compose(context(-0.03, 7.5, 1.0w, 1.0h),
+#        EpidemicsUtilities.draw_elements(innovation, theme=theme))),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population + 1),
+    Coord.cartesian(xmin=0, xmax=duration),
+    Scale.y_discrete(labels=timelinelabels, levels=0:population),
+    Guide.title("Incidents driving the epidemic"),
+    Guide.ylabel("Time lines"),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    gadfly_theme)
+```
+
+Here is the underlying dataset.
+```{julia}
+flow2
 ```

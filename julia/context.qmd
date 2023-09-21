@@ -1,0 +1,120 @@
+---
+title:  "Using contexts"
+author: "Wilfrid Kendall"
+date:   today
+---
+
+---
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+params:
+  filename: "introduction.qmd"
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+jupyter:    julia-1.9
+---
+
+Rendering `Compose.circle(0, 0.5, 0.1)` 
+followed by `polygon([(0,0), (0,1), (1,1), (1,0)])`
+using various
+`Compose` `context` parameters.
+
+```{julia}
+using Gadfly, Compose
+
+set_default_plot_size(3inch, 2inch)
+
+composition = 
+  compose(context(),
+      (context(),
+        fill(nothing), stroke("grey"), 
+        (context(), 
+          Compose.circle(0, 0.5, 0.1), 
+          text(0.01, 0.76, "Produced by\ncontext()\nat ()", hleft, vtop),
+          polygon([(0,0), (0,1), (1,1), (1,0)]))),
+      (context(),(context(0.5, 0.5, 0.5, 0.5),
+          (context(),
+            Compose.circle(0, 0.5, 0.1),  
+            text(0.12, 0.65, "Produced by\ncontext(0.5, 0.5, 0.5, 0.5)\nat (0, 0.5)"), 
+            fill("gray")), 
+          (context(),
+            polygon([(0,0), (0,1), (1,1), (1,0)]),
+            fill("bisque"), stroke("grey"))),),
+      (context(),
+        (context(0.2, 0.0, 1, 1),
+          (context(),
+            Compose.circle(0, 0.5, 0.1),  
+            text(0.11, 0.5, "Produced by\ncontext(0.2, 0.0, 1, 1)\nat (0, 0.5)"),
+            fill("gray")), 
+          (context(),
+            polygon([(0,0), (0,1), (1,1), (1,0)]),
+            fill("cornsilk"), stroke("grey")),)),
+)
+```
+
+We now study the interaction of `UnitBox` settings in `annotations` of `Gadfly` plots.
+There are small shifts in the `UnitBox` transformations, perhaps due to axis
+space!
+
+```{julia}
+annot = compose(context(), 
+  (context(), polygon([(0,0), (0,1), (1,1), (1,0)]), fill("bisque"), fillopacity(0.5), stroke("grey")),
+  (context(), text(0.05,0.1,"raw polygon")))
+plot(f, 0, 1, Guide.annotation(annot))
+```
+
+```{julia}
+annot = compose(context(units=UnitBox(0, 0, 2, 2)), 
+  (context(), polygon([(0,0), (0,1), (1,1), (1,0)]), fill("bisque"), fillopacity(0.5), stroke("grey")),
+  (context(), text(0.05,0.1,"halved polygon", hleft, vtop)))
+plot(f, 0, 1, Guide.annotation(annot))
+```
+
+```{julia}
+annot = compose(context(units=UnitBox(0, -1, 2, 2)), 
+  (context(), polygon([(0,0), (0,1), (1,1), (1,0)]), fill("bisque"), fillopacity(0.5), stroke("grey")),
+  (context(), text(0.05,0.2,"halved polygon\nwith vertical shift", hleft, vtop)))
+plot(f, 0, 1, Guide.annotation(annot))
+```
+
+
+Consider on the other hand
+```{julia}
+annot = compose(context(), 
+  (context(), polygon([(0,0), (0,0.5), (0.5,0.5), (0.5,0)]), fill("bisque"), fillopacity(0.5), stroke("grey")),
+  (context(), text(0.05,0.2,"halved polygon\nwith vertical shift", hleft, vtop)))
+plot(f, 0, 1, Guide.annotation(annot))
+```
+
+Also try working with `context`: the same problem arises.
+
+```{julia}
+annot = compose(context(0w, 0h, 1w, 1h), 
+  (context(), polygon([(0,0), (0,1), (1,1), (1,0)]), fill("bisque"), fillopacity(0.5), stroke("grey")),
+  (context(), text(0.05,0.2,"no shift in context", hleft, vtop)))
+plot(f, 0, 1, Guide.annotation(annot))
+```
+
+```{julia}
+annot = compose(context(0w, -0.5h, 1w, 1h), 
+  (context(), polygon([(0,0), (0,1), (1,1), (1,0)]), fill("bisque"), fillopacity(0.5), stroke("grey")),
+  (context(), text(0.05,0.2,"vertical shift in context", hleft, vtop)))
+plot(f, 0, 1, Guide.annotation(annot))
+```

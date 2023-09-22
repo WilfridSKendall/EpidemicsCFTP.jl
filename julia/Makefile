@@ -25,6 +25,8 @@ clean:
 # Verification
 set-up-verify: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 
+reset-verify: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
+
 image/VERIFY_%.png: image/%.png
 	@if /usr/bin/cmp -s $@ $<  ;                                       \
 	then                                                               \

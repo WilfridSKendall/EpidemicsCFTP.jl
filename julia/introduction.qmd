@@ -97,7 +97,7 @@ gadfly_theme = Theme(
     background_color=theme.background,
     major_label_font="CMU Serif",   minor_label_font="CMU Serif",
     minor_label_color=theme.legend, major_label_color=theme.legend,
-    major_label_font_size=10pt,     minor_label_font_size=8pt,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
     grid_line_width=0mm
 )
 
@@ -164,19 +164,19 @@ evolution = Evolution(initial, innovation)
 flow = table_trajectories1(duration, initial, evolution.trajectory)
 ```
 
-# Various plots
-The next step is to produce good graphical visualization of
-the epidemic, and to explain how one starts to evolve
-an \(\SIR\) epidemic in algorithmic time subject to conditioning
-on observed removals.
+# Plotting the epidemic
+The next step is to produce a good graphical visualization of
+the epidemic.
 
 The assumption that all removals are observed is of course
 unrealistic. However it is significantly _more_ realistic than assuming
 all infections are observed!
 
 ## The epidemic curve
-First we draw the epidemic curve together with removals and susceptibles trajectories. In this example the epidemic curve peaks at two distinct
-locations, as annotated.
+First we draw the epidemic curve together with removals and susceptibles trajectories.
+In this example the epidemic curve peaks at two distinct
+locations, as annotated in @fig-curves.
+This is the conventional way to depict an epidemic.
 ```{julia}
 #| echo: false
 #| label: fig-curves
@@ -202,13 +202,16 @@ fig1 = plot(ll0, ll3, ll2, ll1, timelines,
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal),
     gadfly_theme)
+depict("introduction-curves", fig1)
 ```
 
-## Boundary based plot
+## Plotting the boundaries of zones
 For the coupling construction it is convenient to suppose the
-various time lines are infected in increasing index order (Because of the
+various time lines are infected in increasing index order (because of the
 re-labelling symmetry, this will not affect the statistics of the
 evolutions of total numbers of `susceptibles`, `infectives` and `removals`).
+Thus the epidemic is now defined by boundaries between theremoval zone and
+the infectious zone, and between the infectious zone and the susceptible zone.
 This is illustrated in @fig-boundary.
 ```{julia}
 #| echo: false
@@ -225,15 +228,16 @@ fig2 = plot(ll0, ll4, ll2, ll5, timelines,
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal),
     gadfly_theme)
+depict("introduction-boundary", fig2)
 ```
 
 ## Plotting infectious and removed zones
-To plot the resulting space-time zones of infection and removal, 
+To plot the resulting space-time zones of infection and removal themselves, 
 it is necessary to create a dataset
 which doubles the data-points by adding a point immediately prior
 to each transition.
 
-We need to create a lag and blend this with the original dataframe.
+We create a lagged data frame and blend this with the original dataframe.
 The function to do this, `table_trajectories2`,
 should also eventually
 find a place in the `EpidemicsUtilities` module.
@@ -251,7 +255,7 @@ Here is the resulting data-frame.
 ```{julia}
 flow2 = table_trajectories2(flow)
 ```
-Now we plot the zones of infectivity and removal (@fig-zones).
+Now we can plot the actual zones of infectivity and removal (@fig-zones).
 ```{julia}
 #| echo: false
 #| label: fig-zones
@@ -268,6 +272,7 @@ fig3 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal),
     gadfly_theme)
+depict("introduction-zones", fig3)
 ```
 
 ## Adding incidents to the plot
@@ -288,37 +293,56 @@ fig4 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal),
     gadfly_theme)
+depict("introduction-incidents", fig4)
 ```
 
-# Indicating realized incidents
-Only some of these incidents are actually realized by the construction:
+## Indicating activated incidents
+Only some of these incidents are actually activated by the construction:
 
  * _Infections_ (`I`/\(\mathcal{I}\) and `P`/\(\mathcal{P}\)) must lie inside the infectious zone and reach 
  up to exactly one time line above the infectious zone;
- * _Removals_ (`R`/\(\mathcal{R}\) and 'C'/\(\mathcal{C}\)) must lie inside the infectious zone,
+ * _Removals_ (`R`/\(\mathcal{R}\) and `C`/\(\mathcal{C}\)) must lie inside the infectious zone,
 
-This is illustrated in @fig-realized.
+This is illustrated in @fig-activated.
 Perpetuated infections (`P`/\(\mathcal{P}\)) will arise as part of the algorithmic time evolution of the entire \(\SIR\) trajectory. Conditioned removals (`R`/\(\mathcal{R}\))
-are the _only_ removals which should be realized: if an ordinary removal
+are the _only_ removals which should be activated: if an ordinary removal
 (`R`/\(\mathcal{R}\)) is realised then this breaks the conditioning (on all
 observed removals) that we have imposed.
 
 ```{julia}
 #| echo: false
-#| label: fig-realized
-#| fig-cap: "Realized incidents (emboldened) driving the epidemic:          \
-#|           notice that realized removals are exactly those removals lying \
+#| label: fig-activated
+#| fig-cap: "Activated incidents (thicker lines) driving the epidemic:          \
+#|           notice that activated removals are exactly those removals lying \
 #|           in the infectious zone, while realised infections are exactly  \
 #|           those infections reaching from within the infectious zone to   \
 #|           just above it."
 fig5 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_realized_elements(initial, evolution.history, theme=theme),
+        EpidemicsUtilities.draw_activated_elements(initial, evolution.history, theme=theme),
         EpidemicsUtilities.draw_elements(innovation, theme=theme))),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population),
     Scale.y_continuous(labels=timelinelabels),
-    Guide.title("Incidents driving the epidemic, realized incidents emboldened"),
+    Guide.title("Incidents driving the epidemic, emphasizing activated incidents"),
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal),
     gadfly_theme)
+depict("introduction-activated", fig5)
 ```
+
+# Evolving the epidemic in algorithmic time
+Now it is necessary to explain how to evolve
+an \(\SIR\) epidemic _in algorithmic time_,
+subject to conditioning
+on observed (conditioned) removals.
+This can be broken down into a number of steps:
+
+1. Sample a new `Innovation` structure `evolution`;
+2. Remove all unconditioned removals
+(those removals not activated, denoted by `R`/ \(\mathcal{R}\));
+3. Insert all removals from `evolution` which will not be activated
+(so they must not lie in the infectious zone);
+4. Re-sample proposed time lines for each of the conditioned removals
+(denoted by `C`/ \(\mathcal{C}\)),
+accepting proposals which leave the relevant conditioned removal still in the infectious zone; 
+5. TO BE COMPLETED

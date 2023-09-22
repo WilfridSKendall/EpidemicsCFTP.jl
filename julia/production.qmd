@@ -128,8 +128,8 @@ compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1;
 
 ```{julia}
 #| echo: false
-#| label: realized1
-#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. Realized incidents have          \
+#| label: activated1
+#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. activated incidents have          \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 1a of @ConnorKendall-2023."
@@ -190,8 +190,8 @@ compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3;
 
 ```{julia}
 #| echo: false
-#| label: realized3
-#| fig-cap: "@fig-nodes3 plus epidemic and removal curves. Realized incidents have          \
+#| label: activated3
+#| fig-cap: "@fig-nodes3 plus epidemic and removal curves. activated incidents have          \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 3a of @ConnorKendall-2023." 

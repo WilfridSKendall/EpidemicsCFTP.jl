@@ -110,8 +110,8 @@ infect1   = [x for x in ev.history if isa(x, I) || isa(x, P)]
 infect2   = [(MIA(x.t, x.infectee-1), MIB(x.t, x.infectee)) for x in infect1]
 remove1   = [x for x in ev.history if isa(x, C) || isa(x, R)]
 remove2   = [(MRA(x.t, k-1), MRB(x.t, k)) for (k, x) in enumerate(remove1)]
-realized2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
-realized_trajectory = collect(Iterators.flatten(realized2));
+activated2 = sort(vcat(infect2, remove2), lt=(x,y) -> isearlier(x[1], y[1]))
+activated_trajectory = collect(Iterators.flatten(activated2));
 total_trajectory = compute_total_trajectory(duration, population, initial, ev.history);
 ```
 ::: {.callout-tip}
@@ -236,7 +236,7 @@ depict("Removals", compose(context(units=coordinates), (removal_incidents, regio
 ## Consider now the construction of "no-infection" zones.
 
 First: construct the separate timelines.
-We produce a figure depicting the realized and un-realized infections
+We produce a figure depicting the activated and un-activated infections
 (as well as removals) together
 with infected and removed regions (@fig-testnoinfection).
 ```{julia}
@@ -258,10 +258,10 @@ removal_structure = collect(enumerate(removal_list_of_lists))
 ```{julia}
 #| echo: false
 #| label: fig-testnoinfection
-#| fig-cap: "Realized and un-realized infections together with infected and removed regions."
+#| fig-cap: "activated and un-activated infections together with infected and removed regions."
 depict("TestNoInfection", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history; theme=theme),
+                                  draw_activated_elements(initial, ev.history; theme=theme),
                                   draw_elements(innov; theme=theme),
                                   regions)...)
       )
@@ -269,7 +269,7 @@ depict("TestNoInfection", compose(context(units=coordinates),
 
 ```{julia}
 Now isolate the time-lines containing a `MIB`, and insert a `0.0` at start.
-Then construct first take on "no-infection zone" based purely on unrealized removals in 
+Then construct first take on "no-infection zone" based purely on unactivated removals in 
 each time-line (@fig-testnoinfection1).
 ```{julia}
 proto_no_infections_zones1 = [Float64[] for k in (1:population)]
@@ -294,10 +294,10 @@ zone1 = (context(),
 ```{julia}
 #| echo: false
 #| label: fig-testnoinfection1
-#| fig-cap: "First take on no-infection zone based purely on unrealized removals in each time-line."
+#| fig-cap: "First take on no-infection zone based purely on unactivated removals in each time-line."
 depict("TestNoInfection1", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history; theme=theme),
+                                  draw_activated_elements(initial, ev.history; theme=theme),
                                   draw_elements(innov; theme=theme),
                                   regions, zone1)...)
       )
@@ -335,7 +335,7 @@ zone2 = (context(),
 #| fig-cap: "Second take on no-infection zone, imposing monotonic growth in time-line."
 depict("TestNoInfection2", compose(context(units=coordinates),
                                  (removal_incidents, 
-                                  draw_realized_elements(initial, ev.history; theme=theme),
+                                  draw_activated_elements(initial, ev.history; theme=theme),
                                   draw_elements(innov; theme=theme),
                                   regions, zone1, zone2)...)
       )
@@ -346,11 +346,11 @@ Now we must also add in effect of the potential infections.
 :::
 
 # Computing the last viable epidemic
-First establish realized removal incidents in time-decreasing order
+First establish activated removal incidents in time-decreasing order
 of _removed_ timeline
-(easily done: the \(i^\text{th}\) realized removal listed in time-order
+(easily done: the \(i^\text{th}\) activated removal listed in time-order
 will necessarily remove time-line \(i\)),
-and list potential infections prior to each realized removal
+and list potential infections prior to each activated removal
 according to infection time.
 Notice we have not yet covered the possibility that some time-lines
 are never infected and others are not removed before `duration`
@@ -358,8 +358,8 @@ are never infected and others are not removed before `duration`
 is (of course) infected at time \(0\) and is not otherwise infected.
 
 ```{julia}
-realized_removals = filter(x -> (isa(x, R) || isa(x, C)), ev.history)
-reversed_removals = reverse(collect(enumerate(realized_removals))[2:end])
+activated_removals = filter(x -> (isa(x, R) || isa(x, C)), ev.history)
+reversed_removals = reverse(collect(enumerate(activated_removals))[2:end])
 barrier = reversed_removals[1][2]
 last_viable = []
 for (k, rem) in reversed_removals

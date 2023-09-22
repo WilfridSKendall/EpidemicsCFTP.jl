@@ -25,7 +25,7 @@ colour_x:
 
 length_cy:
     # node radius in `cy` units
-    radius:                0.20
+    radius:                0.26
     # vertical offset in `cy` units
     height:                0.00
     # tic size in `cy` units
@@ -51,7 +51,7 @@ thickness_mm:
     trail:                 0.75
     dormant:               0.25
     broad:                 2.00
-    realized:              0.75
+    activated:             0.75
 
 # background opacity
 opacity:

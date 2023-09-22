@@ -259,15 +259,19 @@ This is illustrated in @fig-boundary.
 ```{julia}
 #| echo: false
 #| label: fig-boundary
-#| fig-cap: "Time-evolving boundaries between susceptible, infected, \
-#|           and removed sub-populations."
+#| fig-cap: "Time-evolving boundaries between susceptible, infected,     \
+#|           and removed sub-populations. Note that the boundary between \
+#|           susceptible and infected is itself infected; similarly the  \
+#|           boundary between infected and removed is itself removed."
+ll2b = layer(flow, x=:t, y=:removals, Geom.step,
+    style(line_width=theme.boundary, default_color=theme.colour(R)))
 ll4 = layer(flow, x=:t, y=:epidemic, Geom.step,
     style(line_width=theme.trail, default_color=theme.colour(I)))
 ll5 = layer(flow, x=:t, y=:population, Geom.line,
     style(line_width=theme.trail, default_color=theme.scaffold))
 
 fig2a = deepcopy(fig0)
-push!(fig2a, ll0, ll4, ll2, ll5,
+push!(fig2a, ll0, ll4, ll2b, ll5,
     Scale.y_continuous(labels=timelinelabels1),
     Guide.ylabel("Time lines"),
 )
@@ -310,7 +314,10 @@ the infectivity zone is infected, the top end of the removal zone is removed.
 ```{julia}
 #| echo: false
 #| label: fig-zones
-#| fig-cap: "Infectivity and removal zones."
+#| fig-cap: "Infectivity and removal zones. Note that the regions are closed at the  \
+#|           top: as noted above, the boundary between susceptible and infected is   \
+#|           itself infected; similarly the boundary between infected and removed is \
+#|           itself removed."
 ll6 = layer(flow2, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
     alpha=[theme.opacity], style(default_color=theme.colour(I)))
 ll7 = layer(flow2, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
@@ -320,7 +327,7 @@ fig3a = deepcopy(fig2a)
 push!(fig3a, ll6, ll7)
 fig3 = deepcopy(fig3a)
 fig3 = push!(fig3, 
-    Guide.title("Regions of infectivity and removal"))
+    Guide.title("Zones of infectivity and removal"))
 
 depict("introduction-zones", fig3)
 ```
@@ -331,9 +338,9 @@ see @fig-incidents.
 ```{julia}
 #| echo: false
 #| label: fig-incidents
-#| fig-cap: "Incidents arising from the `Innovation` structure,   \
-#|           together with the epidemic curve and infectious and  \
-#|           removal zones."
+#| fig-cap: "Incidents arising from the `Innovation` structure,              \
+#|           together with the epidemic curve and infectious and             \
+#|           removal zones. Note that most of these incidents are inactive."
 fig4a = deepcopy(fig3a)
 push!(fig4a,
     Guide.annotation(compose(context(),
@@ -393,12 +400,12 @@ Now it is necessary to explain how to evolve
 an \(\SIR\) epidemic _in algorithmic time_,
 subject to conditioning
 on observed (conditioned) removals.
-This can be broken down into a number of steps:
+A single step of algorithmic time evolution can be broken down into a number of sub-steps:
 
 1. Sample a new `Innovation` structure `new_evolution`;
 2. Remove all unconditioned removals
 (those removals not activated, denoted by `R`/`ℛ`);
-3. Insert precisely those removals from `new_evolution` 
+3. Insert precisely those removals from the `new_evolution` 
 structure which will not be activated
 (equivalently, which do not lie in the infectivity zone);
 4. Re-sample proposed time lines for each of the conditioned removals
@@ -421,5 +428,5 @@ whether it is to be introduced:
  
 We will then need to address two issues. _Firstly_, we need a convenient way of organizing 
 the calculations required for making the decisions in item 5;
-_Secondly_, we need to show the algorithmic time evolution is monotonic in some useful sense
-that allows us to carry out a CFTP simulation?
+_Secondly_, we need to show that the algorithmic time evolution is monotonic in some useful sense
+that allows us to carry out a CFTP simulation,

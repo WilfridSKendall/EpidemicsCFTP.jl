@@ -40,7 +40,7 @@ source = "[current file not set]"
 ```
 
 ::: {.callout-note}
-# Software versions:
+# Versions of software used to create this document:
 ```{julia}
 #| echo: false
 #| eval: true
@@ -63,10 +63,11 @@ Markdown.parse("""
 # Introduction to the \(\SIR\) epidemic
 The \(\SIR\) epidemic in a population of fixed size runs under the following stochastic dynamics:
 
- * _Infections_ 
-   \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\);
- * _removals_ 
-   \(I \to I-1\,, R \to R+1\)  occur at rate \(\beta \, I\).
+\begin{tabbing}
+Infections \qquad \= \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\), \kill
+\emph{Infections:} \> \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\), \\
+\emph{Removals:}   \> \(I \to I-1\,, R \to R+1\)  occur at rate \(\beta \, I\).     
+\end{tabbing}
 
 The structural parameters of epidemic duration and population size are given by `julia` constants
 ```{julia}
@@ -82,7 +83,13 @@ if population > MAXPOP
 else                                                                                    
     circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:population]                                                           
 end                                                                                     
-function timelinelabels(i) round(i) > 0 ? circlabels[Int(round(i))] : "" end ;                                                                             
+function timelinelabels(i) 
+    if round(i) > 0 && i ≤ population
+        circlabels[Int(round(i))] 
+    else
+        "" 
+    end 
+end ;                                                                             
 ```   
 
 ```{julia}
@@ -112,29 +119,40 @@ and of potential and conditioned removals (`R` and `C`),
 using convenient abbreviations
 ```{julia}
 A = AbstractInfection;
-R = Removal;
-C = CRemoval;
-I = Infection;
-P = PInfection;
+I = Infection;      P = PInfection;
+R = Removal;        C = CRemoval;
 
 innovation = Innovation(5,
     A[I(0.11, 2, 3), I(0.2, 2, 5), P(0.4, 1, 2), I(0.5, 2, 5), I(0.6, 2, 4), I(0.85, 3, 4),
-        I(0.9, 2, 3), I(1.0, 2, 5), P(1.1, 2, 3), I(1.05, 4, 5), I(1.2, 2, 4), I(1.6, 3, 5),
+        I(0.9, 2, 3), I(1.0, 2, 5), I(1.05, 4, 5), I(1.1, 2, 3), P(1.2, 2, 4), I(1.6, 3, 5),
         I(1.5, 3, 4)],
     R[R(0.3, 5), R(0.42, 3), R(0.7, 3), R(0.55, 3), R(0.95, 5), R(1.4, 2), R(1.55, 1),
         R(1.85, 2)],
     C[C(1.3, 2), C(0.8, 1), C(1.7, 4), C(1.8, 4), C(1.92, 5)]);
 ```
 
+Note that the incidents are printed in Julia using script letters
+(`I`/`ℐ`, `P`/`𝒫`, `R`/`ℛ`, `C`/`𝒞`):
+```{julia}
+#| echo: false
+innovation
+```
+::: {.callout-note}
+# Future package modification
+Arrange prettyprinting for `Innovation`.
+:::
+
 # Constructing the epidemic
-An epidemic can be constructed using a specific `initial` state at time \(0.0\)
-(specified as an `SIR` structure) and the structure of `Innovations`.
+An epidemic can be constructed using a specific `initial` state
+(specified as an `SIR` structure)
+to commence the epidemic at time \(0.0\), and an `Innovations`
+structure to hold subsequent potential infections and removals.
 The epidemic simulation is
-computed as part of the construction of an instance
-of the  `Evolution` type based on the initial state
-and the potential incidents from the `Innovations` structure. 
-The function `table_trajectories1` should eventually
-find a place in the `EpidemicsUtilities` module.
+computed at the time of construction of an instance
+of the `Evolution` type, defined using `initial`
+together with the potential incidents comprising `Innovations`. 
+The function `table_trajectories1` usefully
+returns the epidemic trajectory as a data frame.
 ```{julia}
 function table_trajectories1(duration, initial, trajectory)
     t = [state.t for state in trajectory]
@@ -148,15 +166,20 @@ function table_trajectories1(duration, initial, trajectory)
     push!(r, r[end])
 
     flow = DataFrame(t=t, susceptibles=s, infectives=i, removals=r)
-    flow[:, :Population] .= population
-    flow[:, :Empty] .= 0
-    flow[:, :Epidemic] = flow.removals + flow.infectives
+    flow[:, :population] .= population
+    flow[:, :empty] .= 0
+    flow[:, :epidemic] = flow.removals + flow.infectives
    
     return flow
 end ;
 ```
+::: {.callout-note}
+# Future package modification
+Eventually move `table_trajectories1` 
+to the `EpidemicsUtilities` module.
+:::
 
-We now compute the data frame for the epidemic.
+Here is the data frame corresponding to the epidemic trajectory.
 ```{julia}
 initial = SIR(0.0, 4, 1, 0)
 evolution = Evolution(initial, innovation)
@@ -167,25 +190,29 @@ flow = table_trajectories1(duration, initial, evolution.trajectory)
 # Plotting the epidemic
 The next step is to produce a good graphical visualization of
 the epidemic.
-
-The assumption that all removals are observed is of course
+We will aim for a situation in which all activated removals are observed
+(so activated hence observed removals are denoted by `C`/`𝒞`
+representing "conditional removal");
+our objective is then to derive a perfect 
+The assumption that all activated removals are observed is of course
 unrealistic. However it is significantly _more_ realistic than assuming
 all infections are observed!
 
 ## The epidemic curve
-First we draw the epidemic curve together with removals and susceptibles trajectories.
+First we draw the epidemic curve together with 
+trajectories of removals and susceptibles.
 In this example the epidemic curve peaks at two distinct
 locations, as annotated in @fig-curves.
 This is the conventional way to depict an epidemic.
 ```{julia}
 #| echo: false
 #| label: fig-curves
-#| fig-cap: "Epidemic curve (with annotated peaks) together with the   \
-#|           monotonic curves of numbers of susceptibles and removals."
+#| fig-cap: "Epidemic curve (with annotated peaks) with       \
+#|           monotonic curves for susceptibles and removals."
 timelines = layer(flow, yintercept=1:population,
     Geom.hline(style=:dot, size=0.25mm),
     style(default_color=theme.scaffold))
-ll0 = layer(flow, x=:t, y=:Empty, Geom.line,
+ll0 = layer(flow, x=:t, y=:empty, Geom.line,
     style(line_width=2theme.trail, default_color=theme.scaffold))
 ll1 = layer(flow, x=:t, y=:infectives, Geom.step,
     style(line_width=theme.trail,  default_color=theme.colour(I)))
@@ -196,8 +223,9 @@ ll3 = layer(flow[flow.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
 fig1 = plot(ll0, ll3, ll2, ll1, timelines,
     Guide.annotation(compose(context(),
      text(1.2, 3.2, "Peak #1"),
-     text(1.6, 3.2, "Peak #2"))),
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population),
+     text(1.6, 3.2, "Peak #2"),
+     fontsize(6pt))),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population+1),
     Guide.title("Epidemic curve with removals and susceptibles"),
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal),
@@ -210,20 +238,20 @@ For the coupling construction it is convenient to suppose the
 various time lines are infected in increasing index order (because of the
 re-labelling symmetry, this will not affect the statistics of the
 evolutions of total numbers of `susceptibles`, `infectives` and `removals`).
-Thus the epidemic is now defined by boundaries between theremoval zone and
-the infectious zone, and between the infectious zone and the susceptible zone.
+Thus the epidemic is now defined by boundaries between the removal zone and
+the infectivity zone, and between the infectivity zone and the susceptible zone.
 This is illustrated in @fig-boundary.
 ```{julia}
 #| echo: false
 #| label: fig-boundary
 #| fig-cap: "Time-evolving boundaries between susceptible, infected, \
 #|           and removed portions of the population."
-ll4 = layer(flow, x=:t, y=:Epidemic, Geom.step,
+ll4 = layer(flow, x=:t, y=:epidemic, Geom.step,
     style(line_width=theme.trail, default_color=theme.colour(I)))
-ll5 = layer(flow, x=:t, y=:Population, Geom.line,
+ll5 = layer(flow, x=:t, y=:population, Geom.line,
     style(line_width=theme.trail, default_color=theme.scaffold))
 fig2 = plot(ll0, ll4, ll2, ll5, timelines,
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population+1),
     Guide.title("Boundaries for the coupling construction"),
     Guide.ylabel("Time lines"),
     Guide.xlabel("Process time", orientation=:horizontal),
@@ -237,11 +265,13 @@ it is necessary to create a dataset
 which doubles the data-points by adding a point immediately prior
 to each transition.
 
-We create a lagged data frame and blend this with the original dataframe.
-The function to do this, `table_trajectories2`,
-should also eventually
-find a place in the `EpidemicsUtilities` module.
+We create a lagged data frame and blend this with the original data frame.
 
+::: {.callout-note}
+# Future package modification
+Eventually move `table_trajectories2` 
+to the `EpidemicsUtilities` module.
+:::
 ```{julia}
 function table_trajectories2(flow)
     flowlag = deepcopy(flow)
@@ -256,21 +286,25 @@ Here is the resulting data-frame.
 flow2 = table_trajectories2(flow)
 ```
 Now we can plot the actual zones of infectivity and removal (@fig-zones).
+Note that the zones are closed at their upper boundaries: the top edge of
+the infectivity zone is infected, the top end of the removal zone is removed.
 ```{julia}
 #| echo: false
 #| label: fig-zones
-#| fig-cap: "The epidemic curve together with the infectious and  \
-#|           removal zones."
-ll6 = layer(flow2, x=:t, ymin=:removals, ymax=:Epidemic, Geom.ribbon,
+#| fig-cap: "Infectivity and removal zones."
+ll6 = layer(flow2, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
     alpha=[theme.opacity], style(default_color=theme.colour(I)))
-ll7 = layer(flow2, x=:t, ymin=:Empty, ymax=:removals, Geom.ribbon,
+ll7 = layer(flow2, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
     alpha=[2theme.opacity], style(default_color=theme.colour(R)))
 
 fig3 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population+1),
     Guide.title("Regions of infectivity and removal"),
     Guide.ylabel("Time lines"),
-    Guide.xlabel("Process time", orientation=:horizontal),
+    Guide.xlabel("Process time", orientation=:horizontal),    Guide.annotation(compose(context(),
+    text(1.0, 2.5, "Infectivity zone"),
+    text(1.5, 1.5, "Removal zone"),
+    fontsize(6pt))),
     gadfly_theme)
 depict("introduction-zones", fig3)
 ```
@@ -287,7 +321,7 @@ see @fig-incidents.
 fig4 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
     Guide.annotation(compose(context(),
         EpidemicsUtilities.draw_elements(innovation, theme=theme))),
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population+1),
     Scale.y_continuous(labels=timelinelabels),
     Guide.title("Incidents driving the epidemic"),
     Guide.ylabel("Time lines"),
@@ -299,14 +333,19 @@ depict("introduction-incidents", fig4)
 ## Indicating activated incidents
 Only some of these incidents are actually activated by the construction:
 
- * _Infections_ (`I`/\(\mathcal{I}\) and `P`/\(\mathcal{P}\)) must lie inside the infectious zone and reach 
- up to exactly one time line above the infectious zone;
- * _Removals_ (`R`/\(\mathcal{R}\) and `C`/\(\mathcal{C}\)) must lie inside the infectious zone,
+ * _Infections_ (`I`/`ℐ` and `P`/`𝒫`) must lie inside the infectivity zone and reach 
+ up to the time line which at that point of time is immediately above
+ the infectivity zone (and hence must reach exactly
+ one time line above the highest infected time line);
+ * _Removals_ (`R`/`ℛ` and `C`/`𝒞`) must lie inside the infectivity zone.
 
-This is illustrated in @fig-activated.
-Perpetuated infections (`P`/\(\mathcal{P}\)) will arise as part of the algorithmic time evolution of the entire \(\SIR\) trajectory. Conditioned removals (`R`/\(\mathcal{R}\))
+This is illustrated in @fig-activated, where the activated incidents
+are emphasized by being drawn using thicker lines.
+Note that perpetuated infections (`P`/`𝒫`) will arise
+as part of the algorithmic time evolution of the entire \(\SIR\) trajectory.
+Conditioned removals (`R`/`ℛ`)
 are the _only_ removals which should be activated: if an ordinary removal
-(`R`/\(\mathcal{R}\)) is realised then this breaks the conditioning (on all
+(`R`/`ℛ`) is realised then this breaks the conditioning (on all
 observed removals) that we have imposed.
 
 ```{julia}
@@ -314,14 +353,14 @@ observed removals) that we have imposed.
 #| label: fig-activated
 #| fig-cap: "Activated incidents (thicker lines) driving the epidemic:          \
 #|           notice that activated removals are exactly those removals lying \
-#|           in the infectious zone, while realised infections are exactly  \
-#|           those infections reaching from within the infectious zone to   \
+#|           in the infectivity zone, while realised infections are exactly  \
+#|           those infections reaching from within the infectivity zone to   \
 #|           just above it."
 fig5 = plot(ll0, ll6, ll7, ll4, ll2, ll5, timelines,
     Guide.annotation(compose(context(),
         EpidemicsUtilities.draw_activated_elements(initial, evolution.history, theme=theme),
         EpidemicsUtilities.draw_elements(innovation, theme=theme))),
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=population+1),
     Scale.y_continuous(labels=timelinelabels),
     Guide.title("Incidents driving the epidemic, emphasizing activated incidents"),
     Guide.ylabel("Time lines"),
@@ -337,12 +376,31 @@ subject to conditioning
 on observed (conditioned) removals.
 This can be broken down into a number of steps:
 
-1. Sample a new `Innovation` structure `evolution`;
+1. Sample a new `Innovation` structure `new_evolution`;
 2. Remove all unconditioned removals
-(those removals not activated, denoted by `R`/ \(\mathcal{R}\));
-3. Insert all removals from `evolution` which will not be activated
-(so they must not lie in the infectious zone);
+(those removals not activated, denoted by `R`/`ℛ`);
+3. Insert precisely those removals from `new_evolution` 
+structure which will not be activated
+(equivalently, which do not lie in the infectivity zone);
 4. Re-sample proposed time lines for each of the conditioned removals
-(denoted by `C`/ \(\mathcal{C}\)),
-accepting proposals which leave the relevant conditioned removal still in the infectious zone; 
-5. TO BE COMPLETED
+(denoted by `C`/`𝒞`),
+accepting proposals for which the relevant conditioned removal 
+is still in the infectivity zone; 
+5. Now work from right to left, deciding for each old infection incident
+whether it is to be removed, and for each new infection incident from `new_evolution`
+whether it is to be introduced:
+   - an old infection incident is removed unless so doing 
+ would result in a conditioned removal (`C`/`𝒞`) _not_ being removed. 
+ If that
+ turns out to be the case, then the old infection incident is retained
+ but converted into a _perpetuated_ infection (`P`/`𝒫`);
+   - a new infection incident is introduced unless so doing would
+ result in a potential (but not activated / conditioned) removal (`R`/`ℛ`)
+ being activated.
+ If that
+ turns out to be the case, then the new infection incident is not introduced.
+ 
+We will then need to address two issues. _Firstly_, is there a convenient way of organizing 
+the calculations required for making the decisions in item 5?
+_Secondly_, is this algorithmic time evaluation monotonic in some useful sense
+that allows us to carry out a CFTP simulation?

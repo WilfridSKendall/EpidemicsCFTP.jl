@@ -444,20 +444,22 @@ infections = sort(union(Vector{A}[[I(t, rand(DiscreteUniform(1, k-1)), k)
     lt=isearlier)
 Innovation(n, infections, removals)
 ```
+
+::: {.callout-note}
+# Efficiency possibility
+Try to make good use of `zip` as below.
+:::
+
 Now add in conditioned removals derived from the set we have used before, but with time lines chosen uniformly
 at random from the range `1` to `population`.
 ```{julia}
-cremovals = C[alter(z, rand(DiscreteUniform(1, population)) for z in innovation.cremovals]
+cremovals = C[alter(x...) 
+    for x in zip(innovation.cremovals, 
+                rand(DiscreteUniform(1, population), length(innovation.cremovals)))]
 new_innovation = Innovation(n, infections, removals, cremovals)
 println(innovation)
 println(new_innovation)
 ```
-
-::: {.callout-note}
-# Efficiency possibility
-Note that we could make this more efficient by zipping `innovation.cremovals`
-with `rand(DiscreteUniform(1, population), length(innovation.cremovals))
-:::
 
 We will then need to address two issues. _Firstly_, we need a convenient way of organizing 
 the calculations required for making the decisions in item 5;

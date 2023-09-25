@@ -164,7 +164,7 @@ EmployedRemoval
 ## Associated methods
 
 ### Display methods
-These overload `show` (to provide compact displays)
+These definitions overload `show` from `Base`
 ```@docs
 show(::IO, ::AbstractRemoval)
 show(::IO, ::AbstractInfection)

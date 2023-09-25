@@ -7,10 +7,11 @@ loc     = dirname(dirname(pathof(EpidemicsCFTP)))
 version = "$(read(Cmd(`git describe --tags`, dir=loc), String)[1:end-1])"
 branch  = "$(read(Cmd(`git branch --show-current`, dir=loc), String)[1:end-1])"
 
-# Other modules
-# -------------
+# Imports
+# -------
 # The `Formatting` module is required in order to define `show` methods for the various types.
 using Formatting
+
 
 # Exports
 # =======

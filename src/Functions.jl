@@ -428,4 +428,3 @@ Printing a `BadIncident` exception.
 function Base.show(io::IO, e::BadIncident)
     printfmt(io, "The (conditioned) evolution misused $(e.incident)")
 end
-

@@ -103,6 +103,8 @@ end ;
 #| include: false
 using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames
 
+# import PrettyPrint: pprint
+
 theme = create_theme(load_theme("config/theme.yml"))
 
 gadfly_theme = Theme(
@@ -402,10 +404,10 @@ subject to conditioning
 on observed (conditioned) removals.
 A single step of algorithmic time evolution can be broken down into a number of sub-steps:
 
-1. Sample a new `Innovation` structure `new_evolution`;
+1. Sample a new `Innovation` structure `new_innovation` with fixed times for the conditional removals;
 2. Remove all unconditioned removals
 (those removals not activated, denoted by `R`/`ℛ`);
-3. Insert precisely those removals from the `new_evolution` 
+3. Insert precisely those removals from the `new_innovation` 
 structure which will not be activated
 (equivalently, which do not lie in the infectivity zone);
 4. Re-sample proposed time lines for each of the conditioned removals
@@ -413,7 +415,7 @@ structure which will not be activated
 accepting proposals for which the relevant conditioned removal 
 is still in the infectivity zone; 
 5. Now work from right to left, deciding for each old infection incident
-whether it is to be removed, and for each new infection incident from `new_evolution`
+whether it is to be removed, and for each new infection incident from `new_innovation`
 whether it is to be introduced:
    - an old infection incident is removed unless so doing 
  would result in a conditioned removal (`C`/`𝒞`) _not_ being removed. 
@@ -426,6 +428,37 @@ whether it is to be introduced:
  If that
  turns out to be the case, then the new infection incident is not introduced.
  
+First we need to work out a simulation of the `new_innovation`.
+Begin with the case where we don't distinguish conditioned removals.
+```{julia}
+import Distributions: Poisson, DiscreteUniform, Uniform
+α = 0.2
+β = 1
+n = innovation.population
+removals = sort(union([R[R(t, k) 
+    for t in rand(Uniform(0, duration), rand(Poisson(β * duration)))] 
+    for k in 1:n]...), lt=isearlier)
+infections = sort(union(Vector{A}[[I(t, rand(DiscreteUniform(1, k-1)), k)
+        for t in rand(Uniform(0, duration), rand(Poisson((k-1) * (n - k + 1) * α * duration)))] 
+        for k in 2:n]...),
+    lt=isearlier)
+Innovation(n, infections, removals)
+```
+Now add in conditioned removals derived from the set we have used before, but with time lines chosen uniformly
+at random from the range `1` to `population`.
+```{julia}
+cremovals = C[alter(z, rand(DiscreteUniform(1, population)) for z in innovation.cremovals]
+new_innovation = Innovation(n, infections, removals, cremovals)
+println(innovation)
+println(new_innovation)
+```
+
+::: {.callout-note}
+# Efficiency possibility
+Note that we could make this more efficient by zipping `innovation.cremovals`
+with `rand(DiscreteUniform(1, population), length(innovation.cremovals))
+:::
+
 We will then need to address two issues. _Firstly_, we need a convenient way of organizing 
 the calculations required for making the decisions in item 5;
 _Secondly_, we need to show that the algorithmic time evolution is monotonic in some useful sense

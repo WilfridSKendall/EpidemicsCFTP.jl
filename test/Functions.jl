@@ -28,15 +28,16 @@
     @test  isearlier(Removal(0.10, 2),      MarkerRemovalB(0.5, 3))
 end
 
-## Testing `resample`
+## Testing `alter`
 # -------------------
-@testset "EpidemicsCFTP: resample      " begin
+@testset "EpidemicsCFTP: alter         " begin
 crem = CRemoval(0.15, 1)
-@test_throws ArgumentError   resample(crem, -100)
-@test_throws MethodError     resample(crem,  100.5) # No signature for non-integer second argument!
-@test_throws MethodError     resample(crem, -100.5) # No signature for non-integer second argument!
+@test alter(crem, 100) == CRemoval(0.15, 100)
+@test_throws ArgumentError   alter(crem, -100)
+@test_throws MethodError     alter(crem,  100.5) # No signature for non-integer second argument!
+@test_throws MethodError     alter(crem, -100.5) # No signature for non-integer second argument!
 end
-# LATER this should use seeded rng to test for valid resampling.
+
 
 
 # =================================

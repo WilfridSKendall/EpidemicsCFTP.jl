@@ -163,18 +163,6 @@ EmployedRemoval
 
 ## Associated methods
 
-### Display methods
-These definitions overload `show` from `Base`
-```@docs
-show(::IO, ::AbstractRemoval)
-show(::IO, ::AbstractInfection)
-show(::IO, ::AbstractMarker)
-show(::IO, ::Innovation)
-show(::IO, ::SIR)
-show(::IO, ::AbstractEvolution)
-show(::IO, ::BadIncident)
-```
-
 ### Comparison method
 A partial order is provided by `isearlier`, based on time `t` of occurrence of the relevant 
 instances of
@@ -186,7 +174,7 @@ isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 ### Conversion methods
 A couple of methods concern conversion of one incident into another, possibly of a different type.
 ```@docs
-resample
+alter
 perpetuate
 ```
 
@@ -200,6 +188,18 @@ is_removeable
 is_same_config
 update
 evolution
+```
+
+### Display methods
+These definitions overload `show` from `Base`
+```@docs
+show(::IO, ::AbstractRemoval)
+show(::IO, ::AbstractInfection)
+show(::IO, ::AbstractMarker)
+show(::IO, ::Innovation)
+show(::IO, ::SIR)
+show(::IO, ::AbstractEvolution)
+show(::IO, ::BadIncident)
 ```
 
 # Index 

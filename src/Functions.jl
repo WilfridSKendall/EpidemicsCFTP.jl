@@ -19,31 +19,31 @@ function isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)
   inc1.t < inc2.t
 end
 
-## Re-sampling `CRemoval` mark
+## Altering `CRemoval` timeline
 """
-    resample(crem::CRemoval, population::Integer)::CRemoval
+    alter(crem::CRemoval, timeline::Integer)::CRemoval
 
-Produce a new `CRemoval`: same time `t` but re-sampling
-the mark `target` of `crem::CRemoval` from the range `1:population`.
+Produce a new `CRemoval`: same time `t` but changing
+the mark `target` of `crem::CRemoval` to a positive `timeline`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> using Random
-
-julia> Random.seed!(1) ;
-
 julia> crem = CRemoval(0.15, 4)
 𝒞₀.₁₅⁴
 
-julia> resample(crem, 20)
+julia> alter(crem, 2)
 𝒞₀.₁₅²
 
 julia> crem
 𝒞₀.₁₅⁴
 ```
 """
-function resample(crem::CRemoval, population::Integer)::CRemoval
-    CRemoval(crem.t, rand(1:population))
+function alter(crem::CRemoval, new_timeline::Integer)::CRemoval
+    if  0 < new_timeline
+        CRemoval(crem.t, new_timeline)
+    else
+        throw(ArgumentError("cannot give $crem a non-positive new timeline $new_timeline"))
+    end
 end
 
 ## Converting `Infection` to `PInfection`

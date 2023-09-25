@@ -56,7 +56,7 @@ export evolution
 
 export isearlier
 
-export resample
+export alter
 export perpetuate
 
 # Included files

@@ -442,18 +442,18 @@ subject to conditioning
 on observed (conditioned) removals.
 A single step of algorithmic time evolution can be broken down into a number of sub-steps:
 
-1. Sample a new `Innovation` structure `new_innovation` with fixed times for the conditional removals;
+1. Sample a new `Innovation` structure with fixed times for the conditional removals;
 2. Remove all unconditioned removals
 (those removals not activated, denoted by `R`/`ℛ`);
-3. Insert precisely those removals from the `new_innovation` 
+3. Insert precisely those removals from the new `Innovation` 
 structure which will not be activated
 (equivalently, which do not lie in the infectivity zone);
 4. Re-sample proposed time lines for each of the conditioned removals
 (denoted by `C`/`𝒞`),
 accepting proposals for which the relevant conditioned removal 
 is still in the infectivity zone; 
-5. Now work from right to left, deciding for each old infection incident
-whether it is to be removed, and for each new infection incident from `new_innovation`
+5. Now work from right to left, deciding for each old infection incident from the new `Innovation`
+whether it is to be removed, and for each new infection incident from the new `Innovation`
 whether it is to be introduced:
    - an old infection incident is removed unless so doing 
  would result in a conditioned removal (`C`/`𝒞`) _not_ being removed. 
@@ -473,12 +473,12 @@ _Secondly_, we will need to show that the algorithmic time evolution is monotoni
 that allows us to carry out a CFTP simulation,
 
 ## Sample a new `Innovation` structure
-First we need to work out a simulation of `new_innovation`, a new `Innovation` structure.
-We should distinguish between the cases where conditioned removals are present and where they are not.
+First we need to work out a function to simulate a new `Innovation` structure.
+We distinguish between the cases where conditioned removals are present and where they are not.
 
 ::: {.callout-note}
 # Future package modification
-Eventually move `rand()` to the `EpidemicsUtilities` module, together with imports from 
+Eventually move `generate_innovation()` to the `EpidemicsUtilities` module, together with imports from 
 [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/).
 ```{julia}
 import Distributions: Poisson, DiscreteUniform, Uniform
@@ -505,7 +505,8 @@ end ;
 
 ::: {.callout-warning}
 # Later work to be done:
-1. The code for `generate_innovation` should be adapted to take account of "Create New Samplers and Distributions"
+1. The code and name for the function `generate_innovation` 
+should be adapted to take account of the section on "Create New Samplers and Distributions"
 from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/).
 2. Conduct simulation study to verify the rates in `generate_innovation` are correct.
 :::
@@ -518,13 +519,92 @@ println("\ninnovation")
 println(prettyrepr(innovation)) ;
 
 
-iv1 = generate_innovation(innovation, duration, α=0.2, β=0.1)
-println("\niv1")
-println(prettyrepr(iv1)) ;
+innovation1 = generate_innovation(innovation, duration, α=0.2, β=0.2)
+println("\ninnovation1")
+println(prettyrepr(innovation1)) ;
 
 
-iv2 = generate_innovation(Innovation(population, iv1.infections, iv1.removals, C[]), 
-        duration, α=0.2, β=0.1)
+iv2 = generate_innovation(Innovation(population, innovation1.infections, innovation1.removals, C[]), 
+        duration, α=0.2, β=0.2)
 println("\niv2")
 println(prettyrepr(iv2)) ;
+```
+
+## Remove all unconditioned removals from initial `Evolution`
+We refer to the plot of @fig-activated. We remove all unactivated removals, 
+and
+then we obtain a modification, @fig-old-removals-gone, of @fig-activated.
+```{julia}
+#| echo: false
+#| label: fig-old-removals-gone
+#| fig-cap: "This is @fig-activated, but with all non-activated removals taken away, \
+#|           while conditioned removals are retained."
+
+fig6a = deepcopy(fig3a)
+
+innovation0 = Innovation(population, innovation.infections, R[], innovation.cremovals)
+
+push!(fig6a,
+    Guide.annotation(compose(context(),
+    EpidemicsUtilities.draw_elements(innovation0, theme=theme))),
+    )
+
+evolution0 = Evolution(initial, innovation0)
+
+push!(fig6a,
+    Guide.annotation(compose(context(),
+    EpidemicsUtilities.draw_activated_elements(initial, evolution0.history, theme=theme)))
+    )
+    
+fig6 = deepcopy(fig6a)
+push!(fig6, 
+    Guide.title("The epidemic as before, deleting all non-activated removals")
+    )
+    
+depict("old-removals-gone", fig6)
+```
+
+::: {.callout-note}
+# A slightly tougher test
+Generate @fig-old-removals-gone from `innovation0` by first principles, and check the same picture is obtained!
+:::
+
+## Insertion of non-activated removals from new innovation.
+We need to insert removals from the new innovation `innovation1` which will not be activated by the old epidemic structure. To do this we need to extract infection and removal times for each time line. Note we need to insert
+zero times for the infection times to correspond to the initial state!
+
+::: {.callout-warning}
+# Need to improve coding
+The following assumes all time lines are infected and then removed!
+Code needs adaptation to deal with case when this is not completely true.
+:::
+
+```{julia}
+removal_times = sort([z.t for z in evolution0.history if typeof(z) <: AbstractRemoval])
+infection_times = sort([z.t for z in evolution0.history if typeof(z) <: AbstractInfection])
+prepend!(infection_times, repeat([0.0], initial.i))
+infectious_interval = collect(zip(infection_times, removal_times))
+```
+
+```{julia}
+inactivated_removals = [z for z in innovation1.removals 
+        if !(infectious_interval[z.target][1] < z.t < infectious_interval[z.target][2])]
+```
+
+```{julia}
+#| echo: false
+#| label: fig-inactive-removals
+#| fig-cap: "This is @fig-old-removals-gone, but with non-activated removals added \
+#|           from `innovation1`."
+fig7a = deepcopy(fig6a)
+push!(fig7a,
+    Guide.annotation(compose(context(),
+    EpidemicsUtilities.draw_incident(inactivated_removals, theme=theme)))
+)
+fig7 = deepcopy(fig7a)
+push!(fig7,
+    Guide.title("The epidemic with new non-activated removals added")
+    )
+    
+depict("inactive-removals", fig7)
 ```

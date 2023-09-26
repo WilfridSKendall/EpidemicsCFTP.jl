@@ -467,48 +467,64 @@ whether it is to be introduced:
  turns out to be the case, then the new infection incident is not introduced.
  
 
-We will then need to address two issues. _Firstly_, we need a convenient way of organizing 
+We will then need to address two issues. _Firstly_, we will need a convenient way of organizing 
 the calculations required for making the decisions in item 5;
-_Secondly_, we need to show that the algorithmic time evolution is monotonic in some useful sense
+_Secondly_, we will need to show that the algorithmic time evolution is monotonic in some useful sense
 that allows us to carry out a CFTP simulation,
 
 ## Sample a new `Innovation` structure
 First we need to work out a simulation of `new_innovation`, a new `Innovation` structure.
-Begin with the case where we don't distinguish conditioned removals.
-```{julia}
-import Distributions: Poisson, DiscreteUniform, Uniform
-α = 0.2
-β = 1
-n = innovation.population
-removals = sort(union([R[R(t, k) 
-    for t in rand(Uniform(0, duration), rand(Poisson(β * duration)))] 
-    for k in 1:n]...), lt=isearlier)
-infections = sort(union(Vector{A}[[I(t, rand(DiscreteUniform(1, k-1)), k)
-        for t in rand(Uniform(0, duration), rand(Poisson((k-1) * (n - k + 1) * α * duration)))] 
-        for k in 2:n]...),
-    lt=isearlier)
-new_innovation = Innovation(n, infections, removals)
-println(prettyrepr(new_innovation));
-
-new_innovation
-```
-::: {.callout-warning}
-Need to check rates for this simulation!
-:::
-
-
-Now add in conditioned removals derived from the set we have used before, but with time lines chosen uniformly
-at random from the range `1` to `population`.
+We should distinguish between the cases where conditioned removals are present and where they are not.
 
 ::: {.callout-note}
-# Efficiency possibility
-Try to make good use of `zip` as below.
-:::
+# Future package modification
+Eventually move `rand()` to the `EpidemicsUtilities` module, together with imports from 
+[`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/).
 ```{julia}
-cremovals = C[alter(x...) 
-    for x in zip(innovation.cremovals, 
-                rand(DiscreteUniform(1, population), length(innovation.cremovals)))]
-new_innovation = Innovation(n, infections, removals, cremovals)
-println(prettyrepr(innovation))
-println(prettyrepr(new_innovation))
+import Distributions: Poisson, DiscreteUniform, Uniform
+function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
+    n = iv.population
+    removals = union([R[R(t, k) 
+        for t in rand(Uniform(0, duration), rand(Poisson(β * duration)))] 
+        for k in 1:n]...)
+    infections = union(Vector{A}[[I(t, rand(DiscreteUniform(1, k-1)), k)
+        for t in rand(Uniform(0, duration), 
+            rand(Poisson((k-1) * (n - k + 1) * α * duration)))] 
+        for k in 2:n]...)
+    if isempty(iv.cremovals)
+        return Innovation(n, infections, removals)
+    else
+        cremovals = C[alter(x...) 
+            for x in zip(iv.cremovals, 
+                rand(DiscreteUniform(1, population), length(iv.cremovals)))]
+        return Innovation(n, infections, removals, cremovals)
+    end
+end ;
+```
+:::
+
+::: {.callout-warning}
+# Later work to be done:
+1. The code for `generate_innovation` should be adapted to take account of "Create New Samplers and Distributions"
+from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/).
+2. Conduct simulation study to verify the rates in `generate_innovation` are correct.
+:::
+
+Here we demonstrate this in action, first by producing a new innovation with _no_ conditioned removals,
+then by producing a new innovation for which the conditioned removals are obtained by altering the
+time lines for the conditioned removals of the template `Innovation`.
+```{julia}
+println("\ninnovation")
+println(prettyrepr(innovation)) ;
+
+
+iv1 = generate_innovation(innovation, duration, α=0.2, β=0.1)
+println("\niv1")
+println(prettyrepr(iv1)) ;
+
+
+iv2 = generate_innovation(Innovation(population, iv1.infections, iv1.removals, C[]), 
+        duration, α=0.2, β=0.1)
+println("\niv2")
+println(prettyrepr(iv2)) ;
 ```

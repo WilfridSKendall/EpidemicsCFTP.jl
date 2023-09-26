@@ -58,8 +58,6 @@ Markdown.parse("""
 """)
 ```
 :::
-
-
 # Introduction to the \(\SIR\) epidemic
 The \(\SIR\) epidemic in a population of fixed size runs under the following stochastic dynamics:
 
@@ -120,6 +118,38 @@ gadfly_theme = Theme(
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
+::: {.callout-note}
+# Future package modification
+Move this `prettyrepr` functionunction for prettyprinting an `Innovation`
+to `EpidemicsCFTP`:
+```{julia}
+"""
+Return a string corresponding to a representation of an `Innovation`,
+but employing an approximate line-splitting algorithm.
+"""
+function prettyrepr(iv::Innovation; width=140, tab="   ")
+  sl, sl_new = split(repr(iv), '\n'), []
+  for line in sl
+    locations = findall(", ", line)
+    if length(locations) == 0
+      push!(sl_new, line)
+    else
+      loc = 1
+      for (c0, c1) in locations
+        if c0 - loc ≥ width
+          push!(sl_new, loc == 1 ? line[loc:c0] : tab * line[loc:c0])
+          loc = c1
+        end
+      end
+      push!(sl_new, loc == 1 ? line[loc:end] : tab * line[loc:end])
+    end
+  end
+  return join(sl_new, '\n')
+end ;
+```
+:::
+
+
 # Structure of potential infections and removals
 Here is an example of a
 structure recording times of potential infections (`I`),
@@ -144,12 +174,8 @@ Note that the incidents are printed in Julia using script letters
 (`I`/`ℐ`, `P`/`𝒫`, `R`/`ℛ`, `C`/`𝒞`):
 ```{julia}
 #| echo: false
-innovation
+println(prettyrepr(innovation))
 ```
-::: {.callout-note}
-# Future package modification
-Arrange prettyprinting for `Innovation`.
-:::
 
 # Constructing the epidemic
 An epidemic can be constructed using a specific `initial` state
@@ -162,7 +188,18 @@ of the `Evolution` type, defined using `initial`
 together with the potential incidents comprising `Innovations`. 
 The function `table_trajectories1` usefully
 returns the epidemic trajectory as a data frame.
+
+
+::: {.callout-note}
+# Future package modification
+Eventually move `table_trajectories1` 
+to the `EpidemicsUtilities` module.
 ```{julia}
+"""
+Derive and return a DataFrame (column headings time `t`, `susceptibles`, `infectives`,
+`removals`, and `empty` and `population`, given duration, initial state and trajectory
+of an S-I-R epidemic.
+"""
 function table_trajectories1(duration, initial, trajectory)
     t = [state.t for state in trajectory]
     s = [state.s for state in trajectory]
@@ -182,10 +219,6 @@ function table_trajectories1(duration, initial, trajectory)
     return flow
 end ;
 ```
-::: {.callout-note}
-# Future package modification
-Eventually move `table_trajectories1` 
-to the `EpidemicsUtilities` module.
 :::
 
 Here is the data frame corresponding to the epidemic trajectory.
@@ -294,17 +327,22 @@ We create a lagged data frame and blend this with the original data frame.
 
 ::: {.callout-note}
 # Future package modification
-Eventually move `table_trajectories2` 
-to the `EpidemicsUtilities` module.
-:::
+Eventually move `table_trajectories2` to the `EpidemicsUtilities` module.
 ```{julia}
-function table_trajectories2(flow)
-    flowlag = deepcopy(flow)
-    flowlag.t = circshift(flow.t, (-1)) .- theme.ϵ
-    flowlag.t[end] = flowlag.t[end-1]
-    return sort!(append!(flow, flowlag))
+"""
+Derive and return an augmented `DataFrame` (column headings time `t`, `susceptibles`, 
+`infectives`, `removals`, and `empty` and `population`, given `DataFrame` produced 
+by `table_trajectories1`. The augmented `DataFrame` allows us to compute and plot the 
+regions determined by the epidemic trajectory using `Gadfly` `ribbon` plotting.
+"""
+function table_trajectories2(df)
+    df_lag = deepcopy(df)
+    df_lag.t = circshift(df.t, (-1)) .- theme.ϵ
+    df_lag.t[end] = df_lag.t[end-1]
+    return sort!(append!(df, df_lag))
 end ;
 ```
+:::
 
 Here is the resulting data-frame.
 ```{julia}
@@ -428,7 +466,14 @@ whether it is to be introduced:
  If that
  turns out to be the case, then the new infection incident is not introduced.
  
-First we need to work out a simulation of the `new_innovation`.
+
+We will then need to address two issues. _Firstly_, we need a convenient way of organizing 
+the calculations required for making the decisions in item 5;
+_Secondly_, we need to show that the algorithmic time evolution is monotonic in some useful sense
+that allows us to carry out a CFTP simulation,
+
+## Sample a new `Innovation` structure
+First we need to work out a simulation of `new_innovation`, a new `Innovation` structure.
 Begin with the case where we don't distinguish conditioned removals.
 ```{julia}
 import Distributions: Poisson, DiscreteUniform, Uniform
@@ -442,26 +487,28 @@ infections = sort(union(Vector{A}[[I(t, rand(DiscreteUniform(1, k-1)), k)
         for t in rand(Uniform(0, duration), rand(Poisson((k-1) * (n - k + 1) * α * duration)))] 
         for k in 2:n]...),
     lt=isearlier)
-Innovation(n, infections, removals)
+new_innovation = Innovation(n, infections, removals)
+println(prettyrepr(new_innovation));
+
+new_innovation
 ```
+::: {.callout-warning}
+Need to check rates for this simulation!
+:::
+
+
+Now add in conditioned removals derived from the set we have used before, but with time lines chosen uniformly
+at random from the range `1` to `population`.
 
 ::: {.callout-note}
 # Efficiency possibility
 Try to make good use of `zip` as below.
 :::
-
-Now add in conditioned removals derived from the set we have used before, but with time lines chosen uniformly
-at random from the range `1` to `population`.
 ```{julia}
 cremovals = C[alter(x...) 
     for x in zip(innovation.cremovals, 
                 rand(DiscreteUniform(1, population), length(innovation.cremovals)))]
 new_innovation = Innovation(n, infections, removals, cremovals)
-println(innovation)
-println(new_innovation)
+println(prettyrepr(innovation))
+println(prettyrepr(new_innovation))
 ```
-
-We will then need to address two issues. _Firstly_, we need a convenient way of organizing 
-the calculations required for making the decisions in item 5;
-_Secondly_, we need to show that the algorithmic time evolution is monotonic in some useful sense
-that allows us to carry out a CFTP simulation,

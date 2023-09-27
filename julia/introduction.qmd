@@ -67,14 +67,16 @@ Infections \qquad \= \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\
 \emph{Removals:}   \> \(I \to I-1\,, R \to R+1\)  occur at rate \(\beta \, I\).     
 \end{tabbing}
 
-The structural parameters of epidemic duration and population size are given by `julia` constants
+The structural parameters of epidemic `duration` and `population` size are given by `julia` constants,
+as are the per-pair infection rate `α` and the per-individual rate of removal `β`.
 ```{julia}
 const duration = 2.0;
 const population = 5;
+const α, β = 0.2, 1.5;
 ```
 
 ```{julia}                                                                              
-#| echo: false                                                                          
+#| echo: false 
 const MAXPOP = 20                                                                       
 if population > MAXPOP                                                                  
     circlabels = ["[$i]" for i in 1:population]                                                                                         
@@ -103,6 +105,9 @@ using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames
 
 # import PrettyPrint: pprint
 
+import Random
+Random.seed!(1)
+
 theme = create_theme(load_theme("config/theme.yml"))
 
 gadfly_theme = Theme(
@@ -117,38 +122,6 @@ gadfly_theme = Theme(
 
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
-
-::: {.callout-note}
-# Future package modification
-Move this `prettyrepr` functionunction for prettyprinting an `Innovation`
-to `EpidemicsCFTP`:
-```{julia}
-"""
-Return a string corresponding to a representation of an `Innovation`,
-but employing an approximate line-splitting algorithm.
-"""
-function prettyrepr(iv::Innovation; width=140, tab="   ")
-  sl, sl_new = split(repr(iv), '\n'), []
-  for line in sl
-    locations = findall(", ", line)
-    if length(locations) == 0
-      push!(sl_new, line)
-    else
-      loc = 1
-      for (c0, c1) in locations
-        if c0 - loc ≥ width
-          push!(sl_new, loc == 1 ? line[loc:c0] : tab * line[loc:c0])
-          loc = c1
-        end
-      end
-      push!(sl_new, loc == 1 ? line[loc:end] : tab * line[loc:end])
-    end
-  end
-  return join(sl_new, '\n')
-end ;
-```
-:::
-
 
 # Structure of potential infections and removals
 Here is an example of a
@@ -478,7 +451,7 @@ We distinguish between the cases where conditioned removals are present and wher
 
 ::: {.callout-note}
 # Future package modification
-Eventually move `generate_innovation()` to the `EpidemicsUtilities` module, together with imports from 
+Eventually move `generate_innovation()` to the `EpidemicsCFTP` module, together with imports from 
 [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/).
 ```{julia}
 import Distributions: Poisson, DiscreteUniform, Uniform
@@ -518,14 +491,13 @@ time lines for the conditioned removals of the template `Innovation`.
 println("\ninnovation")
 println(prettyrepr(innovation)) ;
 
-
-innovation1 = generate_innovation(innovation, duration, α=0.2, β=0.2)
+innovation1 = generate_innovation(innovation, duration, α=α, β=β)
 println("\ninnovation1")
 println(prettyrepr(innovation1)) ;
 
 
 iv2 = generate_innovation(Innovation(population, innovation1.infections, innovation1.removals, C[]), 
-        duration, α=0.2, β=0.2)
+        duration, α=α, β=β)
 println("\niv2")
 println(prettyrepr(iv2)) ;
 ```
@@ -584,11 +556,13 @@ removal_times = sort([z.t for z in evolution0.history if typeof(z) <: AbstractRe
 infection_times = sort([z.t for z in evolution0.history if typeof(z) <: AbstractInfection])
 prepend!(infection_times, repeat([0.0], initial.i))
 infectious_interval = collect(zip(infection_times, removal_times))
+show(infectious_interval)
 ```
 
 ```{julia}
 inactivated_removals = [z for z in innovation1.removals 
         if !(infectious_interval[z.target][1] < z.t < infectious_interval[z.target][2])]
+show(inactivated_removals)
 ```
 
 ```{julia}

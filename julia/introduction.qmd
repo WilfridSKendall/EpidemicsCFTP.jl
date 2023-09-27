@@ -31,8 +31,6 @@ format:
 jupyter:    julia-1.9
 ---
 
-
-
 ```{julia}
 #| include: false
 #| tags: [parameters]
@@ -162,44 +160,12 @@ together with the potential incidents comprising `Innovations`.
 The function `table_trajectories1` usefully
 returns the epidemic trajectory as a data frame.
 
-
-::: {.callout-note}
-# Future package modification
-Eventually move `table_trajectories1` 
-to the `EpidemicsUtilities` module.
-```{julia}
-"""
-Derive and return a DataFrame (column headings time `t`, `susceptibles`, `infectives`,
-`removals`, and `empty` and `population`, given duration, initial state and trajectory
-of an S-I-R epidemic.
-"""
-function table_trajectories1(duration, initial, trajectory)
-    t = [state.t for state in trajectory]
-    s = [state.s for state in trajectory]
-    i = [state.i for state in trajectory]
-    r = [state.r for state in trajectory]
-    
-    push!(t, duration)
-    push!(s, s[end])
-    push!(i, i[end])
-    push!(r, r[end])
-
-    flow = DataFrame(t=t, susceptibles=s, infectives=i, removals=r)
-    flow[:, :population] .= population
-    flow[:, :empty] .= 0
-    flow[:, :epidemic] = flow.removals + flow.infectives
-   
-    return flow
-end ;
-```
-:::
-
 Here is the data frame corresponding to the epidemic trajectory.
 ```{julia}
 initial = SIR(0.0, 4, 1, 0)
 evolution = Evolution(initial, innovation)
 
-flow = table_trajectories1(duration, initial, evolution.trajectory)
+flow = table_trajectories1(duration, population, initial, evolution.trajectory)
 ```
 
 # Plotting the epidemic
@@ -297,29 +263,9 @@ which doubles the data-points by adding a point immediately prior
 to each transition.
 
 We create a lagged data frame and blend this with the original data frame.
-
-::: {.callout-note}
-# Future package modification
-Eventually move `table_trajectories2` to the `EpidemicsUtilities` module.
-```{julia}
-"""
-Derive and return an augmented `DataFrame` (column headings time `t`, `susceptibles`, 
-`infectives`, `removals`, and `empty` and `population`, given `DataFrame` produced 
-by `table_trajectories1`. The augmented `DataFrame` allows us to compute and plot the 
-regions determined by the epidemic trajectory using `Gadfly` `ribbon` plotting.
-"""
-function table_trajectories2(df)
-    df_lag = deepcopy(df)
-    df_lag.t = circshift(df.t, (-1)) .- theme.ϵ
-    df_lag.t[end] = df_lag.t[end-1]
-    return sort!(append!(df, df_lag))
-end ;
-```
-:::
-
 Here is the resulting data-frame.
 ```{julia}
-flow2 = table_trajectories2(flow)
+flow2 = table_trajectories2(flow, theme=theme)
 ```
 Now we can plot the actual zones of infectivity and removal (@fig-zones).
 Note that the zones are closed at their upper boundaries: the top edge of
@@ -357,7 +303,7 @@ see @fig-incidents.
 fig4a = deepcopy(fig3a)
 push!(fig4a,
     Guide.annotation(compose(context(),
-    EpidemicsUtilities.draw_elements(innovation, theme=theme))),
+    EpidemicsUtilities.draw_elements(innovation; theme=theme))),
     )
 
 fig4 = deepcopy(fig4a)

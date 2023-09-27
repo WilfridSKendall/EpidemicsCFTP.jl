@@ -370,6 +370,50 @@ function Base.show(io::IO, z::Innovation)
     end
 end
 
+
+
+"""
+Return a string corresponding 
+to a more readable representation of an `Innovation`,
+employing a heuristic line-splitting algorithm.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+population = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = repeat([Removal(0.1, 2), Removal(0.2, 3)],10) ;
+println(prettyrepr(Innovation(population, infections, removals, CRemoval[])))
+
+# output
+Innovation(3,
+  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
+  Removal[ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀²,
+    ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³,
+    ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³])
+```
+"""
+function prettyrepr(iv::Innovation; width::Int=140, tab::String="   ")
+  sl, sl_new = split(repr(iv), '\n'), []
+  for line in sl
+    locations = findall(", ", line)
+    if length(locations) == 0
+      push!(sl_new, line)
+    else
+      loc = 1
+      for (c0, c1) in locations
+        if c0 - loc ≥ width
+          push!(sl_new, loc == 1 ? line[loc:c0] : tab * line[loc:c0])
+          loc = c1
+        end
+      end
+      push!(sl_new, loc == 1 ? line[loc:end] : tab * line[loc:end])
+    end
+  end
+  return join(sl_new, '\n')
+end 
+
+
+
 """
 Implementation of `show` for `SIR` using subscript and 2 decimal places for time.
 

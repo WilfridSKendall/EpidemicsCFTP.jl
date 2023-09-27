@@ -51,13 +51,14 @@ export Evolution
 export CEvolution
 export SIR
 
-# export evolution_recurse! # Now in deprecated.jl, no longer compiled
 export evolution
 
 export isearlier
 
 export alter
 export perpetuate
+
+export prettyrepr
 
 # Included files
 # ==============

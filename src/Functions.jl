@@ -253,6 +253,37 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
     return trajectory, history
 end
 
+"""
+    generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
+
+Generates a random innovation, borrowing some structure from its first argument.
+
+# Later work to be done:
+1. The code and name for the function `generate_innovation` 
+should be adapted to take account of the section on "Create New Samplers and Distributions"
+from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/).
+2. Conduct simulation study to verify the rates in `generate_innovation` are correct.
+"""
+function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
+    n = iv.population
+    removals = union([Removal[Removal(t, k) 
+        for t in rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
+        for k in 1:n]...)
+    infections = union(Vector{AbstractInfection}[[
+                        Infection(t, rand(Distributions.DiscreteUniform(1, k-1)), k)
+                    for t in rand(Distributions.Uniform(0, duration), 
+                        rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
+                    for k in 2:n]...)
+    if isempty(iv.cremovals)
+        return Innovation(n, infections, removals)
+    else
+        cremovals = CRemoval[alter(x...) 
+            for x in zip(iv.cremovals, 
+                rand(Distributions.DiscreteUniform(1, n), length(iv.cremovals)))]
+        return Innovation(n, infections, removals, cremovals)
+    end
+end
+
 
 ## Compact printing
 

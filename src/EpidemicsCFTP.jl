@@ -11,7 +11,8 @@ branch  = "$(read(Cmd(`git branch --show-current`, dir=loc), String)[1:end-1])"
 # -------
 # The `Formatting` module is required in order to define `show` methods for the various types.
 using Formatting
-
+# Import `Distributions` module.
+import Distributions
 
 # Exports
 # =======
@@ -50,6 +51,8 @@ export Innovation
 export Evolution
 export CEvolution
 export SIR
+
+export generate_innovation
 
 export evolution
 

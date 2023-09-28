@@ -405,7 +405,7 @@ end
 
 """
 Return a string corresponding 
-to a more readable representation of an `Innovation`,
+to a more readable representation of an `AbstractEnvironment`,
 employing a heuristic line-splitting algorithm.
 
 ## Example
@@ -423,8 +423,8 @@ Innovation(3,
     ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³])
 ```
 """
-function prettyrepr(iv::Innovation; width::Int=140, tab::String="   ")
-  sl, sl_new = split(repr(iv), '\n'), []
+function prettyrepr(environ::AbstractEnvironment; width::Int=140, tab::String="   ")
+  sl, sl_new = split(repr(environ), '\n'), []
   for line in sl
     locations = findall(", ", line)
     if length(locations) == 0

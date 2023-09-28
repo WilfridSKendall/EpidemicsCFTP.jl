@@ -77,28 +77,57 @@ See also
 Load modules (`EpidemicsCFTP` and `EpidemicsUtilities` are both under development).
 
 ```{julia}
-using EpidemicsCFTP, EpidemicsUtilities, Compose
+using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose
 ```
 Load theme. (Use `theme-blank.yml` to test colours.)
 ```{julia}
 theme = create_theme(load_theme("config/theme.yml")) ;
+
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
+    grid_line_width=0mm,
+)
+
+set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 Basic simulation parameters are the `population` size 
 and the `duration` (assume epidemic simulation commences at time `0`).
 Note that (trivial) labelling issues arise if `population > MAXPOP=20`.
 ```{julia}
-const population = 5 ;
+const initial = SIR(0.0, 4, 1, 0) ;
+population = initial.n ;
 const duration   = 2 ;
 const MAXPOP  = 20 ;
-if population > MAXPOP
-  error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
-end ;
+if initial.n > MAXPOP                                                                  
+    circlabels = ["[$i]" for i in 1:initial.n]                                                                                         
+else                                                                                    
+    circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:initial.n]                                                           
+end                                                                                     
+function timelinelabels1(i) 
+    if round(i) > 0 && i ≤ initial.n
+        circlabels[round(Int, i)] 
+    else
+        "" 
+    end 
+end ;                                                                             
+function timelinelabels2(i) 
+    if i ≤ initial.n
+        string(trunc(Int, i)) 
+    else
+        "" 
+    end 
+end ;   
 ```
 
 ## Plot style choices
 Set up and establish graphics size and coordinates.
 ```{julia}
-set_default_graphic_size(6inch, 3.25inch) ;
+#set_default_graphic_size(6inch, 3.25inch) ;
 coordinates = UnitBox(0, population, duration, -population, 
                       leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch);
 ```
@@ -159,18 +188,42 @@ The epidemic simulation is
 computed using `Evolution`. 
 
 ```{julia}
-initial = SIR(0.0, 4, 1, 0)
 ev = Evolution(initial, innov)
-flow = table_trajectories(duration, initial, ev.trajectory) ;
+flow = table_trajectories1(duration, initial, ev.trajectory) ;
 ```
 
 ```{julia}
 #| echo: false
 #| label: fig-trajectories
-#| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
-#|           removals (grey short dashes)."  
+#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line), \
+#|           removals (brown dashed line)."  
 print(flow) ;
-plot_trajectories(flow; theme=theme)
+timelines = layer(flow, yintercept=1:initial.n,
+    Geom.hline(style=:dot, size=0.25mm),
+    style(default_color=theme.scaffold))
+ll0 = layer(flow, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))
+ll1 = layer(flow, x=:t, y=:infectives, Geom.step,
+    style(line_width=theme.trail,  default_color=theme.colour(I)))
+ll2 = layer(flow, x=:t, y=:removals, Geom.step,
+    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
+ll3 = layer(flow[flow.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
+    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
+fig0 = plot(timelines, 
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n+0.25),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    gadfly_theme
+    )
+fig1 = deepcopy(fig0)
+push!(fig1, ll0, ll3, ll2, ll1,
+    Guide.annotation(compose(context(),
+    text(1.2, 3.2, "Peak #1"),
+    text(1.6, 3.2, "Peak #2"),
+    fontsize(6pt))),
+    Scale.y_continuous(labels=timelinelabels2),
+    Guide.ylabel("Numbers of individuals"),
+    Guide.title("Epidemic curve with removals and susceptibles")
+)
 ```
 
 Now examine which of the potential incidents have been activated. 

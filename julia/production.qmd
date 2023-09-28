@@ -60,15 +60,47 @@ Markdown.parse("""
 # Set-up details and utilities
 Load required modules, load theme, and set simulation parameters.·
 ```{julia}
-using EpidemicsCFTP, EpidemicsUtilities, Compose
+using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose
 
 theme = create_theme(load_theme("config/theme.yml")) ;
 
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
+    grid_line_width=0mm,
+)
+
 const population = 5 ;
-const duration   = 2 ;
+const duration   = 15 ;
 const MAXPOP  = 20 ;
+initial1= SIR(0.0, 4, 1, 0)
+
+
 if population > MAXPOP
   error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
+end ;
+if initial1.n > MAXPOP                                                                  
+    circlabels = ["[$i]" for i in 1:initial1.n]                                                                                         
+else                                                                                    
+    circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:initial1.n]                                                           
+end                                                                                     
+function timelinelabels1(i) 
+    if round(i) > 0 && i ≤ initial1.n
+        circlabels[round(Int, i)] 
+    else
+        "" 
+    end 
+end ;                                                                             
+function timelinelabels2(i) 
+    if i ≤ initial1.n
+        string(trunc(Int, i)) 
+    else
+        "" 
+    end 
 end ;
 ```
 
@@ -78,7 +110,8 @@ end ;
 # Plot style choices
 Set up and establish graphics size and coordinates.
 ```{julia}
-set_default_graphic_size(6inch, 3.25inch) ;
+set_default_plot_size(theme.figwidth, theme.figheight)
+
 coordinates = UnitBox(0, population, duration, -population, 
                       leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
 ```
@@ -109,11 +142,9 @@ innov_figure1 = Innovation(duration1,
 ```
 
 ```{julia}
-initial1= SIR(0.0, 4, 1, 0)
 ev1 = Evolution(initial1, innov_figure1)
 
-# flow1 = table_trajectories(duration1, initial1, traj1) ;
-flow1 = table_trajectories(duration1, initial1, ev1.trajectory) ;
+flow1 = table_trajectories1(duration1, initial1, ev1.trajectory) ;
 print(flow1) ;
 ```
 
@@ -129,7 +160,7 @@ compose(context(units=coordinates1), create_nodes_view(duration1, innov_figure1;
 ```{julia}
 #| echo: false
 #| label: activated1
-#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. activated incidents have          \
+#| fig-cap: "@fig-nodes1 plus epidemic and removal curves. activated incidents have         \
 #|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
 #|           coloured orange/purple.                                                        \
 #|           This is a candidate for Figure 1a of @ConnorKendall-2023."
@@ -140,10 +171,32 @@ depict("draftfigure1a", compose(context(units=coordinates1), image))
 ```{julia}
 #| echo: false
 #| label: fig-trajectories1
-#| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
-#|           removals (grey short dashes).                                 \
-#|           This is a candidate for Figure 1b of @ConnorKendall-2023."   
-depict("draftfigure1b", plot_trajectories(flow1; theme=theme))
+#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line), \
+#|           removals (brown dashed line).                                                    \
+#|           This is a candidate for Figure 1b of @ConnorKendall-2023."  
+timelines = layer(flow1, yintercept=1:initial1.n,
+    Geom.hline(style=:dot, size=0.25mm),
+    style(default_color=theme.scaffold))
+ll0 = layer(flow1, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))
+ll1 = layer(flow1, x=:t, y=:infectives, Geom.step,
+    style(line_width=theme.trail,  default_color=theme.colour(I)))
+ll2 = layer(flow1, x=:t, y=:removals, Geom.step,
+    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
+ll3 = layer(flow1[flow1.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
+    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
+fig0 = plot(timelines, 
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial1.n+0.25),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    gadfly_theme
+    )
+fig1b = deepcopy(fig0)
+push!(fig1b, ll0, ll3, ll2, ll1,
+    Scale.y_continuous(labels=timelinelabels2),
+    Guide.ylabel("Numbers of individuals"),
+    Guide.title("Epidemic curve with removals and susceptibles")
+)
+depict("draftfigure1b", fig1b)
 ```
 
 \newpage
@@ -176,7 +229,7 @@ innov_figure3 = Innovation(duration3,
 initial3 = initial1
 ev3 = Evolution(initial3, innov_figure3)
 
-flow3 = table_trajectories(duration3, initial3, ev3.trajectory) ;
+flow3 = table_trajectories1(duration3, initial3, ev3.trajectory) ;
 print(flow3) ;
 ```
 
@@ -192,8 +245,8 @@ compose(context(units=coordinates3), create_nodes_view(duration3, innov_figure3;
 #| echo: false
 #| label: activated3
 #| fig-cap: "@fig-nodes3 plus epidemic and removal curves. activated incidents have          \
-#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are     \
-#|           coloured orange/purple.                                                        \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are      \
+#|           coloured orange/purple.                                                         \
 #|           This is a candidate for Figure 3a of @ConnorKendall-2023." 
 image = create_epidemic_view(duration3, innov_figure3, flow3, initial3, ev3.history; theme=theme)
 depict("draftfigure3a", compose(context(units=coordinates3), image))
@@ -202,10 +255,29 @@ depict("draftfigure3a", compose(context(units=coordinates3), image))
 ```{julia}
 #| echo: false
 #| label: fig-trajectories3
-#| fig-cap: "Trajectories of susceptibles, infectives (brown long dashes), \
-#|           removals (grey short dashes).                                 \
-#|           This is a candidate for Figure 3b of @ConnorKendall-2023."  
-depict("draftfigure3b", plot_trajectories(flow3; theme=theme))
+#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line), \
+#|           removals (brown dashed line).                                                    \
+#|           This is a candidate for Figure 3b of @ConnorKendall-2023." 
+ll0b = layer(flow3, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))
+ll1b = layer(flow3, x=:t, y=:infectives, Geom.step,
+    style(line_width=theme.trail,  default_color=theme.colour(I)))
+ll2b = layer(flow3, x=:t, y=:removals, Geom.step,
+    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
+ll3b = layer(flow3[flow3.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
+    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
+fig0b = plot(timelines, 
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial3.n+0.25),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    gadfly_theme
+    )
+fig3b = deepcopy(fig0b)
+push!(fig3b, ll0b, ll3b, ll2b, ll1b,
+    Scale.y_continuous(labels=timelinelabels2),
+    Guide.ylabel("Numbers of individuals"),
+    Guide.title("Epidemic curve with removals and susceptibles")
+)
+depict("draftfigure3b", fig3b)
 ```
 
 

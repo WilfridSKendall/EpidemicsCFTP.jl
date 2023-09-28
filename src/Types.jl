@@ -593,6 +593,9 @@ SIR₀.₁₀(1:2:3)
 
 julia> sir.n
 6
+
+julia> sir == SIR(0.1, 1, 2, 3, 6)
+true
 ```
 """
 struct SIR <: AbstractTimedOccurrence

@@ -52,9 +52,9 @@ export Evolution
 export CEvolution
 export SIR
 
-export generate_innovation
-
 export evolution
+
+export generate_innovation
 
 export isearlier
 

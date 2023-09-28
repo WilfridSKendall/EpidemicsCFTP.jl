@@ -96,4 +96,6 @@ end
     @test_throws DomainError SIR(0.0, 1,-2, 3)
     @test_throws DomainError SIR(0.0, 1, 2,-3)
     @test_throws DomainError SIR(0.0, 0, 0, 0)
+    sir = SIR(0.0, 1, 2, 3)
+    @test sir.n == sir.s + sir.i + sir.r
 end

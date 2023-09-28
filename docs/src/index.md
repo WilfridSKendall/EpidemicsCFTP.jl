@@ -188,6 +188,7 @@ is_removeable
 is_same_config
 update
 evolution
+generate_innovation
 ```
 
 ### Display methods

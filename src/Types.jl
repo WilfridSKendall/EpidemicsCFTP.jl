@@ -572,6 +572,7 @@ struct Innovation <: AbstractEnvironment
                         removals::Vector{Removal}) where T<:AbstractInfection
         Innovation(population, infections, removals, CRemoval[])
     end
+    
 end
 
 
@@ -580,9 +581,10 @@ end
     SIR(t::Real, s::Integer, i::Integer, r::Integer)
 
 This represents a state of an S-I-R epidemic (`s`, `i`, `r`)
-(all non-negative integers adding up to a positive integer
-which is the population size)
-at a specified time `t` (a real number).
+(all non-negative integers adding up to a positive integer `n`
+which is the population size, given by the computed field `population`)
+at a specified time `t` (a real number). Note that `n` can be computed
+at initialization of the state structure: just call `SIR(s,i,r)`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -595,8 +597,9 @@ struct SIR <: AbstractTimedOccurrence
     s::Int
     i::Int
     r::Int
+    n::Int
 
-    function SIR(t, s, i, r)
+    function SIR(t, s, i, r, n)
         noun = "SIR($t, $s, $i, $r)"
         if s < 0
             throw(DomainError(noun, "negative number $s of susceptibles"))
@@ -605,11 +608,19 @@ struct SIR <: AbstractTimedOccurrence
         elseif r < 0
             throw(DomainError(noun, "negative number $r of removals"))
         elseif s + i + r == 0
-            throw(DomainError(noun, "zero total population"))
+            throw(DomainError(noun, "zero total computed population"))
+        elseif s + i + r != n
+            throw(DomainError(noun, "population n=$n is not sum of s=$s, i=$i, r=$r"))
         else
-            new(t, s, i, r)
+            new(t, s, i, r, n)
         end
     end
+
+    function SIR(t, s, i, r)
+        n = s + i + r
+        SIR(t, s, i, r, n)
+    end
+
 end
 
 ## Structures capturing $SIR$ epidemics
@@ -710,6 +721,7 @@ struct Evolution <: AbstractEvolution
     history    ::Vector{AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
+        # Need to check population == sum of initiate.state entries
         population = innovation.population
         infections = innovation.infections
         removals   = innovation.removals
@@ -784,6 +796,7 @@ struct CEvolution <: AbstractEvolution
     history    ::Vector{AbstractIncident}
     
     function CEvolution(initial_state::SIR, innovation::Innovation)
+        # Need to check population == sum of initiate.state entries
         population = innovation.population
         infections = innovation.infections
         removals   = innovation.removals

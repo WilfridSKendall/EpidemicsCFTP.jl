@@ -588,8 +588,11 @@ at initialization of the state structure: just call `SIR(s,i,r)`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> SIR(0.1, 1, 2, 3)
+julia> sir = SIR(0.1, 1, 2, 3)
 SIR₀.₁₀(1:2:3)
+
+julia> sir.n
+6
 ```
 """
 struct SIR <: AbstractTimedOccurrence

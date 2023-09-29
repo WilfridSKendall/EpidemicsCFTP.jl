@@ -1,9 +1,19 @@
 # Julia notebooks. 
- 
+
 
 Run the notebooks using (for example)
 ```bash
-quarto render figures.qmd --to pdf --from=markdown+tex_math_single_backslash
+quarto render figures.qmd --to pdf
 ```
-Note the untidy `--from=markdown+tex_math_single_backslash` parameter,
-required to avoid use of the unsophisticated `$` and `$$` switches.
+
+Nice figures are produced in `image` subdirectory such as
+
+![](/home/wilfrid/ms/PerfectEpidemics/julia/image/processed-cremovals.png)
+
+Check key pictures have not changed from before using
+
+```bash
+make verify
+```
+
+(compare `VERIFY_*.png` against the image without the `VERIFY_` prefix!).

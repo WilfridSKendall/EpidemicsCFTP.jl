@@ -438,7 +438,7 @@ push!(fig6,
     Guide.title("The epidemic as before, deleting all non-activated removals")
     )
     
-depict("old-removals-gone", fig6)
+depict("introduction-old-removals-gone", fig6)
 ```
 
 ## Adding in inactive removals
@@ -498,7 +498,7 @@ push!(fig7a,
    
 fig7 = deepcopy(fig7a)
     
-depict("inactive-removals", fig7)
+depict("introduction-inactive-removals", fig7)
 ```
 
 ## Re-sampling using proposed time lines for conditioned removals
@@ -564,5 +564,5 @@ push!(fig8a,
    
 fig8 = deepcopy(fig8a)
     
-depict("processed-cremovals", fig8)
+depict("introduction-processed-cremovals", fig8)
 ```

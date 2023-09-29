@@ -65,7 +65,7 @@ using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames
 # import PrettyPrint: pprint
 
 import Random
-Random.seed!(1)
+Random.seed!(2)
 
 theme = create_theme(load_theme("config/theme.yml"))
 
@@ -470,7 +470,7 @@ show(inactivated_removals)
 to the structure of innovation `iv0` to form innovation `iv1`.
 ```{julia}
 iv1 = Innovation(initial.n, iv0.infections, inactivated_removals, iv0.cremovals)
-println(prettyrepr(iv0))
+println(prettyrepr(iv1))
 ```
 
 Here is the resulting evolution.
@@ -519,14 +519,49 @@ show(infectious_interval)
 
 Compute
 ```{julia}
-resultingcr = []
-for (oldcr, propcr) in zip(innovation.cremovals, new_innovation.cremovals)
-  k = propcr.target
-  if  infectious_interval[k][1] ≤ propcr.t ≤ infectious_interval[k][2]
-    push!(resultingcr, propcr)
-  else
-    push!(resultingcr, oldcr)
-  end
+t0 = [tt[1] for tt in infectious_interval]
+t1 = [tt[2] for tt in infectious_interval]
+
+function accept_reject(oldcr, propcr; t0=t0, t1=t1)
+    t, k = propcr.t, propcr.target
+    return t0[k] ≤ t ≤ t1[k] ? propcr : oldcr
 end
+
+resultingcr = [accept_reject(oldcr, propcr) 
+    for (oldcr, propcr) in zip(innovation.cremovals, new_innovation.cremovals)]
 show(resultingcr)
+```
+
+Here is the new innovation
+```{julia}
+iv2 = Innovation(initial.n, iv1.infections, inactivated_removals, resultingcr)
+println(prettyrepr(iv2))
+```
+
+Here is the resulting evolution.
+```{julia}
+evolution2 = Evolution(initial, iv2)
+println(prettyrepr(evolution2))
+```
+
+```{julia}
+#| echo: false
+#| label: fig-processed-cremovals
+#| fig-cap: "This is @fig-inactive-removals, but with accept/reject applied \
+#|           to `cremovals`."
+fig8a = deepcopy(fig3a)
+
+push!(fig8a,
+    Guide.annotation(compose(context(),
+    EpidemicsUtilities.draw_elements(iv2, theme=theme))),
+    )
+
+push!(fig8a,
+    Guide.annotation(compose(context(),
+    EpidemicsUtilities.draw_activated_elements(initial, evolution2.history, theme=theme)))
+    )
+   
+fig8 = deepcopy(fig8a)
+    
+depict("processed-cremovals", fig8)
 ```

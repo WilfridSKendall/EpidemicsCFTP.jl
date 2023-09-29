@@ -548,7 +548,8 @@ println(prettyrepr(evolution2))
 #| echo: false
 #| label: fig-processed-cremovals
 #| fig-cap: "This is @fig-inactive-removals, but with accept/reject applied \
-#|           to `cremovals`."
+#|           to `cremovals`. Under the current seed (`2`) only the first    \
+#|           conditioned removal has changed its mark."
 fig8a = deepcopy(fig3a)
 
 push!(fig8a,

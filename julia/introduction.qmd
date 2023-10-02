@@ -40,6 +40,8 @@ source = "[current file not set]"
 ::: {.callout-note}
 # Versions of software used to create this document:
 ```{julia}
+#| label: tbl-versions
+#| tbl-cap: "Primary software used in this document"
 #| echo: false
 #| eval: true
 #| cache: false
@@ -158,7 +160,9 @@ of the `Evolution` type, defined using `initial`
 together with subsequent potential incidents. 
 
 Here is the data frame corresponding to the epidemic trajectory:
-```{julia}                                                                            
+```{julia}
+#| label: tbl-evolution
+#| tbl-cap: Table giving evolution of the epidemic
 #| echo: false 
 evolution = Evolution(initial, innovation)
 
@@ -166,7 +170,7 @@ flow = table_trajectories1(duration, initial, evolution.trajectory)
 ```
 
 # Plotting the epidemic
-Here are graphical visualizations of
+We now produce graphical visualizations of
 the epidemic.
 We condition on all activated removals being observed
 (hence denoted by `C`/`𝒞`
@@ -241,6 +245,7 @@ ll5 = layer(flow, x=:t, y=:population, Geom.line,
 fig2a = deepcopy(fig0)
 push!(fig2a, ll0, ll4, ll2b, ll5,
     Scale.y_continuous(labels=timelinelabels1),
+    Guide.yticks(ticks=collect(1:(initial.n))),
     Guide.ylabel("Time lines"),
 )
 fig2 = deepcopy(fig2a)
@@ -253,17 +258,15 @@ depict("introduction-boundary", fig2)
 ## Plotting infectious and removed zones
 Space-time zones of infection and removal
 use a blend of the original data frame with lagged data.
-```{julia}
-#| echo: false
-flow2 = table_trajectories2(flow, theme=theme)
-```
 The actual zones of infectivity and removal (@fig-zones)
 are closed at their upper boundaries: the top edge of
-the infectious region is infected, the top end of the removal region is removed.
+the infectious region is "infected", the top end of the removal region is "removed".
 ```{julia}
 #| echo: false
 #| label: fig-zones
 #| fig-cap: "Infectivity and removal zones."
+flow2 = table_trajectories2(flow, theme=theme) ;
+
 ll6 = layer(flow2, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
     alpha=[theme.opacity], style(default_color=theme.colour(I)))
 ll7 = layer(flow2, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
@@ -277,9 +280,16 @@ fig3 = push!(fig3,
 
 depict("introduction-zones", fig3)
 ```
+```{julia}
+#| label: tbl-evolution-enhanced
+#| tbl-cap: Enhanced table giving evolution of the epidemic
+#| echo: false
+flow2
+```
 
 ## Adding incidents to the plot
-We now add incidents corresponding to the underlying `innovation`:
+We now add incidents corresponding to the underlying `innovation`
+using the `EpidemicsUtilities` function `draw_elements`:
 see @fig-incidents.
 ```{julia}
 #| echo: false
@@ -345,7 +355,7 @@ depict("introduction-activated", fig5)
 ```
 
 # Evolving the epidemic in algorithmic time
-Now it is necessary to explain how to evolve
+We can now give a visual explanation of how to evolve
 an \(\SIR\) epidemic _in algorithmic time_,
 subject to conditioning
 on observed (conditioned) removals.

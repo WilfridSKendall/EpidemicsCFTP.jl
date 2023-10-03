@@ -60,7 +60,6 @@ Markdown.parse("""
 ```
 
 
-
 ```{julia}
 #| include: false
 using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames
@@ -304,7 +303,7 @@ see @fig-incidents.
 fig4a = deepcopy(fig3a)
 push!(fig4a,
     Guide.annotation(compose(context(),
-    EpidemicsUtilities.draw_elements(innovation; theme=theme))),
+        EpidemicsUtilities.draw_elements(innovation; theme=theme))),
     )
 
 fig4 = deepcopy(fig4a)
@@ -344,7 +343,7 @@ observed removals) that we have imposed.
 fig5a = deepcopy(fig4a)
 push!(fig5a,
     Guide.annotation(compose(context(),
-    EpidemicsUtilities.draw_activated_elements(initial, evolution.history, theme=theme)))
+        EpidemicsUtilities.draw_activated_elements(initial, evolution.history, theme=theme)))
     )
     
 fig5 = deepcopy(fig5a)

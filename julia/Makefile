@@ -7,7 +7,7 @@ QUARTO_OPTIONS :=  --csl=$(CSL)
 
 MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
-PRODUCTS       := figures.pdf production.pdf experiment.pdf introduction.pdf
+PRODUCTS       := production.pdf experiment.pdf introduction.pdf
 
 # ====================
 # Main targets

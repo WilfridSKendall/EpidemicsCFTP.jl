@@ -8,6 +8,8 @@ date:   today
 date-format: "D MMMM YYYY"
 papersize:  a4
 
+tbl-cap-location: top
+
 params:
   filename: "introduction.qmd"
 
@@ -37,11 +39,8 @@ jupyter:    julia-1.9
 source = "[current file not set]"
 ```
 
-::: {.callout-note}
-# Versions of software used to create this document:
+
 ```{julia}
-#| label: tbl-versions
-#| tbl-cap: "Primary software used in this document"
 #| echo: false
 #| eval: true
 #| cache: false
@@ -55,9 +54,11 @@ Markdown.parse("""
 | Module `EpidemicsUtilities` | version `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
 | Module `EpidemicsCFTP`      | version `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
 | Running under `julia`       | version `$VERSION`                      | ---                            |
+
+: Versions of software used to create this document
 """)
 ```
-:::
+
 
 
 ```{julia}
@@ -98,8 +99,8 @@ The structural parameters of epidemic duration and population size are given by
 as are the per-pair infection rate `α` and the per-individual rate of removal `β`.
 ```{julia}
 const duration = 2.0;
-const initial = SIR(0.0, 5, 1, 0);
 const α, β = 0.2, 1.5;
+const initial = SIR(0.0, 5, 1, 0);
 ```
 
 ```{julia}                                                                              

@@ -423,25 +423,28 @@ Innovation(3,
     ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³])
 ```
 """
-function prettyrepr(environ::AbstractEnvironment; width::Int=140, tab::String="   ")
-  sl, sl_new = split(repr(environ), '\n'), []
-  for line in sl
-    locations = findall(", ", line)
-    if length(locations) == 0
-      push!(sl_new, line)
-    else
-      loc = 1
-      for (c0, c1) in locations
-        if c0 - loc ≥ width
-          push!(sl_new, loc == 1 ? line[loc:c0] : tab * line[loc:c0])
-          loc = c1
+function prettyrepr(x::AbstractEnvironment; width::Int=80, tab::String=' '^4)
+    pieces, broken = split(repr(x), '\n'), []
+    for line in pieces
+        parts = split(line, ", ")
+        cumulative, clength, initial = [], 0, true
+        for bit in parts
+            clength = clength + length(bit)
+            if clength > width
+                addition = join(cumulative, ',') * ','
+                push!(broken, initial ? addition : tab * addition)
+                cumulative, clength, initial = [bit], length(bit), false
+            else
+                push!(cumulative, bit)
+            end
         end
-      end
-      push!(sl_new, loc == 1 ? line[loc:end] : tab * line[loc:end])
+        if length(cumulative) > 0
+            addition = join(cumulative, ',')
+            push!(broken, initial ? addition :  tab * addition)
+        end
     end
-  end
-  return join(sl_new, '\n')
-end 
+    return join(broken, '\n')
+end
 
 
 

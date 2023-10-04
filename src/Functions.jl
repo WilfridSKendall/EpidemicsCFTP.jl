@@ -417,13 +417,13 @@ println(prettyrepr(Innovation(population, infections, removals, CRemoval[])))
 
 # output
 Innovation(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
-  Removal[ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₁₀²,
-    ℛ₀.₁₀², ℛ₀.₁₀², ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³,
-    ℛ₀.₂₀³, ℛ₀.₂₀³, ℛ₀.₂₀³])
+  AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²],
+  Removal[ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,
+    ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,
+    ℛ₀.₂₀³,ℛ₀.₂₀³])
 ```
 """
-function prettyrepr(x::AbstractEnvironment; width::Int=80, tab::String=' '^4)
+function prettyrepr(x::AbstractEnvironment; width::Int=60, tab::String=' '^4)
     pieces, broken = split(repr(x), '\n'), []
     for line in pieces
         parts = split(line, ", ")

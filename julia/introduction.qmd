@@ -418,12 +418,6 @@ evolution0 = Evolution(initial, iv0)
 println(prettyrepr(evolution0))
 ```
 
-::: {.callout-tip}
-# Need to improve `prettyrepr` in `EpidemicsCFTP`
-The `SIR` line is not broken as it should be, probably because line-width calculations are wrong.
-:::
-
-
 to obtain a modification, @fig-old-removals-gone, of @fig-activated.
 ```{julia}
 #| echo: false
@@ -475,7 +469,7 @@ So now we must add the inactivate removals from `new_innovation`,
 ```{julia}
 inactivated_removals = [z for z in new_innovation.removals 
         if !(infectious_interval[z.target][1] < z.t < infectious_interval[z.target][2])]
-show(inactivated_removals)
+show(prettyrepr(inactivated_removals))
 ```
 to the structure of innovation `iv0` to form innovation `iv1`.
 ```{julia}

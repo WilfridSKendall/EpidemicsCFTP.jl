@@ -143,8 +143,7 @@ innovation = Innovation(initial.n,
         I(1.45, 4, 6), I(1.5, 3, 4),  I(1.6, 3, 5)  ],
     R[  R(0.3, 5), R(0.42, 3), R(0.7, 3), R(0.55, 3), R(0.95, 5), R(1.4, 2), R(1.55, 1),
         R(1.85, 2) ],
-    C[  C(1.3, 2), C(0.8, 1), C(1.7, 4), C(1.8, 4), C(1.92, 5) ]);
-println(prettyrepr(innovation))
+    C[  C(1.3, 2), C(0.8, 1), C(1.7, 4), C(1.8, 4), C(1.92, 5) ])
 ```
 Incidents are displayed using script letters corresponding to above abbreviations
 (`I`/`ℐ`, `P`/`𝒫`, `R`/`ℛ`, `C`/`𝒞`).
@@ -397,25 +396,22 @@ occurring at the same times (using `generate_innovation`) but using different ti
 then by producing a new innovation for which the conditioned removals are obtained by altering the
 time lines for the conditioned removals of the template `Innovation`.
 ```{julia}
-println(prettyrepr(innovation)) ;
+innovation
 ```
 
 ```{julia}
 new_innovation = generate_innovation(innovation, duration, α=α, β=β)
-println(prettyrepr(new_innovation)) ;
 ```
 
 ## Remove all inactive removals from initial `Evolution`
 We now remove all unactivated removals from `innovation` to produce `iv0`, 
 ```{julia}
 iv0 = Innovation(initial.n, innovation.infections, R[], innovation.cremovals)
-println(prettyrepr(iv0))
 ```
 and
 plot the corresponding evolution 
 ```{julia}
 evolution0 = Evolution(initial, iv0)
-println(prettyrepr(evolution0))
 ```
 
 to obtain a modification, @fig-old-removals-gone, of @fig-activated.
@@ -469,18 +465,15 @@ So now we must add the inactivate removals from `new_innovation`,
 ```{julia}
 inactivated_removals = [z for z in new_innovation.removals 
         if !(infectious_interval[z.target][1] < z.t < infectious_interval[z.target][2])]
-show(prettyrepr(inactivated_removals))
 ```
 to the structure of innovation `iv0` to form innovation `iv1`.
 ```{julia}
 iv1 = Innovation(initial.n, iv0.infections, inactivated_removals, iv0.cremovals)
-println(prettyrepr(iv1))
 ```
 
 Here is the resulting evolution.
 ```{julia}
 evolution1 = Evolution(initial, iv1)
-println(prettyrepr(evolution1))
 ```
 
 ```{julia}
@@ -539,13 +532,11 @@ show(resultingcr)
 Here is the new innovation
 ```{julia}
 iv2 = Innovation(initial.n, iv1.infections, inactivated_removals, resultingcr)
-println(prettyrepr(iv2))
 ```
 
 Here is the resulting evolution.
 ```{julia}
 evolution2 = Evolution(initial, iv2)
-println(prettyrepr(evolution2))
 ```
 
 ```{julia}

@@ -194,15 +194,10 @@ julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[Remov
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-3-element Vector{SIR}:
- SIR₀.₀₁(1:2:3)
- SIR₀.₅₀(1:1:4)
- SIR₀.₆₀(0:2:4)
+SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-2-element Vector{AbstractIncident}:
- ℛ₀.₅₀⁴
- ℐ₀.₆₀⁵⁻⁶
+AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 
 julia> evolution(initial_state, innovation, conditioned=true)
 ERROR: The (conditioned) evolution misused ℛ₀.₅₀⁴
@@ -212,15 +207,10 @@ julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [C
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-3-element Vector{SIR}:
- SIR₀.₀₁(1:2:3)
- SIR₀.₅₀(1:1:4)
- SIR₀.₆₀(0:2:4)
+SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-2-element Vector{AbstractIncident}:
- 𝒞₀.₅₀⁴
- ℐ₀.₆₀⁵⁻⁶
+AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
  
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 

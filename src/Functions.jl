@@ -404,9 +404,8 @@ end
 
 
 """
-Return a string corresponding 
-to a more readable representation of an `AbstractEnvironment`,
-employing a heuristic line-splitting algorithm.
+Implementation of `show` for `AbstractTimedOccurrence` with line-breaking.
+
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -499,6 +498,36 @@ function Base.show(io::IO, z::AbstractEvolution)
                                z.chronology, z.trajectory, z.history)
     end
 end
+
+"""
+Implementation of `show` for `AbstractTimedOccurrence` as three rows of lists of incidents
+-- or two rows if no `CRemoval`s -- together with further calculations. 
+"""
+
+function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
+    line, broken = repr(xv), []
+    parts = split(line, ", ")
+    cumulative, clength, initial = [], 0, true
+    for bit in parts
+        clength = clength + length(bit)
+        if clength > width
+            addition = join(cumulative, ',') * ','
+            push!(broken, initial ? addition : tab * addition)
+            cumulative, clength, initial = [bit], length(bit), false
+        else
+            push!(cumulative, bit)
+        end
+    end
+    if length(cumulative) > 0
+        addition = join(cumulative, ',')
+        push!(broken, initial ? addition :  tab * addition)
+    end
+    for section in broken
+        println(io, section)
+    end
+end
+
+
 
 """
 Printing a `BadIncident` exception.

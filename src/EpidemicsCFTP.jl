@@ -61,8 +61,6 @@ export isearlier
 export alter
 export perpetuate
 
-export prettyrepr
-
 # Included files
 # ==============
 # Include types defined in this package.

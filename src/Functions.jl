@@ -393,49 +393,6 @@ end
 
 
 
-"""
-Implementation of `show` for `AbstractTimedOccurrence` with line-breaking.
-
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = repeat([Removal(0.1, 2), Removal(0.2, 3)],10) ;
-println(prettyrepr(Innovation(population, infections, removals, CRemoval[])))
-
-# output
-Innovation(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²],
-  Removal[ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₁₀²,
-    ℛ₀.₁₀²,ℛ₀.₁₀²,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,ℛ₀.₂₀³,
-    ℛ₀.₂₀³,ℛ₀.₂₀³])
-```
-"""
-function prettyrepr(x::AbstractEnvironment; width::Int=60, tab::String=' '^4)
-    pieces, broken = split(repr(x), '\n'), []
-    for line in pieces
-        parts = split(line, ", ")
-        cumulative, clength, initial = [], 0, true
-        for bit in parts
-            clength = clength + length(bit)
-            if clength > width
-                addition = join(cumulative, ',') * ','
-                push!(broken, initial ? addition : tab * addition)
-                cumulative, clength, initial = [bit], length(bit), false
-            else
-                push!(cumulative, bit)
-            end
-        end
-        if length(cumulative) > 0
-            addition = join(cumulative, ',')
-            push!(broken, initial ? addition :  tab * addition)
-        end
-    end
-    return join(broken, '\n')
-end
-
-
 
 """
 Implementation of `show` for `SIR` using subscript and 2 decimal places for time.
@@ -490,8 +447,7 @@ function Base.show(io::IO, z::AbstractEvolution)
 end
 
 """
-Implementation of `show` for `AbstractTimedOccurrence` as three rows of lists of incidents
--- or two rows if no `CRemoval`s -- together with further calculations. 
+Implementation of `show` for vector of `AbstractTimedOccurrence` with line-breaking. 
 """
 
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence

@@ -335,6 +335,14 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractMarker)
 end
 
 """
+Vanilla implementation of `show` for `AbstractMarker`
+"""
+function Base.show(io::IO, z::AbstractMarker)
+    t = timespec(z.t)
+    print(io, "$(typeof(z))($(z.t), $(z.target))")
+end
+
+"""
     Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     
 Implementation of `show` for `AbstractRemoval`, using `MIME("text/plain")` as the

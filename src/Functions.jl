@@ -248,11 +248,12 @@ end
 
 Generates a random innovation, borrowing some structure from its first argument.
 
-# Later work to be done:
-1. The code and name for the function `generate_innovation` 
+# _Later work to be done:_
+1. _The code and name for the function `generate_innovation` 
 should be adapted to take account of the section on "Create New Samplers and Distributions"
-from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/).
-2. Conduct simulation study to verify the rates in `generate_innovation` are correct.
+from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/)._
+2. _Conduct a simulation study (in a separate `quarto` notebook) to verify 
+that the rates in `generate_innovation` are correct._
 """
 function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
     n = iv.population
@@ -414,12 +415,14 @@ Implementation of `show` for `Innovation` as three rows of lists of incidents
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.1, 2), Removal(0.2, 3)] ;
-Innovation(population, infections, removals, CRemoval[])
+julia> population = 3 
+3
+julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
+[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)] 
+[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
-# output
+julia> Innovation(population, infections, removals, CRemoval[])
 Innovation(3,
   [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
   [ℛ₀.₁₀²,ℛ₀.₂₀³]
@@ -455,9 +458,7 @@ Implementation of `show` for `SIR` using subscript and 2 decimal places for time
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-SIR(0.4, 1, 2, 3)
-
-# output
+julia> SIR(0.4, 1, 2, 3)
 SIR₀.₄₀(1:2:3)
 ```
 """
@@ -475,14 +476,21 @@ We illustrate this second version here.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.1, 2), Removal(0.2, 3)] ;
-initial    = SIR(0.0, 2,1,0) ;
-innovation = Innovation(population, infections, removals, CRemoval[]) ;
-Evolution(initial, innovation) 
+julia> initial    = SIR(0.0, 2,1,0)
+SIR₀.₀₀(2:1:0)
+julia> population = initial.n
+3
+julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
+[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)]
+[ℛ₀.₁₀²,ℛ₀.₂₀³]
+julia> innovation = Innovation(population, infections, removals, CRemoval[])
+Innovation(3,
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+)
 
-# output
+julia> Evolution(initial, innovation) 
 Evolution(3,
   [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
   [ℛ₀.₁₀²,ℛ₀.₂₀³]

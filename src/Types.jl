@@ -525,13 +525,15 @@ time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)] ;
-Innovation(population, infections, removals, cremovals)
-
-# output
+julia> population = 3
+3
+julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
+[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
+[ℛ₀.₂₀³,ℛ₀.₁₀²]
+julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
+[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+julia> Innovation(population, infections, removals, cremovals)
 Innovation(3,
   [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
   [ℛ₀.₁₀²,ℛ₀.₂₀³]
@@ -656,14 +658,14 @@ and computed `chronology`, `trajectory` and `history`.
 abstract type AbstractEvolution <: AbstractEnvironment end
 
 """
-    `BadIncident`
+    BadIncident
 
 An exception to report misuse of an incident.
 """
 abstract type BadIncident <: Exception end
         
 """
-    `MissedCRemoval`
+    MissedCRemoval
 
 This is an exception encountered when a `CRemoval` is missed by
 `evolution`.
@@ -687,7 +689,7 @@ struct MissedCRemoval <: BadIncident
 end
 
 """
-    `EmployedRemoval`
+    EmployedRemoval
 
 This is an exception encountered when a `Removal` is not missed by
 `evolution`.
@@ -712,15 +714,23 @@ and also computed fields `chronology`, `trajectory` and `history`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)] ;
-innov      = Innovation(population, infections, removals, cremovals) ;
-initial    = SIR(0.0, 2, 1, 0)
-Evolution(initial, innov)
-
-# output
+julia> initial    = SIR(0.0, 2, 1, 0)
+SIR₀.₀₀(2:1:0)
+julia> population = initial.n
+3
+julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
+[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
+[ℛ₀.₂₀³,ℛ₀.₁₀²]
+julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
+[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+julia> innov      = Innovation(population, infections, removals, cremovals)
+Innovation(3,
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+  [𝒞₀.₀₀¹,𝒞₀.₀₅²]
+)
+julia> Evolution(initial, innov)
 Evolution(3,
   [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
   [ℛ₀.₁₀²,ℛ₀.₂₀³]
@@ -768,18 +778,22 @@ and also computed fields `chronology`, `trajectory` and `history`.
 ## Example
 Three cases: straightforward, missing a conditioned removal, employing an (unconditioned) removal:
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> initial    = SIR(0.0, 2, 1, 0) ;
-
-julia> population = 3 ;
-
-julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-
-julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
-
-julia> cremovals  = [CRemoval(0.0, 1)] ;
-
-julia> innov      = Innovation(population, infections, removals, cremovals) ;
-
+julia> initial    = SIR(0.0, 2, 1, 0)
+SIR₀.₀₀(2:1:0)
+julia> population = initial.n
+3
+julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
+[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
+[ℛ₀.₂₀³,ℛ₀.₁₀²]
+julia> cremovals  = [CRemoval(0.0, 1)]
+[𝒞₀.₀₀¹]
+julia> innov      = Innovation(population, infections, removals, cremovals) 
+Innovation(3,
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+  [𝒞₀.₀₀¹]
+)
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
   [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]

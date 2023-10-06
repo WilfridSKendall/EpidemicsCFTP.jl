@@ -439,13 +439,11 @@ end
 Vanilla implementation of `show` for `Innovation`
 """
 function Base.show(io::IO, z::Innovation)
-    if isempty(z.cremovals)
-        printfmt(io, "{1}({2},\n  {3},\n  {4})",
-                    typeof(z), z.population, z.infections, z.removals)
-    else
-        printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5})",
-                    typeof(z), z.population, z.infections, z.removals, z.cremovals)
-    end
+    println(io, "$(typeof(z))($(z.population),")
+    print(io, "  " * sprint(show, MIME("text/plain"), z.infections))
+    print(io, "  " * sprint(show, MIME("text/plain"), z.removals))
+    isempty(z.cremovals) ? nothing : print(io, "  " * sprint(show, MIME("text/plain"), z.cremovals))
+    print(io, ")")
 end
 
 
@@ -492,24 +490,24 @@ Evolution(3,
   AbstractIncident[PInfection(0.5, 1, 2)])
 ```
 """
-function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
-    if isempty(z.cremovals)
-        printfmt(io, "{1}({2},\n  {3},\n  {4}\n  {5}\n  {6}\n  {7})",
-                    typeof(z), z.population, z.infections, z.removals, 
-                               z.chronology, z.trajectory, z.history)
-    else
-        printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5}\n  {6}\n  {7}\n  {8})",
-                    typeof(z), z.population, z.infections, z.removals, z.cremovals, 
-                               z.chronology, z.trajectory, z.history)
-    end
+function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution) 
+    println(io, "$(typeof(z))($(z.population),")
+    print(io, "  " * sprint(show, MIME("text/plain"), z.infections))
+    print(io, "  " * sprint(show, MIME("text/plain"), z.removals))
+    isempty(z.cremovals) ? nothing : print(io, "  " * sprint(show, MIME("text/plain"), z.cremovals))
+    print(io, "  " * sprint(show, MIME("text/plain"), z.chronology))
+    print(io, "  " * sprint(show, MIME("text/plain"), z.trajectory))
+    print(io, "  " * sprint(show, MIME("text/plain"), z.history))
+    print(io, ")")
 end
 
 """
 Implementation of `show` for vector of `AbstractTimedOccurrence` with line-breaking. 
 """
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
-    line, broken = repr(xv), []
-    parts = split(line, ", ")
+    parts = [sprint(show, MIME("text/plain"), a) for a in xv]
+    parts[1], parts[end] = "[" * parts[1], parts[end]*"]"
+    broken = []
     cumulative, clength, initial = [], 0, true
     for bit in parts
         clength = clength + length(bit)

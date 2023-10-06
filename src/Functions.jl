@@ -508,7 +508,8 @@ Implementation of `show` for vector of `AbstractTimedOccurrence` with line-break
 """
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
     parts = [sprint(show, MIME("text/plain"), a) for a in xv]
-    parts[1], parts[end] = "[" * parts[1], parts[end]*"]"
+    parts[1] = "[" * parts[1]
+    parts[end] = parts[end]*"]"
     broken = []
     cumulative, clength, initial = [], 0, true
     for bit in parts

@@ -301,6 +301,8 @@ end
 ### Actual display functions
 
 """
+    Base.show(io::IO, ::MIME"text/plain", z::AbstractMarker)
+
 Implementation of `show` for `AbstractMarker`, using subscripts and 2 decimal places for time `t`. DEPRECATED
 
 ## Example
@@ -333,6 +335,8 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractMarker)
 end
 
 """
+    Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
+    
 Implementation of `show` for `AbstractRemoval`, using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscript for the `target` field.
@@ -354,12 +358,17 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
 end
 
+"""
+Vanilla implementation of `show` for `AbstractRemoval`
+"""
 function Base.show(io::IO, z::AbstractRemoval)
     t = timespec(z.t)
     print(io, "$(typeof(z))($(z.t), $(z.target))")
 end
 
 """
+    Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
+    
 Implementation of `show` for `AbstractInfection`, using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscripts for the `target` and `infectee` fields.
@@ -381,13 +390,17 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
     printfmt(io, "{1}{2}{3}⁻{4}", z.kind, t, uppers(string(z.target)), uppers(string(z.infectee)))
 end
 
-
+"""
+Vanilla implementation of `show` for `AbstractInfection`
+"""
 function Base.show(io::IO, z::AbstractInfection)
     t = timespec(z.t)
     print(io, "$(typeof(z))($(z.t), $(z.target), $(z.infectee))")
 end
 
 """
+    Base.show(io::IO, ::MIME"text/plain", z::Innovation)
+    
 Implementation of `show` for `Innovation` as three rows of lists of incidents
 -- or two rows if no `CRemoval`s. We illustrate this second version here.
 
@@ -414,6 +427,9 @@ function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
     end
 end
 
+"""
+Vanilla implementation of `show` for `Innovation`
+"""
 function Base.show(io::IO, z::Innovation)
     if isempty(z.cremovals)
         printfmt(io, "{1}({2},\n  {3},\n  {4})",
@@ -426,6 +442,8 @@ end
 
 
 """
+    Base.show(io::IO, ::MIME"text/plain", z::SIR)
+    
 Implementation of `show` for `SIR` using subscript and 2 decimal places for time.
 
 ## Example
@@ -442,6 +460,8 @@ end
 
 
 """
+    Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
+    
 Implementation of `show` for `AbstractEvolution` as three rows of lists of incidents
 -- or two rows if no `CRemoval`s -- together with further calculations. 
 We illustrate this second version here.
@@ -479,7 +499,6 @@ end
 """
 Implementation of `show` for vector of `AbstractTimedOccurrence` with line-breaking. 
 """
-
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
     line, broken = repr(xv), []
     parts = split(line, ", ")
@@ -506,6 +525,8 @@ end
 
 
 """
+    Base.show(io::IO, ::MIME"text/plain", e::BadIncident)
+    
 Printing a `BadIncident` exception.
 Sub-types are: `EmployedRemoval` and `MissedCRemoval`, raised respectively when a 
 conditioned evolution uses a `Removal` which _is_ _not_ conditioned to appear in the trajectory,
@@ -514,6 +535,10 @@ or doesn't use a `CRemoval` which _is_ conditioned to appear in the trajectory.
 function Base.show(io::IO, ::MIME"text/plain", e::BadIncident)
     print(io, MIME("text/plain"), "$(typeof(e)): The (conditioned) evolution misused $(e.incident)")
 end
+
+"""
+Vanilla implementation of `show` for `BadIncident`
+"""
 function Base.show(io::IO, e::BadIncident)
     print(io, "[$(typeof(e))] The (conditioned) evolution misused $(e.incident)")
 end

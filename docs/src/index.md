@@ -194,12 +194,19 @@ generate_innovation
 ### Display methods
 These definitions overload `show` from `Base`
 ```@docs
+show(::IO, ::MIME"text/plain", ::AbstractRemoval)
 show(::IO, ::AbstractRemoval)
+show(::IO, ::MIME"text/plain", ::AbstractInfection)
 show(::IO, ::AbstractInfection)
+show(::IO, ::MIME"text/plain", ::AbstractMarker)
 show(::IO, ::AbstractMarker)
+show(::IO, ::MIME"text/plain", ::Innovation)
 show(::IO, ::Innovation)
+show(::IO, ::MIME"text/plain", ::SIR)
 show(::IO, ::SIR)
+show(::IO, ::MIME"text/plain", ::AbstractEvolution)
 show(::IO, ::AbstractEvolution)
+show(::IO, ::MIME"text/plain", ::BadIncident)
 show(::IO, ::BadIncident)
 ```
 

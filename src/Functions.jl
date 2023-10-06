@@ -194,10 +194,10 @@ julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[Remov
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-SIR[SIR(0.01,1,2,3,6),SIR(0.5,1,1,4,6),SIR(0.6,0,2,4,6)]
+[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-AbstractIncident[Removal(0.5,4),Infection(0.6,5,6)]
+[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 
 julia> evolution(initial_state, innovation, conditioned=true)
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
@@ -207,10 +207,10 @@ julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [C
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-SIR[SIR(0.01,1,2,3,6),SIR(0.5,1,1,4,6),SIR(0.6,0,2,4,6)]
+[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-AbstractIncident[CRemoval(0.5,4),Infection(0.6,5,6)]
+[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
  
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 
@@ -421,11 +421,23 @@ Innovation(population, infections, removals, CRemoval[])
 
 # output
 Innovation(3,
-  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
-  Removal[Removal(0.1, 2), Removal(0.2, 3)])
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
+    println(io, "$(typeof(z))($(z.population),")
+    print(io, "  " * sprint(show, MIME("text/plain"), z.infections))
+    print(io, "  " * sprint(show, MIME("text/plain"), z.removals))
+    isempty(z.cremovals) ? nothing : print(io, "  " * sprint(show, MIME("text/plain"), z.cremovals))
+    print(io, ")")
+end
+
+"""
+Vanilla implementation of `show` for `Innovation`
+"""
+function Base.show(io::IO, z::Innovation)
     if isempty(z.cremovals)
         printfmt(io, "{1}({2},\n  {3},\n  {4})",
                     typeof(z), z.population, z.infections, z.removals)
@@ -433,17 +445,6 @@ function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
         printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5})",
                     typeof(z), z.population, z.infections, z.removals, z.cremovals)
     end
-end
-
-"""
-Vanilla implementation of `show` for `Innovation`
-"""
-function Base.show(io::IO, z::Innovation)
-    println(io, "$(typeof(z))($(z.population),")
-    print(io, "  " * sprint(show, MIME("text/plain"), z.infections))
-    print(io, "  " * sprint(show, MIME("text/plain"), z.removals))
-    isempty(z.cremovals) ? nothing : print(io, "  " * sprint(show, MIME("text/plain"), z.cremovals))
-    print(io, ")")
 end
 
 
@@ -483,11 +484,12 @@ Evolution(initial, innovation)
 
 # output
 Evolution(3,
-  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
-  Removal[Removal(0.1, 2), Removal(0.2, 3)]
-  AbstractIncident[Removal(0.1, 2), Removal(0.2, 3), PInfection(0.5, 1, 2), Infection(0.7, 1, 2)]
-  SIR[SIR(0.0, 2, 1, 0, 3), SIR(0.5, 1, 2, 0, 3)]
-  AbstractIncident[PInfection(0.5, 1, 2)])
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0)]
+  𝒫₀.₅₀¹⁻²]
+)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution) 

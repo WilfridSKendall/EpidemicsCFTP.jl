@@ -644,7 +644,7 @@ end
 ## Structures capturing $SIR$ epidemics
 
 """
-    `AbstractEvolution` 
+    AbstractEvolution 
 
 This represents variants of evolution of an `S-I-R` epidemic..
 
@@ -721,12 +721,13 @@ Evolution(initial, innov)
 
 # output
 Evolution(3,
-  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
-  Removal[Removal(0.1, 2), Removal(0.2, 3)],
-  CRemoval[CRemoval(0.0, 1), CRemoval(0.05, 2)]
-  AbstractIncident[CRemoval(0.0, 1), CRemoval(0.05, 2), Removal(0.1, 2), Removal(0.2, 3), PInfection(0.5, 1, 2), Infection(0.7, 1, 2)]
-  SIR[SIR(0.0, 2, 1, 0, 3), SIR(0.0, 2, 0, 1, 3)]
-  AbstractIncident[CRemoval(0.0, 1)])
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+  [𝒞₀.₀₀¹,𝒞₀.₀₅²]
+  [𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+  𝒞₀.₀₀¹]
+)
 ```
 """
 struct Evolution <: AbstractEvolution
@@ -780,13 +781,13 @@ julia> innov      = Innovation(population, infections, removals, cremovals) ;
 
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
-  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
-  Removal[Removal(0.1, 2), Removal(0.2, 3)],
-  CRemoval[CRemoval(0.0, 1)]
-  AbstractIncident[CRemoval(0.0, 1), Removal(0.1, 2), Removal(0.2, 3), PInfection(0.5, 1, 2), Infection(0.7, 1, 2)]
-  SIR[SIR(0.0, 2, 1, 0, 3), SIR(0.0, 2, 0, 1, 3)]
-  AbstractIncident[CRemoval(0.0, 1)])
-
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+  𝒞₀.₀₀¹]
+  [𝒞₀.₀₀¹,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+  𝒞₀.₀₀¹]
+)
 
 julia> cremovals  = [CRemoval(0.0, 2)] ;
 

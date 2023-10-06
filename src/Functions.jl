@@ -327,7 +327,7 @@ julia> ContinuingRemoved(0.10, 3)
 ↠ℛ₀.₁₀³
 ```
 """
-function Base.show(io::IO, z::AbstractMarker)
+function Base.show(io::IO, ::MIME"text/plain", z::AbstractMarker)
     t = timespec(z.t)
     printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
 end
@@ -343,7 +343,7 @@ julia> CRemoval(0.10, 3)
 𝒞₀.₁₀³
 ```
 """
-function Base.show(io::IO, z::AbstractRemoval)
+function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     t = timespec(z.t)
     printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
 end
@@ -359,7 +359,7 @@ julia> PInfection(0.10, 3, 4)
 𝒫₀.₁₀³⁻⁴
 ```
 """
-function Base.show(io::IO, z::AbstractInfection)
+function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
     t = timespec(z.t)
     printfmt(io, "{1}{2}{3}⁻{4}", z.kind, t, uppers(string(z.target)), uppers(string(z.infectee)))
 end
@@ -381,7 +381,7 @@ Innovation(3,
   Removal[ℛ₀.₁₀², ℛ₀.₂₀³])
 ```
 """
-function Base.show(io::IO, z::Innovation)
+function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
     if isempty(z.cremovals)
         printfmt(io, "{1}({2},\n  {3},\n  {4})",
                     typeof(z), z.population, z.infections, z.removals)
@@ -405,7 +405,7 @@ SIR(0.4, 1, 2, 3)
 SIR₀.₄₀(1:2:3)
 ```
 """
-function Base.show(io::IO, z::SIR)
+function Base.show(io::IO, ::MIME"text/plain", z::SIR)
     printfmt(io, "SIR{1}({2}:{3}:{4})",
                  timespec(z.t), z.s, z.i, z.r)
 end
@@ -434,7 +434,7 @@ Evolution(3,
   AbstractIncident[𝒫₀.₅₀¹⁻²])
 ```
 """
-function Base.show(io::IO, z::AbstractEvolution)
+function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
     if isempty(z.cremovals)
         printfmt(io, "{1}({2},\n  {3},\n  {4}\n  {5}\n  {6}\n  {7})",
                     typeof(z), z.population, z.infections, z.removals, 
@@ -478,6 +478,6 @@ end
 """
 Printing a `BadIncident` exception.
 """
-function Base.show(io::IO, e::BadIncident)
+function Base.show(io::IO, ::MIME"text/plain", e::BadIncident)
     printfmt(io, "The (conditioned) evolution misused $(e.incident)")
 end

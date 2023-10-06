@@ -507,6 +507,9 @@ end
 
 """
 Printing a `BadIncident` exception.
+Sub-types are: `EmployedRemoval` and `MissedCRemoval`, raised respectively when a 
+conditioned evolution uses a `Removal` which _is_ _not_ conditioned to appear in the trajectory,
+or doesn't use a `CRemoval` which _is_ conditioned to appear in the trajectory.
 """
 function Base.show(io::IO, ::MIME"text/plain", e::BadIncident)
     print(io, MIME("text/plain"), "$(typeof(e)): The (conditioned) evolution misused $(e.incident)")

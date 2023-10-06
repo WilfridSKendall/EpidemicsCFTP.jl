@@ -517,28 +517,29 @@ Implementation of `show` for vector of `AbstractTimedOccurrence` with line-break
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
     if isempty(xv)
         println(io, "[]")
-    end
-    parts = [sprint(show, MIME("text/plain"), a) for a in xv]
-    parts[1] = "[" * parts[1]
-    parts[end] = parts[end]*"]"
-    broken = []
-    cumulative, clength, initial = [], 0, true
-    for bit in parts
-        clength = clength + length(bit)
-        if clength > width
-            addition = join(cumulative, ',') * ','
-            push!(broken, initial ? addition : tab * addition)
-            cumulative, clength, initial = [bit], length(bit), false
-        else
-            push!(cumulative, bit)
+    else
+        parts = [sprint(show, MIME("text/plain"), a) for a in xv]
+        parts[1] = "[" * parts[1]
+        parts[end] = parts[end]*"]"
+        broken = []
+        cumulative, clength, initial = [], 0, true
+        for bit in parts
+            clength = clength + length(bit)
+            if clength > width
+                addition = join(cumulative, ',') * ','
+                push!(broken, initial ? addition : tab * addition)
+                cumulative, clength, initial = [bit], length(bit), false
+            else
+                push!(cumulative, bit)
+            end
         end
-    end
-    if length(cumulative) > 0
-        addition = join(cumulative, ',')
-        push!(broken, initial ? addition :  tab * addition)
-    end
-    for section in broken
-        println(io, section)
+        if length(cumulative) > 0
+            addition = join(cumulative, ',')
+            push!(broken, initial ? addition :  tab * addition)
+        end
+        for section in broken
+            println(io, section)
+        end
     end
 end
 

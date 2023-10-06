@@ -533,9 +533,10 @@ Innovation(population, infections, removals, cremovals)
 
 # output
 Innovation(3,
-  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
-  Removal[Removal(0.1, 2), Removal(0.2, 3)],
-  CRemoval[CRemoval(0.0, 1), CRemoval(0.05, 2)])
+  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+  [𝒞₀.₀₀¹,𝒞₀.₀₅²]
+)
 ```
 """
 struct Innovation <: AbstractEnvironment

@@ -17,13 +17,6 @@ import Distributions
 # Exports
 # =======
 # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
-export AbstractTimedOccurrence
-
-export AbstractIncident
-export AbstractRemoval
-export AbstractInfection
-export AbstractInnovation
-export AbstractEvolution
 
 export AbstractMarker
 export AbstractSusceptibleMarker
@@ -41,25 +34,21 @@ export ContinuingRemoved
 export ContinuingInfected
 export ContinuingSusceptible
 
-export Removal
-export CRemoval
-
-export Infection
-export PInfection
-
-export Innovation
-export Evolution
-export CEvolution
+export AbstractTimedOccurrence
+export AbstractIncident, AbstractRemoval, AbstractInfection
+export Removal, CRemoval, Infection, PInfection
 export SIR
 
-export evolution
+export AbstractInnovation, AbstractEvolution
+export Innovation, Evolution, CEvolution
 
-export generate_innovation
+export evolution, generate_innovation
 
 export isearlier
 
-export alter
-export perpetuate
+export alter, perpetuate
+
+export BadIncident, MissedCRemoval, EmployedRemoval
 
 # Included files
 # ==============

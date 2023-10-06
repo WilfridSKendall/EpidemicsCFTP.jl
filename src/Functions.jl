@@ -194,33 +194,33 @@ julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[Remov
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
+SIR[SIR(0.01,1,2,3,6),SIR(0.5,1,1,4,6),SIR(0.6,0,2,4,6)]
 
 julia> history
-AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[Removal(0.5,4),Infection(0.6,5,6)]
 
 julia> evolution(initial_state, innovation, conditioned=true)
-ERROR: The (conditioned) evolution misused ℛ₀.₅₀⁴
+ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
 
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
 
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
+SIR[SIR(0.01,1,2,3,6),SIR(0.5,1,1,4,6),SIR(0.6,0,2,4,6)]
 
 julia> history
-AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[CRemoval(0.5,4),Infection(0.6,5,6)]
  
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 
 julia> evolution(initial_state, innovation, conditioned=true) ;
-ERROR: The (conditioned) evolution misused 𝒞₀.₅₀¹
+ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.5, 1)
 
 julia> initial_state = SIR(0.55, 1, 2, 3) ;
 
 julia> evolution(initial_state, innovation, conditioned=true)
-(SIR[SIR₀.₅₅(1:2:3), SIR₀.₆₀(0:3:3)], AbstractIncident[ℐ₀.₆₀⁵⁻⁶])
+(SIR[SIR(0.55, 1, 2, 3, 6), SIR(0.6, 0, 3, 3, 6)], AbstractIncident[Infection(0.6, 5, 6)])
 ```
 """
 function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
@@ -301,7 +301,7 @@ end
 ### Actual display functions
 
 """
-Implementation of `show` for `AbstractMarker`, using subscripts and 2 decimal places for time `t`. 
+Implementation of `show` for `AbstractMarker`, using subscripts and 2 decimal places for time `t`. DEPRECATED
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -333,7 +333,11 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractMarker)
 end
 
 """
-Implementation of `show` for `AbstractRemoval`, using subscripts and 2 decimal places for time `t`.
+Implementation of `show` for `AbstractRemoval`, using `MIME("text/plain")` as the
+middle of three arguments and employing subscripts and 2 decimal places for time `t`,
+and superscript for the `target` field.
+Note that a more general form (arising for example from use of `print`) can be used 
+as input to produce a copy.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -341,6 +345,8 @@ julia> Removal(0.10, 3)
 ℛ₀.₁₀³
 julia> CRemoval(0.10, 3)
 𝒞₀.₁₀³
+julia> print(CRemoval(0.10, 3))
+CRemoval(0.1, 3)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
@@ -348,8 +354,17 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
 end
 
+function Base.show(io::IO, z::AbstractRemoval)
+    t = timespec(z.t)
+    print(io, "$(typeof(z))($(z.t), $(z.target))")
+end
+
 """
-Implementation of `show` for `AbstractInfection` using subscripts and 2 decimal places for time `t`.
+Implementation of `show` for `AbstractInfection`, using `MIME("text/plain")` as the
+middle of three arguments and employing subscripts and 2 decimal places for time `t`,
+and superscripts for the `target` and `infectee` fields.
+Note that a more general form (arising for example from use of `print`) can be used 
+as input to produce a copy.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -357,11 +372,19 @@ julia> Infection(0.10, 3, 4)
 ℐ₀.₁₀³⁻⁴
 julia> PInfection(0.10, 3, 4)
 𝒫₀.₁₀³⁻⁴
+julia> print(PInfection(0.10, 3, 4))
+PInfection(0.1, 3, 4)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
     t = timespec(z.t)
     printfmt(io, "{1}{2}{3}⁻{4}", z.kind, t, uppers(string(z.target)), uppers(string(z.infectee)))
+end
+
+
+function Base.show(io::IO, z::AbstractInfection)
+    t = timespec(z.t)
+    print(io, "$(typeof(z))($(z.t), $(z.target), $(z.infectee))")
 end
 
 """
@@ -377,8 +400,8 @@ Innovation(population, infections, removals, CRemoval[])
 
 # output
 Innovation(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
-  Removal[ℛ₀.₁₀², ℛ₀.₂₀³])
+  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
+  Removal[Removal(0.1, 2), Removal(0.2, 3)])
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
@@ -391,7 +414,15 @@ function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
     end
 end
 
-
+function Base.show(io::IO, z::Innovation)
+    if isempty(z.cremovals)
+        printfmt(io, "{1}({2},\n  {3},\n  {4})",
+                    typeof(z), z.population, z.infections, z.removals)
+    else
+        printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5})",
+                    typeof(z), z.population, z.infections, z.removals, z.cremovals)
+    end
+end
 
 
 """
@@ -406,8 +437,7 @@ SIR₀.₄₀(1:2:3)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::SIR)
-    printfmt(io, "SIR{1}({2}:{3}:{4})",
-                 timespec(z.t), z.s, z.i, z.r)
+    printfmt(io, "SIR{1}({2}:{3}:{4})", timespec(z.t), z.s, z.i, z.r)
 end
 
 
@@ -427,11 +457,11 @@ Evolution(initial, innovation)
 
 # output
 Evolution(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
-  Removal[ℛ₀.₁₀², ℛ₀.₂₀³]
-  AbstractIncident[ℛ₀.₁₀², ℛ₀.₂₀³, 𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²]
-  SIR[SIR₀.₀₀(2:1:0), SIR₀.₅₀(1:2:0)]
-  AbstractIncident[𝒫₀.₅₀¹⁻²])
+  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
+  Removal[Removal(0.1, 2), Removal(0.2, 3)]
+  AbstractIncident[Removal(0.1, 2), Removal(0.2, 3), PInfection(0.5, 1, 2), Infection(0.7, 1, 2)]
+  SIR[SIR(0.0, 2, 1, 0, 3), SIR(0.5, 1, 2, 0, 3)]
+  AbstractIncident[PInfection(0.5, 1, 2)])
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
@@ -479,5 +509,8 @@ end
 Printing a `BadIncident` exception.
 """
 function Base.show(io::IO, ::MIME"text/plain", e::BadIncident)
-    printfmt(io, "The (conditioned) evolution misused $(e.incident)")
+    print(io, MIME("text/plain"), "$(typeof(e)): The (conditioned) evolution misused $(e.incident)")
+end
+function Base.show(io::IO, e::BadIncident)
+    print(io, "[$(typeof(e))] The (conditioned) evolution misused $(e.incident)")
 end

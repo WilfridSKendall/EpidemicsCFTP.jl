@@ -533,9 +533,9 @@ Innovation(population, infections, removals, cremovals)
 
 # output
 Innovation(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
-  Removal[ℛ₀.₁₀², ℛ₀.₂₀³],
-  CRemoval[𝒞₀.₀₀¹, 𝒞₀.₀₅²])
+  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
+  Removal[Removal(0.1, 2), Removal(0.2, 3)],
+  CRemoval[CRemoval(0.0, 1), CRemoval(0.05, 2)])
 ```
 """
 struct Innovation <: AbstractEnvironment
@@ -672,13 +672,13 @@ This is an exception encountered when a `CRemoval` is missed by
 population = 3 ;
 infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
 removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 1)] ;
+cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 3)] ;
 innov      = Innovation(population, infections, removals, cremovals) ;
 initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
 
 # output
-ERROR: The (conditioned) evolution misused 𝒞₀.₀₅¹
+ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.05, 3)
 ```
 """
 struct MissedCRemoval <: BadIncident
@@ -721,12 +721,12 @@ Evolution(initial, innov)
 
 # output
 Evolution(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
-  Removal[ℛ₀.₁₀², ℛ₀.₂₀³],
-  CRemoval[𝒞₀.₀₀¹, 𝒞₀.₀₅²]
-  AbstractIncident[𝒞₀.₀₀¹, 𝒞₀.₀₅², ℛ₀.₁₀², ℛ₀.₂₀³, 𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²]
-  SIR[SIR₀.₀₀(2:1:0), SIR₀.₀₀(2:0:1)]
-  AbstractIncident[𝒞₀.₀₀¹])
+  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
+  Removal[Removal(0.1, 2), Removal(0.2, 3)],
+  CRemoval[CRemoval(0.0, 1), CRemoval(0.05, 2)]
+  AbstractIncident[CRemoval(0.0, 1), CRemoval(0.05, 2), Removal(0.1, 2), Removal(0.2, 3), PInfection(0.5, 1, 2), Infection(0.7, 1, 2)]
+  SIR[SIR(0.0, 2, 1, 0, 3), SIR(0.0, 2, 0, 1, 3)]
+  AbstractIncident[CRemoval(0.0, 1)])
 ```
 """
 struct Evolution <: AbstractEvolution
@@ -739,7 +739,7 @@ struct Evolution <: AbstractEvolution
     history    ::Vector{AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
-        # Need to check population == sum of initiate.state entries
+        # Need to check population == sum of initial.state entries
         population = innovation.population
         infections = innovation.infections
         removals   = innovation.removals
@@ -780,19 +780,20 @@ julia> innov      = Innovation(population, infections, removals, cremovals) ;
 
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
-  AbstractInfection[𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²],
-  Removal[ℛ₀.₁₀², ℛ₀.₂₀³],
-  CRemoval[𝒞₀.₀₀¹]
-  AbstractIncident[𝒞₀.₀₀¹, ℛ₀.₁₀², ℛ₀.₂₀³, 𝒫₀.₅₀¹⁻², ℐ₀.₇₀¹⁻²]
-  SIR[SIR₀.₀₀(2:1:0), SIR₀.₀₀(2:0:1)]
-  AbstractIncident[𝒞₀.₀₀¹])
+  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
+  Removal[Removal(0.1, 2), Removal(0.2, 3)],
+  CRemoval[CRemoval(0.0, 1)]
+  AbstractIncident[CRemoval(0.0, 1), Removal(0.1, 2), Removal(0.2, 3), PInfection(0.5, 1, 2), Infection(0.7, 1, 2)]
+  SIR[SIR(0.0, 2, 1, 0, 3), SIR(0.0, 2, 0, 1, 3)]
+  AbstractIncident[CRemoval(0.0, 1)])
+
 
 julia> cremovals  = [CRemoval(0.0, 2)] ;
 
 julia> innov      = Innovation(population, infections, removals, cremovals) ;
 
 julia> CEvolution(initial, innov)
-ERROR: The (conditioned) evolution misused 𝒞₀.₀₀²
+ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.0, 2)
 
 julia> removals   = [Removal(0.1, 1), Removal(0.1, 2)] ;
 
@@ -801,7 +802,7 @@ julia> cremovals  = [CRemoval(0.2, 1)] ;
 julia> innov      = Innovation(population, infections, removals, cremovals) ;
 
 julia> CEvolution(initial, innov)
-ERROR: The (conditioned) evolution misused ℛ₀.₁₀¹
+ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.1, 1)
 ```
 """
 struct CEvolution <: AbstractEvolution

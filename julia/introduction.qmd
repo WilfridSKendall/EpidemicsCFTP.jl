@@ -568,3 +568,9 @@ depict("introduction-processed-cremovals", new_figure(figure8,
     Guide.title("Marks for conditioned removals changed by accept/reject"))
 )
 ```
+
+::: {.callout-note}
+# Accepted mark changes for conditional removals cannot affect epidemic
+All conditional removals remain active, so that the epidemic trajectory
+will not be affected by this step.
+:::

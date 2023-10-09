@@ -35,7 +35,7 @@ jupyter:    julia-1.9
 ```{julia}
 #| include: false
 #| tags: [parameters]
-source = "[current file not set]"
+source = "production.qmd"
 ```
 
 ```{julia}
@@ -58,7 +58,8 @@ Markdown.parse("""
 
 
 # Set-up details and utilities
-Load required modules, load theme, and set simulation parameters.·
+Load required modules, load theme, set up and establish graphics size and coordinates,
+set simulation parameters, define labelling functions for \(y\)-axis.
 ```{julia}
 using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose
 
@@ -74,7 +75,7 @@ gadfly_theme = Theme(
     grid_line_width=0mm,
 )
 
-set_default_plot_size(theme.figwidth, theme.figheight)
+set_default_plot_size(theme.figwidth, theme.figheight) ;
 
 const duration   = 15 ;
 const MAXPOP  = 20 ;
@@ -90,38 +91,19 @@ else
     circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:initial.n]                                                           
 end                                                                                     
 function timelinelabels1(i) 
-    if round(i) > 0 && i ≤ initial.n
-        circlabels[round(Int, i)] 
-    else
-        "" 
-    end 
+    (round(i) > 0 && i ≤ initial.n) ? circlabels[round(Int, i)] : "" 
 end ;                                                                             
 function timelinelabels2(i) 
-    if i ≤ initial.n
-        string(trunc(Int, i)) 
-    else
-        "" 
-    end 
-end ;
+    (i ≤ initial.n) ? string(trunc(Int, i)) : ""
+end ;                                                                             
 ```
 
-
-
-
-# Plot style choices
-Set up and establish graphics size and coordinates.
-```{julia}
-coordinates = UnitBox(0, population, duration, -population, 
-                      leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
-```
-
-## Dealing with different kinds of incident
 Various types of incident are conveniently abbreviated.
 ```{julia}
 A = AbstractInfection ; R = Removal ; C = CRemoval ; I = Infection ; P = PInfection ;
 ```
 
-# Figure 1
+# Production of Figure 1
 We generate a precise equivalent of @ConnorKendall-2023 [Figure 1].
 
 **Caption in draft paper:** 
@@ -131,21 +113,14 @@ We generate a precise equivalent of @ConnorKendall-2023 [Figure 1].
 duration1 = 15 ; population1 = 5 ;
 ```
 
-
-DEPRECATED
-```{julia}
-coordinates1 = UnitBox(0, population1, duration1, -population1,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
-```
-
-Here is the set of innovations:
+Here is the set of innovations.
 ```{julia}
 innov_figure1 = Innovation(duration1, 
   A[I(1,2,5),  I(2,1,2),  I(3,1,2),  I(4,2,4),  I(6,3,4),  I(7,2,3),  I(8,1,2), 
     I(8,4,5),  I(9,1,4),  I(11,2,4), I(14.5,3,5)], 
-  R[R(3,5),    R(5,1),    R(7.5,5),  R(13,3),   R(14,3)],  C[]) ;
+  R[R(3,5),    R(5,1),    R(7.5,5),  R(13,3),   R(14,3)],  C[])
 ```
-and the resulting epidemic evolution is tabulated in @tbl-evolution.
+The resulting epidemic evolution is tabulated in @tbl-evolution.
 ```{julia}
 #| label: tbl-evolution
 #| tbl-cap: Table giving evolution of the first epidemic
@@ -262,19 +237,13 @@ depict("draftfigure1b", figure_1b)
 
 \newpage
 
-# Figure 3
+# Production of Figure 3
 We generate a precise equivalent of @ConnorKendall-2023 [Figure 3].
 
 **Caption in draft paper:** 
 "Modified graphical representation of \(\SIR\) epidemic, conditioned on removals. ..."
 ```{julia}
 duration3 = duration1 ; population3 = population1 ;
-coordinates3 = UnitBox(0, population3, duration3, -population3,
-  leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch) ;
-```
-
-```{julia}
-R[R(1,5),  R(2,4),  R(4,4),  R(7,5)]
 ```
 
 Here is the set of innovations:

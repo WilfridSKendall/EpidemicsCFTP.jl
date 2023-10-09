@@ -31,7 +31,7 @@ jupyter:    julia-1.9
 ```{julia}
 #| include: false
 #| tags: [parameters]
-source = "[current file not set]"
+source = "experiment.qmd"
 ```
 
 ::: {.callout-note}
@@ -200,8 +200,8 @@ ev.trajectory
 
 Also compare histories
 ```{julia}
-println(reverse(rh))
-println(ev.history)
+println(sprint(show, MIME("text/plain"), reverse(rh)))
+println(sprint(show, MIME("text/plain"), ev.history))
 ```
 
 ## Plot regions of infection and removal

@@ -18,6 +18,7 @@ verify: $(PRODUCTS) $(wildcard image/VERIFY_*.png)
 # Clean-up
 clean:
 	-rm -f $(wildcard *.ipynb)
+	-rm -Rf .jupyter_cache
 	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsUtilities"))'
 	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsCFTP"))'
 

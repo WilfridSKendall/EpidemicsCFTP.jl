@@ -249,7 +249,7 @@ incidents_template = new_figure(curves_template,
     Guide.ylabel("Time lines")
 )
 
-figure2 = new_figure(incidents_template,
+figure2a = new_figure(incidents_template,
     layer(flow, x=:t, y=:removals, Geom.step,
         style(line_width=theme.boundary, default_color=theme.colour(R))),
     layer(flow, x=:t, y=:epidemic, Geom.step,
@@ -257,8 +257,16 @@ figure2 = new_figure(incidents_template,
     layer(flow, x=:t, y=:population, Geom.line,
         style(line_width=theme.trail, default_color=theme.scaffold))
 )
+
+figure2 = new_figure(incidents_template,
+    layer(flow, x=:t, y=:removals, Geom.step,
+        style(line_width=theme.boundary, default_color=theme.colour(R))),
+    layer(flow, x=:t, y=:epidemic, Geom.step,
+        style(line_width=theme.trail, default_color=theme.colour(I)))
+)
+
 depict("introduction-boundary", 
-    new_figure(figure2,
+    new_figure(figure2a,
         Guide.title("Boundaries for the coupling construction"))
 )
 ```
@@ -541,17 +549,16 @@ function resulting_cremovals(innovation, new_innovation, t0, t1)
         for (oldcr, propcr) in zip(innovation.cremovals, new_innovation.cremovals)]
 end
 
-println(rpad("Original:", 10, " "), sprint(show, MIME("text/plain"), 
-    innovation.cremovals))
-println(rpad("Proposed:", 10, " "), sprint(show, MIME("text/plain"),
-    innovation1.cremovals))
-println(rpad("Result:", 10, " "), sprint(show, MIME("text/plain"), 
+println(rpad("original cremovals:", 25, " "), sprint(show, MIME("text/plain"), 
+    innovation.cremovals),
+    rpad("\nproposed cremovals:", 25, " "), sprint(show, MIME("text/plain"),
+    innovation1.cremovals),
+    rpad("\nresulting cremovals:", 25, " "), sprint(show, MIME("text/plain"), 
     resulting_cremovals(innovation, new_innovation, life_dates(evolution1)...)))
 ```
 
 @fig-processed-cremovals graphs the resulting evolution.
 ```{julia}
-#| echo: false
 innovation2 = Innovation(initial.n, innovation1.infections, 
                     innovation1.removals, 
                     resulting_cremovals(innovation, new_innovation, life_dates(evolution1)...))
@@ -581,3 +588,57 @@ depict("introduction-processed-cremovals", new_figure(figure8,
 All conditional removals remain active, so that the epidemic trajectory
 will not be affected by this step.
 :::
+
+## Removing old infection incidents and introducing new infection incidents where suitable
+To carry out the next task we need to make some prior computations:
+
+a) Compute the latest feasible epidemic curve. 
+We do this using new infections occurring _later_ than the previous epidemic curve
+(working in reverse time);
+but perpetuating active infections when there is nothing useful occurring later;
+b) For each time line, compute the last inactive removal occurring prior to the
+activated infection on that time line;
+c) Now work through new infections occurring _earlier_ than the previous epidemic curve
+(working in reverse time again)
+but rejecting those which would lead to activation of a previously unactivated removal.
+
+### The latest feasible epidemic curve
+We work with the active and inactive infections from the original `Evolution` structure
+and those of the new `Innovation` structure:
+```{julia}
+println(
+    rpad("old infections:", 20, " "), sprint(show, MIME("text/plain"), evolution.infections),
+    rpad("new infections:", 20, " "), sprint(show, MIME("text/plain"), new_innovation.infections)
+)
+```
+
+The latest feasible epidemic is the slowest possible chain of activated infections that triggers all of the conditioned removals of `evolution2`,
+namely
+```{julia}
+evolution2.cremovals
+```
+and of these the only ones that matter are those for which the `target` field delivers
+an increase in the running supremum.
+Moreover consider which potential infections from `new_innovation` are relevant
+to construction of the latest feasible epidemic. The `target` must be in infectious
+zone, and the `infectee` must not lie below the most recent running supremum.
+```{julia}
+function relevant_infections(ev, innov)
+    t0, t1 = life_dates(ev)
+    relevant_infections = [z for z in ev.history if typeof(z) <: AbstractInfection]
+    rsup, running_supremum_list = 0, CRemoval[]
+    for z in sort(union(ev.cremovals, innov.infections),lt=isearlier)
+        if (typeof(z) == CRemoval) && (z.target > rsup)
+            push!(running_supremum_list, z)
+            rsup = z.target
+        elseif typeof(z) <: AbstractInfection && t0[z.target] ≤ z.t < t1[z.target] && z.infectee > rsup
+            push!(relevant_infections, z)
+        end
+    end
+    return running_supremum_list, sort(relevant_infections, lt=isearlier)
+end
+rsup, relev = relevant_infections(evolution2, new_innovation)
+println("Running suprema:     ", sprint(show, MIME("text/plain"), rsup))
+println("Relevant infections: ", sprint(show, MIME("text/plain"), relev))
+```
+

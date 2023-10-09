@@ -194,10 +194,10 @@ julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[Remov
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
+SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 
 julia> evolution(initial_state, innovation, conditioned=true)
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
@@ -207,10 +207,10 @@ julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [C
 julia> states, history = evolution(initial_state, innovation) ;
 
 julia> states
-[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
+SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
  
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 
@@ -418,22 +418,23 @@ Implementation of `show` for `Innovation` as three rows of lists of incidents
 julia> population = 3 
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
-[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)] 
-[ℛ₀.₁₀²,ℛ₀.₂₀³]
+Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
 julia> Innovation(population, infections, removals, CRemoval[])
 Innovation(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 )
+
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
     println(io, "$(typeof(z))($(z.population),")
-    print(io, "  " * sprint(show, MIME("text/plain"), z.infections))
-    print(io, "  " * sprint(show, MIME("text/plain"), z.removals))
-    isempty(z.cremovals) ? nothing : print(io, "  " * sprint(show, MIME("text/plain"), z.cremovals))
+    print(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
+    print(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
+    isempty(z.cremovals) ? nothing : print(io, rpad("cremovals:",12," "),sprint(show, MIME("text/plain"), z.cremovals))
     print(io, ")")
 end
 
@@ -481,33 +482,33 @@ SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)]
-[ℛ₀.₁₀²,ℛ₀.₂₀³]
+Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 julia> innovation = Innovation(population, infections, removals, CRemoval[])
 Innovation(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 )
 
 julia> Evolution(initial, innovation) 
 Evolution(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0)]
-  [𝒫₀.₅₀¹⁻²]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0)]
+history:    AbstractIncident[𝒫₀.₅₀¹⁻²]
 )
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution) 
     println(io, "$(typeof(z))($(z.population),")
-    print(io, "  " * sprint(show, MIME("text/plain"), z.infections))
-    print(io, "  " * sprint(show, MIME("text/plain"), z.removals))
-    isempty(z.cremovals) ? nothing : print(io, "  " * sprint(show, MIME("text/plain"), z.cremovals))
-    print(io, "  " * sprint(show, MIME("text/plain"), z.chronology))
-    print(io, "  " * sprint(show, MIME("text/plain"), z.trajectory))
-    print(io, "  " * sprint(show, MIME("text/plain"), z.history))
+    print(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
+    print(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
+    isempty(z.cremovals) ? nothing : print(io, rpad("cremovals:",12," "), sprint(show, MIME("text/plain"), z.cremovals))
+    print(io, rpad("chronology:",12," "), sprint(show, MIME("text/plain"), z.chronology))
+    print(io, rpad("trajectory:",12," "), sprint(show, MIME("text/plain"), z.trajectory))
+    print(io, rpad("history:",12," "), sprint(show, MIME("text/plain"), z.history))
     print(io, ")")
 end
 
@@ -516,10 +517,10 @@ Implementation of `show` for vector of `AbstractTimedOccurrence` with line-break
 """
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
     if isempty(xv)
-        println(io, "[]")
+        println(io, "$(string(T))[]")
     else
         parts = [sprint(show, MIME("text/plain"), a) for a in xv]
-        parts[1] = "[" * parts[1]
+        parts[1] = "$(string(T))[" * parts[1]
         parts[end] = parts[end]*"]"
         broken = []
         cumulative, clength, initial = [], 0, true

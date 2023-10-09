@@ -528,16 +528,16 @@ time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 julia> population = 3
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
-[ℛ₀.₂₀³,ℛ₀.₁₀²]
+Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
-[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 julia> Innovation(population, infections, removals, cremovals)
 Innovation(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
-  [𝒞₀.₀₀¹,𝒞₀.₀₅²]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 )
 ```
 """
@@ -719,25 +719,25 @@ SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
-[ℛ₀.₂₀³,ℛ₀.₁₀²]
+Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
-[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 julia> innov      = Innovation(population, infections, removals, cremovals)
 Innovation(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
-  [𝒞₀.₀₀¹,𝒞₀.₀₅²]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 )
 julia> Evolution(initial, innov)
 Evolution(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
-  [𝒞₀.₀₀¹,𝒞₀.₀₅²]
-  [𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-  [𝒞₀.₀₀¹]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹]
 )
 ```
 """
@@ -783,25 +783,25 @@ SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
-[ℛ₀.₂₀³,ℛ₀.₁₀²]
+Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1)]
-[𝒞₀.₀₀¹]
+CRemoval[𝒞₀.₀₀¹]
 julia> innov      = Innovation(population, infections, removals, cremovals) 
 Innovation(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
-  [𝒞₀.₀₀¹]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹]
 )
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
-  [𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [ℛ₀.₁₀²,ℛ₀.₂₀³]
-  [𝒞₀.₀₀¹]
-  [𝒞₀.₀₀¹,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-  [SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-  [𝒞₀.₀₀¹]
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹]
+chronology: AbstractIncident[𝒞₀.₀₀¹,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹]
 )
 
 julia> cremovals  = [CRemoval(0.0, 2)] ;

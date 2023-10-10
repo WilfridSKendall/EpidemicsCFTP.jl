@@ -48,14 +48,18 @@ end
 
 ## Converting `Infection` to `PInfection`
 """
-    perpetuate(pinf::Infection)::PInfection
+    perpetuate(pinf::AbstractInfection)::PInfection
 
-Produce a new `PInfection` from an `Infection` using the same marks.
+Produce a new `PInfection` from an `AbstractInfection` using the same marks.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> infection_incident = Infection(0.04, 1, 4)
 ℐ₀.₀₄¹⁻⁴
+julia> perpetuate(infection_incident)
+𝒫₀.₀₄¹⁻⁴
+julia> infection_incident = PInfection(0.04, 1, 4)
+𝒫₀.₀₄¹⁻⁴
 julia> perpetuate(infection_incident)
 𝒫₀.₀₄¹⁻⁴
 ```

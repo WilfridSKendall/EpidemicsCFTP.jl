@@ -45,14 +45,12 @@ import Markdown, EpidemicsCFTP, EpidemicsUtilities
 version = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
 branch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
-| Software                    | Version                                 | Branch                         |
-|:----------------------------|:----------------------------------------|-------------------------------:|
-| Quarto script `$(source)`   | version `$(version)`                    | `$(branch)`                    |
-| Module `EpidemicsUtilities` | version `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
-| Module `EpidemicsCFTP`      | version `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
-| Running under `julia`       | version `$VERSION`                      | ---                            |
-
-: Versions of software used to create this document
+| Software                    | Version                         | Branch                         |
+|:----------------------------|:--------------------------------|-------------------------------:|
+| Quarto script `$(source)`   | `$(version)`                    | `$(branch)`                    |
+| Module `EpidemicsUtilities` | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`      | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`       | `$VERSION`                      | ---                            |
 """)
 ```
 
@@ -611,6 +609,22 @@ println(
     rpad("new infections:", 20, " "), sprint(show, MIME("text/plain"), new_innovation.infections)
 )
 ```
+@fig-with-all-new-infections displays the infection incidents from `new_innovation` 
+superimposed on @fig-processed-cremovals.
+
+```{julia}
+#| echo: false
+#| label: fig-with-all-new-infections
+#| fig-cap: "This is @fig-processed-cremovals, but _all_ the new infections \
+#|           from `new_innovation`."
+figure9 = new_figure(figure8,
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_feasible_incident(innovation2.infections, 1, theme=theme))),
+)
+depict("introduction-processed-cremovals", new_figure(figure8,
+    Guide.title("New infections superimposed"))
+)
+```
 
 The latest feasible epidemic is the slowest possible chain of activated infections that triggers all of the conditioned removals of `evolution2`,
 namely
@@ -641,4 +655,5 @@ rsup, relev = relevant_infections(evolution2, new_innovation)
 println("Running suprema:     ", sprint(show, MIME("text/plain"), rsup))
 println("Relevant infections: ", sprint(show, MIME("text/plain"), relev))
 ```
+
 

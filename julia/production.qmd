@@ -52,7 +52,6 @@ Markdown.parse("""
 | Module `EpidemicsUtilities` | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
 | Module `EpidemicsCFTP`      | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
 | Running under `julia`       | `$VERSION`                      | ---                            |
-: Versions of software used to create this document {.nonumber}
 """)
 ```
 

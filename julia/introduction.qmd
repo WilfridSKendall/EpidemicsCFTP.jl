@@ -1,5 +1,5 @@
 ---
-title:  "Introduction to Perfect Epidemics"
+title:  "A Graphical Introduction to Perfect Epidemics"
 author: "Wilfrid Kendall"
 date:   today
 ---
@@ -316,7 +316,7 @@ see @fig-incidents.
 #|           while the upper boundary of the removal zone is \"removed\"."
 figure4 = new_figure(figure3,
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innovation; theme=theme))),
+        draw_elements(innovation; theme=theme))),
 )
 depict("introduction-incidents", new_figure(figure4,
     Guide.title("Incidents driving the epidemic"))
@@ -353,7 +353,7 @@ observed removals) that we have imposed.
 
 figure5 = new_figure(figure4,
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_activated_elements(initial, evolution.history, theme=theme)))
+        draw_activated_elements(initial, evolution.history, theme=theme)))
 )
 depict("introduction-activated", new_figure(figure5,
     Guide.title("Incidents driving the epidemic, emphasizing activated incidents"))
@@ -439,9 +439,9 @@ evolution0 = Evolution(initial, innovation0)
 
 figure6 = new_figure(figure3,
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innovation0, theme=theme))),
+        draw_elements(innovation0, theme=theme))),
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_activated_elements(initial, evolution0.history, theme=theme)))
+        draw_activated_elements(initial, evolution0.history, theme=theme)))
 )
 depict("introduction-old-removals-gone", new_figure(figure6,
     Guide.title("The epidemic as before, deleting all non-activated removals"))
@@ -509,9 +509,9 @@ will not be affected by this step.
 #|           from `new_innovation`."
 figure7 = new_figure(figure3,
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innovation1, theme=theme))),
+        draw_elements(innovation1, theme=theme))),
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_activated_elements(initial, evolution1.history, theme=theme)))
+        draw_activated_elements(initial, evolution1.history, theme=theme)))
 )
 depict("introduction-inactive-removals", new_figure(figure7,
     Guide.title("Inactive removals added from new innovation"))
@@ -550,7 +550,7 @@ end
 println(rpad("original cremovals:", 25, " "), sprint(show, MIME("text/plain"), 
     innovation.cremovals),
     rpad("\nproposed cremovals:", 25, " "), sprint(show, MIME("text/plain"),
-    innovation1.cremovals),
+    new_innovation.cremovals),
     rpad("\nresulting cremovals:", 25, " "), sprint(show, MIME("text/plain"), 
     resulting_cremovals(innovation, new_innovation, life_dates(evolution1)...)))
 ```
@@ -572,9 +572,9 @@ evolution2 = Evolution(initial, innovation2)
 #|           changed (from $1$ to $2$)." 
 figure8 = new_figure(figure3,
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innovation2, theme=theme))),
+        draw_elements(innovation2, theme=theme))),
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_activated_elements(initial, evolution2.history, theme=theme)))
+        draw_activated_elements(initial, evolution2.history, theme=theme)))
 )
 depict("introduction-processed-cremovals", new_figure(figure8,
     Guide.title("Marks for conditioned removals changed by accept/reject"))
@@ -601,41 +601,64 @@ c) Now work through new infections occurring _earlier_ than the previous epidemi
 but rejecting those which would lead to activation of a previously unactivated removal.
 
 ### The latest feasible epidemic curve
-We work with the active and inactive infections from the original `Evolution` structure
-and those of the new `Innovation` structure:
+Compare the active and inactive infections from the original `Evolution` structure
+with those of the new `Innovation` structure:
 ```{julia}
+#| echo: false
 println(
-    rpad("old infections:", 20, " "), sprint(show, MIME("text/plain"), evolution.infections),
-    rpad("new infections:", 20, " "), sprint(show, MIME("text/plain"), new_innovation.infections)
+    rpad("old infections:", 20, " "), 
+        sprint(show, MIME("text/plain"), evolution.infections),
+    rpad("new infections:", 20, " "), 
+        sprint(show, MIME("text/plain"), new_innovation.infections)
 )
 ```
 @fig-with-all-new-infections displays the infection incidents from `new_innovation` 
-superimposed on @fig-processed-cremovals.
+superimposed on removals, active infections and epidemic and removal boundaries from @fig-processed-cremovals. Note that the new infection incidents have not yet been used to determine the 
+new epidemic trajectory!
 
 ```{julia}
 #| echo: false
 #| label: fig-with-all-new-infections
-#| fig-cap: "This is @fig-processed-cremovals, but _all_ the new infections \
-#|           from `new_innovation`."
-figure9 = new_figure(figure8,
+#| fig-cap: "This displays _all_ the new infections from `new_innovation`                 \
+#|           (in pink outline with no text),                                              \
+#|           but retains removals and activated infections from @fig-processed-cremovals."
+figure9 = new_figure(figure3,
     Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_feasible_incident(innovation2.infections, 1, theme=theme))),
+         draw_feasible_incident(new_innovation.infections, 1, inscribe=false, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_activated_elements(initial, evolution2.history, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(evolution2.history, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(evolution2.removals, theme=theme))),
 )
-depict("introduction-processed-cremovals", new_figure(figure8,
+depict("introduction-processed-cremovals", new_figure(figure9,
     Guide.title("New infections superimposed"))
 )
 ```
 
+::: {.callout-note}
+# Note on exposition
+Revise the following to achieve more clarity.
+:::
+
 The latest feasible epidemic is the slowest possible chain of activated infections that triggers all of the conditioned removals of `evolution2`,
-namely
-```{julia}
-evolution2.cremovals
-```
-and of these the only ones that matter are those for which the `target` field delivers
+and this is achieved so long as the proposed chain triggers those 
+conditional removals for which the `target` field delivers
 an increase in the running supremum.
-Moreover consider which potential infections from `new_innovation` are relevant
-to construction of the latest feasible epidemic. The `target` must be in infectious
-zone, and the `infectee` must not lie below the most recent running supremum.
+This observation helps us to consider which 
+of the new infections
+```{julia}
+#| echo: false
+new_innovation.infections
+```
+are relevant
+to construction of the latest feasible epidemic. 
+For such an infection, the `target` mark must lie in the infectious
+zone, and the `infectee` mark must not lie below the most recent running supremum.
+
+The relevant infections are computed by the following function,
+and are depicted in @fig-with-relevant-infections.
 ```{julia}
 function relevant_infections(ev, innov)
     t0, t1 = life_dates(ev)
@@ -649,11 +672,24 @@ function relevant_infections(ev, innov)
             push!(relevant_infections, z)
         end
     end
-    return running_supremum_list, sort(relevant_infections, lt=isearlier)
+    return sort(relevant_infections, lt=isearlier)
 end
-rsup, relev = relevant_infections(evolution2, new_innovation)
-println("Running suprema:     ", sprint(show, MIME("text/plain"), rsup))
+relev = relevant_infections(evolution2, new_innovation)
 println("Relevant infections: ", sprint(show, MIME("text/plain"), relev))
 ```
 
+```{julia}
+#| echo: false
+#| label: fig-with-relevant-infections
+#| fig-cap: "This improves on @fig-with-all-new-infections by adding the _relevant_      \
+#|           infections from `new_innovation` (coloured in hot-pink outline with text)."
+relev = relevant_infections(evolution2, new_innovation)
+figure10 = new_figure(figure9,
+    Guide.annotation(compose(context(),
+         draw_feasible_incident(relev, 2, theme=theme))),
+)
+depict("introduction-processed-cremovals", new_figure(figure10,
+    Guide.title("Relevant new infections are emphasized"))
+)
+```
 

@@ -64,7 +64,7 @@ julia> perpetuate(infection_incident)
 𝒫₀.₀₄¹⁻⁴
 ```
 """
-function perpetuate(infection_incident::Infection)::PInfection
+function perpetuate(infection_incident::AbstractInfection)::PInfection
     PInfection(infection_incident.t, infection_incident.target, infection_incident.infectee)
 end
 

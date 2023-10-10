@@ -3,11 +3,10 @@ SHELL          := /usr/bin/bash
 QUARTO         := /usr/local/bin/quarto
 CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 QUARTO_OPTIONS :=  --csl=$(CSL)
-#QUARTO_OPTIONS :=  --from=markdown+tex_math_single_backslash --csl=$(CSL)
 
 MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
-PRODUCTS       := production.pdf experiment.pdf introduction.pdf
+PRODUCTS       := production.pdf introduction.pdf
 
 # ====================
 # Main targets

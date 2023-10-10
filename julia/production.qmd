@@ -159,7 +159,7 @@ fig_nodes0 = push!(fig_nodes0,
     Guide.annotation(compose(context(),
         EpidemicsUtilities.draw_elements(innov_figure1; theme=theme)))
     )
-depict("draftfigure0", fig_nodes0)
+depict("production-draftfigure0", fig_nodes0)
 ```
 
 
@@ -202,7 +202,7 @@ fig_inc1 = push!(fig_inc1, ll6, ll7)
 
 draftfigure1a = deepcopy(fig_inc1)
 
-depict("draftfigure1a", draftfigure1a)
+depict("production-draftfigure1a", draftfigure1a)
 ```
 
 ```{julia}
@@ -231,7 +231,7 @@ ll3 = layer(flow1[flow1.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
 figure_1b = deepcopy(fig_traj)
 push!(figure_1b, ll0, ll3, ll2, ll1)
 
-depict("draftfigure1b", figure_1b)
+depict("production-draftfigure1b", figure_1b)
 ```
 
 \newpage
@@ -281,7 +281,7 @@ fig_nodes3 = push!(fig_nodes3,
     Guide.annotation(compose(context(),
         EpidemicsUtilities.draw_elements(innov_figure3; theme=theme)))
     )
-depict("draftfigure3a", fig_nodes3)
+depict("production-draftfigure3a", fig_nodes3)
 ```
 
 ```{julia}
@@ -317,7 +317,7 @@ fig_inc3 = push!(fig_inc3, ll6, ll7)
 draftfigure3b = deepcopy(fig_inc3)
 
     
-depict("draftfigure3b", draftfigure3b)
+depict("production-draftfigure3b", draftfigure3b)
 ```
 
 ```{julia}
@@ -337,7 +337,7 @@ ll3d = layer(flow3, x=:t, y=:susceptibles, Geom.step,
 figure_3b = deepcopy(fig_traj)
 push!(figure_3b, ll3d, ll2d, ll1d)
 
-depict("draftfigure3b", figure_3b)
+depict("production-draftfigure3b", figure_3b)
 ```
 
 

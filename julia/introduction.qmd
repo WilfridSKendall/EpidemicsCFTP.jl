@@ -632,7 +632,7 @@ figure9 = new_figure(figure3,
     Guide.annotation(compose(context(),
         draw_incident(evolution2.removals, theme=theme))),
 )
-depict("introduction-processed-cremovals", new_figure(figure9,
+depict("introduction-with-all-new-infections", new_figure(figure9,
     Guide.title("New infections superimposed"))
 )
 ```
@@ -674,9 +674,22 @@ function relevant_infections(ev, innov)
     end
     return sort(relevant_infections, lt=isearlier)
 end
-relev = relevant_infections(evolution2, new_innovation)
-println("Relevant infections: ", sprint(show, MIME("text/plain"), relev))
 ```
+Note that the relevant infections
+```{julia}
+#| echo: false
+relevant_infections(evolution2, new_innovation)
+```
+include some infections that will not be considered for the last feasible epidemic,
+because their `target` marks are above the epidemic trajectory.
+
+::: {.callout-note}
+# Possible improvement
+Modify `draw_feasible_incident` to exclude potential infections that
+rise above current epidemic trajectory? Note doing it now, because
+I don't think it affects the programming, but it may help clarity
+when moving on to deal with the (so-called) "no-fly zone".
+:::
 
 ```{julia}
 #| echo: false
@@ -688,8 +701,178 @@ figure10 = new_figure(figure9,
     Guide.annotation(compose(context(),
          draw_feasible_incident(relev, 2, theme=theme))),
 )
-depict("introduction-processed-cremovals", new_figure(figure10,
+depict("introduction-with-relevant-infections", new_figure(figure10,
     Guide.title("Relevant new infections are emphasized"))
 )
 ```
 
+We now compute the last feasible epidemic.
+It is required to compute the trajectory of the _last_ possible epidemic path that activates
+all the `CRemoval` events and none of the `Removal` events. 
+This is most easily accomplished by computing it
+in reverse time, adapting the `EpidemicsCFTP.evolution` function and the
+update function `EpidemicsCFTP.update` accordingly,
+and employing a helper function `antecedent`.
+```{julia}
+is_removeable  = EpidemicsCFTP.is_removeable
+is_infectable  = EpidemicsCFTP.is_infectable
+is_same_config = EpidemicsCFTP.is_same_config
+
+function antecedent(state::SIR, event::AbstractInfection)::SIR
+    SIR(event.t, state.s + 1, state.i - 1, state.r)
+end
+function antecedent(state::SIR, event::AbstractRemoval)::SIR
+    SIR(event.t, state.s, state.i + 1, state.r - 1)
+end
+
+function reverse_update(state::SIR, event::AbstractIncident)::SIR
+    if event.t > state.t
+        return state
+    end
+    inc = typeof(event)
+    # Need to avoid creating `SIR` with negative number of removals!
+    if inc <: AbstractRemoval && state.r == 0
+        return SIR(event.t, state.s, state.i, state.r)
+    end
+    prior = antecedent(state, event)
+    if inc <: AbstractRemoval        && is_removeable(prior, event)
+        return prior
+    elseif inc <: AbstractInfection  && is_infectable(prior, event)
+        return prior
+    else
+        return SIR(event.t, state.s, state.i, state.r)
+    end
+end
+
+function last_feasible_evolution(final_state::SIR, chronology::Vector{AbstractIncident};
+                conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+    reverse_trajectory, reverse_history = SIR[final_state], AbstractIncident[]
+    reverse_chronology  = reverse([x for x in chronology if x.t <= final_state.t])
+    if ! isempty(reverse_chronology)
+        for event in reverse_chronology
+            prior_state = reverse_update(reverse_trajectory[end], event)
+            if ! is_same_config(prior_state, reverse_trajectory[end])
+                if conditioned && isa(event, Removal)
+                    throw(EmployedRemoval(event))
+                end
+                push!(reverse_trajectory, prior_state)
+                push!(reverse_history, event)
+            elseif conditioned && isa(event, CRemoval)
+                    throw(MissedCRemoval(event))
+            end
+        end
+    end
+    starting = reverse_trajectory[end]
+    push!(reverse_trajectory, SIR(0.0, starting.s, starting.i, starting.r))
+    return Base.reverse(reverse_trajectory), Base.reverse(reverse_history)
+end ;
+```
+
+First compute `chronology` by mixing the relevant infections and the conditioned removals
+and the reverse-initial state as the final state of the evolution (retimed to `duration`).
+```{julia}
+chronology = sort(union(new_innovation.infections, evolution2.history), lt=isearlier) ;
+penultimate_state = evolution2.trajectory[end] ;
+final_state = SIR(duration, penultimate_state.s, penultimate_state.i, penultimate_state.r) ;
+```
+
+```{julia}
+println(rpad("chronology:", 12, " "), sprint(show, MIME("text/plain"), chronology))
+println(rpad("trajectory:", 12, " "), sprint(show, MIME("text/plain"), evolution2.trajectory))
+```
+
+Now compute the evolution of the last feasible epidemic.
+```{julia}
+rt, rh = last_feasible_evolution(final_state, chronology) ;
+println(rpad("trajectory:", 12, " "), sprint(show, MIME("text/plain"), rt))
+println(rpad("history:", 12, " "), sprint(show, MIME("text/plain"), rh))
+```
+
+Finally @fig-last-feasible-epidemic adds this to the previous @fig-with-relevant-infections.
+
+```{julia}
+#| echo: false
+#| label: fig-last-feasible-epidemic
+#| fig-cap: "This improves on @fig-with-all-new-infections by adding the last      \
+#|           feasible epidemic trajectory (coloured in pink) and extra delayed     \
+#|           infections (outlined in deep pink)."
+flow_last_viable = table_trajectories1(duration, rt[1], rt)
+extra = [z for z in intersect(rh, new_innovation.infections)] 
+# Need the right type for resulting list!
+figure11 = new_figure(figure9,
+    Guide.annotation(compose(context(),
+         draw_feasible_incident(extra, 3, theme=theme))),
+    layer(flow_last_viable, x=:t, y=:epidemic, Geom.step(direction=:vh), 
+        style(line_width=theme.broad, default_color=theme.lastfeasible1)),
+)
+depict("introduction-last-feasible-epidemic", new_figure(figure11,
+    Guide.title("Last feasible epidemic"))
+)
+```
+
+::: {.callout-note}
+# Plotting note
+Notice argument to `Geom.step` is `direction=:vh`.  
+See <http://gadflyjl.org/stable/lib/geometries/#Gadfly.Geom.step-Tuple{}>.
+:::
+
+::: {.callout-note}
+# Testing note
+1. Need to arrange instances in which there is an extra possible infection 
+from `new_innovation` which lies between the previous infection and the last feasible infection!
+2. Also need a couple of possible infections from `new_innovation` which will produce a faster 
+epidemic without hitting new removals!
+:::
+
+The next step is to abandon all the infections from the previous `Evolution`
+_except that_ we perpetuate those of these infections which turn out to
+last viable infections. We must perpetuate the following
+```{julia}
+#| echo: false
+[z for z in intersect(evolution.infections, rh)]
+```
+which is carried out by
+```{julia}
+perpetuated_infections = [perpetuate(z) for z in intersect(evolution.infections, rh)]
+```
+so that the working set of potential infections now becomes
+```{julia}
+working_infections = union(new_innovation.infections, perpetuated_infections)
+```
+See @fig-last-feasible-epidemic-bis.
+
+```{julia}
+#| echo: false
+#| label: fig-last-feasible-epidemic-bis
+#| fig-cap: "This varies @fig-with-all-new-infections by not using those        \
+#|           infections from the previous evolution which are superseded."
+figure12 = new_figure(figure3,
+    Guide.annotation(compose(context(),
+        draw_incident(perpetuated_infections, activated=true, theme=theme))),
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_connect(perpetuated_infections, activated=true, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(working_infections, theme=theme))),
+    Guide.annotation(compose(context(),
+         draw_feasible_incident(new_innovation.infections, 1, inscribe=false, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(evolution2.removals, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(evolution2.cremovals, activated=true, theme=theme))),
+#    Guide.annotation(compose(context(),
+#        draw_activated_elements(initial, [z for z in rh if isa(z,CRemoval)], theme=theme))),
+#    Guide.annotation(compose(context(),
+#        draw_activated_elements(initial, [z for z in evolution2.history if isa(z, AbstractRemoval)], theme=theme))),
+    Guide.annotation(compose(context(),
+         draw_feasible_incident(extra, 3, theme=theme))),
+    layer(flow_last_viable, x=:t, y=:epidemic, Geom.step(direction=:vh), 
+        style(line_width=theme.broad, default_color=theme.lastfeasible1)),
+)
+depict("introduction-last-feasible-epidemic-bis", new_figure(figure12,
+    Guide.title("Last feasible epidemic, perpetuating any infections from previous version"))
+)
+```
+
+::: {.callout-note}
+Need to figure out how to do `draw_activated_elements(initial, [z for z in rh if isa(z,CRemoval)], theme=theme)`
+:::

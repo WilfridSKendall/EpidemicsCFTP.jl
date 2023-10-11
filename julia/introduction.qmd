@@ -1,5 +1,5 @@
 ---
-title:  "A Graphical Introduction to Perfect Epidemics"
+title:  "A Graphical Introduction to Perfect Simulation of Conditioned Epidemics"
 author: "Wilfrid Kendall"
 date:   today
 ---
@@ -422,6 +422,15 @@ preserve the conditional distribution of the \(\SIR\) epidemic. This should be d
 in the paper now being drafted: it is one of the crucial steps of the entire argument!
 :::
 
+
+::: {.callout-note}
+# Modification of `new_innovation`
+1. We inserted instances in which there is an extra possible infection 
+from `new_innovation` which lies between the previous infection and the last feasible infection!
+2. We have also inserted a couple of possible infections to `new_innovation` which will produce a faster 
+epidemic without hitting new removals!
+:::
+
 ## Remove all inactive removals from initial `Evolution`
 We first modify the original `innovation` by removing all unactivated removals 
 (since these will automatically be rejected).
@@ -816,22 +825,14 @@ Notice argument to `Geom.step` is `direction=:vh`.
 See <http://gadflyjl.org/stable/lib/geometries/#Gadfly.Geom.step-Tuple{}>.
 :::
 
-::: {.callout-note}
-# Testing note
-1. Need to arrange instances in which there is an extra possible infection 
-from `new_innovation` which lies between the previous infection and the last feasible infection!
-2. Also need a couple of possible infections from `new_innovation` which will produce a faster 
-epidemic without hitting new removals!
-:::
-
 The next step is to abandon all the infections from the previous `Evolution`
-_except that_ we perpetuate those of these infections which turn out to
-last viable infections. We must perpetuate the following
+_except that_ we perpetuate those infections which turn out to
+last viable infections. We perpetuate the following infections.
 ```{julia}
 #| echo: false
 [z for z in intersect(evolution.infections, rh)]
 ```
-which is carried out by
+This is carried out by
 ```{julia}
 perpetuated_infections = [perpetuate(z) for z in intersect(evolution.infections, rh)]
 ```
@@ -844,25 +845,22 @@ See @fig-last-feasible-epidemic-bis.
 ```{julia}
 #| echo: false
 #| label: fig-last-feasible-epidemic-bis
-#| fig-cap: "This varies @fig-with-all-new-infections by not using those        \
-#|           infections from the previous evolution which are superseded."
+#| fig-cap: "This varies @fig-with-all-new-infections by omitting infections     \
+#|           from the previous evolution which are superseded by part of the     \
+#|           \"last feasible epidemic\"."
 figure12 = new_figure(figure3,
     Guide.annotation(compose(context(),
         draw_incident(perpetuated_infections, activated=true, theme=theme))),
     Guide.annotation(compose(context(),
         EpidemicsUtilities.draw_connect(perpetuated_infections, activated=true, theme=theme))),
     Guide.annotation(compose(context(),
-        draw_incident(working_infections, theme=theme))),
-    Guide.annotation(compose(context(),
          draw_feasible_incident(new_innovation.infections, 1, inscribe=false, theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(evolution2.removals, theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(evolution2.cremovals, activated=true, theme=theme))),
-#    Guide.annotation(compose(context(),
-#        draw_activated_elements(initial, [z for z in rh if isa(z,CRemoval)], theme=theme))),
-#    Guide.annotation(compose(context(),
-#        draw_activated_elements(initial, [z for z in evolution2.history if isa(z, AbstractRemoval)], theme=theme))),
+   Guide.annotation(compose(context(),
+       draw_activated_elements(initial, rh, theme=theme))),
     Guide.annotation(compose(context(),
          draw_feasible_incident(extra, 3, theme=theme))),
     layer(flow_last_viable, x=:t, y=:epidemic, Geom.step(direction=:vh), 
@@ -873,6 +871,3 @@ depict("introduction-last-feasible-epidemic-bis", new_figure(figure12,
 )
 ```
 
-::: {.callout-note}
-Need to figure out how to do `draw_activated_elements(initial, [z for z in rh if isa(z,CRemoval)], theme=theme)`
-:::

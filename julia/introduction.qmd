@@ -422,12 +422,17 @@ preserve the conditional distribution of the \(\SIR\) epidemic. This should be d
 in the paper now being drafted: it is one of the crucial steps of the entire argument!
 :::
 
+```{julia}
+push!(new_innovation.infections, 
+    Infection(0.5, 1, 2), Infection(0.85, 2, 4), Infection(1.05, 2, 3), 
+    Infection(1.1, 2, 4), Infection(1.55, 4, 6))
+```
 
 ::: {.callout-note}
 # Modification of `new_innovation`
 1. We inserted instances in which there is an extra possible infection 
 from `new_innovation` which lies between the previous infection and the last feasible infection!
-2. We have also inserted a couple of possible infections to `new_innovation` which will produce a faster 
+2. We have also inserted some possible infections to `new_innovation` which will produce a faster 
 epidemic without hitting new removals!
 :::
 
@@ -695,7 +700,7 @@ because their `target` marks are above the epidemic trajectory.
 ::: {.callout-note}
 # Possible improvement
 Modify `draw_feasible_incident` to exclude potential infections that
-rise above current epidemic trajectory? Note doing it now, because
+rise above current epidemic trajectory? Not doing it now, because
 I don't think it affects the programming, but it may help clarity
 when moving on to deal with the (so-called) "no-fly zone".
 :::
@@ -704,7 +709,8 @@ when moving on to deal with the (so-called) "no-fly zone".
 #| echo: false
 #| label: fig-with-relevant-infections
 #| fig-cap: "This improves on @fig-with-all-new-infections by adding the _relevant_      \
-#|           infections from `new_innovation` (coloured in hot-pink outline with text)."
+#|           infections from `new_innovation` (those which are additionally relevant to  \
+#|           last feasible infection are coloured in hot-pink outline with text)."
 relev = relevant_infections(evolution2, new_innovation)
 figure10 = new_figure(figure9,
     Guide.annotation(compose(context(),
@@ -845,9 +851,8 @@ See @fig-last-feasible-epidemic-bis.
 ```{julia}
 #| echo: false
 #| label: fig-last-feasible-epidemic-bis
-#| fig-cap: "This varies @fig-with-all-new-infections by omitting infections     \
-#|           from the previous evolution which are superseded by part of the     \
-#|           \"last feasible epidemic\"."
+#| fig-cap: "This varies @fig-with-all-new-infections by omitting previous     \
+#|           infections superseded by part of the \"last feasible epidemic\".  
 figure12 = new_figure(figure3,
     Guide.annotation(compose(context(),
         draw_incident(perpetuated_infections, activated=true, theme=theme))),

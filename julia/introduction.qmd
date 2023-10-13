@@ -291,12 +291,12 @@ the top end of the removal region is to be considered as _removed_.
 #| echo: false
 #| label: fig-zones
 #| fig-cap: "Infectivity and removal zones."
-xyflow = table_trajectories2(flow, theme=theme) ;
+xy_flow = table_trajectories2(flow, theme=theme) ;
 
 figure3 = new_figure(figure2,
-    layer(xyflow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+    layer(xy_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
         alpha=[2theme.opacity], style(default_color=theme.colour(R))),
-    layer(xyflow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+    layer(xy_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.colour(I))),
 )
 depict("introduction-zones", new_figure(figure3,
@@ -307,7 +307,7 @@ depict("introduction-zones", new_figure(figure3,
 #| label: tbl-evolution-enhanced
 #| tbl-cap: Enhanced table giving evolution of the epidemic
 #| echo: false
-xyflow
+xy_flow
 ```
 
 ## Adding incidents to the plot
@@ -1104,26 +1104,85 @@ and discard infection.
 
 Step (ii) involves an update of the boundary, so this has to be done using a loop rather than a list comprehension.
 ```{julia}
-prior_level = current_level = initial.n
-prior_boundary_time = current_boundary_time = nfz2[current_level]
-nfz3 = [nfz2[prior_level]]
+current_level, prior_level = initial.n - 1, initial.n
+prior_boundary_time, current_boundary_time = nfz2[prior_level], nfz2[current_level]
+nfz3 = []
 
-#while current_level > 1 && current_boundary_time = nfz3[current_level]
-#    current_level -= 1
-#end
+prior_relevant_infections2 = Infection[]
+for z in reverse(prior_relevant_infections)
+    if !(current_boundary_time < z.t ≤ prior_boundary_time && z.infectee == prior_level && z.t ≥ t0[z.target])
+        push!(prior_relevant_infections2, z)
+    end
+    if current_boundary_time < z.t ≤ prior_boundary_time && z.infectee == prior_level && z.t < t0[z.target]
+        push!(nfz3, prior_boundary_time)
+        current_level, prior_level = current_level - 1, current_level
+        current_boundary_time, prior_boundary_time = nfz2[current_level], z.t
+    elseif z.t ≤ current_boundary_time
+        while z.t ≤ current_boundary_time && current_level > 1 
+            push!(nfz3, prior_boundary_time)
+            current_level, prior_level = current_level - 1, current_level
+            current_boundary_time, prior_boundary_time = nfz2[current_level], current_boundary_time
+        end
+        if current_level == 1
+            push!(nfz3, prior_boundary_time)
+            break
+        end
+    end
+end
 
-#for z in reverse(prior_relevant_infections)
-#    if z.t > current_boundary_time
-#        if z.infectee == prior_level
-#            
-#    end
-##
-#    if z.t ≤ current_boundary_time
-#        while current_level > 1 && z.t ≤ nfz3[current_level - 1]
-#            current_level -= 1
-#        end
-#    end
-##
-#end    
 
+x0 = initial.i + initial.r
+nfz3 = reverse(append!(nfz3, repeat([0.0], x0)))
+levels = (1:initial.n).+1
+flow_nofly = DataFrame(t=nfz3, y=levels, top=initial.n)
+
+
+xy_flow_nofly = table_trajectories2(flow_nofly; theme=theme)
+deleteat!(xy_flow_nofly, [(2*initial.n)-1])
+```
+
+::: {.callout-warning}
+\NOFLYZONE copde needs checking!.
+:::
+
+
+
+```{julia}
+#| echo: false
+#| label: fig-introduction-no-fly-zone
+#| fig-cap: "Third (final) iteration of \"no-fly zone\", removing potential infections \
+#| which would infect ``no-fly zone\"."  
+figure15 = new_figure(figure3,
+    Guide.annotation(compose(context(),
+        draw_incident(perpetuated_infections, activated=true, theme=theme))),
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_connect(perpetuated_infections, activated=true, theme=theme))),
+    Guide.annotation(compose(context(),
+         draw_feasible_incident(prior_relevant_infections2, 2, inscribe=false, theme=theme))),
+    Guide.annotation(compose(context(),
+         draw_feasible_incident(posterior_relevant_infections, 1, inscribe=false, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(early_inactivated_removals, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(evolution2.cremovals, activated=true, theme=theme))),
+   Guide.annotation(compose(context(),
+       draw_activated_elements(initial, last_feasible_history, theme=theme))),
+    Guide.annotation(compose(context(),
+         draw_feasible_incident(extra, 3, theme=theme))),
+    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
+        style(line_width=theme.dormant, default_color=theme.lastfeasible2)),
+    layer(flow_nofly, x=:t, y=:y,  Geom.step(direction=:vh),
+        style(line_width=theme.trail, default_color=theme.forbid2)),
+    layer(xy_flow_nofly, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
+        alpha=[theme.opacity], style(default_color=theme.forbid1)),
+    Guide.annotation(compose(context(),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz1) if z[2]>0]),
+        linewidth(theme.boundary), stroke(theme.forbid1))),
+    Guide.annotation(compose(context(),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz2) if z[2]>0]),
+        linewidth(theme.boundary), stroke(theme.forbid2))),
+    )
+depict("introduction-no-fly-zone", new_figure(figure15,
+    Guide.title("Third (final) iteration of no-fly zone"))
+)
 ```

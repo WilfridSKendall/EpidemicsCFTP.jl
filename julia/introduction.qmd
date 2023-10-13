@@ -1134,7 +1134,7 @@ end
 x0 = initial.i + initial.r
 nfz3 = reverse(append!(nfz3, repeat([0.0], x0)))
 levels = (1:initial.n).+1
-flow_nofly = DataFrame(t=nfz3, y=levels, top=initial.n)
+flow_nofly = DataFrame(t=nfz3, y=levels, top=(initial.n)+1)
 
 
 xy_flow_nofly = table_trajectories2(flow_nofly; theme=theme)
@@ -1142,7 +1142,7 @@ deleteat!(xy_flow_nofly, [(2*initial.n)-1])
 ```
 
 ::: {.callout-warning}
-\NOFLYZONE copde needs checking!.
+\NOFLYZONE code needs checking!.
 :::
 
 

@@ -306,48 +306,6 @@ end
 ### Actual display functions
 
 """
-    Base.show(io::IO, ::MIME"text/plain", z::AbstractMarker)
-
-Implementation of `show` for `AbstractMarker`, using subscripts and 2 decimal places for time `t`. DEPRECATED
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> InitialSusceptible(0.10, 3)
-↦𝒮₀.₁₀³
-julia> InitialInfected(0.10, 3)
-↦ℐ₀.₁₀³
-julia> InitialRemoved(0.10, 3)
-↦ℛ₀.₁₀³
-julia> MarkerInfectionA(0.10, 3)
-⮥ℐ₀.₁₀³
-julia> MarkerRemovalA(0.10, 3)
-⮥ℛ₀.₁₀³
-julia> MarkerInfectionB(0.10, 3)
-⮣ℐ₀.₁₀³
-julia> MarkerRemovalB(0.10, 3)
-⮣ℛ₀.₁₀³
-julia> ContinuingSusceptible(0.10, 3)
-↠𝒮₀.₁₀³
-julia> ContinuingInfected(0.10, 3)
-↠ℐ₀.₁₀³
-julia> ContinuingRemoved(0.10, 3)
-↠ℛ₀.₁₀³
-```
-"""
-function Base.show(io::IO, ::MIME"text/plain", z::AbstractMarker)
-    t = timespec(z.t)
-    printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
-end
-
-"""
-Vanilla implementation of `show` for `AbstractMarker`
-"""
-function Base.show(io::IO, z::AbstractMarker)
-    t = timespec(z.t)
-    print(io, "$(typeof(z))($(z.t), $(z.target))")
-end
-
-"""
     Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     
 Implementation of `show` for `AbstractRemoval`, using `MIME("text/plain")` as the

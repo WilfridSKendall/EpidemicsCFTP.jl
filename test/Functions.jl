@@ -16,16 +16,6 @@
     @test  isearlier(Removal(0.5, 3),       Infection(0.90, 1, 2))
     @test  isearlier(SIR(0.0, 1, 2, 1),     SIR(0.5, 0, 3, 1))
     @test !isearlier(SIR(0.0, 1, 2, 1),     SIR(0.0, 0, 3, 1))
-    @test  isearlier(Removal(0.10, 2),      InitialSusceptible(0.5, 3))
-    @test !isearlier(Removal(0.5, 2),       InitialInfected(0.1, 3))
-    @test  isearlier(Removal(0.10, 2),      InitialRemoved(0.5, 3))
-    @test  isearlier(Removal(0.10, 2),      ContinuingSusceptible(0.5, 3))
-    @test !isearlier(Removal(0.5, 2),       ContinuingInfected(0.1, 3))
-    @test  isearlier(Removal(0.10, 2),      ContinuingRemoved(0.5, 3))
-    @test !isearlier(Removal(0.5, 2),       MarkerInfectionA(0.1, 3))
-    @test  isearlier(Removal(0.10, 2),      MarkerRemovalA(0.5, 3))
-    @test !isearlier(Removal(0.5, 2),       MarkerInfectionB(0.1, 3))
-    @test  isearlier(Removal(0.10, 2),      MarkerRemovalB(0.5, 3))
 end
 
 ## Testing `alter`

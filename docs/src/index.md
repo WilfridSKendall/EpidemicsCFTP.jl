@@ -73,16 +73,10 @@ AbstractTimedOccurrence
 `AbstractIncident` is a generic type for incidents taking place in time.
 `AbstractRemoval` and `AbstractInfection` are generic incidents corresponding
 to potential removals and potential incidents respectively.
-`AbstractMarker` is a generic type for a marker to be added programmatically
-(_not_ by the user) to indicate state of each time-line at end of its duration.
 ```@docs
 AbstractIncident
 AbstractRemoval
 AbstractInfection
-AbstractMarker
-AbstractSusceptibleMarker
-AbstractInfectionMarker
-AbstractRemovalMarker
 ```
 
 
@@ -103,34 +97,6 @@ Infection
 PInfection
 ```
 
-### Ten different kinds of `AbstractMarker`s
-`MarkerInfectionA`, `MarkerInfectionB`,
-`MarkerRemovalA`, `MarkerRemovalB` are added programmatically
-(_not_ by the user) to indicate state of each time-line at start of its 
-infection (respectively, removal).
-
-`InitialRemoved`,
-`InitialInfected`,
-`InitialSusceptible`,
-`ContinuingSusceptible`,
-`ContinuingInfected` and
-`ContinuingRemoved` are added programmatically
-(_not_ by the user) to indicate state of each time-line at start or end of 
-the simulated time-line.
-```@docs
-InitialSusceptible
-InitialInfected
-InitialRemoved
-
-MarkerInfectionA
-MarkerInfectionB
-MarkerRemovalA
-MarkerRemovalB
-
-ContinuingSusceptible
-ContinuingInfected
-ContinuingRemoved
-```
 
 ## Representing different kinds of environments and states
 `AbstractEnvironment` is a generic type for a collection of lists of `infections`,
@@ -198,12 +164,16 @@ only two arguments, and are "vanilla" versions which will be applied for
 example when echo-ing the respective instance to the terminal.
 ```@docs
 show(::IO, ::MIME"text/plain", ::AbstractRemoval)
+show(io::IO, z::AbstractRemoval)
 show(::IO, ::MIME"text/plain", ::AbstractInfection)
-show(::IO, ::MIME"text/plain", ::AbstractMarker)
+show(io::IO, z::AbstractInfection)
 show(::IO, ::MIME"text/plain", ::Innovation)
+show(io::IO, z::Innovation)
 show(::IO, ::MIME"text/plain", ::SIR)
 show(::IO, ::MIME"text/plain", ::AbstractEvolution)
 show(::IO, ::MIME"text/plain", ::BadIncident)
+Base.show(io::IO, e::BadIncident)
+show(io::IO, ::MIME"text/plain", ::Vector{T}; Int, ::String) where T <: AbstractTimedOccurrence
 ```
 
 # Index 

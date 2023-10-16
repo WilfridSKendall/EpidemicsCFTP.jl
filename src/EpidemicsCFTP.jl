@@ -18,22 +18,6 @@ import Distributions
 # =======
 # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
 
-export AbstractMarker
-export AbstractSusceptibleMarker
-export AbstractInfectionMarker
-export AbstractRemovalMarker
-
-export InitialRemoved
-export InitialInfected
-export InitialSusceptible
-export MarkerRemovalA
-export MarkerInfectionA
-export MarkerRemovalB
-export MarkerInfectionB
-export ContinuingRemoved
-export ContinuingInfected
-export ContinuingSusceptible
-
 export AbstractTimedOccurrence
 export AbstractIncident, AbstractRemoval, AbstractInfection
 export Removal, CRemoval, Infection, PInfection

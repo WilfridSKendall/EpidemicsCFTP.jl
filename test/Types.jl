@@ -3,17 +3,6 @@
 using EpidemicsCFTP
 using Test
 
-## Testing `AbstractMarker`
-@testset "EpidemicsCFTP: AbstractMarker" begin
-    for inc in [MarkerInfectionA, MarkerRemovalA, MarkerInfectionB, MarkerRemovalB, 
-                 InitialSusceptible, InitialRemoved, InitialInfected,
-                 ContinuingSusceptible, ContinuingRemoved, ContinuingInfected]
-        @test_throws DomainError    inc(0.05, -2)
-        @test_throws InexactError   inc(0.05, 2.5)
-        @test_throws DomainError    inc(0.05, -2.3)
-    end
-end
-
 ## Testing `Removal`
 @testset "EpidemicsCFTP: Removal       " begin
 inc1 = Removal

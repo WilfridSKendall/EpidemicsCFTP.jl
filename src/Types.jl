@@ -30,8 +30,7 @@ Inherits expectation of field `t<:Real` from `AbstractIncident`).
 Also expects field `target<:Integer`.
 
 If the potential removal is to become realized 
-then `target` must index a time-line which is infectious just before time `t`.
-
+then `target` must index a time line which is infectious just before time `t`.
 """
 abstract type AbstractRemoval <: AbstractIncident end
 
@@ -43,17 +42,48 @@ Inherits expectation of field `t<:Real` from `AbstractIncident`).
 Also expects fields `target<:Integer` and `infectee<:Integer`,
 such that `target < infectee`.
 
+Under conditioning on removals,
+we distinguish between `AbstractInfection` instances which _may_ be
+activated (`OperativeInfection`) and those which should not _ever_ be
+activated (`NonoOperativeInfection`), because their targets are
+on "removed" portions of time lines or because they would if activated
+lead to removal of inactivated `Removal` incidents.
+"""
+abstract type AbstractInfection <: AbstractIncident end
+
+"""
+    OperativeInfection
+
+This represents an _operative_ abstract infection using a sub-type of `AbstractInfection`.
+It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
+Also expects fields `target<:Integer` and `infectee<:Integer`,
+such that `target < infectee`.
+
 If the potential infection is to become realized 
-then `target` must index a time-line which is infectious, 
-and `infectee` must index the susceptible time-line of smallest
+then `target` must index a time line which is infectious, 
+and `infectee` must index the susceptible time line of smallest
 index, both measured just before time `t`.
 
 In particular, if there is no timeline which is susceptible
 just before time `t` then the infection cannot be realized
 whatever the value of `target`.
+"""
+abstract type OperativeInfection <: AbstractInfection end
 
 """
-abstract type AbstractInfection <: AbstractIncident end
+    NonOperativeInfection
+
+This represents a _non-operative_ abstract infection using a sub-type of `AbstractInfection`.
+It inherits from `AbstractIncident` an expectation of field `t<:Real`.  
+Also expects fields `target<:Integer` and `infectee<:Integer`,
+such that `target < infectee`.
+
+Such an incident may have 
+`target` indexing a time line which is "removed", 
+or it is the case that if activated then the incident would
+lead to removal of inactivated `Removal` incidents.
+"""
+abstract type NonOperativeInfection <: AbstractInfection end
 
 
 ## Various kinds of removal
@@ -88,7 +118,7 @@ end
     CRemoval(t::Real, target::Integer)
 
 Represent a conditioned removal using a sub-type of `AbstractRemoval`, similar to `Removal`.
-The `target` field should always index a time-line which is currently infectious 
+The `target` field should always index a time line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
 ### Example
@@ -115,7 +145,7 @@ end
 """
     Infection(t::Real, infectee::Integer, target::Integer)
 
-Represent a potential infection using a sub-type of `AbstractInfection`,
+Represent a potential infection using a sub-type of `OperativeInfection`,
 using mark time `t` and another mark `target` and a further mark `infectee`.
 Marks `target` and `infectee` must be positive integers with `target < infectee`.
 
@@ -125,7 +155,7 @@ julia> Infection(0.2, 1, 2)
 ℐ₀.₂₀¹⁻²
 ```
 """
-struct Infection <: AbstractInfection
+struct Infection <: OperativeInfection
     kind      ::String
     t         ::Float64
     target    ::Int
@@ -146,10 +176,11 @@ end
 """
     PInfection(t::Real, infectee::Integer, target::Integer)
 
-Represent a perpetuated infection using a sub-type of `AbstractInfection`
+Represent a perpetuated infection using a sub-type of `OperativeInfection`
 which is identical to `Infection` but with a different name.
-
-**CAN THIS BE DONE MORE NEATLY?**
+Intended to identify an `Infection` from a previous iteration of the CFTP
+algorithm which has had to be carried over to avoid failure to activate
+a `CRemoval`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -157,7 +188,7 @@ julia> PInfection(0.2, 1, 2)
 𝒫₀.₂₀¹⁻²
 ```
 """
-struct PInfection <: AbstractInfection
+struct PInfection <: OperativeInfection
     kind      ::String
     t         ::Float64
     target    ::Int
@@ -175,8 +206,108 @@ struct PInfection <: AbstractInfection
     end
 end
 
+"""
+    KilledInfection(t::Real, infectee::Integer, target::Integer)
+
+Represent an infection using a sub-type of `NonOperativeInfection`
+which is otherwise identical to `Infection` but with a different name.
+Intended to identify an `Infection` which cannot be activated because
+its time line is not infected.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> KilledInfection(0.2, 1, 2)
+𝒦₀.₂₀¹⁻²
+```
+"""
+struct KilledInfection <: NonOperativeInfection
+
+    kind      ::String
+    t         ::Float64
+    target    ::Int
+    infectee  ::Int
+    
+    function KilledInfection(t, target, infectee)
+        noun = "KilledInfection($t, $target, $infectee)"
+        if infectee ≤ target
+            throw(DomainError(noun, "disordered marks"))
+        elseif target ≤ 0
+            throw(DomainError(noun, "non-positive mark"))
+        else
+            new("𝒦", t, target, infectee)
+        end
+    end
+end
 
 
+"""
+    NoFlyInfection(t::Real, infectee::Integer, target::Integer)
+
+Represent an infection using a sub-type of `NonOperativeInfection`
+which is otherwise identical to `Infection` but with a different name.
+Intended to identify an `Infection` whose time line is not infected
+and whose activation would lead to activation of an otherwise inactive
+`Removal`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> NoFlyInfection(0.2, 1, 2)
+𝒩₀.₂₀¹⁻²
+```
+"""
+struct NoFlyInfection <: NonOperativeInfection
+
+    kind      ::String
+    t         ::Float64
+    target    ::Int
+    infectee  ::Int
+    
+    function NoFlyInfection(t, target, infectee)
+        noun = "NoFlyInfection($t, $target, $infectee)"
+        if infectee ≤ target
+            throw(DomainError(noun, "disordered marks"))
+        elseif target ≤ 0
+            throw(DomainError(noun, "non-positive mark"))
+        else
+            new("𝒩", t, target, infectee)
+        end
+    end
+end
+
+
+"""
+    CancelledInfection(t::Real, infectee::Integer, target::Integer)
+
+Represent an infection using a sub-type of `NonOperativeInfection`
+which is otherwise identical to `Infection` but with a different name.
+Intended to identify an `Infection` which cannot be allowed to exist because
+its time line is infected and it would lead to activation of an otherwise inactive
+`Removal`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> CancelledInfection(0.2, 1, 2)
+𝒳₀.₂₀¹⁻²
+```
+"""
+struct CancelledInfection <: NonOperativeInfection
+
+    kind      ::String
+    t         ::Float64
+    target    ::Int
+    infectee  ::Int
+    
+    function CancelledInfection(t, target, infectee)
+        noun = "CancelledInfection($t, $target, $infectee)"
+        if infectee ≤ target
+            throw(DomainError(noun, "disordered marks"))
+        elseif target ≤ 0
+            throw(DomainError(noun, "non-positive mark"))
+        else
+            new("𝒳", t, target, infectee)
+        end
+    end
+end
 
 ## Environments and trajectories
 
@@ -185,10 +316,14 @@ end
 
 Represents variants of an entire innovation of environment for a single step of algorithmic time.
 
-Should always possess field `population` (positive `Integer`) and
-`infections`, `removals`, `cremovals (`Vector{AbstractIncident}`),
-but displays `population` together with `infections`, `removals`, `cremovals` as 
-**time-ordered** lists of corresponding incidents.
+Instances should always possess the following fields: 
+
+| Field name   | Type                         |                               |
+|:-------------|:-----------------------------|:------------------------------|
+| `population` | positive `Integer`           | `Integer`                     |
+| `infections` | `Vector{OperativeInfection}` | time-ordered list             |
+| `removals`   | `Vector{Removal}`            | time-ordered list             |
+| `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty |
 """
 abstract type AbstractEnvironment end
 
@@ -209,14 +344,14 @@ time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 julia> population = 3
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
 Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
 CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 julia> Innovation(population, infections, removals, cremovals)
 Innovation(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 )
@@ -332,23 +467,31 @@ end
 
 This represents variants of evolution of an `S-I-R` epidemic..
 
-It should always possess fields `population` (positive `Integer`),
-`infections`, `removals`, `cremovals (`Vector{AbstractIncident}`),
-and computed `chronology`, `trajectory` and `history`.
+Instances should always possess fields as follows:
+
+| Field name   | Type                         |                                |
+|:-------------|:-----------------------------|:-------------------------------|
+| `infections` | `Vector{OperativeInfection}` | time-ordered list              |
+| `removals`   | `Vector{Removal}`            | time-ordered list              |
+| `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty  |
+| `chronology` | `Vector{CRemoval}`           | **computed** time-ordered list |
+| `trajectory` | `Vector{CRemoval}`           | **computed** time-ordered list |
+| `history`    | `Vector{CRemoval}`           | **computed** time-ordered list |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
 """
     BadIncident
 
-An exception to report misuse of an incident.
+An exception to report misuse of an incident. Doctests are supplied below for 
+specific sub-types.
 """
 abstract type BadIncident <: Exception end
         
 """
     MissedCRemoval
 
-This is an exception encountered when a `CRemoval` is missed by
+This is an exception raised when a `CRemoval` is missed by
 `evolution`.
 
 ## Example
@@ -372,8 +515,21 @@ end
 """
     EmployedRemoval
 
-This is an exception encountered when a `Removal` is not missed by
+This is an exception raised when a `Removal` is not missed by
 `evolution`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+population = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.05, 3), Removal(0.2, 1), Removal(0.1, 2)] ;
+cremovals  = [CRemoval(0.5, 1)] ;
+innov      = Innovation(population, infections, removals, cremovals) ;
+initial    = SIR(0.0, 2, 1, 0)
+CEvolution(initial, innov)
+
+# output
+ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.2, 1)
 ```
 """
 struct EmployedRemoval <: BadIncident
@@ -400,20 +556,20 @@ SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
 Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
 CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 julia> innov      = Innovation(population, infections, removals, cremovals)
 Innovation(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 )
 julia> Evolution(initial, innov)
 Evolution(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
@@ -464,20 +620,20 @@ SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
 Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1)]
 CRemoval[𝒞₀.₀₀¹]
 julia> innov      = Innovation(population, infections, removals, cremovals) 
 Innovation(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
 )
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
 chronology: AbstractIncident[𝒞₀.₀₀¹,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]

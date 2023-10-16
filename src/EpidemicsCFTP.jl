@@ -19,8 +19,9 @@ import Distributions
 # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
 
 export AbstractTimedOccurrence
-export AbstractIncident, AbstractRemoval, AbstractInfection
+export AbstractIncident, AbstractRemoval, AbstractInfection, OperativeInfection, NonOperativeInfection
 export Removal, CRemoval, Infection, PInfection
+export KilledInfection, NoFlyInfection, CancelledInfection
 export SIR
 
 export AbstractInnovation, AbstractEvolution

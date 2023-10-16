@@ -63,7 +63,7 @@ or `make view-pdf` (for `pdf` documentation).
 
 ## Representing different types of incidents
 Everything is built on the `AbstractTimedOccurrence`.
-The only requirement on ojections of this type is that they should possess
+The only requirement on objects of this type is that they should possess
 a real-valued attribute `t` corresponding to a (process) time.
 ```@docs
 AbstractTimedOccurrence
@@ -73,10 +73,15 @@ AbstractTimedOccurrence
 `AbstractIncident` is a generic type for incidents taking place in time.
 `AbstractRemoval` and `AbstractInfection` are generic incidents corresponding
 to potential removals and potential incidents respectively.
+`OperativeInfection` and `NonOperativeInfection` are used to distinguish between
+`AbstractInfection` incidents that could, respectively should not, form part of 
+an epidemic trajectory.
 ```@docs
 AbstractIncident
 AbstractRemoval
 AbstractInfection
+OperativeInfection
+NonOperativeInfection
 ```
 
 
@@ -89,7 +94,7 @@ Removal
 CRemoval
 ```
 
-### Two different kinds of `AbstractInfection`s
+### Two different kinds of `OperativeInfection`s
 `Infection` and `PInfection` are specific potential infection incidents;
 `PInfection` is reserved for infections which are perpetuated from an earlier stage of the CFTP run.
 ```@docs
@@ -97,6 +102,22 @@ Infection
 PInfection
 ```
 
+### Three different kinds of `NonOperativeInfection`s
+`KilledInfection`,
+`NoFlyInfection` and 
+`CancelledInfection` are specific non-operative infection incidents as tabulated.
+
+| Type of `NonOperativeInfection` | Purpose                                                  |
+|:--------------------------------|:---------------------------------------------------------|
+| `KilledInfection`               | `target` removed                                         | 
+| `NoFlyInfection`                | `target` not infected, `infectee` leads to "no-fly" zone | 
+| `CancelledInfection`            | `target` infected, `infectee` leads to "no-fly" zone     | 
+
+```@docs
+KilledInfection
+NoFlyInfection
+CancelledInfection
+```
 
 ## Representing different kinds of environments and states
 `AbstractEnvironment` is a generic type for a collection of lists of `infections`,

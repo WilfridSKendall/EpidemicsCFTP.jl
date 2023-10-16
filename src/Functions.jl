@@ -252,11 +252,11 @@ end
 Generates a random innovation, borrowing some structure from its first argument.
 
 # _Later work to be done:_
-1. _The code and name for the function `generate_innovation` should be adapted to take 
+1. _The code and name for this function should be adapted to take 
 account of the section on "Create New Samplers and Distributions"
 from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/)._
-2. _Conduct a simulation study (in a separate `quarto` notebook) to verify 
-that the rates in `generate_innovation` are correct._
+2. _Conduct a simulation study (in a separate `quarto` notebook) to verify that 
+the Poisson intensity rates used by this function are correct._
 """
 function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
     n = iv.population
@@ -396,13 +396,13 @@ Implementation of `show` for `Innovation` as three rows of lists of incidents
 julia> population = 3
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
-AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)] 
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
 julia> Innovation(population, infections, removals, CRemoval[])
 Innovation(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 )
 ```
@@ -423,13 +423,13 @@ end
 julia> population = 3
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
-AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)]
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
 julia> print(Innovation(population, infections, removals, CRemoval[]))
 Innovation(3,
-  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
+  OperativeInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
   Removal[Removal(0.1, 2), Removal(0.2, 3)])
 ```
 """
@@ -465,7 +465,7 @@ end
     
 Implementation of `show` for `AbstractEvolution` as three rows of lists of incidents
 -- or two rows if no `CRemoval`s -- together with further calculations. 
-We illustrate this second version here.
+We illustrate both these versions here.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -474,23 +474,42 @@ SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)]
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+julia> cremovals = [CRemoval(0.6, 2)]
+CRemoval[𝒞₀.₆₀²]
 julia> innovation = Innovation(population, infections, removals, CRemoval[])
 Innovation(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 )
 
 julia> Evolution(initial, innovation) 
 Evolution(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0)]
 history:    AbstractIncident[𝒫₀.₅₀¹⁻²]
 )
+
+julia> innovation = Innovation(population, infections, removals, cremovals)
+Innovation(3,
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₆₀²]
+)
+
+julia> Evolution(initial, innovation)
+Evolution(3,
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₆₀²]
+chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²,ℐ₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0),SIR₀.₆₀(1:1:1)]
+history:    AbstractIncident[𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²]
+) 
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution) 
@@ -512,7 +531,7 @@ Implementation of `show` for vector of `AbstractTimedOccurrence` with line-break
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> infections = repeat([Infection(0.7,1,2), PInfection(0.5,1,2)], 6)
-AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,
+OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,
     𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 ```
 """

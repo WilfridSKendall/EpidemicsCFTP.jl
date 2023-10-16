@@ -171,8 +171,7 @@ show(::IO, ::MIME"text/plain", ::Innovation)
 show(io::IO, z::Innovation)
 show(::IO, ::MIME"text/plain", ::SIR)
 show(::IO, ::MIME"text/plain", ::AbstractEvolution)
-show(::IO, ::MIME"text/plain", ::BadIncident)
-Base.show(io::IO, e::BadIncident)
+show(io::IO, e::BadIncident)
 show(io::IO, ::MIME"text/plain", ::Vector{T}; Int, ::String) where T <: AbstractTimedOccurrence
 ```
 

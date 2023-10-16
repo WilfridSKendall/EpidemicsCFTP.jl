@@ -171,7 +171,6 @@ Checks if the two states have the same values for `s`, `i`, `r` fields
 julia> EpidemicsCFTP.is_same_config(SIR(0.1, 1, 2, 3), SIR(0.9, 1, 2, 3))
 true
 ```
-
 """
 function is_same_config(state1::SIR, state2::SIR)::Bool
     state1.s == state2.s && state1.i == state2.i && state1.r == state2.r
@@ -253,8 +252,8 @@ end
 Generates a random innovation, borrowing some structure from its first argument.
 
 # _Later work to be done:_
-1. _The code and name for the function `generate_innovation` 
-should be adapted to take account of the section on "Create New Samplers and Distributions"
+1. _The code and name for the function `generate_innovation` should be adapted to take 
+account of the section on "Create New Samplers and Distributions"
 from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/)._
 2. _Conduct a simulation study (in a separate `quarto` notebook) to verify 
 that the rates in `generate_innovation` are correct._
@@ -311,8 +310,6 @@ end
 Implementation of `show` for `AbstractRemoval`, using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscript for the `target` field.
-Note that a more general form (arising for example from use of `print`) can be used 
-as input to produce a copy.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -320,8 +317,6 @@ julia> Removal(0.10, 3)
 ℛ₀.₁₀³
 julia> CRemoval(0.10, 3)
 𝒞₀.₁₀³
-julia> print(CRemoval(0.10, 3))
-CRemoval(0.1, 3)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
@@ -330,7 +325,18 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
 end
 
 """
-Vanilla implementation of `show` for `AbstractRemoval`
+    Base.show(io::IO, z::AbstractRemoval)
+
+This applies when used with `print`, being the string produced
+buy `repr`, and can be used 
+as input to produce a copy.
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> print(Removal(0.10, 3))
+Removal(0.1, 3)
+julia> print(CRemoval(0.10, 3))
+CRemoval(0.1, 3)
+```
 """
 function Base.show(io::IO, z::AbstractRemoval)
     t = timespec(z.t)
@@ -352,8 +358,6 @@ julia> Infection(0.10, 3, 4)
 ℐ₀.₁₀³⁻⁴
 julia> PInfection(0.10, 3, 4)
 𝒫₀.₁₀³⁻⁴
-julia> print(PInfection(0.10, 3, 4))
-PInfection(0.1, 3, 4)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
@@ -362,7 +366,19 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
 end
 
 """
-Vanilla implementation of `show` for `AbstractInfection`
+    show(io::IO, z::AbstractInfection)
+
+This applies when used with `print`, being the string produced
+buy `repr`, and can be used 
+as input to produce a copy.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> print(Infection(0.10, 3, 4))
+Infection(0.1, 3, 4)
+julia> print(PInfection(0.10, 3, 4))
+PInfection(0.1, 3, 4)
+```
 """
 function Base.show(io::IO, z::AbstractInfection)
     t = timespec(z.t)
@@ -377,7 +393,7 @@ Implementation of `show` for `Innovation` as three rows of lists of incidents
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> population = 3 
+julia> population = 3
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
 AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
@@ -389,7 +405,6 @@ Innovation(3,
 infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 )
-
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
@@ -401,7 +416,22 @@ function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
 end
 
 """
-Vanilla implementation of `show` for `Innovation`
+    Base.show(io::IO, z::Innovation)
+    
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> population = 3
+3
+julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
+AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)]
+Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+
+julia> print(Innovation(population, infections, removals, CRemoval[]))
+Innovation(3,
+  AbstractInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
+  Removal[Removal(0.1, 2), Removal(0.2, 3)])
+```
 """
 function Base.show(io::IO, z::Innovation)
     if isempty(z.cremovals)
@@ -475,7 +505,16 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
 end
 
 """
-Implementation of `show` for vector of `AbstractTimedOccurrence` with line-breaking. 
+    show(::IO, ::MIME"text/plain", ::Vector{T}; ::Int, ::String) where T <: AbstractTimedOccurrence
+
+Implementation of `show` for vector of `AbstractTimedOccurrence` with line-breaking.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> infections = repeat([Infection(0.7,1,2), PInfection(0.5,1,2)], 6)
+AbstractInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,
+    𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+```
 """
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
     if isempty(xv)
@@ -509,19 +548,13 @@ end
 
 
 """
-    Base.show(io::IO, ::MIME"text/plain", e::BadIncident)
+    Base.show(io::IO, e::BadIncident)
     
 Printing a `BadIncident` exception.
 Sub-types are: `EmployedRemoval` and `MissedCRemoval`, raised respectively when a 
 conditioned evolution uses a `Removal` which _is_ _not_ conditioned to appear in the trajectory,
 or doesn't use a `CRemoval` which _is_ conditioned to appear in the trajectory.
-"""
-function Base.show(io::IO, ::MIME"text/plain", e::BadIncident)
-    print(io, MIME("text/plain"), "$(typeof(e)): The (conditioned) evolution misused $(e.incident)")
-end
-
-"""
-Vanilla implementation of `show` for `BadIncident`
+See these types for doctests.
 """
 function Base.show(io::IO, e::BadIncident)
     print(io, "[$(typeof(e))] The (conditioned) evolution misused $(e.incident)")

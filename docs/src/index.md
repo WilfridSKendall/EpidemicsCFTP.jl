@@ -159,10 +159,9 @@ isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 ```
 
 ### Conversion methods
-A couple of methods concern conversion of one incident into another, possibly of a different type.
+A method concerning conversion of one incident into another.
 ```@docs
 alter
-perpetuate
 ```
 
 ### Methods relating to epidemic dynamics

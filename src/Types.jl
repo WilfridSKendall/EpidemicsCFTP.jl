@@ -104,9 +104,9 @@ julia> Removal(0.1, 4)
 struct Removal <: AbstractRemoval
     kind      ::String     
     t         ::Float64
-    target    ::Int
+    target    ::Int64
 
-    function Removal(t, target)
+    function Removal(t::Real, target::Integer)
         noun = "Removal($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("ℛ", t, target))
@@ -125,17 +125,25 @@ The `target` field should always index a time line which is currently infectious
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> CRemoval(0.1, 4)
 𝒞₀.₁₀⁴
+julia> z = Removal(0.1, 4) ;
+
+julia> CRemoval(z)
+𝒞₀.₁₀⁴
 ```
 """
 struct CRemoval <: AbstractRemoval
     kind      ::String     
     t         ::Float64
-    target    ::Int
+    target    ::Int64
 
-    function CRemoval(t, target)
+    function CRemoval(t::Real, target::Integer)
         noun = "CRemoval($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("𝒞", t, target))
+    end
+
+    function CRemoval(z::AbstractRemoval)
+        CRemoval(z.t, z.target)
     end
 end
 
@@ -158,10 +166,10 @@ julia> Infection(0.2, 1, 2)
 struct Infection <: OperativeInfection
     kind      ::String
     t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    target    ::Int64
+    infectee  ::Int64
 
-    function Infection(t, target, infectee)
+    function Infection(t::Real, target::Int, infectee::Int)
         noun = "Infection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -186,15 +194,19 @@ a `CRemoval`.
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> PInfection(0.2, 1, 2)
 𝒫₀.₂₀¹⁻²
+julia> z = Infection(0.2, 1, 2) ;
+
+julia> PInfection(z)
+𝒫₀.₂₀¹⁻²
 ```
 """
 struct PInfection <: OperativeInfection
     kind      ::String
     t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    target    ::Int64
+    infectee  ::Int64
     
-    function PInfection(t, target, infectee)
+    function PInfection(t::Real, target::Integer, infectee::Integer)
         noun = "PInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -203,6 +215,10 @@ struct PInfection <: OperativeInfection
         else
             new("𝒫", t, target, infectee)
         end
+    end
+    
+    function PInfection(z::AbstractInfection)
+        PInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -218,16 +234,20 @@ its time line is not infected.
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> KilledInfection(0.2, 1, 2)
 𝒦₀.₂₀¹⁻²
+julia> z = Infection(0.2, 1, 2) ;
+
+julia> KilledInfection(z)
+𝒦₀.₂₀¹⁻²
 ```
 """
 struct KilledInfection <: NonOperativeInfection
 
     kind      ::String
     t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    target    ::Int64
+    infectee  ::Int64
     
-    function KilledInfection(t, target, infectee)
+    function KilledInfection(t::Real, target::Integer, infectee::Integer)
         noun = "KilledInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -236,6 +256,10 @@ struct KilledInfection <: NonOperativeInfection
         else
             new("𝒦", t, target, infectee)
         end
+    end
+    
+    function KilledInfection(z::AbstractInfection)
+        KilledInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -253,14 +277,18 @@ and whose activation would lead to activation of an otherwise inactive
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> NoFlyInfection(0.2, 1, 2)
 𝒩₀.₂₀¹⁻²
+julia> z = Infection(0.2, 1, 2) ;
+
+julia> NoFlyInfection(z)
+𝒩₀.₂₀¹⁻²
 ```
 """
 struct NoFlyInfection <: NonOperativeInfection
 
     kind      ::String
     t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    target    ::Int64
+    infectee  ::Int64
     
     function NoFlyInfection(t, target, infectee)
         noun = "NoFlyInfection($t, $target, $infectee)"
@@ -271,6 +299,10 @@ struct NoFlyInfection <: NonOperativeInfection
         else
             new("𝒩", t, target, infectee)
         end
+    end
+    
+    function NoFlyInfection(z::AbstractInfection)
+        NoFlyInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -288,14 +320,18 @@ its time line is infected and it would lead to activation of an otherwise inacti
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> CancelledInfection(0.2, 1, 2)
 𝒳₀.₂₀¹⁻²
+julia> z = Infection(0.2, 1, 2) ;
+
+julia> CancelledInfection(z)
+𝒳₀.₂₀¹⁻²
 ```
 """
 struct CancelledInfection <: NonOperativeInfection
 
     kind      ::String
     t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    target    ::Int64
+    infectee  ::Int64
     
     function CancelledInfection(t, target, infectee)
         noun = "CancelledInfection($t, $target, $infectee)"
@@ -306,6 +342,10 @@ struct CancelledInfection <: NonOperativeInfection
         else
             new("𝒳", t, target, infectee)
         end
+    end
+    
+    function CancelledInfection(z::AbstractInfection)
+        CancelledInfection(z.t, z.target, z.infectee)
     end
 end
 

@@ -31,7 +31,7 @@ export evolution, generate_innovation
 
 export isearlier
 
-export alter, perpetuate
+export alter
 
 export BadIncident, MissedCRemoval, EmployedRemoval
 

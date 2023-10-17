@@ -8,16 +8,16 @@ using Test
 inc1 = Removal
     @test_throws DomainError    inc1(0.05, -2)
     @test_throws DomainError    inc1(0.05, 0)
-    @test_throws InexactError   inc1(0.05, 2.5)
-    @test_throws DomainError    inc1(0.05, -2.3)
+    @test_throws MethodError    inc1(0.05, 2.5)
+    @test_throws MethodError    inc1(0.05, -2.3)
 end
 
 @testset "EpidemicsCFTP: CRemoval      " begin
 inc2 = CRemoval
     @test_throws DomainError    inc2(0.05, -2)
     @test_throws DomainError    inc2(0.05, 0)
-    @test_throws InexactError   inc2(0.05, 2.5)
-    @test_throws DomainError    inc2(0.05, -2.3)
+    @test_throws MethodError   inc2(0.05, 2.5)
+    @test_throws MethodError    inc2(0.05, -2.3)
 end
 
 
@@ -28,10 +28,10 @@ end
         @test_throws DomainError    inc(0.10,-1, 2)
         @test_throws DomainError    inc(0.10, 1,-2)
         @test_throws DomainError    inc(0.10, 1, 0)
-        @test_throws InexactError   inc(0.10, 1.5, 2)
-        @test_throws InexactError   inc(0.10, 1,   2.5)
-        @test_throws InexactError   inc(0.10, 1.5, 2.5)
-        @test_throws DomainError    inc(0.10, 2.5, 1.5)
+        @test_throws MethodError    inc(0.10, 1.5, 2)
+        @test_throws MethodError    inc(0.10, 1,   2.5)
+        @test_throws MethodError    inc(0.10, 1.5, 2.5)
+        @test_throws MethodError    inc(0.10, 2.5, 1.5)
         @test_throws DomainError    inc(5.45, 0, 3)
         @test_throws DomainError    inc(5.45, 3, 2)
         @test_throws DomainError    inc(5.45, 2, 1)

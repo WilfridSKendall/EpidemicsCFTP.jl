@@ -46,28 +46,6 @@ function alter(crem::CRemoval, new_timeline::Integer)::CRemoval
     end
 end
 
-## Converting `Infection` to `PInfection`
-"""
-    perpetuate(pinf::AbstractInfection)::PInfection
-
-Produce a new `PInfection` from an `AbstractInfection` using the same marks.
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> infection_incident = Infection(0.04, 1, 4)
-ℐ₀.₀₄¹⁻⁴
-julia> perpetuate(infection_incident)
-𝒫₀.₀₄¹⁻⁴
-julia> infection_incident = PInfection(0.04, 1, 4)
-𝒫₀.₀₄¹⁻⁴
-julia> perpetuate(infection_incident)
-𝒫₀.₀₄¹⁻⁴
-```
-"""
-function perpetuate(infection_incident::AbstractInfection)::PInfection
-    PInfection(infection_incident.t, infection_incident.target, infection_incident.infectee)
-end
-
 
 """
     EpidemicsCFTP.infect(t::Real, state::SIR)::SIR

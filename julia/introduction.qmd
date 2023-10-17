@@ -729,9 +729,12 @@ We can then distinguish between infections occurring before and after removal
 #|           all the new infections that have `target` occurring after \"removal\". They       \
 #|           appear as uninscribed with light gray lines. [`fig-dividing-infections`]"
 not_killed, killed = split_off_killed_infections(evolution2, innov2)
+
+killed_style = (stroke(colorant"gray80"), linewidth(theme.dormant), strokedash([1mm, 0.2mm]))
+
 println("Not killed: ", sprint(show, MIME("text/plain"), not_killed))
 println("Killed:     ", sprint(show, MIME("text/plain"), killed))
-killed_style = (stroke(colorant"gray80"), linewidth(theme.dormant), strokedash([1mm, 0.2mm]))
+
 figure10 = new_figure(figure8a,
     Guide.annotation(compose(context(),
          draw_feasible_incident(killed, killed_style,theme=theme, inscribe=false),

@@ -148,6 +148,39 @@ struct CRemoval <: AbstractRemoval
 end
 
 
+"""
+    KilledRemoval(t::Real, target::Integer)
+
+Implements a removal which can never be activated using a sub-type of `AbstractRemoval`.  
+The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
+The `KilledRemoval` is never realized.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> KilledRemoval(0.1, 4)
+𝒦₀.₁₀⁴
+julia> z = Removal(0.1, 4) ;
+
+julia> KilledRemoval(z)
+𝒦₀.₁₀⁴
+```
+"""
+struct KilledRemoval <: AbstractRemoval
+    kind      ::String     
+    t         ::Float64
+    target    ::Int64
+
+    function KilledRemoval(t::Real, target::Integer)
+        noun = "KilledRemoval($t, $target)"
+        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("𝒦", t, target))
+    end
+
+    function KilledRemoval(z::AbstractRemoval)
+        KilledRemoval(z.t, z.target)
+    end
+end
+
 ## Various kinds of infection
 
 """

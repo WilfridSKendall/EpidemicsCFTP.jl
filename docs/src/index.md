@@ -89,9 +89,17 @@ NonOperativeInfection
 `Removal` and `CRemoval` are specific potential removal incidents: 
 `CRemoval` is reserved for realized removals (which in our application
 are always conditioned to happen).
+`KilledRemoval` is a further kind of removal which can never be realized.
+
+| Type of `AbstractRemoval`       | Purpose                                                  |
+|:--------------------------------|:---------------------------------------------------------|
+| `Removal`                       | Remove an infection if `target` infected                 | 
+| `CRemoval`                      | As above but **conditioned** to be removed               | 
+| `KilledRemoval`                 | Never to be removed (expect error if this happens!)      | 
 ```@docs
 Removal
 CRemoval
+KilledRemoval
 ```
 
 ### Two different kinds of `OperativeInfection`s

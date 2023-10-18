@@ -688,12 +688,12 @@ new epidemic trajectory!
 ```{julia}
 #| echo: false
 #| label: fig-with-all-new-infections
-#| fig-cap: "This displays _all_ the new infections from `innov2` (in pink outline with no labelling), \
-#|           using re-marked conditional removals,  new inactivated removals, activated infections             \
+#| fig-cap: "This displays _all_ the new infections from `innov2`, together with             \
+#|           re-marked conditional removals, new inactivated removals, activated infections  \
 #|           all derived from @fig-processed-cremovals. [`fig-with-all-new-infections`]"
 figure9 = new_figure(figure8a,
     Guide.annotation(compose(context(),
-         draw_feasible_incident(innov2.infections, 1, inscribe=false, theme=theme))),
+         draw_elements(innov2.infections, theme=theme))),
 )
 depict("introduction-with-all-new-infections", new_figure(figure9,
     Guide.title("New infections superimposed"))
@@ -704,18 +704,16 @@ If an infection has `target` mark referring to a time line which is
 "removed" at the infection time (mark `t`) then it can never be
 activated and so is essentially irrelevant. We signal this by
 replacing the infection by a `KilledInfection` using the following function.
+(And similarly for removals.)
 ```{julia}
-function split_off_killed_infections(ev, iv)
+function determine_killed_infections(ev, iv)
     t0, t1 = life_dates(ev)
-    not_killed, killed = AbstractInfection[], KilledInfection[]
-    for z in iv.infections
-        if z.t ≤ t1[z.target]
-            push!(not_killed, z)
-        else
-            push!(killed, KilledInfection(z))
-        end
-    end
-    return not_killed, killed
+    [ z.t ≤ t1[z.target] ? z : KilledInfection(z) for z in iv.infections ]
+end ;
+
+function determine_killed_removals(ev, iv)
+    t0, t1 = life_dates(ev)
+    [ z.t ≤ t1[z.target] ? z : KilledRemoval(z) for z in iv.removals ]
 end ;
 ```
 
@@ -725,29 +723,25 @@ We can then distinguish between infections occurring before and after removal
 ```{julia}
 #| echo: false
 #| label: fig-dividing-infections1
-#| fig-cap: "This improves on @fig-with-all-new-infections by converting to `KilledInfections` \
-#|           all the new infections that have `target` occurring after \"removal\". They       \
-#|           appear as uninscribed with light gray lines. [`fig-dividing-infections`]"
-not_killed, killed = split_off_killed_infections(evolution2, innov2)
-
-killed_style = (stroke(colorant"gray80"), linewidth(theme.dormant), strokedash([1mm, 0.2mm]))
-
-println("Not killed: ", sprint(show, MIME("text/plain"), not_killed))
-println("Killed:     ", sprint(show, MIME("text/plain"), killed))
-
+#| fig-cap: "This improves on @fig-with-all-new-infections by converting to    \
+#|            `KilledInfection`s all `Infection`s occurring after removal for  \
+#|           the relevant time line. `KilledInfection`s are displayed in light \
+#|           gray with no inscription. `[fig-dividing-infections1]`"
+differentiated = determine_killed_infections(evolution2, innov2)
 figure10 = new_figure(figure8a,
     Guide.annotation(compose(context(),
-         draw_feasible_incident(killed, killed_style,theme=theme, inscribe=false),
-         draw_feasible_incident(not_killed, 1, theme=theme)),
-    ), # Later arrange for style of `killed` to be fixed by type `KilledInfection`
+         draw_elements([z for z in differentiated if typeof(z) == KilledInfection], 
+            inscribe=false, theme=theme),
+         draw_elements([z for z in differentiated if typeof(z) != KilledInfection], 
+            inscribe=true, theme=theme),
+        )
+    ),
 )
+
 depict("introduction-dividing-infections1", new_figure(figure10,
     Guide.title("Distinguishing between new infections occurring before and after removal"))
 )
 ```
-
-
-
 
 ::: {.callout-warning}
 # EXPLORATORY FROM NOW ON

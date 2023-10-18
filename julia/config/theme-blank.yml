@@ -4,9 +4,11 @@ colour:
     CRemoval:                  "white"
     Infection:                 "white"
     PInfection:                "white"
-    AbstractInfectionMarker:   "white"
-    AbstractRemovalMarker:     "white"
-    AbstractSusceptibleMarker: "white"
+    KilledInfection:           "white"           
+    NoFlyInfection:            "white"
+    CancelledInfection:        "white"
+    KilledRemoval:             "white"
+
 
 # named colour for other purposes
 colour_x:

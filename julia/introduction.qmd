@@ -650,6 +650,8 @@ actually the same epidemic as `evolution1` (since re-marked conditional removals
 
 figure8a = new_figure(figure3,
     Guide.annotation(compose(context(),
+        draw_incident([z for z in innov1_2.infections if isa(z,PInfection)], theme=theme))),
+    Guide.annotation(compose(context(),
         draw_incident(innov1_2.removals, theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(innov1_2.cremovals, theme=theme))),
@@ -830,18 +832,6 @@ depict("introduction-with-relevant-infections", new_figure(figure10x,
 ```
 
 
-::: {.callout-warning}
-# EXPLORATORY FROM NOW ON
-:::
-
-
-
-::: {.callout-note}
-# Note on exposition
-Revise the following to achieve more clarity.
-:::
-
-
 We now compute the \LFE.
 It is required to compute the trajectory of the _last_ possible epidemic path that activates
 all the `CRemoval` events and none of the `Removal` events. 
@@ -940,13 +930,13 @@ flow_last_feasible =
     table_trajectories1(duration, last_feasible_trajectory[1], last_feasible_trajectory)
 extra = [z for z in intersect(last_feasible_history, innov2.infections)] 
 # Need the right type for resulting list!
-figure11x = new_figure(figure9,
+figure11x = new_figure(figure10,
     Guide.annotation(compose(context(),
          draw_feasible_incident(extra, 3, theme=theme))),
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
 )
-depict("introduction-last-feasible-epidemic-DEPRECATED", new_figure(figure11x,
+depict("introduction-last-feasible-epidemic", new_figure(figure11x,
     Guide.title("Last feasible epidemic"))
 )
 ```
@@ -956,6 +946,12 @@ depict("introduction-last-feasible-epidemic-DEPRECATED", new_figure(figure11x,
 Notice argument to `Geom.step` is `direction=:vh`.  
 See <http://gadflyjl.org/stable/lib/geometries/#Gadfly.Geom.step-Tuple{}>.
 :::
+
+::: {.callout-note}
+# Note on exposition
+Revise the following to achieve more clarity.
+:::
+
 
 The next step is to abandon all the infections from the previous `Evolution`
 _except that_ we perpetuate those infections which turn out to
@@ -978,13 +974,11 @@ See @fig-introduction-last-feasible-epidemicbis.
 ```{julia}
 #| echo: false
 #| label: fig-introduction-last-feasible-epidemicbis
-#| fig-cap: "This varies @fig-introduction-with-all-new-infections by omitting previous                                       \
-#|           infections superseded by part of the \"last feasible epidemic\". [`introduction-last-feasible-epidemicbis`]"  
+#| fig-cap: "This varies @fig-introduction-with-all-new-infections by omitting active infections \
+#|           from the previous epidemic which are now superseded by the \"last feasible epidemic\". [`introduction-last-feasible-epidemicbis`]" 
 figure12x = new_figure(figure3,
     Guide.annotation(compose(context(),
-        draw_incident(perpetuated_infections, activated=true, theme=theme))),
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_connect(perpetuated_infections, activated=true, theme=theme))),
+        draw_elements(perpetuated_infections, activated=true, theme=theme))),
     Guide.annotation(compose(context(),
          draw_feasible_incident(innov2.infections, 1, inscribe=false, theme=theme))),
     Guide.annotation(compose(context(),
@@ -1002,6 +996,16 @@ depict("introduction-last-feasible-epidemic-bis-DEPRECATED", new_figure(figure12
     Guide.title("Last feasible epidemic, perpetuating any infections from previous version"))
 )
 ```
+
+::: {.callout-warning}
+# EXPLORATORY FROM NOW ON
+:::
+
+
+::: {.callout-note}
+# TODO
+Place remaining code in a procedure.
+:::
 
 
 ## Computing the \NOFLYZONE
@@ -1248,3 +1252,10 @@ depict("introduction-no-fly-zone-DEPRECATED", new_figure(figure15x,
     Guide.title("Third (final) iteration of no-fly zone"))
 )
 ```
+
+
+::: {.callout-note}
+# TODO
+Finally, compute new epidemic!  
+And then clean-up in terms of drawing an epidemic derived from an `Innovation`.
+:::

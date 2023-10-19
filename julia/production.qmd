@@ -290,7 +290,7 @@ fig_nodes3 = push!(fig_nodes3,
 depict("production-draftfigure3-0", fig_nodes3)
 ```
 
-Figure3 of @ConnorKendall-2023 is made up of (boundaries and zones) @fig-production-draftfigure3a
+@ConnorKendall-2023 Figure 3 is made up of (boundaries and zones) @fig-production-draftfigure3a
 and (trajectories) @fig-production-draftfigure3b.
 
 

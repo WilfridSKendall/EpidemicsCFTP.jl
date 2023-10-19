@@ -12,12 +12,13 @@ tbl-cap-location: top
 
 from: markdown+tex_math_single_backslash
 
+
 include-before-body:
     - text: |
         \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
         \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
         \newcommand{\LFE}{``last feasible epidemic"\xspace}
-        
+
 format:
   html:
     code-fold: true
@@ -81,8 +82,8 @@ gadfly_theme = Theme(
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-# Introduction to the \(\SIR\) epidemic
-In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
+# Introduction to the $\SIR$ epidemic
+In a population of fixed size, the $\SIR$ epidemic runs under the following stochastic dynamics:
 
 \begin{tabbing}
 Infections \qquad \= \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\), \kill
@@ -345,7 +346,7 @@ Only some of these incidents are actually activated by the construction:
 This is illustrated in @fig-introduction-activated, where the activated incidents
 are emphasized by being drawn using thicker lines.
 Note that perpetuated infections (`P ≈ 𝒫`) will arise
-as part of the algorithmic time evolution of the entire \(\SIR\) trajectory.
+as part of the algorithmic time evolution of the entire $\SIR$ trajectory.
 Conditioned removals (`R ≈ ℛ`)
 are the _only_ removals which should be activated: if an ordinary removal
 (`R ≈ ℛ`) is activated then this breaks the conditioning (on all
@@ -371,7 +372,7 @@ depict("introduction-activated", new_figure(figure5,
 
 # Evolving the epidemic in algorithmic time
 We can now give a visual explanation of how to evolve
-an \(\SIR\) epidemic _in algorithmic time_,
+an $\SIR$ epidemic _in algorithmic time_,
 subject to conditioning
 on observed (conditioned) removals.
 A single step of algorithmic time evolution can be broken down into a number of sub-steps:
@@ -437,7 +438,7 @@ as a supply of components in what follows.
 # An important expositional point
 Evidently some care has to be taken to insure that individual changes satisfy the requirements
 of some kind of generalized detailed balance condition, in order to be assured that the changes
-preserve the conditional distribution of the \(\SIR\) epidemic. This should be discussed carefully 
+preserve the conditional distribution of the $\SIR$ epidemic. This should be discussed carefully 
 in the paper now being drafted: it is one of the crucial steps of the entire argument!
 :::
 
@@ -974,9 +975,12 @@ See @fig-introduction-last-feasible-epidemicbis.
 ```{julia}
 #| echo: false
 #| label: fig-introduction-last-feasible-epidemicbis
-#| fig-cap: "This varies @fig-introduction-with-all-new-infections by omitting active infections \
-#|           from the previous epidemic which are now superseded by the \"last feasible epidemic\". [`introduction-last-feasible-epidemicbis`]" 
+#| fig-cap: "This varies @fig-introduction-with-all-new-infections by omitting the active \
+#|           infections carried over from the previous epidemic which are now superseded  \
+#|           by the \"last feasible epidemic\". [`introduction-last-feasible-epidemicbis`]" 
 figure12x = new_figure(figure3,
+    Guide.annotation(compose(context(),
+        draw_incident(perpetuated_infections, theme=theme))),
     Guide.annotation(compose(context(),
         draw_elements(perpetuated_infections, activated=true, theme=theme))),
     Guide.annotation(compose(context(),

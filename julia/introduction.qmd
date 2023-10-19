@@ -759,26 +759,16 @@ depict("introduction-dividing-infections1", new_figure(figure10,
 )
 ```
 
-::: {.callout-warning}
-# EXPLORATORY FROM NOW ON
-:::
-
-
-
-::: {.callout-note}
-# Note on exposition
-Revise the following to achieve more clarity.
-:::
-
 The \LFE is formed by the slowest possible chain of activated infections that triggers all of the conditioned removals of `evolution2`,
 and this is achieved so long as the proposed chain triggers those 
 conditional removals for which the `target` field delivers
 an increase in the running supremum.
 This observation helps us to consider which 
-of the new infections
+of the new infections _prior_ to removal
 ```{julia}
 #| echo: false
-innov2.infections
+[z for z in determine_killed_infections(evolution2, innov2) 
+                if isa(z, OperativeInfection)]
 ```
 are relevant
 to construction of the \LFE. 
@@ -788,20 +778,24 @@ zone, and the `infectee` mark must not lie below the most recent running supremu
 The relevant infections are computed by the following function,
 and are depicted in @fig-introduction-with-relevant-infections.
 ```{julia}
-function relevant_infections(ev, innov1)
+function relevant_infections(ev, iv)
     t0, t1 = life_dates(ev)
+    unkilled = [z for z in determine_killed_infections(evolution2, innov2) 
+                                if isa(z, OperativeInfection)]
     relevant_inf = [z for z in ev.history if typeof(z) <: AbstractInfection]
     rsup, running_supremum_list = 0, CRemoval[]
-    for z in sort(union(ev.cremovals, innov1.infections), lt=isearlier)
+    for z in sort(union(ev.cremovals, unkilled), lt=isearlier)
         if (typeof(z) == CRemoval) && (z.target > rsup)
             push!(running_supremum_list, z)
             rsup = z.target
-        elseif typeof(z) <: AbstractInfection && t0[z.target] ≤ z.t < t1[z.target] && z.infectee > rsup
+        elseif typeof(z) <: AbstractInfection &&
+                t0[z.target] ≤ z.t < t1[z.target] && 
+                z.infectee > rsup
             push!(relevant_inf, z)
         end
     end
     return sort(relevant_inf, lt=isearlier)
-end
+end ;
 ```
 Note that the relevant infections
 ```{julia}
@@ -822,18 +816,31 @@ when moving on to deal with the (so-called) \NOFLYZONE.
 ```{julia}
 #| echo: false
 #| label: fig-introduction-with-relevant-infections
-#| fig-cap: "This improves on @fig-introduction-with-all-new-infections by emphasizing the _relevant_                               \
-#|           infections from `innov2` (those which are additionally relevant to                                \
+#| fig-cap: "This improves on @fig-introduction-dividing-infections1 by emphasizing the _relevant_ \
+#|           infections from `innov2` (those which are additionally relevant to                    \
 #|           \"last feasible epidemic\" are coloured in hot-pink outline with text). [`introduction-with-relevant-infections`]"
 relevant = relevant_infections(evolution2, innov2)
-figure10x = new_figure(figure9,
+figure10x = new_figure(figure10,
     Guide.annotation(compose(context(),
          draw_feasible_incident(relevant, 2, theme=theme))),
 )
-depict("introduction-with-relevant-infections-DEPRECATED", new_figure(figure10x,
+depict("introduction-with-relevant-infections", new_figure(figure10x,
     Guide.title("Relevant new infections are emphasized"))
 )
 ```
+
+
+::: {.callout-warning}
+# EXPLORATORY FROM NOW ON
+:::
+
+
+
+::: {.callout-note}
+# Note on exposition
+Revise the following to achieve more clarity.
+:::
+
 
 We now compute the \LFE.
 It is required to compute the trajectory of the _last_ possible epidemic path that activates

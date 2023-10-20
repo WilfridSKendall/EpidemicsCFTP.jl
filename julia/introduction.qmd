@@ -2,6 +2,8 @@
 title:  "A Graphical Introduction to Perfect Simulation of Conditioned Epidemics"
 author: "Wilfrid Kendall"
 date:   today
+bibliography: references.bib
+csl: ima-journal-of-applied-mathematics.csl
 ---
 
 ---
@@ -11,7 +13,6 @@ papersize:  a4
 tbl-cap-location: top
 
 from: markdown+tex_math_single_backslash
-
 
 include-before-body:
     - text: |
@@ -82,8 +83,8 @@ gadfly_theme = Theme(
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-# Introduction to the $\SIR$ epidemic
-In a population of fixed size, the $\SIR$ epidemic runs under the following stochastic dynamics:
+# Introduction to the \(\SIR\) epidemic
+In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
 
 \begin{tabbing}
 Infections \qquad \= \(S\to S-1\,, I \to I+1\) occur at rate \(\alpha \, S \, I\), \kill
@@ -153,7 +154,7 @@ innov1 = Innovation(initial.n,
     C[  C(1.3, 2), C(0.8, 1), C(1.7, 4), C(1.8, 4), C(1.92, 5) ])
 ```
 Incidents are displayed using corresponding script letters
-(`I ≈ ℐ`, `P ≈ 𝒫`, `R ≈ ℛ`, `C ≈ 𝒞`).
+(`I ⇒ ℐ`, `P ⇒ 𝒫`, `R ⇒ ℛ`, `C ⇒ 𝒞`).
 
 ::: {.callout-tip}
 # Explanatory note concerning `innov1`
@@ -185,7 +186,7 @@ flow = table_trajectories1(duration, initial, evolution.trajectory)
 We need graphical visualizations of
 simulation of the epidemic
 conditional on all activated removals being observed
-(recall these are denoted by `C→𝒞`
+(recall these are denoted by `C ⇒ 𝒞`
 representing "conditional removal");
 with the ultimate objective of deriving a perfect simulation under this conditioning.
 Note that the assumption of all activated removals being observed
@@ -231,6 +232,9 @@ figure1 = new_figure(curves_template,
     Guide.annotation(compose(context(),
         text(1.2, 3.2, "Peak #1"),
         text(1.6, 3.2, "Peak #2"),
+        text(0.0, 5.1, "Suceptibles"),
+        text(0.0, 1.1, "Infectives"),
+        text(1.0, 1.1, "Removals"),
         fontsize(6pt)))
 )
 depict("introduction-curves", figure1)
@@ -336,26 +340,26 @@ depict("introduction-incidents", new_figure(figure4,
 ## Indicating activated incidents
 Only some of these incidents are actually activated by the construction:
 
- * _Infections_ (`I ≈ ℐ` and `P ≈ 𝒫`) must lie inside the infectivity zone with
+ * _Infections_ (`I ⇒ ℐ` and `P ⇒ 𝒫`) must lie inside the infectivity zone with
  infectee marks reaching 
  up to the time line which at that point of time is immediately above
  the infectivity zone (and hence must reach exactly
  one time line above the highest infected time line);
- * _Removals_ (`R ≈ ℛ` and `C ≈ 𝒞`) must lie inside the infectivity zone.
+ * _Removals_ (`R ⇒ ℛ` and `C ⇒ 𝒞`) must lie inside the infectivity zone.
 
 This is illustrated in @fig-introduction-activated, where the activated incidents
-are emphasized by being drawn using thicker lines.
-Note that perpetuated infections (`P ≈ 𝒫`) will arise
+are emphasized by being drawn using arrows with thicker lines.
+Note that perpetuated infections (`P ⇒ 𝒫`) will arise
 as part of the algorithmic time evolution of the entire $\SIR$ trajectory.
-Conditioned removals (`R ≈ ℛ`)
+Conditioned removals (`R ⇒ ℛ`)
 are the _only_ removals which should be activated: if an ordinary removal
-(`R ≈ ℛ`) is activated then this breaks the conditioning (on all
+(`R ⇒ ℛ`) is activated then this breaks the conditioning (on all
 observed removals) that we have imposed.
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-activated
-#| fig-cap: "Activated incidents (thicker lines) driving the epidemic:        \
+#| fig-cap: "Activated incidents (thicker arrows) driving the epidemic:        \
 #|           notice that activated removals are exactly those removals lying  \
 #|           in the infectivity zone, while activated infections are exactly  \
 #|           those infections reaching from within the infectivity zone to    \
@@ -379,24 +383,24 @@ A single step of algorithmic time evolution can be broken down into a number of 
 
 1. Sample a new `Innovation` structure with fixed times for the conditional removals;
 2. Remove all unconditioned removals
-(those removals not activated, denoted by `R ≈ ℛ`);
+(those removals not activated, denoted by `R ⇒ ℛ`);
 3. Insert precisely those removals from the new `Innovation` 
 structure which will not be activated
 (equivalently, which do not lie in the infectivity zone);
 4. Re-sample proposed time lines for each of the conditioned removals
-(denoted by `C ≈ 𝒞`),
+(denoted by `C ⇒ 𝒞`),
 accepting proposals for which the relevant conditioned removal 
 is still in the infectivity zone; 
 5. Now work from right to left, deciding for each old infection incident from the new `Innovation`
 whether it is to be removed, and for each new infection incident from the new `Innovation`
 whether it is to be introduced:
    - an old infection incident is removed unless so doing 
- would result in a conditioned removal (`C ≈ 𝒞`) _not_ being removed. 
+ would result in a conditioned removal (`C ⇒ 𝒞`) _not_ being removed. 
  If that
  turns out to be the case, then the old infection incident is retained
- but converted into a _perpetuated_ infection (`P ≈ 𝒫`);
+ but converted into a _perpetuated_ infection (`P ⇒ 𝒫`);
    - a new infection incident is introduced unless so doing would
- result in a potential (but not activated / conditioned) removal (`R ≈ ℛ`)
+ result in a potential (but not activated / conditioned) removal (`R ⇒ ℛ`)
  being activated.
  If that
  turns out to be the case, then the new infection incident is not introduced.

@@ -1,0 +1,285 @@
+---
+title:  "Checking Simulation of Innovations for Epidemics"
+author: "Wilfrid Kendall"
+date:   today
+bibliography: references.bib
+csl: ima-journal-of-applied-mathematics.csl
+---
+
+---
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+        \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
+        \newcommand{\LFE}{``last feasible epidemic"\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+jupyter:    julia-1.9
+---
+
+```{julia}
+#| include: false
+#| tags: [parameters]
+source = "check.qmd"
+```
+
+
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames
+import Markdown
+ownversion = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
+ownbranch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+Markdown.parse("""
+| Software                     | Version                         | Branch                         |
+|:-----------------------------|:--------------------------------|-------------------------------:|
+| Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 |
+| Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`        | `$VERSION`                      | ---                            |
+""")
+```
+
+
+```{julia}
+#| include: false
+import Random
+Random.seed!(2)
+
+theme = create_theme(load_theme("config/theme.yml"))
+
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
+    grid_line_width=0mm,
+)
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
+
+# Testing the generation of `Innovation`s
+
+## Definition of epidemic parameters
+In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
+\begin{tabbing}
+\emph{Xemovals:}\qquad\= \(S\to S-1\), \= \((R \to R+1\) \= occurs at rate \(\beta \, I\), \kill
+\emph{Infections:}    \> \(S\to S-1\),   \> \(I \to I+1\) \> occurs at rate \(\alpha \, S \, I\),\\
+\emph{Removals:}      \> \(I \to I-1\),  \> \(R \to R+1\) \> occurs at rate \(\beta \, I\).     
+\end{tabbing}
+The structural parameter of epidemic `duration` 
+(a positive real number)
+and the `initial1` configuration
+(of `SIR` type) are given by
+`julia` constants,
+as are the per-pair infection rate `α` and the per-individual rate of removal `β`.
+The population size is computed as part of the construction of `initial1`.
+```{julia}
+const duration = 2.0;
+const α, β = 0.2, 1.5;
+const initial1 = SIR(0.0, 5, 1, 0);
+
+const n1 = initial1.n ;
+samplesize = 10000 ;
+
+println("Total population size is $n1.")
+```
+
+## Simulation and storage of results
+A sample of random `Innovation`s (with no conditional removals)
+is generated using the following (non-executing) code.
+```julia
+generate_innovation(initial1.n, duration, α=α, β=β)
+```
+Total numbers of `Infection`s with specified `infectee` marks
+and numbers of `Removal`s with specified `target` marks are tabulated.
+The logic here is as follows:
+
+(a) a given time line \(x\) accumulates infections arising from contacts between
+a `target` time line (must lie strictly below time line \(x\))
+and
+an `infectee` time line (must be at time line \(x\) or higher)
+thus occurring at a rate \((x-1)(n1-x+1) α\);
+
+(b) a given time line \(x\) accumulates removals arising from each of the time lines
+\(x\) and lower,
+thus removals for time line \(x\) must occur at a rate \(x β\).
+
+```{julia}
+#| echo: false
+
+data = DataFrame() ;
+
+data[:, "Time line"]      = 1:n1
+data.infections          .= 0 ;
+data[:, "𝔼[infections]"]  = [(x - 1) * (n1 - x + 1) *  α * samplesize * duration for x in 1:n1] ;
+data.removals            .= 0 ;
+data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n1] ;
+```
+
+The results of the simulation, together with expected mean numbers, are as follows:
+```{julia}
+println("Accumulating counts from a total of $(samplesize) replicates.")
+
+for x in 1:samplesize
+    iv = generate_innovation(initial1.n, duration, α=α, β=β)
+    data.infections = data.infections + 
+      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n1]
+    data.removals   = data.removals   + 
+      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n1]
+end
+
+println(data)
+```
+
+## Statistical analysis
+The `removals` column in `data` is cumulative, so use a running difference 
+to derive independent data.
+```{julia}
+data[:, "removals diff"]    = [data.removals[1];          diff(data.removals)]
+data[:, "𝔼[removals diff]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
+println(data[:, ["infections", "𝔼[infections]", "removals diff", "𝔼[removals diff]"]])
+```
+Now each entry in either of `infections` or `removals_diff` is independent Poisson
+with mean given by the corresponding `𝔼[...]`. For these large means we can use the 
+normal approximation to the Poisson distribution.
+Note that from here onwards we have stipulated that `Float64` be printed to only 2 decimal places!
+```{julia}
+import Distributions: Normal, ccdf
+using Printf
+Base.show(io::IO, f::Float64) = @printf(io, "%1.2f", f)
+
+data[:, "p-value (inf)"] = 
+  2ccdf(Normal(), abs.(data.infections - data[:, "𝔼[infections]"]) ./ .√(data[:, "𝔼[infections]"]))
+data[:, "p-value (rem)"] = 
+  2ccdf(Normal(), abs.(data.removals - data[:, "𝔼[removals]"]) ./ .√(data[:, "𝔼[removals]"]))
+
+println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
+          "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
+```
+
+
+
+## An example using a larger population.
+This repeats the simulations of the previous section for a larger population.
+```{julia}
+#| echo: false
+const initial2 = SIR(0.0, 10, 1, 0)
+const n2 = initial2.n ;
+```
+
+```{julia}
+#| echo: false
+
+data = DataFrame() ;
+
+data[:, "Time line"]      = 1:n2
+data.infections          .= 0 ;
+data[:, "𝔼[infections]"]  = [(x - 1) * (n2 - x + 1) *  α * samplesize * duration for x in 1:n2] ;
+data.removals            .= 0 ;
+data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n2] ;
+```
+
+```{julia}
+#| echo: false
+for x in 1:samplesize
+    iv = generate_innovation(n2, duration, α=α, β=β)
+    data.infections = data.infections + 
+      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n2]
+    data.removals   = data.removals   + 
+      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n2]
+end ;
+```
+
+```{julia}
+#| echo: false
+data[:, "removals diff"]    = [data.removals[1];          diff(data.removals)]
+data[:, "𝔼[removals diff]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
+println(data[:, ["infections", "𝔼[infections]", "removals diff", "𝔼[removals diff]"]])
+```
+
+```{julia}
+#| echo: false
+data[:, "p-value (inf)"] = 
+  2ccdf(Normal(), abs.(data.infections - data[:, "𝔼[infections]"]) ./ .√(data[:, "𝔼[infections]"]))
+data[:, "p-value (rem)"] = 
+  2ccdf(Normal(), abs.(data.removals - data[:, "𝔼[removals]"]) ./ .√(data[:, "𝔼[removals]"]))
+
+println("Total population size is $n2; simulation uses $samplesize replicates:")
+println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
+          "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
+```
+In a sequence of 21 independent Z-tests there is just one p-value at about 0.01.
+
+
+
+## An example using a still larger population.
+```{julia}
+#| echo: false
+const initial3 = SIR(0.0, 15, 1, 0)
+const n3 = initial3.n ;
+```
+
+```{julia}
+#| echo: false
+
+data = DataFrame() ;
+
+data[:, "Time line"]      = 1:n3
+data.infections          .= 0 ;
+data[:, "𝔼[infections]"]  = [(x - 1) * (n3 - x + 1) *  α * samplesize * duration for x in 1:n3] ;
+data.removals            .= 0 ;
+data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n3] ;
+```
+
+```{julia}
+#| echo: false
+
+for x in 1:samplesize
+    iv = generate_innovation(n3, duration, α=α, β=β)
+    data.infections = data.infections + 
+      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n3]
+    data.removals   = data.removals   + 
+      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n3]
+end ;
+```
+
+```{julia}
+#| echo: false
+data[:, "removals diff"]    = [data.removals[1];          diff(data.removals)]
+data[:, "𝔼[removals diff]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
+data[:, ["infections", "𝔼[infections]", "removals diff", "𝔼[removals diff]"]] ;
+```
+
+```{julia}
+#| echo: false
+println("Total population size is $n3; simulation uses $samplesize replicates:")
+data[:, "p-value (inf)"] = 
+  2ccdf(Normal(), (abs.(data.infections - data[:, "𝔼[infections]"])) ./ .√(data[:, "𝔼[infections]"]))
+data[:, "p-value (rem)"] = 
+  2ccdf(Normal(), (abs.(data.removals - data[:, "𝔼[removals]"])) ./ .√(data[:, "𝔼[removals]"]))
+println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
+          "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
+```

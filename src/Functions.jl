@@ -256,6 +256,26 @@ function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::R
     end
 end
 
+"""
+    generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
+
+Generates a random innovation (with empty `cremoval` list), using first argument for population size.
+
+_Later work to be done:_ see remarks for 
+`generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)`.
+"""
+function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
+    removals = union([Removal[Removal(t, k) 
+        for t in rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
+        for k in 1:n]...)
+    infections = union(Vector{AbstractInfection}[[
+                        Infection(t, rand(Distributions.DiscreteUniform(1, k-1)), k)
+                    for t in rand(Distributions.Uniform(0, duration), 
+                        rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
+                    for k in 2:n]...)
+    return Innovation(n, infections, removals)
+end
+
 
 ## Compact printing
 

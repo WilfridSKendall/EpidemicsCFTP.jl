@@ -162,20 +162,16 @@ data[:, "removals diff"]    = [data.removals[1];          diff(data.removals)]
 data[:, "𝔼[removals diff]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
 println(data[:, ["infections", "𝔼[infections]", "removals diff", "𝔼[removals diff]"]])
 ```
-Now each entry in either of `infections` or `removals_diff` is independent Poisson
-with mean given by the corresponding `𝔼[...]`. For these large means we can use the 
-normal approximation to the Poisson distribution.
-Note that from here onwards we have stipulated that `Float64` be printed to only 2 decimal places!
+Entries in both of `infections` and `removals_diff` are independent Poisson
+with mean given by the corresponding `𝔼[...]`. The 
+normal approximation to the Poisson distribution applies here.
 ```{julia}
+using Printf ; Base.show(io::IO, f::Float64) = @printf(io, "%1.2f", f) # 2dp printing here onwards
 import Distributions: Normal, ccdf
-using Printf
-Base.show(io::IO, f::Float64) = @printf(io, "%1.2f", f)
-
 data[:, "p-value (inf)"] = 
   2ccdf(Normal(), abs.(data.infections - data[:, "𝔼[infections]"]) ./ .√(data[:, "𝔼[infections]"]))
 data[:, "p-value (rem)"] = 
   2ccdf(Normal(), abs.(data.removals - data[:, "𝔼[removals]"]) ./ .√(data[:, "𝔼[removals]"]))
-
 println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
           "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
 ```
@@ -231,8 +227,10 @@ println("Total population size is $n2; simulation uses $samplesize replicates:")
 println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
           "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
 ```
-In a sequence of 21 independent Z-tests there is just one p-value at about 0.01.
 
+::: {.callout-tip}
+In a sequence of 21 independent Z-tests there is just one p-value at about 0.01.
+:::
 
 
 ## An example using a still larger population.
@@ -283,3 +281,8 @@ data[:, "p-value (rem)"] =
 println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
           "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
 ```
+
+::: {.callout-tip}
+In a total of 63 independent Z-tests there is just one p-value at about 0.01.
+:::
+

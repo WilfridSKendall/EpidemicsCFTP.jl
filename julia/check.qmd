@@ -45,8 +45,9 @@ source = "check.qmd"
 #| echo: false
 #| eval: true
 #| cache: false
-using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames
-import Markdown
+using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, DataFrames, PrettyTables
+import Distributions: Normal, ccdf
+import Markdown, Random
 ownversion = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
 ownbranch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
@@ -62,7 +63,6 @@ Markdown.parse("""
 
 ```{julia}
 #| include: false
-import Random
 Random.seed!(2)
 
 theme = create_theme(load_theme("config/theme.yml"))
@@ -101,14 +101,15 @@ const duration = 2.0;
 const α, β = 0.2, 1.5;
 const initial1 = SIR(0.0, 5, 1, 0);
 
-const n1 = initial1.n ;
+const n₁ = initial1.n ;
 samplesize = 10000 ;
 
-println("Total population size is $n1.")
+println("Total population size is $n₁.")
 ```
 
 ## Simulation and storage of results
-A sample of a random `Innovation` (with no conditional removals)
+A sample of a random `Innovation` (with no conditional removals),
+based on \(n=n_1\) time lines,
 is generated using the following invocation:
 `generate_innovation(initial1.n, duration, α=α, β=β)`.
 Total numbers of `Infection`s with specified `infectee` marks
@@ -119,7 +120,7 @@ The logic here is as follows:
 a `target` time line (must lie strictly below time line \(x\))
 and
 an `infectee` time line (must be at time line \(x\) or higher)
-thus occurring at a rate \((x-1)(n1-x+1) α\);
+thus occurring at a rate \((x-1)(n_1-x+1) α\);
 
 (b) a given time line \(x\) accumulates removals arising from each of the time lines
 \(x\) and lower,
@@ -130,92 +131,96 @@ thus removals for time line \(x\) must occur at a rate \(x β\).
 
 data = DataFrame() ;
 
-data[:, "Time line"]      = 1:n1
+data[:, "Time line"]      = 1:n₁
 data.infections          .= 0 ;
-data[:, "𝔼[infections]"]  = [(x - 1) * (n1 - x + 1) *  α * samplesize * duration for x in 1:n1] ;
+data[:, "𝔼[infections]"]  = [(x - 1) * (n₁ - x + 1) *  α * samplesize * duration for x in 1:n₁] ;
 data.removals            .= 0 ;
-data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n1] ;
+data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n₁] ;
 ```
 
 The results of the simulation, together with expected mean numbers, are as follows:
 ```{julia}
-println("Accumulating counts from a total of $(samplesize) replicates.")
-
 for x in 1:samplesize
     iv = generate_innovation(initial1.n, duration, α=α, β=β)
     data.infections = data.infections + 
-      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n1]
+      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n₁]
     data.removals   = data.removals   + 
-      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n1]
+      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n₁]
 end
 
-println(data)
+pretty_table(data; alignment=[:l, :r, :r, :r, :r], formatters = ft_printf("%5d"), 
+  header = ["Time line", "infections", "𝔼[infections]", "removals", "𝔼[removals]"])
 ```
 
 ## Statistical analysis
 The `removals` column in `data` is cumulative, so use a running difference 
 to derive independent data.
 ```{julia}
-data[:, "removals diff"]    = [data.removals[1];          diff(data.removals)]
-data[:, "𝔼[removals diff]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
-println(data[:, ["infections", "𝔼[infections]", "removals diff", "𝔼[removals diff]"]])
+data[:, "Δremovals"]    = [data.removals[1];          diff(data.removals)]
+data[:, "𝔼[Δremovals]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
+pretty_table(data[:, ["Time line", "infections", "𝔼[infections]", "Δremovals", "𝔼[Δremovals]"]];
+  alignment=[:l, :r, :r, :r, :r], formatters = ft_printf("%6d"), 
+  header = ["Time line", "infections", "𝔼[infections]", "Δremovals", "𝔼[Δremovals]"]);
 ```
-Entries in both of `infections` and `removals_diff` are independent Poisson
+Entries in both of `infections` and `Δremovals` are independent Poisson
 with mean given by the corresponding `𝔼[...]`. The 
 normal approximation to the Poisson distribution applies here.
 ```{julia}
-import Distributions: Normal, ccdf
-using Printf ; Base.show(io::IO, f::Float64) = @printf(io, "%1.2f", f)
-
 data[:, "p-value (inf)"] = 
   2ccdf(Normal(), abs.(data.infections - data[:, "𝔼[infections]"]) ./ .√(data[:, "𝔼[infections]"]))
 data[:, "p-value (rem)"] = 
   2ccdf(Normal(), abs.(data.removals - data[:, "𝔼[removals]"]) ./ .√(data[:, "𝔼[removals]"]))
-println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
-          "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
+println("Total population size is $n₁; simulation uses $samplesize replicates:")
+pretty_table(data[:, ["Time line", "infections", "𝔼[infections]", "p-value (inf)",
+  "Δremovals", "𝔼[Δremovals]", "p-value (rem)"]], alignment=[:l, :r, :r, :l, :r, :r, :l],
+  formatters = (ft_printf("%5d", [3,6]), ft_printf("%1.2f", [4,7]), (v, i, j)->(v=="NaN" ? "---" : v)),
+  header = ["Time line", "infections", "𝔼[infections]", "p-value", 
+                      "Δremovals", "𝔼[Δremovals]", "p-value"])
 ```
 
-::: {.callout-warning}
-Note: 2dp printing here onwards!
+::: {.callout-tip}
+## Assessment
+In a sequence of \(11\) independent \(Z\)-tests, no \(p\)-values are at the \(0.01\) level or lower.
 :::
-
-
 
 ## An example using a larger population.
 This repeats the simulations of the previous section for a larger population.
 ```{julia}
 #| echo: false
 const initial2 = SIR(0.0, 10, 1, 0)
-const n2 = initial2.n ;
+const n₂ = initial2.n ;
 ```
 
 ```{julia}
 #| echo: false
 
 data = DataFrame() ;
-data[:, "Time line"]      = 1:n2
+data[:, "Time line"]      = 1:n₂
 data.infections          .= 0 ;
-data[:, "𝔼[infections]"]  = [(x - 1) * (n2 - x + 1) *  α * samplesize * duration for x in 1:n2] ;
+data[:, "𝔼[infections]"]  = [(x - 1) * (n₂ - x + 1) *  α * samplesize * duration for x in 1:n₂] ;
 data.removals            .= 0 ;
-data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n2] ;
+data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n₂] ;
 ```
 
 ```{julia}
 #| echo: false
 for x in 1:samplesize
-    iv = generate_innovation(n2, duration, α=α, β=β)
+    iv = generate_innovation(n₂, duration, α=α, β=β)
     data.infections = data.infections + 
-      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n2]
+      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n₂]
     data.removals   = data.removals   + 
-      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n2]
+      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n₂]
 end ;
 ```
 
 ```{julia}
 #| echo: false
-data[:, "removals diff"]    = [data.removals[1];          diff(data.removals)]
-data[:, "𝔼[removals diff]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
-println(data[:, ["infections", "𝔼[infections]", "removals diff", "𝔼[removals diff]"]])
+data[:, "Δremovals"]    = [data.removals[1];          diff(data.removals)]
+data[:, "𝔼[Δremovals]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
+pretty_table(data[:, ["Time line", "infections", "𝔼[infections]", "Δremovals", "𝔼[Δremovals]"]], 
+  alignment=[:l, :r, :r, :r, :r], formatters = ft_printf("%6d"),
+  header = ["Time line", "infections", "𝔼[infections]", "Δremovals", "𝔼[Δremovals]"],
+      );
 ```
 
 ```{julia}
@@ -225,13 +230,21 @@ data[:, "p-value (inf)"] =
 data[:, "p-value (rem)"] = 
   2ccdf(Normal(), abs.(data.removals - data[:, "𝔼[removals]"]) ./ .√(data[:, "𝔼[removals]"]))
 
-println("Total population size is $n2; simulation uses $samplesize replicates:")
-println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
-          "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
+
+println("Total population size is $n₃; simulation uses $samplesize replicates:")
+pretty_table(data[:, ["Time line", "infections", "𝔼[infections]", "p-value (inf)",
+  "Δremovals", "𝔼[Δremovals]", "p-value (rem)"]], alignment=[:l, :r, :r, :l, :r, :r, :l],
+  formatters = ((v, i, j)->(isnan(v) ? "---" : (j > 3 && v<=0.05 ? "$(round(v, digits=2))**" : v)), 
+                ft_printf("%5d", [3,6]), ft_printf("%1.2f", [4,7]), 
+                ),
+  header = ["Time line", "infections", "𝔼[infections]", "p-value", 
+                      "Δremovals", "𝔼[Δremovals]", "p-value"],
+  )
 ```
 
 ::: {.callout-tip}
-In a sequence of 21 independent Z-tests there is just one \(p\)-value at about 0.01.
+## Assessment
+In a sequence of \(21\) independent \(Z\)-tests there is just one \(p\)-value at the \(0.01\) level or lower.
 :::
 
 
@@ -239,7 +252,7 @@ In a sequence of 21 independent Z-tests there is just one \(p\)-value at about 0
 ```{julia}
 #| echo: false
 const initial3 = SIR(0.0, 15, 1, 0)
-const n3 = initial3.n ;
+const n₃ = initial3.n ;
 ```
 
 ```{julia}
@@ -247,45 +260,57 @@ const n3 = initial3.n ;
 
 data = DataFrame() ;
 
-data[:, "Time line"]      = 1:n3
+data[:, "Time line"]      = 1:n₃
 data.infections          .= 0 ;
-data[:, "𝔼[infections]"]  = [(x - 1) * (n3 - x + 1) *  α * samplesize * duration for x in 1:n3] ;
+data[:, "𝔼[infections]"]  = [(x - 1) * (n₃ - x + 1) *  α * samplesize * duration for x in 1:n₃] ;
 data.removals            .= 0 ;
-data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n3] ;
+data[:, "𝔼[removals]"]    = [β * x * samplesize * duration for x in 1:n₃] ;
 ```
 
 ```{julia}
 #| echo: false
 
 for x in 1:samplesize
-    iv = generate_innovation(n3, duration, α=α, β=β)
+    iv = generate_innovation(n₃, duration, α=α, β=β)
     data.infections = data.infections + 
-      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n3]
+      [length([z for z in iv.infections if z.infectee == i]) for i in 1:n₃]
     data.removals   = data.removals   + 
-      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n3]
+      [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n₃]
 end ;
 ```
 
 ```{julia}
 #| echo: false
-data[:, "removals diff"]    = [data.removals[1];          diff(data.removals)]
-data[:, "𝔼[removals diff]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
-data[:, ["infections", "𝔼[infections]", "removals diff", "𝔼[removals diff]"]] ;
+data[:, "Δremovals"]    = [data.removals[1];          diff(data.removals)]
+data[:, "𝔼[Δremovals]"] = [data[:, "𝔼[removals]"][1]; diff(data[:, "𝔼[removals]"])]
+data[:, ["infections", "𝔼[infections]", "Δremovals", "𝔼[Δremovals]"]] ;
 ```
 
 ```{julia}
 #| echo: false
-println("Total population size is $n3; simulation uses $samplesize replicates:")
 data[:, "p-value (inf)"] = 
   2ccdf(Normal(), (abs.(data.infections - data[:, "𝔼[infections]"])) ./ .√(data[:, "𝔼[infections]"]))
 data[:, "p-value (rem)"] = 
   2ccdf(Normal(), (abs.(data.removals - data[:, "𝔼[removals]"])) ./ .√(data[:, "𝔼[removals]"]))
-println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
-          "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
+
+println("Total population size is $n₃; simulation uses $samplesize replicates:")
+pretty_table(data[:, ["Time line", "infections", "𝔼[infections]", "p-value (inf)",
+  "Δremovals", "𝔼[Δremovals]", "p-value (rem)"]], alignment=[:l, :r, :r, :l, :r, :r, :l],
+  formatters = ((v, i, j)->(isnan(v) ? "---" : (j > 3 && v<=0.05 ? "$v**" : v)), 
+                ft_printf("%5d", [3,6]), ft_printf("%1.2f", [4,7]), 
+                ),
+  header = ["Time line", "infections", "𝔼[infections]", "p-value", 
+                      "Δremovals", "𝔼[Δremovals]", "p-value"],
+  )
 ```
 
 ::: {.callout-tip}
-## Summary assessment
+## Assessment
+In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at the \(0.01\) level or lower.
+:::
+
+::: {.callout-tip}
+## Overall assessment
 In a total of \(63\) independent \(Z\)-tests, only one of the \(p\)-values sinks to the level of \(0.01\).
 :::
 

@@ -108,11 +108,9 @@ println("Total population size is $n1.")
 ```
 
 ## Simulation and storage of results
-A sample of random `Innovation`s (with no conditional removals)
-is generated using the following (non-executing) code.
-```julia
-generate_innovation(initial1.n, duration, α=α, β=β)
-```
+A sample of a random `Innovation` (with no conditional removals)
+is generated using the following invocation:
+`generate_innovation(initial1.n, duration, α=α, β=β)`.
 Total numbers of `Infection`s with specified `infectee` marks
 and numbers of `Removal`s with specified `target` marks are tabulated.
 The logic here is as follows:
@@ -166,8 +164,9 @@ Entries in both of `infections` and `removals_diff` are independent Poisson
 with mean given by the corresponding `𝔼[...]`. The 
 normal approximation to the Poisson distribution applies here.
 ```{julia}
-using Printf ; Base.show(io::IO, f::Float64) = @printf(io, "%1.2f", f) # 2dp printing here onwards
 import Distributions: Normal, ccdf
+using Printf ; Base.show(io::IO, f::Float64) = @printf(io, "%1.2f", f)
+
 data[:, "p-value (inf)"] = 
   2ccdf(Normal(), abs.(data.infections - data[:, "𝔼[infections]"]) ./ .√(data[:, "𝔼[infections]"]))
 data[:, "p-value (rem)"] = 
@@ -175,6 +174,10 @@ data[:, "p-value (rem)"] =
 println(data[:, ["infections", "𝔼[infections]", "p-value (inf)", 
           "removals diff", "𝔼[removals diff]", "p-value (rem)"]])
 ```
+
+::: {.callout-warning}
+Note: 2dp printing here onwards!
+:::
 
 
 
@@ -190,7 +193,6 @@ const n2 = initial2.n ;
 #| echo: false
 
 data = DataFrame() ;
-
 data[:, "Time line"]      = 1:n2
 data.infections          .= 0 ;
 data[:, "𝔼[infections]"]  = [(x - 1) * (n2 - x + 1) *  α * samplesize * duration for x in 1:n2] ;
@@ -229,7 +231,7 @@ println(data[:, ["infections", "𝔼[infections]", "p-value (inf)",
 ```
 
 ::: {.callout-tip}
-In a sequence of 21 independent Z-tests there is just one p-value at about 0.01.
+In a sequence of 21 independent Z-tests there is just one \(p\)-value at about 0.01.
 :::
 
 
@@ -283,6 +285,7 @@ println(data[:, ["infections", "𝔼[infections]", "p-value (inf)",
 ```
 
 ::: {.callout-tip}
-In a total of 63 independent Z-tests there is just one p-value at about 0.01.
+## Summary assessment
+In a total of \(63\) independent \(Z\)-tests, only one of the \(p\)-values sinks to the level of \(0.01\).
 :::
 

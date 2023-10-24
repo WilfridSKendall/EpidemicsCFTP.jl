@@ -115,9 +115,9 @@ samplesize = 10000 ;
 
 ## Simulation and storage of results
 A sample of a random `Innovation` (with no conditional removals),
-based on \(n=n₁\) time lines,
+based on \(n\) time lines,
 is generated using the following invocation:
-`generate_innovation(n₁, duration, α=α, β=β)`.
+`generate_innovation(n, duration, α=α, β=β)`.
 Total numbers of `Infection`s with specified `infectee` marks
 and numbers of `Removal`s with specified `target` marks are tabulated
 in a `DataFrame` together with mean values.
@@ -127,11 +127,11 @@ The logic here is as follows:
 a `target` time line (lies strictly below time line \(x+1\))
 and
 an `infectee` time line (namely time line \(x+1\))
-thus occurring at a rate \(x(n₁-x) α\), yielding specified infection rate;
+thus occurring at a rate \(α \, x(n-x)\), yielding specified infection rate;
 
 (b) a given time line \(x\) accumulates potential removals arising from each of the time lines
 \(x\) and lower,
-thus removals for time line \(x\) must occur at a rate \(x β\), yielding specified removal rate.
+thus removals for time line \(x\) must occur at a rate \(β\, x\), yielding specified removal rate.
 
 The following function returns a `DataFrame` of time line identifiers, and
 also counts
@@ -144,7 +144,7 @@ function simulate_innovations(n, t, α, β, samplesize)
 
   df[:, "Time line"]      = 1:n
   df.infections          .= 0 ;
-  df[:, "E[infections]"]  = [(x - 1) * (n - x + 1) *  α * samplesize * t for x in 1:n] ;
+  df[:, "E[infections]"]  = [α * (x - 1) * (n - x + 1) *  samplesize * t for x in 1:n] ;
   df.removals            .= 0 ;
   df[:, "E[removals]"]    = [β * x * samplesize * t for x in 1:n] ;
   
@@ -157,9 +157,9 @@ function simulate_innovations(n, t, α, β, samplesize)
   df[:, "Δremovals"]    = [df.removals[1];          diff(df.removals)]
   df[:, "E[Δremovals]"] = [df[:, "E[removals]"][1]; diff(df[:, "E[removals]"])]
   
-  df[:, "p-val I"] = 
+  df[:, "p-val(I)"] = 
     2ccdf(Normal(), abs.(df.infections - df[:, "E[infections]"]) ./ .√(df[:, "E[infections]"]))
-  df[:, "p-val R"] = 
+  df[:, "p-val(R)"] = 
     2ccdf(Normal(), abs.(df.removals - df[:, "E[removals]"]) ./ .√(df[:, "E[removals]"]))
 
 return df
@@ -196,15 +196,16 @@ normal approximation to the Poisson distribution applies here, allowing us to co
 with ease.
 ```{julia}
 function display_simulation_results(df)
-  display_headers  = ["Time line", "infections", "E[infections]", "p-val I", 
-                             "Δremovals", "E[Δremovals]", "p-val R"]
+  headers  = ["Time line", "infections", "E[infections]", "p-val(I)", 
+                           "Δremovals",  "E[Δremovals]",  "p-val(R)"]
   Markdown.parse(
-    pretty_table(String, df[:, display_headers], 
-      header=display_headers, alignment=[:c, :r, :r, :l, :r, :r, :l], tf=tf_markdown,
+    pretty_table(String, df[:, headers], header=headers, tf=tf_markdown, 
+      alignment=[:c, :r, :r, :l, :r, :r, :l],
       formatters = ((v, i, j)->(isnan(v) ? "---" : v),
-                 (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<=0.05 ? "*$(round(v, digits=2))* *" : v),
-                 (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<=0.01 ? "**$(round(v, digits=2))** **" : v),
-                 ft_printf("%5d", [1, 2, 3,5,6]), ft_printf("%4.2f", [4,7])),
+        (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<0.015 ? "** **$(round(v, digits=2))**" : v),
+        (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<0.055 ? "* *$(round(v, digits=2))*" : v),
+        (v, i, j)->(isa(v, Real) && j ∈ [4, 7]            ? "$(round(v, digits=2))" : v),
+        ft_printf("%4.2f", [4,7])),
   ))
 end ;
 ```
@@ -262,6 +263,6 @@ In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at the
 
 ::: {.callout-tip}
 ## Overall assessment
-In a total of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is at or below level \(0.01\).
+In a total of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is around or below level \(0.01\).
 :::
 

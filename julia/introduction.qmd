@@ -85,9 +85,10 @@ set_default_plot_size(theme.figwidth, theme.figheight)
 
 # Introduction to the \(\SIR\) epidemic
 In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
-\emph{Xemovals:}\qquad\= \(S\to S-1\), \= \((R \to R+1\) \= occurs at rate \(\beta \, I\), \kill
-\emph{Infections:}    \> \(S\to S-1\),   \> \(I \to I+1\) \> occurs at rate \(\alpha \, S \, I\),\\
-\emph{Removals:}      \> \(I \to I-1\),  \> \(R \to R+1\) \> occurs at rate \(\beta \, I\).     
+\begin{tabbing}
+\emph{Xemovals:}\qquad\= \(S\to S-1\),  \= \((R \to R+1\) \= occurs at rate \(\beta \, I\), \kill
+\emph{Infections:}    \> \(S\to S-1\),  \> \(I \to I+1\)  \> occurs at rate \(\alpha \, S \, I\),\\
+\emph{Removals:}      \> \(I \to I-1\), \> \(R \to R+1\)  \> occurs at rate \(\beta \, I\).     
 \end{tabbing}
 The structural parameter of epidemic `duration` 
 (a positive real number)

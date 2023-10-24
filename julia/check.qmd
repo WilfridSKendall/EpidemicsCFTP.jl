@@ -261,8 +261,32 @@ display_simulation_results(data)
 In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at the edge of \(0.01\) level.
 :::
 
+
+\newpage
+
+## An example using a yet larger population.
+```{julia}
+#| echo: false
+const n₄   = 24 
+samplesize = 4samplesize
+data = simulate_innovations(n₄, duration, α, β, samplesize) 
+
+Markdown.parse("Total population size is $n₄, simulation uses $samplesize replicates:")
+```
+```{julia}
+#| echo: false
+display_simulation_results(data)
+```
+
+::: {.callout-tip}
+## Assessment
+In a sequence of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is around or below level \(0.05\).
+:::
+
+
 ::: {.callout-tip}
 ## Overall assessment
-In a total of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is around or below level \(0.01\).
+In a total of \(110\) independent \(Z\)-tests, one of the \(p\)-values is around or below level \(0.01\),
+and one other is around or below level \(0.05\).
 :::
 

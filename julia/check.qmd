@@ -86,50 +86,52 @@ gadfly_theme = Theme(
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-# Testing the generation of `Innovation`s
+# Testing the generation of an `Innovation`
 
 ## Definition of epidemic parameters
 In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
 \begin{tabbing}
-\emph{Xemovals:}\qquad\= \(S\to S-1\), \= \((R \to R+1\) \= occurs at rate \(\beta \, I\), \kill
-\emph{Infections:}    \> \(S\to S-1\),   \> \(I \to I+1\) \> occurs at rate \(\alpha \, S \, I\),\\
-\emph{Removals:}      \> \(I \to I-1\),  \> \(R \to R+1\) \> occurs at rate \(\beta \, I\).     
+\emph{Xemovals:}\qquad\= The transition \(S\to S-1\), \;\= \((R \to R+1\) \= 
+occurs at rate \(\beta \, I\), \kill
+\emph{Infections:}    \> The transition \(S\to S-1\),   \> \(I \to I+1\)  \> 
+occurs at rate \(\alpha \, S \, I\),\\
+\emph{Removals:}      \> The transition \(I \to I-1\),  \> \(R \to R+1\)  \> 
+occurs at rate \(\beta \, I\).     
 \end{tabbing}
 The structural parameter of epidemic `duration` 
 (a positive real number)
-and the `initial1` configuration
-(of `SIR` type) are given by
+and the `n₁` population size are given by
 `julia` constants,
 as are the per-pair infection rate `α` and the per-individual rate of removal `β`.
-The population size is computed as part of the construction of `initial1`.
+The population size is also given explicitly.
+The variable `samplesize` holds the number of replicates of the simulation.
 ```{julia}
-const duration = 2.0;
-const α, β = 0.2, 1.5;
-const initial1 = SIR(0.0, 5, 1, 0);
-const n₁ = initial1.n ;
-println("Total population size is $n₁.")
+const duration = 2.0 
+const α, β     = 0.2, 1.5 
+const n₁       = 6  
 
 samplesize = 10000 ;
 ```
 
 ## Simulation and storage of results
 A sample of a random `Innovation` (with no conditional removals),
-based on \(n=n_1\) time lines,
+based on \(n=n₁\) time lines,
 is generated using the following invocation:
-`generate_innovation(initial1.n, duration, α=α, β=β)`.
+`generate_innovation(n₁, duration, α=α, β=β)`.
 Total numbers of `Infection`s with specified `infectee` marks
-and numbers of `Removal`s with specified `target` marks are tabulated.
+and numbers of `Removal`s with specified `target` marks are tabulated
+in a `DataFrame` together with mean values.
 The logic here is as follows:
 
-(a) a given time line \(x\) accumulates infections arising from contacts between
-a `target` time line (must lie strictly below time line \(x\))
+(a) a given time line \(x+1\) accumulates (incoming) potential infections arising from contacts between
+a `target` time line (lies strictly below time line \(x+1\))
 and
-an `infectee` time line (must be at time line \(x\) or higher)
-thus occurring at a rate \((x-1)(n_1-x+1) α\);
+an `infectee` time line (namely time line \(x+1\))
+thus occurring at a rate \(x(n₁-x) α\), yielding specified infection rate;
 
-(b) a given time line \(x\) accumulates removals arising from each of the time lines
+(b) a given time line \(x\) accumulates potential removals arising from each of the time lines
 \(x\) and lower,
-thus removals for time line \(x\) must occur at a rate \(x β\).
+thus removals for time line \(x\) must occur at a rate \(x β\), yielding specified removal rate.
 
 The following function returns a `DataFrame` of time line identifiers, and
 also counts
@@ -142,9 +144,9 @@ function simulate_innovations(n, t, α, β, samplesize)
 
   df[:, "Time line"]      = 1:n
   df.infections          .= 0 ;
-  df[:, "𝔼[infections]"]  = [(x - 1) * (n - x + 1) *  α * samplesize * t for x in 1:n] ;
+  df[:, "E[infections]"]  = [(x - 1) * (n - x + 1) *  α * samplesize * t for x in 1:n] ;
   df.removals            .= 0 ;
-  df[:, "𝔼[removals]"]    = [β * x * samplesize * t for x in 1:n] ;
+  df[:, "E[removals]"]    = [β * x * samplesize * t for x in 1:n] ;
   
   for x in 1:samplesize
     iv = generate_innovation(n, t, α=α, β=β)
@@ -153,98 +155,113 @@ function simulate_innovations(n, t, α, β, samplesize)
   end
   
   df[:, "Δremovals"]    = [df.removals[1];          diff(df.removals)]
-  df[:, "𝔼[Δremovals]"] = [df[:, "𝔼[removals]"][1]; diff(df[:, "𝔼[removals]"])]
+  df[:, "E[Δremovals]"] = [df[:, "E[removals]"][1]; diff(df[:, "E[removals]"])]
   
-  return df
+  df[:, "p-val I"] = 
+    2ccdf(Normal(), abs.(df.infections - df[:, "E[infections]"]) ./ .√(df[:, "E[infections]"]))
+  df[:, "p-val R"] = 
+    2ccdf(Normal(), abs.(df.removals - df[:, "E[removals]"]) ./ .√(df[:, "E[removals]"]))
+
+return df
 end ;
 ```
-\newpage
-
+This simulation is invoked as follows, with the following result.
 ```{julia}
-data = simulate_innovations(n₁, duration, α, β, samplesize)
-pretty_table(data)
+data = simulate_innovations(n₁, duration, α, β, samplesize);
 ```
 
-The actual simulation computations, together with expected mean numbers, are as follows:
 ```{julia}
-short_list = ["Time line", "infections", "𝔼[infections]", "removals", "𝔼[removals]"]
-pretty_table(data[:, short_list]; header = short_list, alignment=[:l, :r, :r, :r, :r],
-  formatters = ft_printf("%5d"))
+#| echo: false
+#| eval: true
+Markdown.parse("Total population size is $n₁, simulation uses $samplesize replicates.")
+```
+
+```{julia}
+#| echo: false
+#| eval: true
+header = [chop(sprint(show, MIME("text/plain"), nn), head=1, tail=1) for nn in names(data)]
+Markdown.parse(
+pretty_table(String, data[:, header[2:end]]; header=header[2:end], alignment=[:r, :r, :r, :r, :r, :r, :l, :l],
+formatters = (ft_printf("%5d",1:6), ft_round(2,7:8)), tf=tf_markdown)
+)
 ```
 
 ## Statistical analysis
-The `removals` column in `data` is cumulative, so independent data is obtained from `Δremovals`.
-```{julia}
-lagged_list = ["Time line", "infections", "𝔼[infections]", "Δremovals", "𝔼[Δremovals]"]
-pretty_table(data[:, lagged_list]; header = lagged_list, alignment=[:l, :r, :r, :r, :r], 
-  formatters = ft_printf("%6d"));
-```
+The `removals` column in `data` is cumulative over time lines, 
+so independent data is obtained from `Δremovals`
+together with `infections`.
 Entries in both of `infections` and `Δremovals` are independent Poisson
-with mean given by the corresponding `𝔼[...]`. The 
-normal approximation to the Poisson distribution applies here.
+with mean given by the corresponding `E[...]`. The 
+normal approximation to the Poisson distribution applies here, allowing us to compute \(p\)-values
+with ease.
 ```{julia}
 function display_simulation_results(df)
-  data[:, "p-value (inf)"] = 
-    2ccdf(Normal(), abs.(df.infections - df[:, "𝔼[infections]"]) ./ .√(df[:, "𝔼[infections]"]))
-  data[:, "p-value (rem)"] = 
-    2ccdf(Normal(), abs.(df.removals - df[:, "𝔼[removals]"]) ./ .√(df[:, "𝔼[removals]"]))
-  long_list  = ["Time line", "infections", "𝔼[infections]", "p-value (inf)", "Δremovals", "𝔼[Δremovals]", "p-value (rem)"]
-  long_list0 = ["Time line", "infections", "𝔼[infections]", "p-value", "Δremovals", "𝔼[Δremovals]", "p-value"]
-  pretty_table(df[:, long_list], header=long_list0, alignment=[:l, :r, :r, :l, :r, :r, :l],
-    formatters = ((v, i, j)->(isnan(v) ? "---" : (j > 3 && v<=0.05 ? "$(round(v, digits=2))**" : v)),
-                  ft_printf("%5d", [3,6]), ft_printf("%1.2f", [4,7])))
+  display_headers  = ["Time line", "infections", "E[infections]", "p-val I", 
+                             "Δremovals", "E[Δremovals]", "p-val R"]
+  Markdown.parse(
+    pretty_table(String, df[:, display_headers], 
+      header=display_headers, alignment=[:c, :r, :r, :l, :r, :r, :l], tf=tf_markdown,
+      formatters = ((v, i, j)->(isnan(v) ? "---" : v),
+                 (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<=0.05 ? "*$(round(v, digits=2))* *" : v),
+                 (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<=0.01 ? "**$(round(v, digits=2))** **" : v),
+                 ft_printf("%5d", [1, 2, 3,5,6]), ft_printf("%4.2f", [4,7])),
+  ))
 end ;
 ```
 
 ```{julia}
-println("Total population size is $n₁; simulation uses $samplesize replicates:")
+#| echo: false
+Markdown.parse("Total population size is $n₁, simulation uses $samplesize replicates:")
+```
+```{julia}
+#| echo: false
 display_simulation_results(data)
 ```
 
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(11\) independent \(Z\)-tests, no \(p\)-values are at the \(0.01\) level or lower.
+In a sequence of \(11\) independent \(Z\)-tests, no \(p\)-values are at \(0.01\) level or lower.
 :::
 
 ## An example using a larger population.
 This repeats the simulations of the previous section for a larger population.
 ```{julia}
 #| echo: false
-const initial2 = SIR(0.0, 10, 1, 0)
-const n₂ = initial2.n ;
-
-println("Total population size is $n₂; simulation uses $samplesize replicates:")
+const n₂ = 11 
 data = simulate_innovations(n₂, duration, α, β, samplesize) 
 
-pretty_table(data[:, lagged_list], header = lagged_list, alignment=[:l, :r, :r, :r, :r], 
-  formatters = ft_printf("%6d"));
+Markdown.parse("Total population size is $n₂, simulation uses $samplesize replicates:")
+```
+```{julia}
 display_simulation_results(data)
 ```
-
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(21\) independent \(Z\)-tests there is just one \(p\)-value at the \(0.01\) level or lower.
+In a sequence of \(21\) independent \(Z\)-tests there is just one \(p\)-value at \(0.01\) level or lower.
 :::
+
+\newpage
 
 ## An example using a still larger population.
 ```{julia}
 #| echo: false
-const initial3 = SIR(0.0, 15, 1, 0)
-const n₃ = initial3.n ;
-
-println("Total population size is $n₃; simulation uses $samplesize replicates:")
+const n₃ = 16 
 data = simulate_innovations(n₃, duration, α, β, samplesize) 
 
+Markdown.parse("Total population size is $n₃, simulation uses $samplesize replicates:")
+```
+```{julia}
+#| echo: false
 display_simulation_results(data)
 ```
 
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at the \(0.01\) level or lower.
+In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at the edge of \(0.01\) level.
 :::
 
 ::: {.callout-tip}
 ## Overall assessment
-In a total of \(63\) independent \(Z\)-tests, only one of the \(p\)-values sinks to the level of \(0.01\).
+In a total of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is at or below level \(0.01\).
 :::
 

@@ -35,6 +35,36 @@ then `target` must index a time line which is infectious just before time `t`.
 abstract type AbstractRemoval <: AbstractIncident end
 
 """
+    OperativeRemoval
+
+This represents an _operative_ abstract removal using a sub-type of `AbstractRemoval`.
+It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
+Also expects a field `target<:Integer`.
+
+The `target` field labels the timeline being considered as host for the removal incident:
+it must be a positive integer.  
+
+The `OperativeRemoval` is realized if the specified timeline is infectious just before time `t`.
+If the potential removal is to become realized 
+then `target` must index a time line which is infectious just before the removal.
+"""
+abstract type OperativeRemoval <: AbstractRemoval end
+
+"""
+    NonOperativeRemoval
+
+This represents a _nonoperative_ abstract removal using a sub-type of `AbstractRemoval`.
+It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
+Also expects a field `target<:Integer`.
+
+The `target` field labels the timeline being considered as host for the removal incident:
+it must be a positive integer.  
+
+Such an incident will never be realized.
+"""
+abstract type NonOperativeRemoval <: AbstractRemoval end
+
+"""
     AbstractInfection
 
 This represents an abstract infection using a sub-type of `AbstractIncident`.
@@ -78,10 +108,7 @@ It inherits from `AbstractIncident` an expectation of field `t<:Real`.
 Also expects fields `target<:Integer` and `infectee<:Integer`,
 such that `target < infectee`.
 
-Such an incident may have 
-`target` indexing a time line which is "removed", 
-or it is the case that if activated then the incident would
-lead to removal of inactivated `Removal` incidents.
+Such an incident will never be realized.
 """
 abstract type NonOperativeInfection <: AbstractInfection end
 
@@ -91,7 +118,7 @@ abstract type NonOperativeInfection <: AbstractInfection end
 """
     Removal(t::Real, target::Integer)
 
-Implements a potential removal using a sub-type of `AbstractRemoval`.  
+Implements a potential removal using a sub-type of `OperativeRemoval`.  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `Removal` is realized if the specified timeline is infectious just before time `t`.
 
@@ -101,7 +128,7 @@ julia> Removal(0.1, 4)
 ℛ₀.₁₀⁴
 ```
 """
-struct Removal <: AbstractRemoval
+struct Removal <: OperativeRemoval
     kind      ::String     
     t         ::Float64
     target    ::Int64
@@ -117,7 +144,7 @@ end
 """
     CRemoval(t::Real, target::Integer)
 
-Represent a conditioned removal using a sub-type of `AbstractRemoval`, similar to `Removal`.
+Represent a conditioned removal using a sub-type of `OperativeRemoval`, similar to `Removal`.
 The `target` field should always index a time line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
@@ -131,7 +158,7 @@ julia> CRemoval(z)
 𝒞₀.₁₀⁴
 ```
 """
-struct CRemoval <: AbstractRemoval
+struct CRemoval <: OperativeRemoval
     kind      ::String     
     t         ::Float64
     target    ::Int64
@@ -142,7 +169,7 @@ struct CRemoval <: AbstractRemoval
                 new("𝒞", t, target))
     end
 
-    function CRemoval(z::AbstractRemoval)
+    function CRemoval(z::OperativeRemoval)
         CRemoval(z.t, z.target)
     end
 end
@@ -165,7 +192,7 @@ julia> KilledRemoval(z)
 𝒦₀.₁₀⁴
 ```
 """
-struct KilledRemoval <: AbstractRemoval
+struct KilledRemoval <: NonOperativeRemoval
     kind      ::String     
     t         ::Float64
     target    ::Int64
@@ -306,6 +333,9 @@ Intended to identify an `Infection` whose time line is not infected
 and whose activation would lead to activation of an otherwise inactive
 `Removal`.
 
+It is however operative: if it is activated then it will lead to an error
+when a `Removal` becomes activated.
+
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> NoFlyInfection(0.2, 1, 2)
@@ -316,7 +346,7 @@ julia> NoFlyInfection(z)
 𝒩₀.₂₀¹⁻²
 ```
 """
-struct NoFlyInfection <: NonOperativeInfection
+struct NoFlyInfection <: OperativeInfection
 
     kind      ::String
     t         ::Float64
@@ -348,6 +378,8 @@ which is otherwise identical to `Infection` but with a different name.
 Intended to identify an `Infection` which cannot be allowed to exist because
 its time line is infected and it would lead to activation of an otherwise inactive
 `Removal`.
+
+# Such an incident will never become activated.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -394,16 +426,16 @@ Instances should always possess the following fields:
 | Field name   | Type                         |                               |
 |:-------------|:-----------------------------|:------------------------------|
 | `population` | positive `Integer`           | `Integer`                     |
-| `infections` | `Vector{OperativeInfection}` | time-ordered list             |
-| `removals`   | `Vector{Removal}`            | time-ordered list             |
+| `infections` | `Vector{AbstractInfection}`  | time-ordered list             |
+| `removals`   | `Vector{AbstractRemoval}`    | time-ordered list             |
 | `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty |
 """
 abstract type AbstractEnvironment end
 
 """
-    Innovation(population::Integer, infections::Vector{T},
-               removals::Vector{Removal},
-               cremovals::Vector{CRemoval}) where T<:AbstractInfection
+    Innovation(population::Integer, infections::Vector{S},
+               removals::Vector{T},
+               cremovals::Vector{CRemoval}) where S<:AbstractInfection, T<:AbstractRemoval
 
 This represents an entire innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -433,7 +465,7 @@ cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 struct Innovation <: AbstractEnvironment
     population ::Int
     infections ::Vector{<:AbstractInfection}
-    removals   ::Vector{Removal}
+    removals   ::Vector{<:AbstractRemoval}
     cremovals  ::Vector{CRemoval}
     chronology ::Vector{<:AbstractIncident}
 
@@ -460,8 +492,8 @@ struct Innovation <: AbstractEnvironment
         end
     end
 
-    function Innovation(population::Integer, infections::Vector{T},
-                        removals::Vector{Removal}) where T<:AbstractInfection
+    function Innovation(population::Integer, infections::Vector{S},
+                        removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
         Innovation(population, infections, removals, CRemoval[])
     end
     
@@ -544,12 +576,12 @@ Instances should always possess fields as follows:
 
 | Field name   | Type                         |                                |
 |:-------------|:-----------------------------|:-------------------------------|
-| `infections` | `Vector{OperativeInfection}` | time-ordered list              |
-| `removals`   | `Vector{Removal}`            | time-ordered list              |
+| `infections` | `Vector{AbstractInfection}`  | time-ordered list              |
+| `removals`   | `Vector{AbstractRemoval}`    | time-ordered list              |
 | `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty  |
-| `chronology` | `Vector{CRemoval}`           | **computed** time-ordered list |
-| `trajectory` | `Vector{CRemoval}`           | **computed** time-ordered list |
-| `history`    | `Vector{CRemoval}`           | **computed** time-ordered list |
+| `chronology` | `Vector{AbstractIncident}`   | **computed** time-ordered list |
+| `trajectory` | `Vector{SIR}`                | **computed** time-ordered list |
+| `history`    | `Vector{AbstractIncident}`   | **computed** time-ordered list |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
@@ -654,7 +686,7 @@ history:    AbstractIncident[𝒞₀.₀₀¹]
 struct Evolution <: AbstractEvolution
     population ::Int
     infections ::Vector{<:AbstractInfection}
-    removals   ::Vector{Removal}
+    removals   ::Vector{<:AbstractRemoval}
     cremovals  ::Vector{CRemoval}
     chronology ::Vector{<:AbstractIncident}
     trajectory ::Vector{SIR}
@@ -734,7 +766,7 @@ ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.1, 1)
 struct CEvolution <: AbstractEvolution
     population ::Int
     infections ::Vector{<:AbstractInfection}
-    removals   ::Vector{Removal}
+    removals   ::Vector{<:AbstractRemoval}
     cremovals  ::Vector{CRemoval}
     chronology ::Vector{<:AbstractIncident}
     trajectory ::Vector{SIR}

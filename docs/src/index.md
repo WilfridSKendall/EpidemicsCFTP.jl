@@ -79,17 +79,18 @@ an epidemic trajectory.
 ```@docs
 AbstractIncident
 AbstractRemoval
+OperativeRemoval
+NonOperativeRemoval
 AbstractInfection
 OperativeInfection
 NonOperativeInfection
 ```
 
 
-### Two different kinds of `AbstractRemoval`s
+### Two different kinds of `OperativeRemoval`s
 `Removal` and `CRemoval` are specific potential removal incidents: 
 `CRemoval` is reserved for realized removals (which in our application
 are always conditioned to happen).
-`KilledRemoval` is a further kind of removal which can never be realized.
 
 | Type of `AbstractRemoval`       | Purpose                                                  |
 |:--------------------------------|:---------------------------------------------------------|
@@ -99,6 +100,11 @@ are always conditioned to happen).
 ```@docs
 Removal
 CRemoval
+```
+
+### One different kind of `NonOperativeRemoval`s
+`KilledRemoval` is a further kind of removal which can never be realized.
+```@docs
 KilledRemoval
 ```
 
@@ -120,7 +126,6 @@ PInfection
 | `KilledInfection`               | `target` removed                                         | 
 | `NoFlyInfection`                | `target` not infected, `infectee` leads to "no-fly" zone | 
 | `CancelledInfection`            | `target` infected, `infectee` leads to "no-fly" zone     | 
-
 ```@docs
 KilledInfection
 NoFlyInfection

@@ -117,7 +117,7 @@ end
 """
     EpidemicsCFTP.update(state::SIR, event::AbstractIncident)::SIR
 
-Applies incident to a given state and returns resulting incident.
+Applies incident (if it is operative) to a given state and returns resulting state.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -129,9 +129,9 @@ function update(state::SIR, event::AbstractIncident)::SIR
     inc = typeof(event)
     if state.t > event.t
         return state
-    elseif inc <: AbstractRemoval    && is_removeable(state, event)
+    elseif inc <: OperativeRemoval    && is_removeable(state, event)
         return remove(event.t, state)
-    elseif inc <: AbstractInfection  && is_infectable(state, event)
+    elseif inc <: OperativeInfection  && is_infectable(state, event)
         return infect(event.t, state)
     else
         return SIR(event.t, state.s, state.i, state.r)
@@ -238,7 +238,7 @@ the Poisson intensity rates used by this function are correct._
 """
 function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
     n = iv.population
-    removals = union([Removal[Removal(t, k) 
+    removals = union([AbstractRemoval[Removal(t, k) 
         for t in rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
         for k in 1:n]...)
     infections = union(Vector{AbstractInfection}[[
@@ -265,7 +265,7 @@ _Later work to be done:_ see remarks for
 `generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)`.
 """
 function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
-    removals = union([Removal[Removal(t, k) 
+    removals = union([AbstractRemoval[Removal(t, k) 
         for t in rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
         for k in 1:n]...)
     infections = union(Vector{AbstractInfection}[[

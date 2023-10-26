@@ -20,12 +20,18 @@ import Distributions
 
 export AbstractTimedOccurrence
 export AbstractIncident, AbstractRemoval, AbstractInfection
+
 export OperativeRemoval, NonOperativeRemoval
+export Removal, CRemoval
+export KilledRemoval
+
 export OperativeInfection, NonOperativeInfection
-export Removal, CRemoval, Infection, PInfection
-export KilledRemoval, KilledInfection, NoFlyInfection, CancelledInfection
+export Infection, PInfection
+export KilledInfection, NoFlyInfection, CancelledInfection
+
 export SIR
 
+export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
 

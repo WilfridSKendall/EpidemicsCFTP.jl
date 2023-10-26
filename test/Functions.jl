@@ -47,33 +47,36 @@ end
     
     t, s, i, r = 0.0, 1, 2, 3
     state = SIR(t, s, i, r)
-    for inc in [Infection, PInfection]
+    for inc in [Infection, PInfection, NoFlyInfection]
         is_infectable = EpidemicsCFTP.is_infectable
         @test   is_infectable(state, inc(0.0, r + 1, r + i + 1))
         @test ! is_infectable(state, inc(0.0, r + 1, r + i)    )
     end
+
+    is_infectable = EpidemicsCFTP.is_infectable
+    for inc in [KilledInfection, CancelledInfection]
+        @test ! is_infectable(state, inc(0.0, r + 1, r + i + 1))
+        @test ! is_infectable(state, inc(0.0, r + 1, r + i)    )
+    end
     
-	begin
-        is_removeable = EpidemicsCFTP.is_removeable
-	    inc = Removal
+	is_removeable = EpidemicsCFTP.is_removeable
+	for inc in [Removal, CRemoval]
 	    @test ! is_removeable(state, inc(0.0, 1)               )
 	    @test ! is_removeable(state, inc(0.0, r)               )
 	    @test   is_removeable(state, inc(0.0, r + 1)           )
 	    @test   is_removeable(state, inc(0.0, r + i)           )
 	    @test ! is_removeable(state, inc(0.0, r + i + 1)       )
 	end
-
-	begin
-        is_removeable = EpidemicsCFTP.is_removeable
-	    inc = CRemoval
-	    @test ! is_removeable(state, inc(0.0, 1)            )
-	    @test ! is_removeable(state, inc(0.0, r)            )
-	    @test   is_removeable(state, inc(0.0, r + 1)        )
-	    @test   is_removeable(state, inc(0.0, r + i)        )
-	    @test ! is_removeable(state, inc(0.0, r + i + 1)    )
+    begin
+        inc = KilledRemoval
+	    @test ! is_removeable(state, inc(0.0, 1)               )
+	    @test ! is_removeable(state, inc(0.0, r)               )
+	    @test ! is_removeable(state, inc(0.0, r + 1)           )
+	    @test ! is_removeable(state, inc(0.0, r + i)           )
+	    @test ! is_removeable(state, inc(0.0, r + i + 1)       )
 	end
 
-	for inc in [Infection, PInfection]
+	for inc in [Infection, PInfection, NoFlyInfection]
 	    @test update(SIR(0.0, 1, 2, 3), inc(0.1, 4, 6)) == SIR(0.1,0,3,3)
 	    @test update(SIR(0.0, 1, 2, 3), inc(0.1, 4, 5)) == SIR(0.1,1,2,3)
 	end

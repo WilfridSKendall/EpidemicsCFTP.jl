@@ -64,7 +64,7 @@ end
 
 
 """
-    EpidemicsCFTP.is_infectable(state::SIR, inc::AbstractInfection)::Bool
+    EpidemicsCFTP.is_infectable(state::SIR, inc::OperativeInfection)::Bool
 
 Tests whether an infection should be implemented for a given state.
 
@@ -72,12 +72,15 @@ Tests whether an infection should be implemented for a given state.
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 6))
 true
+julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), CancelledInfection(0.1, 4, 6))
+false
 julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 5))
 false
 ```
 """
 function is_infectable(state::SIR, event::AbstractInfection)::Bool
-    event.t >= state.t && event.target > state.r && event.infectee == state.i + state.r + 1
+    isa(event, OperativeInfection) && 
+        event.t >= state.t && event.target > state.r && event.infectee == state.i + state.r + 1
 end
 
 """
@@ -105,12 +108,15 @@ Tests whether a removal should be implemented for a given state.
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 4))
 true
+julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), KilledRemoval(0.1, 4))
+false
 julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 6))
 false
 ```
 """
 function is_removeable(state::SIR, event::AbstractRemoval)::Bool
-    event.t >= state.t && event.target > state.r && event.target <= state.i + state.r
+    isa(event, OperativeRemoval) && 
+        event.t >= state.t && event.target > state.r && event.target <= state.i + state.r
 end
 
 
@@ -118,11 +124,18 @@ end
     EpidemicsCFTP.update(state::SIR, event::AbstractIncident)::SIR
 
 Applies incident (if it is operative) to a given state and returns resulting state.
+Otherwise does nothing.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), Removal(0.2, 4))
 SIR₀.₂₀(1:1:4)
+julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), KilledRemoval(0.2, 4))
+SIR₀.₂₀(1:2:3)
+julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), Infection(0.2, 4, 6))
+SIR₀.₂₀(0:3:3)
+julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), CancelledInfection(0.2, 4, 6))
+SIR₀.₂₀(1:2:3)
 ```
 """
 function update(state::SIR, event::AbstractIncident)::SIR

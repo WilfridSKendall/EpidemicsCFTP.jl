@@ -122,6 +122,8 @@ Implements a potential removal using a sub-type of `OperativeRemoval`.
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `Removal` is realized if the specified timeline is infectious just before time `t`.
 
+If activated in course of evolution of a conditioned epidemic then an error will be raised.
+
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Removal(0.1, 4)
@@ -283,6 +285,52 @@ struct PInfection <: OperativeInfection
 end
 
 """
+    NoFlyInfection(t::Real, infectee::Integer, target::Integer)
+
+Represent an infection using a sub-type of `NonOperativeInfection`
+which is otherwise identical to `Infection` but with a different name.
+Intended to identify an `Infection` whose time line is not infected
+and whose activation would lead to activation of an otherwise inactive
+`Removal`.
+
+It is however operative: if it is activated in the course of the evolution
+of a conditioned epidemic then it will lead to an error
+when subsequently a `Removal` becomes activated.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> NoFlyInfection(0.2, 1, 2)
+𝒩₀.₂₀¹⁻²
+julia> z = Infection(0.2, 1, 2) ;
+
+julia> NoFlyInfection(z)
+𝒩₀.₂₀¹⁻²
+```
+"""
+struct NoFlyInfection <: OperativeInfection
+
+    kind      ::String
+    t         ::Float64
+    target    ::Int64
+    infectee  ::Int64
+    
+    function NoFlyInfection(t, target, infectee)
+        noun = "NoFlyInfection($t, $target, $infectee)"
+        if infectee ≤ target
+            throw(DomainError(noun, "disordered marks"))
+        elseif target ≤ 0
+            throw(DomainError(noun, "non-positive mark"))
+        else
+            new("𝒩", t, target, infectee)
+        end
+    end
+    
+    function NoFlyInfection(z::AbstractInfection)
+        NoFlyInfection(z.t, z.target, z.infectee)
+    end
+end
+
+"""
     KilledInfection(t::Real, infectee::Integer, target::Integer)
 
 Represent an infection using a sub-type of `NonOperativeInfection`
@@ -324,62 +372,18 @@ struct KilledInfection <: NonOperativeInfection
 end
 
 
-"""
-    NoFlyInfection(t::Real, infectee::Integer, target::Integer)
-
-Represent an infection using a sub-type of `NonOperativeInfection`
-which is otherwise identical to `Infection` but with a different name.
-Intended to identify an `Infection` whose time line is not infected
-and whose activation would lead to activation of an otherwise inactive
-`Removal`.
-
-It is however operative: if it is activated then it will lead to an error
-when a `Removal` becomes activated.
-
-### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> NoFlyInfection(0.2, 1, 2)
-𝒩₀.₂₀¹⁻²
-julia> z = Infection(0.2, 1, 2) ;
-
-julia> NoFlyInfection(z)
-𝒩₀.₂₀¹⁻²
-```
-"""
-struct NoFlyInfection <: OperativeInfection
-
-    kind      ::String
-    t         ::Float64
-    target    ::Int64
-    infectee  ::Int64
-    
-    function NoFlyInfection(t, target, infectee)
-        noun = "NoFlyInfection($t, $target, $infectee)"
-        if infectee ≤ target
-            throw(DomainError(noun, "disordered marks"))
-        elseif target ≤ 0
-            throw(DomainError(noun, "non-positive mark"))
-        else
-            new("𝒩", t, target, infectee)
-        end
-    end
-    
-    function NoFlyInfection(z::AbstractInfection)
-        NoFlyInfection(z.t, z.target, z.infectee)
-    end
-end
-
 
 """
     CancelledInfection(t::Real, infectee::Integer, target::Integer)
 
-Represent an infection using a sub-type of `NonOperativeInfection`
+Represent an infection using a sub-type of `OperativeInfection`
 which is otherwise identical to `Infection` but with a different name.
-Intended to identify an `Infection` which cannot be allowed to exist because
-its time line is infected and it would lead to activation of an otherwise inactive
+Intended to identify an `Infection` which can in principle be made active,
+but if so then it would lead to activation of an otherwise inactive
 `Removal`.
 
-# Such an incident will never become activated.
+If such an incident is activated then it will in due course lead
+to an error being raised when a `Removal` (not a `CRemoval` is activated.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -423,9 +427,9 @@ Represents variants of an entire innovation of environment for a single step of 
 
 Instances should always possess the following fields: 
 
-| Field name   | Type                         |                               |
+| Field name   | Type                         | Further remarks               |
 |:-------------|:-----------------------------|:------------------------------|
-| `population` | positive `Integer`           | `Integer`                     |
+| `population` | `Integer`                    | positive`Integer`             |
 | `infections` | `Vector{AbstractInfection}`  | time-ordered list             |
 | `removals`   | `Vector{AbstractRemoval}`    | time-ordered list             |
 | `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty |
@@ -435,7 +439,7 @@ abstract type AbstractEnvironment end
 """
     Innovation(population::Integer, infections::Vector{S},
                removals::Vector{T},
-               cremovals::Vector{CRemoval}) where S<:AbstractInfection, T<:AbstractRemoval
+               cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
 
 This represents an entire innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -469,9 +473,9 @@ struct Innovation <: AbstractEnvironment
     cremovals  ::Vector{CRemoval}
     chronology ::Vector{<:AbstractIncident}
 
-    function Innovation(population::Integer, infections::Vector{T},
-                        removals::Vector{Removal},
-                        cremovals::Vector{CRemoval}) where T<:AbstractInfection
+    function Innovation(population::Integer, infections::Vector{S},
+                        removals::Vector{T},
+                        cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
         noun = "Innovation($population, $infections, $removals, $cremovals)"
         if population ≤ 0
             throw(DomainError(noun, "non-positive population size $population"))

@@ -1,9 +1,3 @@
-```@meta
-CurrentModule = EpidemicsCFTP
-DocTestSetup = quote
- using EpidemicsCFTP
-end
-```
 
 # Brief description of `EpidemicsCFTP` 
 
@@ -17,7 +11,7 @@ Version information is as follows:
 import Markdown, EpidemicsCFTP
 Markdown.parse("""
 | Module                | Version                         | Branch                         |
-|:----------------------|:--------------------------------|-------------------------------:|
+|:----------------------|:--------------------------------|:------------------------------:|
 | `julia`               | `$VERSION`                      |                                |
 | `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
 """)
@@ -32,6 +26,8 @@ I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I
 \end{align*}
 ```
 and conditioned on all removal times.
+
+![Screen shot of a resulting simulation.](image/introduction-no-fly-zone.png)
 
 # Installation of the package and production of documentation
 General advice on developing a `julia` package is given at <https://julialang.org/contribute/developing_package/>.

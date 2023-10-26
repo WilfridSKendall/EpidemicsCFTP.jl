@@ -7,7 +7,7 @@ using DocumenterMarkdown
 makedocs(;
     modules=[EpidemicsCFTP],
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",
-    repo="github.com/WilfridSKendall/EpidemicsCFTP.jl",
+#    repo="https://github.com/WilfridSKendall/EpidemicsCFTP.jl",
     sitename="EpidemicsCFTP.jl",
 #     format=Documenter.HTML(;
 #         prettyurls=get(ENV, "CI", "false") == "true",
@@ -15,11 +15,12 @@ makedocs(;
 #         assets=String[],
     format=Markdown(),
     pages=[
+        "Start"            => "index.md",
         "Introduction"     => "01-intro.md",
         "Types"            => "02-types.md",
         "Methods"          => "03-methods.md",
-        "Methods (`show`)" => "04-methods-show.md",
-        "Exceptions"       => "05-exceptions.md",
+        "Exceptions"       => "04-exceptions.md",
+        "Display Methods"  => "05-methods-show.md",
         "Index"            => "06-index.md"
     ],
 )

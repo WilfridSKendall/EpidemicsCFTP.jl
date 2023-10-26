@@ -5,7 +5,7 @@
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 
-Expects field `t<:Real` (used by function `isearlier`
+Expects field `t<:Real` (used by function [`isearlier`](@ref)
 to time-order lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
@@ -13,7 +13,7 @@ abstract type AbstractTimedOccurrence end
 """
     AbstractIncident
 
-Sub-type of `AbstractTimedOccurrence`.
+Sub-type of [`AbstractTimedOccurrence`](@ref).
 
 Expects field `kind<:String` (used by function `show`
 to represent the particular kind of incident).
@@ -25,7 +25,7 @@ abstract type AbstractIncident <: AbstractTimedOccurrence end
 """
     AbstractRemoval
 
-This represents an abstract removal using a sub-type of `AbstractIncident`.  
+This represents an abstract removal using a sub-type of [`AbstractIncident`](@ref).  
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects field `target<:Integer`.
 
@@ -37,7 +37,7 @@ abstract type AbstractRemoval <: AbstractIncident end
 """
     OperativeRemoval
 
-This represents an _operative_ abstract removal using a sub-type of `AbstractRemoval`.
+This represents an _operative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
 It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
 Also expects a field `target<:Integer`.
 
@@ -53,7 +53,7 @@ abstract type OperativeRemoval <: AbstractRemoval end
 """
     NonOperativeRemoval
 
-This represents a _nonoperative_ abstract removal using a sub-type of `AbstractRemoval`.
+This represents a _nonoperative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
 It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
 Also expects a field `target<:Integer`.
 
@@ -67,7 +67,7 @@ abstract type NonOperativeRemoval <: AbstractRemoval end
 """
     AbstractInfection
 
-This represents an abstract infection using a sub-type of `AbstractIncident`.
+This represents an abstract infection using a sub-type of [`AbstractIncident`](@ref).
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
 Also expects fields `target<:Integer` and `infectee<:Integer`,
 such that `target < infectee`.
@@ -84,8 +84,8 @@ abstract type AbstractInfection <: AbstractIncident end
 """
     OperativeInfection
 
-This represents an _operative_ abstract infection using a sub-type of `AbstractInfection`.
-It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
+This represents an _operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
+It inherits from [`AbstractIncident`](@ref) an expectation of field `t<:Real`. 
 Also expects fields `target<:Integer` and `infectee<:Integer`,
 such that `target < infectee`.
 
@@ -103,8 +103,8 @@ abstract type OperativeInfection <: AbstractInfection end
 """
     NonOperativeInfection
 
-This represents a _non-operative_ abstract infection using a sub-type of `AbstractInfection`.
-It inherits from `AbstractIncident` an expectation of field `t<:Real`.  
+This represents a _non-operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
+It inherits from [`AbstractIncident`](@ref) an expectation of field `t<:Real`.  
 Also expects fields `target<:Integer` and `infectee<:Integer`,
 such that `target < infectee`.
 
@@ -118,7 +118,7 @@ abstract type NonOperativeInfection <: AbstractInfection end
 """
     Removal(t::Real, target::Integer)
 
-Implements a potential removal using a sub-type of `OperativeRemoval`.  
+Implements a potential removal using a sub-type of [`OperativeRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `Removal` is realized if the specified timeline is infectious just before time `t`.
 
@@ -146,7 +146,7 @@ end
 """
     CRemoval(t::Real, target::Integer)
 
-Represent a conditioned removal using a sub-type of `OperativeRemoval`, similar to `Removal`.
+Represent a conditioned removal using a sub-type of [`OperativeRemoval`](@ref), similar to `Removal`.
 The `target` field should always index a time line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
@@ -180,7 +180,7 @@ end
 """
     KilledRemoval(t::Real, target::Integer)
 
-Implements a removal which can never be activated using a sub-type of `AbstractRemoval`.  
+Implements a removal which can never be activated using a sub-type of [`AbstractRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `KilledRemoval` is never realized.
 
@@ -215,7 +215,7 @@ end
 """
     Infection(t::Real, infectee::Integer, target::Integer)
 
-Represent a potential infection using a sub-type of `OperativeInfection`,
+Represent a potential infection using a sub-type of [`OperativeInfection`](@ref),
 using mark time `t` and another mark `target` and a further mark `infectee`.
 Marks `target` and `infectee` must be positive integers with `target < infectee`.
 
@@ -246,7 +246,7 @@ end
 """
     PInfection(t::Real, infectee::Integer, target::Integer)
 
-Represent a perpetuated infection using a sub-type of `OperativeInfection`
+Represent a perpetuated infection using a sub-type of [`OperativeInfection`](@ref)
 which is identical to `Infection` but with a different name.
 Intended to identify an `Infection` from a previous iteration of the CFTP
 algorithm which has had to be carried over to avoid failure to activate
@@ -287,7 +287,7 @@ end
 """
     NoFlyInfection(t::Real, infectee::Integer, target::Integer)
 
-Represent an infection using a sub-type of `NonOperativeInfection`
+Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
 Intended to identify an `Infection` whose time line is not infected
 and whose activation would lead to activation of an otherwise inactive
@@ -333,7 +333,7 @@ end
 """
     KilledInfection(t::Real, infectee::Integer, target::Integer)
 
-Represent an infection using a sub-type of `NonOperativeInfection`
+Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
 Intended to identify an `Infection` which cannot be activated because
 its time line is not infected.
@@ -376,14 +376,15 @@ end
 """
     CancelledInfection(t::Real, infectee::Integer, target::Integer)
 
-Represent an infection using a sub-type of `OperativeInfection`
+Represent an infection using a sub-type of [`OperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
 Intended to identify an `Infection` which can in principle be made active,
 but if so then it would lead to activation of an otherwise inactive
 `Removal`.
 
 If such an incident is activated then it will in due course lead
-to an error being raised when a `Removal` (not a `CRemoval` is activated.
+to an error being raised when a [`Removal`](@ref) 
+(as opposed to a [`CRemoval`](@ref)) is activated.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -423,7 +424,8 @@ end
 """
     AbstractEnvironment
 
-Represents variants of an entire innovation of environment for a single step of algorithmic time.
+Represents variants of an entire innovation of environment 
+for a single step of algorithmic time.
 
 Instances should always possess the following fields: 
 
@@ -508,11 +510,11 @@ end
 """
     SIR(t::Real, s::Integer, i::Integer, r::Integer)
 
-This represents a state of an S-I-R epidemic (`s`, `i`, `r`)
+This represents a state of a `S-I-R` epidemic (`s`, `i`, `r`)
 (all non-negative integers adding up to a positive integer `n`
 which is the population size, given by the computed field `population`)
-at a specified time `t` (a real number). Note that `n` can be computed
-at initialization of the state structure: just call `SIR(s,i,r)`.
+at a specified time `t` (a real number). Note that `n` is computed
+at initialization of the state structure and accessed as `sir.n`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -574,7 +576,8 @@ end
 """
     AbstractEvolution 
 
-This represents variants of evolution of an `S-I-R` epidemic..
+This represents variants of evolution of an `S-I-R` epidemic.
+It is a generic sub-type of [AbstractEnvironment](@ref)
 
 Instances should always possess fields as follows:
 
@@ -600,7 +603,7 @@ abstract type BadIncident <: Exception end
 """
     MissedCRemoval
 
-This is an exception raised when a `CRemoval` is missed by
+This is an exception raised when a [`CRemoval`](@ref) is missed by
 `evolution`.
 
 ## Example
@@ -624,7 +627,7 @@ end
 """
     EmployedRemoval
 
-This is an exception raised when a `Removal` is not missed by
+This is an exception raised when a [`Removal`](@ref) is not missed by
 `evolution`.
 
 ## Example
@@ -649,9 +652,9 @@ end
     Evolution(initial_state::SIR, innovation::Innovation)
 
 This implements _unconditional_ evolution of an SIR epidemic 
-based on a given `Innovation` 
+based on a given [`Innovation`](@ref) 
 for innovations,
-and starting from a given `SIR` for initial state.
+and starting from a given [`SIR`](@ref) for initial state.
 
 It represents an entire simulation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -712,9 +715,11 @@ end
     CEvolution(initial_state::SIR, innovation::Innovation)
 
 This implements _conditional_ evolution of an SIR epidemic 
-based on a given `Innovation` 
+based on a given [`Innovation`](@ref) 
 for innovations,
-and starting from a given `SIR` for initial state.
+and starting from a given [`SIR`](@ref) for initial state.
+An error is raised if the resulting `evolution` activates
+an [`AbstractRemoval](@ref) incident which is not a [`CRemoval`](@ref).
 
 It represents an entire simulation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -777,7 +782,7 @@ struct CEvolution <: AbstractEvolution
     history    ::Vector{AbstractIncident}
     
     function CEvolution(initial_state::SIR, innovation::Innovation)
-        # Need to check population == sum of initiate.state entries
+        # Need to check population == sum of `initial_state` entries
         population = innovation.population
         infections = innovation.infections
         removals   = innovation.removals

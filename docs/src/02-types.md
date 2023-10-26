@@ -1,6 +1,6 @@
 
 # Abstract timed occurrences
-Everything is built on the `AbstractTimedOccurrence`.
+Most entities of `EpidemicsCFPT` are based on the generic type `AbstractTimedOccurrence`.
 The only requirement on objects of this type is that they should possess
 a real-valued attribute `t` corresponding to a (process) time.
 ```@docs
@@ -12,26 +12,28 @@ and `SIR`
 (representing the state of the ``\operatorname{S-I-R}`` 
 incident at a particular moment of time). 
 
+[`AbstractTimedOccurrence`](@ref)
 
 ## State of an epidemic
-`SIR` records the state of an $SIR$ epidemic at a stipulated time.
+`SIR` is a type for recording the state of an $SIR$ epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
 ```@docs
 SIR
 ```
 
 ## Abstract incidents
-`AbstractIncident` is a generic type for incidents taking place in time.
+`AbstractIncident` is a generic type for incidents taking place in time, based on [`AbstractTimedOccurrence`](@ref).
 ```@docs
 AbstractIncident
 ```
 
 It has sub-types
-`AbstractRemoval` and `AbstractInfection`, generic incidents corresponding
+[`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref), generic incidents corresponding
 to potential removals and potential incidents respectively.
 
 ### `AbstractRemoval`
-`AbstractRemoval` incidents are sub-typed as
-`OperativeRemoval` and `NonOperativeRemoval`, used to distinguish between
+`AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref)
+Further generic sub-types are
+[`OperativeRemoval`](@ref) and [`NonOperativeRemoval`](@ref), used to distinguish between
 potential removal incidents
 that will, respectively will not, be allowed to form part of 
 an epidemic trajectory.
@@ -49,7 +51,7 @@ Concrete sub-types are tabulated as follows:
 |                           |                        |                                                     |
 | `KilledRemoval`           | `NonOperativeRemoval`  | Never to be removed (expect error if this happens!) | 
 
-#### Two different kinds of `OperativeRemoval`s
+#### Two different kinds of [`OperativeRemoval`](@ref)s
 `Removal` and `CRemoval` are specific potential removal incidents: 
 `CRemoval` is reserved for realized removals (which in our application
 are always conditioned to happen).
@@ -57,7 +59,7 @@ are always conditioned to happen).
 Removal
 CRemoval
 ```
-#### One kind of `NonOperativeRemoval`
+#### One kind of [`NonOperativeRemoval`](@ref)
 `KilledRemoval` is a further kind of removal which will _never_ be realized.
 ```@docs
 KilledRemoval
@@ -65,7 +67,7 @@ KilledRemoval
 
 ### `AbstractInfection`
 `AbstractInfection` incidents are sub-typed as
-`OperativeInfection` and `NonOperativeInfection`, used to distinguish between
+[`OperativeInfection`](@ref) and [`NonOperativeInfection`](@ref), used to distinguish between
 potential infection incidents
 that will, respectively will not, be allowed to form part of 
 an epidemic trajectory.

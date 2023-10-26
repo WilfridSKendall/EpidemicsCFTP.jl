@@ -3,9 +3,9 @@
 """
     isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
 
-Implements comparison of two `AbstractTimedOccurrence` quantities using time-order.
+Implements comparison of two [`AbstractTimedOccurrence`](@ref) quantities using time-order.
 
-We don't use `isless`, because we don't have a total ordering here!
+We choose not to overload `isless`, because there isn't a total ordering here!
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -23,8 +23,9 @@ end
 """
     alter(crem::CRemoval, timeline::Integer)::CRemoval
 
-Produce a new `CRemoval`: same time `t` but changing
-the mark `target` of `crem::CRemoval` to a positive `timeline`.
+Produce a new [`CRemoval`](@ref): same time `t` but changing
+the mark `target` of the [`CRemoval`](@ref) `rem`
+to point to a positive `timeline` specified by the `Integer` argument.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -50,7 +51,7 @@ end
 """
     EpidemicsCFTP.infect(t::Real, state::SIR)::SIR
 
-Change state of an S-I-R epidemic to implement an infection at time `t`.
+Change state of a `S-I-R` epidemic to implement an infection at time `t`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -86,7 +87,7 @@ end
 """
     EpidemicsCFTP.remove(t::Real, state::SIR)::SIR
 
-Change state of an S-I-R epidemic to implement a removal at time `t`.
+Change state of a `S-I-R` epidemic to implement a removal at time `t`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -102,7 +103,7 @@ end
 """
     EpidemicsCFTP.is_removeable(state::SIR, event::AbstractRemoval)::Bool
 
-Tests whether a removal should be implemented for a given state.
+Tests whether an [`AbstractRemoval`](@ref) should be implemented for a given state.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -123,7 +124,8 @@ end
 """
     EpidemicsCFTP.update(state::SIR, event::AbstractIncident)::SIR
 
-Applies incident (if it is operative) to a given state and returns resulting state.
+Applies [`AbstractIncident`](@ref)
+to a given state and returns resulting state if it is activated (and hence operative).
 Otherwise does nothing.
 
 ## Example
@@ -154,7 +156,7 @@ end
 """
     EpidemicsCFTP.is_same_config(state1::SIR, state2::SIR)::Bool
 
-Checks if the two states have the same values for `s`, `i`, `r` fields
+Checks if the two [`SIR`](@ref) states have the same values for `s`, `i`, `r` fields
 (but not `t` field).
 
 ## Example
@@ -170,14 +172,14 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
 """
     evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
 
-Evolves an S-I-R epidemic from an initial `SIR` state using
-an `Innovation`. Returns
+Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
+an [`Innovation`](@ref). Returns
 a list of `SIR` states and a history `Vector{AbstractIncident}` of realized incidents.
 **NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
 
 If the keyword argument `conditioned` is set to its non-default value of `true`
-then an error is raised when the function attempts to realize a `Removal`
-or fails to realize a `CRemoval`.
+then an error is raised when the function attempts to realize a [`Removal`](@ref)
+or fails to realize a [`CRemoval`](@ref).
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -240,14 +242,16 @@ end
 """
     generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
 
-Generates a random innovation, borrowing some structure from its first argument.
+Generates a random [`Innovation`](@ref), borrowing some structure from its first argument.
 
 # _Later work to be done:_
-1. _The code and name for this function should be adapted to take 
+
+1. The code and name for this function should be adapted to take 
 account of the section on "Create New Samplers and Distributions"
-from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/)._
-2. _Conduct a simulation study (in a separate `quarto` notebook) to verify that 
-the Poisson intensity rates used by this function are correct._
+from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/).
+
+2. Conduct a simulation study (in a separate `quarto` notebook) to verify that the Poisson intensity rates used by this function are correct.
+
 """
 function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
     n = iv.population
@@ -272,10 +276,7 @@ end
 """
     generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
 
-Generates a random innovation (with empty `cremoval` list), using first argument for population size.
-
-_Later work to be done:_ see remarks for 
-`generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)`.
+Generates a random [`Innovation`](@ref) (with empty `cremoval` list), using first argument for population size.
 """
 function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
     removals = union([AbstractRemoval[Removal(t, k) 
@@ -318,7 +319,7 @@ end
 """
     Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     
-Implementation of `show` for `AbstractRemoval`, using `MIME("text/plain")` as the
+Implementation of `show` for [`AbstractRemoval`](@ref), using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscript for the `target` field.
 
@@ -357,7 +358,7 @@ end
 """
     Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
     
-Implementation of `show` for `AbstractInfection`, using `MIME("text/plain")` as the
+Implementation of `show` for [`AbstractInfection`](@ref), using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscripts for the `target` and `infectee` fields.
 Note that a more general form (arising for example from use of `print`) can be used 
@@ -399,8 +400,8 @@ end
 """
     Base.show(io::IO, ::MIME"text/plain", z::Innovation)
     
-Implementation of `show` for `Innovation` as three rows of lists of incidents
--- or two rows if no `CRemoval`s. We illustrate this second version here.
+Implementation of `show` for [`Innovation`](@ref) as three rows of lists of incidents
+-- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -458,7 +459,7 @@ end
 """
     Base.show(io::IO, ::MIME"text/plain", z::SIR)
     
-Implementation of `show` for `SIR` using subscript and 2 decimal places for time.
+Implementation of `show` for [`SIR`](@ref) using subscript and 2 decimal places for time.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -474,8 +475,8 @@ end
 """
     Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
     
-Implementation of `show` for `AbstractEvolution` as three rows of lists of incidents
--- or two rows if no `CRemoval`s -- together with further calculations. 
+Implementation of `show` for [`AbstractEvolution`](@ref) as three rows of lists of incidents
+-- or two rows if no [`CRemoval`](@ref)s -- together with further calculations. 
 We illustrate both these versions here.
 
 ## Example
@@ -537,7 +538,8 @@ end
 """
     show(::IO, ::MIME"text/plain", ::Vector{T}; ::Int, ::String) where T <: AbstractTimedOccurrence
 
-Implementation of `show` for vector of `AbstractTimedOccurrence` with line-breaking.
+Implementation of `show` for vector of [`AbstractTimedOccurrence`](@ref)
+incidents with line-breaking.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -581,9 +583,10 @@ end
     Base.show(io::IO, e::BadIncident)
     
 Printing a `BadIncident` exception.
-Sub-types are: `EmployedRemoval` and `MissedCRemoval`, raised respectively when a 
-conditioned evolution uses a `Removal` which _is_ _not_ conditioned to appear in the trajectory,
-or doesn't use a `CRemoval` which _is_ conditioned to appear in the trajectory.
+Sub-types of this exception are:
+[`EmployedRemoval`](@ref) and [`MissedCRemoval`](@ref), raised respectively when a 
+conditioned evolution uses a [`Removal`](@ref) which _is_ _not_ conditioned to appear in the trajectory,
+or doesn't use a [`CRemoval`](@ref) which _is_ conditioned to appear in the trajectory.
 See these types for doctests.
 """
 function Base.show(io::IO, e::BadIncident)

@@ -49,7 +49,7 @@ export BadIncident, MissedCRemoval, EmployedRemoval
 include("Types.jl")
 
 # Include subsidiary functions defined or extended in this package.
-include("Functions.jl")
+include("Methods.jl")
 
 end
 

@@ -2,9 +2,10 @@
 # Associated methods
 
 ## Comparison method
-A partial order is provided by `isearlier`, based on time `t` of occurrence of the relevant 
+A partial order is provided by `isearlier`, based on time `t` of occurrence of 
+the two arguments, which should be 
 instances of
-`AbstractTimedOccurrence`s.
+[`AbstractTimedOccurrence`](@ref)s.
 ```@docs
 isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 ```

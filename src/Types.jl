@@ -675,7 +675,9 @@ Note the use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
 to compute the `trajectory` and `history` fields!
 
 ## Example
-Three cases: straightforward, missing a conditioned removal, employing an (unconditioned) removal:
+Three cases: basic use, missing a conditioned removal, employing an (unconditioned) removal.
+
+I: Basic use
 ```jldoctest CEvolution; setup = :(using EpidemicsCFTP)
 julia> initial    = SIR(0.0, 2, 1, 0)
 SIR₀.₀₀(2:1:0)
@@ -705,6 +707,8 @@ trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹]
 )
 ```
+
+II: Missing a conditioned removal
 ```jldoctest CEvolution
 julia> cremovals  = [CRemoval(0.0, 2)]
 CRemoval[𝒞₀.₀₀²]
@@ -713,6 +717,8 @@ julia> innov      = Innovation(population, infections, removals, cremovals) ;
 julia> CEvolution(initial, innov)
 ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.0, 2)
 ```
+
+III: employing an (unconditioned) removal
 ```jldoctest CEvolution
 julia> removals   = [Removal(0.1, 1), Removal(0.1, 2)] ;
 
@@ -723,6 +729,7 @@ julia> innov      = Innovation(population, infections, removals, cremovals) ;
 julia> CEvolution(initial, innov)
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.1, 1)
 ```
+
 """
 struct CEvolution <: AbstractEvolution
     population ::Int

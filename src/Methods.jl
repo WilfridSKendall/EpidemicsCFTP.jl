@@ -79,9 +79,9 @@ julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 5))
 false
 ```
 """
-function is_infectable(state::SIR, event::AbstractInfection)::Bool
-    isa(event, OperativeInfection) && 
-        event.t >= state.t && event.target > state.r && event.infectee == state.i + state.r + 1
+function is_infectable(state::SIR, z::AbstractInfection)::Bool
+    isa(z, OperativeInfection) && 
+        z.t >= state.t && z.target > state.r && z.infectee == state.i + state.r + 1
 end
 
 """
@@ -101,7 +101,7 @@ end
 
 
 """
-    EpidemicsCFTP.is_removeable(state::SIR, event::AbstractRemoval)::Bool
+    EpidemicsCFTP.is_removeable(state::SIR, z::AbstractRemoval)::Bool
 
 Tests whether an [`AbstractRemoval`](@ref) should be implemented for a given state.
 
@@ -115,14 +115,14 @@ julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 6))
 false
 ```
 """
-function is_removeable(state::SIR, event::AbstractRemoval)::Bool
-    isa(event, OperativeRemoval) && 
-        event.t >= state.t && event.target > state.r && event.target <= state.i + state.r
+function is_removeable(state::SIR, z::AbstractRemoval)::Bool
+    isa(z, OperativeRemoval) && 
+        z.t >= state.t && z.target > state.r && z.target <= state.i + state.r
 end
 
 
 """
-    EpidemicsCFTP.update(state::SIR, event::AbstractIncident)::SIR
+    EpidemicsCFTP.update(state::SIR, z::AbstractIncident)::SIR
 
 Applies [`AbstractIncident`](@ref)
 to a given state and returns resulting state if it is activated (and hence operative).
@@ -140,16 +140,16 @@ julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), CancelledInfection(0.2, 4, 6))
 SIR₀.₂₀(1:2:3)
 ```
 """
-function update(state::SIR, event::AbstractIncident)::SIR
-    inc = typeof(event)
-    if state.t > event.t
+function update(state::SIR, z::AbstractIncident)::SIR
+    inc = typeof(z)
+    if state.t > z.t
         return state
-    elseif inc <: OperativeRemoval    && is_removeable(state, event)
-        return remove(event.t, state)
-    elseif inc <: OperativeInfection  && is_infectable(state, event)
-        return infect(event.t, state)
+    elseif isa(z, OperativeRemoval)   && is_removeable(state, z)
+        return remove(z.t, state)
+    elseif isa(z, OperativeInfection) && is_infectable(state, z)
+        return infect(z.t, state)
     else
-        return SIR(event.t, state.s, state.i, state.r)
+        return SIR(z.t, state.s, state.i, state.r)
     end
 end
 
@@ -185,6 +185,7 @@ Note that this method is employed in the construction of [`Evolution`](@ref)
 and (with the `conditioned` flag set to `true`) [`CEvolution`](@ref) objects.
 
 ## Example
+I: Basic use, unconditioned
 ```jldoctest evolution; setup = :(using EpidemicsCFTP)
 julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
 
@@ -197,11 +198,13 @@ SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
 AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+```
 
+II: Basic use, conditioned (A)
+```jldoctest evolution
 julia> evolution(initial_state, innovation, conditioned=true)
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
-```
-```jldoctest evolution
+
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
 
 julia> states, history = evolution(initial_state, innovation) ;
@@ -212,6 +215,8 @@ SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 julia> history
 AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 ```
+
+III: Basic use, conditioned (B)
 ```jldoctest evolution
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 
@@ -228,16 +233,16 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
     trajectory, history = SIR[initial_state], AbstractIncident[]
     chronology  = [x for x in innovation.chronology if x.t ≥ initial_state.t]
     if ! isempty(chronology)
-        for event in chronology
-            new_state = update(trajectory[end], event)
+        for z in chronology
+            new_state = update(trajectory[end], z)
             if ! is_same_config(new_state, trajectory[end])
-                if conditioned && isa(event, Removal)
-                    throw(EmployedRemoval(event))
+                if conditioned && isa(z, Removal)
+                    throw(EmployedRemoval(z))
                 end
                 push!(trajectory, new_state)
-                push!(history, event)
-            elseif conditioned && isa(event, CRemoval)
-                    throw(MissedCRemoval(event))
+                push!(history, z)
+            elseif conditioned && isa(z, CRemoval)
+                    throw(MissedCRemoval(z))
             end
         end
     end

@@ -133,7 +133,6 @@ in the way it treats`AbstractRemoval`s.
 (This distinctive behaviour is implemented in the [`evolution`](@ref) function
 when the `conditioned` keyword is set to `true`.)
 ```@docs
-Innovation
 Evolution
 CEvolution
 ```

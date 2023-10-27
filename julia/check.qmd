@@ -46,14 +46,18 @@ source = "check.qmd"
 #| eval: true
 #| cache: false
 using EpidemicsCFTP, EpidemicsUtilities
+
 using Gadfly, Compose
 # `Gadfly` documentation <http://gadflyjl.org/stable/>
 using DataFrames
 # `DataFrames` documentation <https://dataframes.juliadata.org/stable/>
 using PrettyTables
 # `PrettyTables` documentation at <https://ronisbr.github.io/PrettyTables.jl/stable/>
+
 import Distributions: Normal, ccdf
-import Markdown, Random
+import Random
+
+import Markdown
 ownversion = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
 ownbranch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
@@ -63,6 +67,8 @@ Markdown.parse("""
 | Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
 | Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
 | Running under `julia`        | `$VERSION`                      | ---                            |
+
+This script takes 8 minutes to run on `jemima`.
 """)
 ```
 

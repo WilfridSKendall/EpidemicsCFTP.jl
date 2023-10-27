@@ -581,14 +581,16 @@ It is a generic sub-type of [`AbstractEnvironment`](@ref)
 
 Instances should always possess fields as follows:
 
-| Field name   | Type                         |                                |
-|:-------------|:-----------------------------|:-------------------------------|
-| `infections` | `Vector{AbstractInfection}`  | time-ordered list              |
-| `removals`   | `Vector{AbstractRemoval}`    | time-ordered list              |
-| `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty  |
-| `chronology` | `Vector{AbstractIncident}`   | **computed** time-ordered list |
-| `trajectory` | `Vector{SIR}`                | **computed** time-ordered list |
-| `history`    | `Vector{AbstractIncident}`   | **computed** time-ordered list |
+| Field name    | Type                         |              |                   |
+|:--------------|:-----------------------------|:-------------|-------------------|
+| `infections`  | `Vector{AbstractInfection}`  |              | time-ordered list |
+| `removals`    | `Vector{AbstractRemoval}`    |              | time-ordered list |
+| `cremovals`   | `Vector{CRemoval}`           |              | time-ordered list |
+| `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
+| `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
+| `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
+| `start_times` | `Vector{Real}`               | **computed** | list              |
+| `finis_times` | `Vector{Real}`               | **computed** | list              |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
@@ -605,8 +607,10 @@ stored as a sequence of three **time-ordered** lists
 (realized and unrealized infections, unrealized removals, conditional removals)
 and also computed fields `chronology`, `trajectory` and `history`.
 
-Note the use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
-to compute the `trajectory` and `history` fields!
+Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
+to compute the `trajectory` and `history` fields
+and the implicit use of [`periods](@ref) to compute start and finish times
+for infectious periods!
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> initial    = SIR(0.0, 2, 1, 0)
@@ -625,7 +629,7 @@ infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 )
-julia> Evolution(initial, innov)
+julia> ev = Evolution(initial, innov)
 Evolution(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
@@ -634,16 +638,22 @@ chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹]
 )
+julia> println(ev.start_times)
+Real[0.0, Inf, Inf]
+julia> println(ev.finis_times)
+Real[0.0, Inf, Inf]
 ```
 """
 struct Evolution <: AbstractEvolution
-    population ::Int
-    infections ::Vector{<:AbstractInfection}
-    removals   ::Vector{<:AbstractRemoval}
-    cremovals  ::Vector{CRemoval}
-    chronology ::Vector{<:AbstractIncident}
-    trajectory ::Vector{SIR}
-    history    ::Vector{AbstractIncident}
+    population  ::Integer
+    infections  ::Vector{<:AbstractInfection}
+    removals    ::Vector{<:AbstractRemoval}
+    cremovals   ::Vector{CRemoval}
+    chronology  ::Vector{<:AbstractIncident}
+    trajectory  ::Vector{SIR}
+    history     ::Vector{AbstractIncident}
+    start_times ::Vector{Real}
+    finis_times ::Vector{Real}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of initial.state entries
@@ -653,12 +663,14 @@ struct Evolution <: AbstractEvolution
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
-        new(population, infections, removals, cremovals, chronology, trajectory, history)
+        start_times, finis_times = periods(trajectory, history)
+        new(population, infections, removals, cremovals, chronology, 
+            trajectory, history, start_times, finis_times)
     end
 end
 
 """
-    CEvolution(initial_state::SIR, innovation::Innovation)
+    CEvolution(::SIR, ::Innovation)
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -671,8 +683,10 @@ It represents an entire simulation corresponding to a single step of _algorithmi
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals)
 and also computed fields `chronology`, `trajectory` and `history`.
-Note the use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
-to compute the `trajectory` and `history` fields!
+Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
+to compute the `trajectory` and `history` fields,
+and the implicit use of [`periods](@ref) to compute start and finish times
+for infectious periods!
 
 ## Example
 Three cases: basic use, missing a conditioned removal, employing an (unconditioned) removal.
@@ -732,13 +746,15 @@ ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.1, 1)
 
 """
 struct CEvolution <: AbstractEvolution
-    population ::Int
-    infections ::Vector{<:AbstractInfection}
-    removals   ::Vector{<:AbstractRemoval}
-    cremovals  ::Vector{CRemoval}
-    chronology ::Vector{<:AbstractIncident}
-    trajectory ::Vector{SIR}
-    history    ::Vector{AbstractIncident}
+    population  ::Int
+    infections  ::Vector{<:AbstractInfection}
+    removals    ::Vector{<:AbstractRemoval}
+    cremovals   ::Vector{CRemoval}
+    chronology  ::Vector{<:AbstractIncident}
+    trajectory  ::Vector{SIR}
+    history     ::Vector{AbstractIncident}
+    start_times ::Vector{Real}
+    finis_times ::Vector{Real}
     
     function CEvolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of `initial_state` entries
@@ -748,7 +764,9 @@ struct CEvolution <: AbstractEvolution
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
-        new(population, infections, removals, cremovals, chronology, trajectory, history)
+        start_times, finis_times = periods(trajectory, history)
+        new(population, infections, removals, cremovals, chronology, 
+            trajectory, history, start_times, finis_times)
     end
 end
 

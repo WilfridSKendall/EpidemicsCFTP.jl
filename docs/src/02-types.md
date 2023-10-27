@@ -118,9 +118,20 @@ AbstractEnvironment
 AbstractEvolution
 ```
 
+## `Innovation`
 `Innovation` fills the lists of an abstract environment with simulated contents
-of lists of the requisite infections or removals.
-`Evolution` also carries out the simulation from a given initial value. 
+of lists of the requisite infections or removals. 
+```@docs
+Innovation
+```
+
+## Two kinds of `Evolution`
+`Evolution` carries out the simulation of an epidemic from a given initial `SIR` value,
+based on an `Innovation`. 
+`CEvolution` does the same, but returns an error if it violates conditioning 
+in the way it treats`AbstractRemoval`s.
+(This distinctive behaviour is implemented in the [`evolution`](@ref) function
+when the `conditioned` keyword is set to `true`.)
 ```@docs
 Innovation
 Evolution

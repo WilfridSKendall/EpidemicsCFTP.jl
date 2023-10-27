@@ -181,8 +181,11 @@ If the keyword argument `conditioned` is set to its non-default value of `true`
 then an error is raised when the function attempts to realize a [`Removal`](@ref)
 or fails to realize a [`CRemoval`](@ref).
 
+Note that this method is employed in the construction of [`Evolution`](@ref)
+and (with the `conditioned` flag set to `true`) [`CEvolution`](@ref) objects.
+
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest evolution; setup = :(using EpidemicsCFTP)
 julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
 
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[Removal(0.5, 4)], CRemoval[]) ;
@@ -197,7 +200,8 @@ AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 
 julia> evolution(initial_state, innovation, conditioned=true)
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
-
+```
+```jldoctest evolution
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
 
 julia> states, history = evolution(initial_state, innovation) ;
@@ -207,7 +211,8 @@ SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
 AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
- 
+```
+```jldoctest evolution
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 
 julia> evolution(initial_state, innovation, conditioned=true) ;

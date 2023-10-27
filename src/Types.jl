@@ -5,7 +5,7 @@
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 
-Expects field `t<:Real` (used by function [`isearlier`](@ref)
+# Expects field `t<:Real` (used by function [`isearlier`](@ref)
 to time-order lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
@@ -469,7 +469,7 @@ cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 ```
 """
 struct Innovation <: AbstractEnvironment
-    population ::Int
+    population ::Integer
     infections ::Vector{<:AbstractInfection}
     removals   ::Vector{<:AbstractRemoval}
     cremovals  ::Vector{CRemoval}
@@ -577,7 +577,7 @@ end
     AbstractEvolution 
 
 This represents variants of evolution of an `S-I-R` epidemic.
-It is a generic sub-type of [AbstractEnvironment](@ref)
+It is a generic sub-type of [`AbstractEnvironment`](@ref)
 
 Instances should always possess fields as follows:
 
@@ -593,62 +593,6 @@ Instances should always possess fields as follows:
 abstract type AbstractEvolution <: AbstractEnvironment end
 
 """
-    BadIncident
-
-An exception to report misuse of an incident. Doctests are supplied below for 
-specific sub-types.
-"""
-abstract type BadIncident <: Exception end
-        
-"""
-    MissedCRemoval
-
-This is an exception raised when a [`CRemoval`](@ref) is missed by
-`evolution`.
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 3)] ;
-innov      = Innovation(population, infections, removals, cremovals) ;
-initial    = SIR(0.0, 2, 1, 0)
-CEvolution(initial, innov)
-
-# output
-ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.05, 3)
-```
-"""
-struct MissedCRemoval <: BadIncident
-    incident ::AbstractIncident
-end
-
-"""
-    EmployedRemoval
-
-This is an exception raised when a [`Removal`](@ref) is not missed by
-`evolution`.
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.05, 3), Removal(0.2, 1), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.5, 1)] ;
-innov      = Innovation(population, infections, removals, cremovals) ;
-initial    = SIR(0.0, 2, 1, 0)
-CEvolution(initial, innov)
-
-# output
-ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.2, 1)
-```
-"""
-struct EmployedRemoval <: BadIncident
-    incident ::AbstractIncident
-end
-
-"""
     Evolution(initial_state::SIR, innovation::Innovation)
 
 This implements _unconditional_ evolution of an SIR epidemic 
@@ -661,30 +605,32 @@ stored as a sequence of three **time-ordered** lists
 (realized and unrealized infections, unrealized removals, conditional removals)
 and also computed fields `chronology`, `trajectory` and `history`.
 
+Note the use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
+to compute the `trajectory` and `history` fields!
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> initial    = SIR(0.0, 2, 1, 0)
 SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
-julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> infections = [NoFlyInfection(0.7,1,2), PInfection(0.5,1,2)]
+OperativeInfection[𝒩₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
 Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
 CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 julia> innov      = Innovation(population, infections, removals, cremovals)
 Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 )
 julia> Evolution(initial, innov)
 Evolution(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹]
 )
@@ -725,43 +671,49 @@ It represents an entire simulation corresponding to a single step of _algorithmi
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals)
 and also computed fields `chronology`, `trajectory` and `history`.
+Note the use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
+to compute the `trajectory` and `history` fields!
 
 ## Example
 Three cases: straightforward, missing a conditioned removal, employing an (unconditioned) removal:
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest CEvolution; setup = :(using EpidemicsCFTP)
 julia> initial    = SIR(0.0, 2, 1, 0)
 SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
-Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
+julia> removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)]
+AbstractRemoval[ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1)]
 CRemoval[𝒞₀.₀₀¹]
+
 julia> innov      = Innovation(population, infections, removals, cremovals) 
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
 )
+
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: AbstractIncident[𝒞₀.₀₀¹,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹]
 )
-
-julia> cremovals  = [CRemoval(0.0, 2)] ;
-
+```
+```jldoctest CEvolution
+julia> cremovals  = [CRemoval(0.0, 2)]
+CRemoval[𝒞₀.₀₀²]
 julia> innov      = Innovation(population, infections, removals, cremovals) ;
 
 julia> CEvolution(initial, innov)
 ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.0, 2)
-
+```
+```jldoctest CEvolution
 julia> removals   = [Removal(0.1, 1), Removal(0.1, 2)] ;
 
 julia> cremovals  = [CRemoval(0.2, 1)] ;
@@ -791,4 +743,62 @@ struct CEvolution <: AbstractEvolution
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         new(population, infections, removals, cremovals, chronology, trajectory, history)
     end
+end
+
+
+"""
+    BadIncident
+
+An exception to report misuse of an incident. Doctests are supplied below for 
+specific sub-types.
+"""
+abstract type BadIncident <: Exception end
+        
+"""
+    MissedCRemoval
+
+This is an exception raised when a [`CRemoval`](@ref) is missed by
+`evolution`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+population = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
+cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 3)] ;
+innov      = Innovation(population, infections, removals, cremovals) ;
+initial    = SIR(0.0, 2, 1, 0)
+CEvolution(initial, innov)
+
+# output
+ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.05, 3)
+```
+"""
+struct MissedCRemoval <: BadIncident
+    incident ::AbstractIncident
+end
+
+
+"""
+    EmployedRemoval
+
+This is an exception raised when a [`Removal`](@ref) is not missed by
+`evolution`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+population = 3 ;
+infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+removals   = [Removal(0.05, 3), Removal(0.2, 1), Removal(0.1, 2)] ;
+cremovals  = [CRemoval(0.5, 1)] ;
+innov      = Innovation(population, infections, removals, cremovals) ;
+initial    = SIR(0.0, 2, 1, 0)
+CEvolution(initial, innov)
+
+# output
+ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.2, 1)
+```
+"""
+struct EmployedRemoval <: BadIncident
+    incident ::AbstractIncident
 end

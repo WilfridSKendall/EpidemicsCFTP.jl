@@ -2,7 +2,7 @@
 # Associated methods
 
 ## Comparison method
-A partial order is provided by `isearlier`, based on time `t` of occurrence of 
+A partial order is provided by [`isearlier`](@ref), based on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
 [`AbstractTimedOccurrence`](@ref)s.
@@ -17,10 +17,21 @@ alter
 ```
 
 ## Methods relating to epidemic dynamics
-Various methods relating to updating a trajectory (some private):
+Various methods relating to updating a trajectory (some of these are private to `EpidemicsCFTP`!).
+The first set concerns generation of a random [`Innovation`](@ref)
+(`generate_innovation`)
+and production of an [`Evolution`](@ref) based on an initial [`SIR`](@ref) and 
+an [`Innovation`](@ref)
+([`evolution`](@ref) for trajectory and history, [`EpidemicsCFTP.periods`](@ref) for start and end times for infectious periods).
 ```@docs
-evolution
 generate_innovation
+evolution
+EpidemicsCFTP.periods
+```
+
+The second set is employed in the course of applying `evolution` to generate trajectory and history
+in the course of initializing an [`Innovation`]](@ref).
+```@docs
 EpidemicsCFTP.infect
 EpidemicsCFTP.is_infectable
 EpidemicsCFTP.remove

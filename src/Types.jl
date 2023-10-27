@@ -609,7 +609,7 @@ and also computed fields `chronology`, `trajectory` and `history`.
 
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
 to compute the `trajectory` and `history` fields
-and the implicit use of [`periods](@ref) to compute start and finish times
+and the implicit use of [`EpidemicsCFTP.periods`](@ref) to compute start and finish times
 for infectious periods!
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -685,7 +685,7 @@ stored as a sequence of three **time-ordered** lists
 and also computed fields `chronology`, `trajectory` and `history`.
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
 to compute the `trajectory` and `history` fields,
-and the implicit use of [`periods](@ref) to compute start and finish times
+and the implicit use of [`EpidemicsCFTP.periods`](@ref) to compute start and finish times
 for infectious periods!
 
 ## Example

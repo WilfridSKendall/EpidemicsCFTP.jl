@@ -6,6 +6,7 @@ version = "1.0.0-DEV"
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Formatting = "59287772-0a20-5a39-b81b-1366585eb4c0"
+InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 PrettyPrint = "8162dcfd-2161-5ef2-ae6c-7681170c5f98"
 
 [compat]

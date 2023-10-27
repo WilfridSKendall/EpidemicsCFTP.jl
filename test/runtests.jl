@@ -14,6 +14,6 @@ end
 
     
 include("Types.jl")
-include("Functions.jl")
+include("Methods.jl")
 # include("Trajectories.jl")
 

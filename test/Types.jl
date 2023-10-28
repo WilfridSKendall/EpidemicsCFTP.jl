@@ -1,36 +1,53 @@
 # Tests for types of `EpidemicsCFTP`
 
-## Testing `Removal`
-@testset "EpidemicsCFTP: Removals      " begin
-    for inc in [Removal, CRemoval]
-    @test_throws DomainError    inc(0.05, -2)
-    @test_throws DomainError    inc(0.05, 0)
-    @test_throws MethodError    inc(0.05, 2.5)
-    @test_throws MethodError    inc(0.05, -2.3)
+## Testing creation of concrete subtypes of `AbstractRemoval`
+for removaltype in allconcretesubtypes(AbstractRemoval)
+    @testset "EpidemicsCFTP: $(rpad(string(removaltype), 18))  (A)" begin
+        @test_throws DomainError    removaltype(0.05,-2)
+        @test_throws DomainError    removaltype(0.05, 0)
+        @test_throws MethodError    removaltype(0.05, 2.5)
+        @test_throws MethodError    removaltype(0.05,-2.3)
     end
 end
 
-## Testing `Infection` and `PInfection`
-@testset "EpidemicsCFTP: Infections    " begin
-#    for inc in allconcretesubtypes(OperativeInfection)
-    for inc in [Infection, PInfection]
-        @test_throws DomainError    inc(0.10,-1,-2)
-        @test_throws DomainError    inc(0.10,-1, 2)
-        @test_throws DomainError    inc(0.10, 1,-2)
-        @test_throws DomainError    inc(0.10, 1, 0)
-        @test_throws MethodError    inc(0.10, 1.5, 2)
-        @test_throws MethodError    inc(0.10, 1,   2.5)
-        #test_throws MethodError    inc(0.10, 1.5, 2.5)
-        @test_throws MethodError    inc(0.10, 2.5, 1.5)
-        @test_throws DomainError    inc(5.45, 0, 3)
-        @test_throws DomainError    inc(5.45, 3, 2)
-        @test_throws DomainError    inc(5.45, 2, 1)
-        @test_throws DomainError    inc(5.45, 0, 3)
-        @test_throws DomainError    inc(5.45, 3, 2)
+## Testing conversion of concrete subtypes of `AbstractRemoval`
+for removaltype1 in allconcretesubtypes(AbstractRemoval)
+    @testset "EpidemicsCFTP: $(rpad(string(removaltype1), 18))  (B)" begin
+        for removaltype2 in allconcretesubtypes(AbstractRemoval)
+            @test removaltype1(removaltype2(0.05, 2)) == removaltype1(0.05, 2)
+            @test removaltype1(removaltype2(0.15, 3)) == removaltype1(0.15, 3)
+        end
     end
 end
 
-@testset "EpidemicsCFTP: Innovation    " begin
+## Testing creation of concrete subtypes of `AbstractInfection`
+for infectiontype in allconcretesubtypes(AbstractInfection)
+    @testset "EpidemicsCFTP: $(rpad(string(infectiontype), 18))  (A)" begin
+        @test_throws DomainError  infectiontype(0.10,-1,   2)
+        @test_throws DomainError  infectiontype(0.10, 1,  -2)
+        @test_throws DomainError  infectiontype(0.10,-1,  -2)
+        @test_throws DomainError  infectiontype(0.10, 1,   0)
+        @test_throws DomainError  infectiontype(5.45, 0,   3)
+        @test_throws DomainError  infectiontype(5.45, 0,   0)
+        @test_throws MethodError  infectiontype(0.10, 1.5, 2)
+        @test_throws MethodError  infectiontype(0.10, 1,   2.5)
+        @test_throws MethodError  infectiontype(0.10, 1.5, 2.5)
+        @test_throws MethodError  infectiontype(0.10, 2.5, 1)
+        @test_throws DomainError  infectiontype(5.45, 3,   2)
+    end
+end
+
+## Testing creation of concrete subtypes of `AbstractInfection`
+for infectiontype1 in allconcretesubtypes(AbstractInfection)
+    @testset "EpidemicsCFTP: $(rpad(string(infectiontype1), 18))  (B)" begin
+        for infectiontype2 in allconcretesubtypes(AbstractInfection)
+            @test infectiontype1(infectiontype2(0.05, 2, 3)) == infectiontype1(0.05, 2, 3)
+            @test infectiontype1(infectiontype2(0.15, 1, 4)) == infectiontype1(0.15, 1, 4)
+        end
+    end
+end
+
+@testset "EpidemicsCFTP: $(rpad(string(Innovation), 23))" begin
     P, I, R, C = PInfection, Infection, Removal, CRemoval
     AI = AbstractIncident
 
@@ -69,12 +86,18 @@ end
 end
 
 
-## Testing `SIR`, state of epidemic
-@testset "EpidemicsCFTP: SIR           " begin
+## Testing creation of `SIR`, state of epidemic
+@testset "EpidemicsCFTP: $(rpad(string(SIR), 23))" begin
+    @test_throws DomainError SIR(0.0,-1, 2, 3)
     @test_throws DomainError SIR(0.0,-1, 2, 3)
     @test_throws DomainError SIR(0.0, 1,-2, 3)
     @test_throws DomainError SIR(0.0, 1, 2,-3)
     @test_throws DomainError SIR(0.0, 0, 0, 0)
+    @test_throws DomainError SIR(0.0, 1,-2, 3, 2)
+    @test_throws DomainError SIR(0.0, 1, 2,-3, 0)
+    @test_throws DomainError SIR(0.0, 0, 0, 0, 0)
+    @test_throws DomainError SIR(0.0, 1, 1, 1, 2)
+    @test_throws DomainError SIR(0.0, 1, 1, 1, 1)
     sir = SIR(0.0, 1, 2, 3)
     @test sir.n == sir.s + sir.i + sir.r
 end

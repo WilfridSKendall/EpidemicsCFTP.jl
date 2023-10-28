@@ -2,7 +2,7 @@
 
 ## Testing `isearlier`
 # =================================
-@testset "EpidemicsCFTP: isearlier     " begin
+@testset "EpidemicsCFTP: $(rpad(string(isearlier), 23))" begin
     @test  isearlier(Removal(0.10, 2),      Removal(0.5, 3))
     @test !isearlier(Removal(0.5, 2),       Removal(0.1, 3))
     @test  isearlier(Removal(0.5, 3),       Removal(0.90, 2))
@@ -20,7 +20,7 @@ end
 
 ## Testing `alter`
 # -------------------
-@testset "EpidemicsCFTP: alter         " begin
+@testset "EpidemicsCFTP: $(rpad(string(alter), 23))" begin
 crem = CRemoval(0.15, 1)
 @test alter(crem, 100) == CRemoval(0.15, 100)
 @test_throws ArgumentError   alter(crem, -100)
@@ -31,7 +31,7 @@ end
 
 
 # =================================
-@testset "EpidemicsCFTP: actions       " begin
+@testset "EpidemicsCFTP: $(rpad("actions", 23))" begin
     infect = EpidemicsCFTP.infect
     remove = EpidemicsCFTP.remove
     update = EpidemicsCFTP.update
@@ -89,7 +89,7 @@ end
 end
 
 
-@testset "EpidemicsCFTP: evolution     " begin
+@testset "EpidemicsCFTP: $(rpad(string(evolution), 23))" begin
     I, P, R, C = PInfection, Infection, Removal, CRemoval
     AIF = AbstractInfection
     AI  = AbstractIncident
@@ -153,8 +153,9 @@ end
 ## `FakeIncident` is an `AbstractIncident but without fields`
 struct FakeIncident <: AbstractIncident end
 
+    
 # Function `update` does not accept this!
-@testset "EpidemicsCFTP: SIR fake      " begin
+@testset "EpidemicsCFTP: $(rpad("SIR fake", 23))" begin
     @test_throws UndefVarError update(SIR(0.0, 1, 2, 3), FakeIncident())
 end
 

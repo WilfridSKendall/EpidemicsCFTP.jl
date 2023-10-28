@@ -27,7 +27,7 @@ abstract type AbstractIncident <: AbstractTimedOccurrence end
 
 This represents an abstract removal using a sub-type of [`AbstractIncident`](@ref).  
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
-Also expects field `target<:Integer`.
+Also expects field `target<:Int`.
 
 If the potential removal is to become realized 
 then `target` must index a time line which is infectious just before time `t`.
@@ -39,7 +39,7 @@ abstract type AbstractRemoval <: AbstractIncident end
 
 This represents an _operative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
 It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
-Also expects a field `target<:Integer`.
+Also expects a field `target<:Int`.
 
 The `target` field labels the timeline being considered as host for the removal incident:
 it must be a positive integer.  
@@ -55,7 +55,7 @@ abstract type OperativeRemoval <: AbstractRemoval end
 
 This represents a _nonoperative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
 It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
-Also expects a field `target<:Integer`.
+Also expects a field `target<:Int`.
 
 The `target` field labels the timeline being considered as host for the removal incident:
 it must be a positive integer.  
@@ -69,7 +69,7 @@ abstract type NonOperativeRemoval <: AbstractRemoval end
 
 This represents an abstract infection using a sub-type of [`AbstractIncident`](@ref).
 Inherits expectation of field `t<:Real` from `AbstractIncident`).  
-Also expects fields `target<:Integer` and `infectee<:Integer`,
+Also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
 Under conditioning on removals,
@@ -86,7 +86,7 @@ abstract type AbstractInfection <: AbstractIncident end
 
 This represents an _operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
 It inherits from [`AbstractIncident`](@ref) an expectation of field `t<:Real`. 
-Also expects fields `target<:Integer` and `infectee<:Integer`,
+Also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
 If the potential infection is to become realized 
@@ -105,7 +105,7 @@ abstract type OperativeInfection <: AbstractInfection end
 
 This represents a _non-operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
 It inherits from [`AbstractIncident`](@ref) an expectation of field `t<:Real`.  
-Also expects fields `target<:Integer` and `infectee<:Integer`,
+Also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
 Such an incident will never be realized.
@@ -116,7 +116,7 @@ abstract type NonOperativeInfection <: AbstractInfection end
 ## Various kinds of removal
 
 """
-    Removal(t::Real, target::Integer)
+    Removal(::Float64, ::Int)
 
 Implements a potential removal using a sub-type of [`OperativeRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
@@ -133,18 +133,22 @@ julia> Removal(0.1, 4)
 struct Removal <: OperativeRemoval
     kind      ::String     
     t         ::Float64
-    target    ::Int64
+    target    ::Int
 
-    function Removal(t::Real, target::Integer)
+    function Removal(t::Float64, target::Int)
         noun = "Removal($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("ℛ", t, target))
+    end
+
+    function Removal(z::AbstractRemoval)
+        Removal(z.t, z.target)
     end
 end
 
 
 """
-    CRemoval(t::Real, target::Integer)
+    CRemoval(::Float64, ::Int)
 
 Represent a conditioned removal using a sub-type of [`OperativeRemoval`](@ref), similar to `Removal`.
 The `target` field should always index a time line which is currently infectious 
@@ -163,22 +167,22 @@ julia> CRemoval(z)
 struct CRemoval <: OperativeRemoval
     kind      ::String     
     t         ::Float64
-    target    ::Int64
+    target    ::Int
 
-    function CRemoval(t::Real, target::Integer)
+    function CRemoval(t::Float64, target::Int)
         noun = "CRemoval($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("𝒞", t, target))
     end
 
-    function CRemoval(z::OperativeRemoval)
+    function CRemoval(z::AbstractRemoval)
         CRemoval(z.t, z.target)
     end
 end
 
 
 """
-    KilledRemoval(t::Real, target::Integer)
+    KilledRemoval(::Float64, ::Int)
 
 Implements a removal which can never be activated using a sub-type of [`AbstractRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
@@ -197,9 +201,9 @@ julia> KilledRemoval(z)
 struct KilledRemoval <: NonOperativeRemoval
     kind      ::String     
     t         ::Float64
-    target    ::Int64
+    target    ::Int
 
-    function KilledRemoval(t::Real, target::Integer)
+    function KilledRemoval(t::Float64, target::Int)
         noun = "KilledRemoval($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("𝒦", t, target))
@@ -213,8 +217,8 @@ end
 ## Various kinds of infection
 
 """
-    Infection(t::Real, infectee::Integer, target::Integer)
-
+    Infection(::Float64, ::Int, ::Int)
+    
 Represent a potential infection using a sub-type of [`OperativeInfection`](@ref),
 using mark time `t` and another mark `target` and a further mark `infectee`.
 Marks `target` and `infectee` must be positive integers with `target < infectee`.
@@ -228,10 +232,10 @@ julia> Infection(0.2, 1, 2)
 struct Infection <: OperativeInfection
     kind      ::String
     t         ::Float64
-    target    ::Int64
-    infectee  ::Int64
+    target    ::Int
+    infectee  ::Int
 
-    function Infection(t::Real, target::Int, infectee::Int)
+    function Infection(t::Float64, target::Int, infectee::Int)
         noun = "Infection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -241,10 +245,14 @@ struct Infection <: OperativeInfection
             new("ℐ", t, target, infectee)
         end
     end
+
+    function Infection(z::AbstractInfection)
+        Infection(z.t, z.target, z.infectee)
+    end
 end
 
 """
-    PInfection(t::Real, infectee::Integer, target::Integer)
+    PInfection(::Float64, ::Int, ::Int)
 
 Represent a perpetuated infection using a sub-type of [`OperativeInfection`](@ref)
 which is identical to `Infection` but with a different name.
@@ -265,10 +273,10 @@ julia> PInfection(z)
 struct PInfection <: OperativeInfection
     kind      ::String
     t         ::Float64
-    target    ::Int64
-    infectee  ::Int64
+    target    ::Int
+    infectee  ::Int
     
-    function PInfection(t::Real, target::Integer, infectee::Integer)
+    function PInfection(t::Float64, target::Int, infectee::Int)
         noun = "PInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -285,7 +293,7 @@ struct PInfection <: OperativeInfection
 end
 
 """
-    NoFlyInfection(t::Real, infectee::Integer, target::Integer)
+    NoFlyInfection(::Float64, ::Int, ::Int)
 
 Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
@@ -308,13 +316,12 @@ julia> NoFlyInfection(z)
 ```
 """
 struct NoFlyInfection <: OperativeInfection
-
     kind      ::String
     t         ::Float64
-    target    ::Int64
-    infectee  ::Int64
+    target    ::Int
+    infectee  ::Int
     
-    function NoFlyInfection(t, target, infectee)
+    function NoFlyInfection(t::Float64, target::Int, infectee::Int)
         noun = "NoFlyInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -331,7 +338,7 @@ struct NoFlyInfection <: OperativeInfection
 end
 
 """
-    KilledInfection(t::Real, infectee::Integer, target::Integer)
+    KilledInfection(::Float64, ::Int, ::Int)
 
 Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
@@ -352,10 +359,10 @@ struct KilledInfection <: NonOperativeInfection
 
     kind      ::String
     t         ::Float64
-    target    ::Int64
-    infectee  ::Int64
+    target    ::Int
+    infectee  ::Int
     
-    function KilledInfection(t::Real, target::Integer, infectee::Integer)
+    function KilledInfection(t::Float64, target::Int, infectee::Int)
         noun = "KilledInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -374,7 +381,7 @@ end
 
 
 """
-    CancelledInfection(t::Real, infectee::Integer, target::Integer)
+    CancelledInfection(::Float64, ::Int, ::Int)
 
 Represent an infection using a sub-type of [`OperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
@@ -400,10 +407,10 @@ struct CancelledInfection <: NonOperativeInfection
 
     kind      ::String
     t         ::Float64
-    target    ::Int64
-    infectee  ::Int64
+    target    ::Int
+    infectee  ::Int
     
-    function CancelledInfection(t, target, infectee)
+    function CancelledInfection(t, target::Int, infectee::Int)
         noun = "CancelledInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
@@ -431,7 +438,7 @@ Instances should always possess the following fields:
 
 | Field name   | Type                         | Further remarks               |
 |:-------------|:-----------------------------|:------------------------------|
-| `population` | `Integer`                    | positive`Integer`             |
+| `population` | `Int`                    | positive`Int`             |
 | `infections` | `Vector{AbstractInfection}`  | time-ordered list             |
 | `removals`   | `Vector{AbstractRemoval}`    | time-ordered list             |
 | `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty |
@@ -439,9 +446,8 @@ Instances should always possess the following fields:
 abstract type AbstractEnvironment end
 
 """
-    Innovation(population::Integer, infections::Vector{S},
-               removals::Vector{T},
-               cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    Innovation(::Int, ::Vector{S}, ::Vector{T},
+               ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
 
 This represents an entire innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -469,13 +475,13 @@ cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 ```
 """
 struct Innovation <: AbstractEnvironment
-    population ::Integer
+    population ::Int
     infections ::Vector{<:AbstractInfection}
     removals   ::Vector{<:AbstractRemoval}
     cremovals  ::Vector{CRemoval}
     chronology ::Vector{<:AbstractIncident}
 
-    function Innovation(population::Integer, infections::Vector{S},
+    function Innovation(population::Int, infections::Vector{S},
                         removals::Vector{T},
                         cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
         noun = "Innovation($population, $infections, $removals, $cremovals)"
@@ -498,7 +504,7 @@ struct Innovation <: AbstractEnvironment
         end
     end
 
-    function Innovation(population::Integer, infections::Vector{S},
+    function Innovation(population::Int, infections::Vector{S},
                         removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
         Innovation(population, infections, removals, CRemoval[])
     end
@@ -508,7 +514,7 @@ end
 
 ## An `SIR` state for an $\SIR$ epidemic and associated functions
 """
-    SIR(t::Real, s::Integer, i::Integer, r::Integer)
+    SIR(::Float64, ::Int, ::Int, ::Int)
 
 This represents a state of a `S-I-R` epidemic (`s`, `i`, `r`)
 (all non-negative integers adding up to a positive integer `n`
@@ -535,7 +541,7 @@ struct SIR <: AbstractTimedOccurrence
     r::Int
     n::Int
 
-    function SIR(t, s, i, r, n)
+    function SIR(t::Float64, s::Int, i::Int, r::Int, n::Int)
         noun = "SIR($t, $s, $i, $r, $n)"
         if s < 0
             throw(DomainError(noun, "negative number $s of susceptibles"))
@@ -552,9 +558,7 @@ struct SIR <: AbstractTimedOccurrence
         new(t, s, i, r, n)
     end
 
-    function SIR(t, s, i, r)
-        n = s + i + r
-
+    function SIR(t::Float64, s::Int, i::Int, r::Int)
         noun = "SIR($t, $s, $i, $r)"
         if s < 0
             throw(DomainError(noun, "negative number $s of susceptibles"))
@@ -565,8 +569,7 @@ struct SIR <: AbstractTimedOccurrence
         elseif s + i + r == 0
             throw(DomainError(noun, "zero total computed population"))
         end
-        
-        new(t, s, i, r, n)
+        new(t, s, i, r, s + i + r)
     end
 
 end
@@ -595,7 +598,7 @@ Instances should always possess fields as follows:
 abstract type AbstractEvolution <: AbstractEnvironment end
 
 """
-    Evolution(initial_state::SIR, innovation::Innovation)
+    Evolution(::SIR, ::Innovation)
 
 This implements _unconditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -645,7 +648,7 @@ Real[0.0, Inf, Inf]
 ```
 """
 struct Evolution <: AbstractEvolution
-    population  ::Integer
+    population  ::Int
     infections  ::Vector{<:AbstractInfection}
     removals    ::Vector{<:AbstractRemoval}
     cremovals   ::Vector{CRemoval}
@@ -677,7 +680,7 @@ based on a given [`Innovation`](@ref)
 for innovations,
 and starting from a given [`SIR`](@ref) for initial state.
 An error is raised if the resulting `evolution` activates
-an [`AbstractRemoval](@ref) incident which is not a [`CRemoval`](@ref).
+an [`AbstractRemoval`](@ref) incident which is not a [`CRemoval`](@ref).
 
 It represents an entire simulation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 

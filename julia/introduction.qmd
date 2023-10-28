@@ -176,7 +176,7 @@ for initial state `initial` and innovations `innov1`.
 ```{julia}
 #| echo: false 
 evol1 = Evolution(initial, innov1)
-flow = table_trajectories1(duration, initial, evol1.trajectory)
+flow = table_trajectories1(duration, initial, evol1.trajectory) ;
 ```
 ```{julia}
 #| label: tbl-evolution
@@ -524,46 +524,23 @@ will not be affected by this step.
 ## Adding in removals from the new innovation which will be inactive
 We now insert those of the removals from `innov2` which 
 would _not_ be activated by the old epidemic structure. 
-To do this, we need first to define a function `life_dates`
-which computes the "birth" and "death" times of the infection for each time line.
+To do this, we use the attributes `start_times` and `finis_times`
+which hold the "birth" and "death" times of the infection for each time line.
 Note that we assume that _every_ time line dies at time `Inf` if
 it is still alive at the time `duration`,
-and is born at time `Inf` if it has not been infected by time `duration`: 
+and is born at time `0.0` if it has not been infected by time `duration`: 
 evidently this is unrealistic
 but flags absence of data.
-Note also that we check for `Removal`s occurring in the removals zone, which are converted
-to `KilledRemoval`s.
-```{julia}
-function life_dates(ev)                 # For EpidemicsCFTP
-    start, finis = ev.trajectory[1], ev.trajectory[end]
-    
-    # Compute birth times
-    births = sort([z.t for z in ev.history if typeof(z) <: AbstractInfection])
-    prepend!(births, repeat([0.0], start.i + start.r))
-    append!(births, repeat([Inf], finis.s)) # Or replace `Inf` by `duration`
-    
-    # Compute death times
-    deaths = sort([z.t for z in ev.history if typeof(z) <: AbstractRemoval])
-    prepend!(deaths, repeat([0.0], start.r))
-    append!(deaths, repeat([Inf], finis.i + finis.s)) # Or replace `Inf` by `duration`
-    
-    # Check same number of births as deaths
-    if length(births) != length(deaths)
-        error("birth and death numbers ($(length(births)), $(length(deaths))) disagree")
-    end
+We use this to define a function `inactive_removals` which
+returns a list composed of:
 
-    return (births, deaths)
-end ;
-```
-Now we define a function `inactive_removals` which uses the output
-from `life_dates` to return only
-(a) removals occurring before respective time line is infected;
+a) removals occurring before respective time line is infected;
 
-(b) removals occurring on or after respective time line is removed
+b) removals occurring on or after respective time line is removed
 (which are all converted to `KilledRemoval`):
 ```{julia}
 function inactive_removals(ev, innov)   # For EpidemicsCFTP
-    t0, t1 = life_dates(ev)
+    t0, t1 = ev.start_times, ev.finis_times
     not_killed = [z for z in innov.removals if z.t < t0[z.target]]
     killed     = [KilledRemoval(z) for z in innov.removals if t1[z.target] ≤ z.t]
     return sort(union(not_killed, killed), lt=isearlier)
@@ -572,21 +549,15 @@ end ;
 Here are the results:
 ```{julia}
 println(sprint(show, MIME("text/plain"), inactive_removals(evol1, innov2)))
-
-#println(sprint(show, MIME("text/plain"), not_killed))
-#println(sprint(show, MIME("text/plain"), killed))
 ```
 
-
-::: {.callout-warning}
-DEBUG THIS: NOT BEHAVING AS IT SHOULD
-:::
-
-So now we add from `innov2` to `innov1_0` those inactive removals which are  _not killed_, forming
-a resulting (intermediate) evolution which is plotted in @fig-introduction-inactive-removals.
+So now we add the new inactive removals from `innov2` to `innov1_0`,
+converting those in the removals zone to `KilledRemoval`s, forming
+a resulting (intermediate) evolution `innov1_1` which is
+used to plot @fig-introduction-inactive-removals.
 ```{julia}
 innov1_1 = Innovation(initial.n, innov1_0.infections, 
-    inactive_removals(evol1_0, innov1_0), innov1_0.cremovals)
+    inactive_removals(evol1, innov2), innov1_0.cremovals)
 evol1_1 = Evolution(initial, innov1_1)
 ```
 
@@ -595,29 +566,26 @@ evol1_1 = Evolution(initial, innov1_1)
 # Explanatory note for @fig-introduction-inactive-removals
 `innov1_1` is obtained from `innov1` 
 by replacing the old inactive removals by insertion of non-conditional removals
-in `innov2` which will not become active: we'll use  
+in `innov2`, rendering those in the removals zone as `KilledRemoval`s: we'll use  
 `evol1_1 = Evolution(initial, innov1_1)`  
 which actually gives the same epidemic as in `evolution` (since inserted removals are inactive).
-:::
 
-::: {.callout-note}
-# Introduction of inactive removals cannot affect epidemic
-Exposition should emphasize that the newly added removals are all chosen to be inactive, 
+Exposition should emphasize that the newly added removals 
+of `innov1_1`
+are all chosen to be inactive, 
 so that the epidemic trajectory will not be affected by this step.
 :::
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-inactive-removals
-#| fig-cap: "This is @fig-introduction-old-removals-gone, but with non-activated removals added        \
-#|           from `innov2`. Note the three inactive removals (now rendered in different colour         \
-#|           without inscription)  at times 1.46, 1.52 on time line 2 and at time 1.61 on time line 1, \
+#| fig-cap: "This is @fig-introduction-old-removals-gone, but with non-activated removals added   \
+#|           from `innov2`. Note the three inactive removals (now rendered in different colour    \
+#|           and labelled by `𝒦`) at time 1.61 on time line 1, also times 1.46, 1.52 on time line 2 \
 #|           which actually lie in the removal zone! [`introduction-inactive-removals`]"
 figure7 = new_figure(figure3,
     Guide.annotation(compose(context(),
         draw_elements(innov1_1, theme=theme))),
-    # Guide.annotation(compose(context(),
-    #     draw_incident(killed, inscribe=false, theme=theme))),
     Guide.annotation(compose(context(),
         draw_activated_elements(initial, evol1_1.history, theme=theme)))
 )
@@ -626,6 +594,10 @@ depict("introduction-inactive-removals", new_figure(figure7,
 )
 ```
 
+::: {.callout-tip}
+# Cleaning treatment of `CRemoval` re-sampling.
+Next step needs to use code in `EpidemicsCFTP`.
+:::
 ## Re-sampling using proposed time lines for conditioned removals
 Now consider the conditioned removals. Compare the old and new conditioned removals
 to see whether the old can be replaced by the corresponding new conditioned removal.
@@ -658,14 +630,14 @@ println(rpad("original cremovals:", 25, " "), sprint(show, MIME("text/plain"),
     rpad("\nproposed cremovals:", 25, " "), sprint(show, MIME("text/plain"),
     innov2.cremovals),
     rpad("\nresulting cremovals:", 25, " "), sprint(show, MIME("text/plain"), 
-    resulting_cremovals(innov1, innov2, life_dates(evol1_1)...)))
+    resulting_cremovals(innov1, innov2, evol1_1.start_times, evol1_1.finis_times)))
 ```
 
 @fig-introduction-processed-cremovals graphs the resulting evolution.
 ```{julia}
 innov1_2 = Innovation(initial.n, innov1_1.infections, 
                 innov1_1.removals, 
-                resulting_cremovals(innov1, innov2, life_dates(evol1_1)...)) ;
+                resulting_cremovals(innov1, innov2, evol1_1.start_times, evol1_1.finis_times)) ;
 evol1_2 = Evolution(initial, innov1_2) ;
 ```
 So `innov1_2` is obtained from `innov1_1` 
@@ -760,12 +732,12 @@ replacing the infection by a `KilledInfection` using the following function.
 (And similarly for removals.)
 ```{julia}
 function determine_killed_infections(ev, iv)
-    t0, t1 = life_dates(ev)
+    t0, t1 = ev.start_times, ev.finis_times
     [ z.t ≤ t1[z.target] ? z : KilledInfection(z) for z in iv.infections ]
 end ;
 
 function determine_killed_removals(ev, iv)
-    t0, t1 = life_dates(ev)
+    t0, t1 = ev.start_times, ev.finis_times
     [ z.t ≤ t1[z.target] ? z : KilledRemoval(z) for z in iv.removals ]
 end ;
 ```
@@ -816,7 +788,7 @@ The relevant infections are computed by the following function,
 and are depicted in @fig-introduction-with-relevant-infections.
 ```{julia}
 function relevant_infections(ev, iv)
-    t0, t1 = life_dates(ev)
+    t0, t1 = ev.start_times, ev.finis_times
     unkilled = [z for z in determine_killed_infections(evol1_2, innov2) 
                                 if isa(z, OperativeInfection)]
     relevant_inf = [z for z in ev.history if typeof(z) <: AbstractInfection]
@@ -1069,7 +1041,7 @@ if they occur _after_ the current epidemic.
 
 We begin with step (a).
 ```{julia}
-t0, t1 = life_dates(evol1_2)
+t0, t1 = evol1_2.start_times, evol1_2.finis_times
 early_inactivated_removals = 
     [z for z in evol1_2.removals if z.t < t1[z.target]]
 ```

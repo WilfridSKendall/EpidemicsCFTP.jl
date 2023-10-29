@@ -1,8 +1,8 @@
 # Tests for types of `EpidemicsCFTP`
 
 ## Testing creation of concrete subtypes of `AbstractRemoval`
-for removaltype in allconcretesubtypes(AbstractRemoval)
-    @testset "EpidemicsCFTP: $(rpad(string(removaltype), 18))  (A)" begin
+@testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (A)" begin
+    for removaltype in allconcretesubtypes(AbstractRemoval)
         @test_throws DomainError    removaltype(0.05,-2)
         @test_throws DomainError    removaltype(0.05, 0)
         @test_throws MethodError    removaltype(0.05, 2.5)
@@ -11,8 +11,8 @@ for removaltype in allconcretesubtypes(AbstractRemoval)
 end
 
 ## Testing conversion of concrete subtypes of `AbstractRemoval`
-for removaltype1 in allconcretesubtypes(AbstractRemoval)
-    @testset "EpidemicsCFTP: $(rpad(string(removaltype1), 18))  (B)" begin
+@testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (B)" begin
+    for removaltype1 in allconcretesubtypes(AbstractRemoval)
         for removaltype2 in allconcretesubtypes(AbstractRemoval)
             @test removaltype1(removaltype2(0.05, 2)) == removaltype1(0.05, 2)
             @test removaltype1(removaltype2(0.15, 3)) == removaltype1(0.15, 3)
@@ -21,8 +21,8 @@ for removaltype1 in allconcretesubtypes(AbstractRemoval)
 end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
-for infectiontype in allconcretesubtypes(AbstractInfection)
-    @testset "EpidemicsCFTP: $(rpad(string(infectiontype), 18))  (A)" begin
+@testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (A)" begin
+    for infectiontype in allconcretesubtypes(AbstractInfection)
         @test_throws DomainError  infectiontype(0.10,-1,   2)
         @test_throws DomainError  infectiontype(0.10, 1,  -2)
         @test_throws DomainError  infectiontype(0.10,-1,  -2)
@@ -38,8 +38,8 @@ for infectiontype in allconcretesubtypes(AbstractInfection)
 end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
-for infectiontype1 in allconcretesubtypes(AbstractInfection)
-    @testset "EpidemicsCFTP: $(rpad(string(infectiontype1), 18))  (B)" begin
+@testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (B)" begin
+    for infectiontype1 in allconcretesubtypes(AbstractInfection)
         for infectiontype2 in allconcretesubtypes(AbstractInfection)
             @test infectiontype1(infectiontype2(0.05, 2, 3)) == infectiontype1(0.05, 2, 3)
             @test infectiontype1(infectiontype2(0.15, 1, 4)) == infectiontype1(0.15, 1, 4)

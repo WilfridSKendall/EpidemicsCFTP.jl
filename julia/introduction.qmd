@@ -581,7 +581,7 @@ so that the epidemic trajectory will not be affected by this step.
 #| label: fig-introduction-inactive-removals
 #| fig-cap: "This is @fig-introduction-old-removals-gone, but with non-activated removals added   \
 #|           from `innov2`. Note the three inactive removals (now rendered in different colour    \
-#|           and labelled by `𝒦`) at time 1.61 on time line 1, also times 1.46, 1.52 on time line 2 \
+#|           and labelled by script K) at time 1.61 on time line 1, also times 1.46, 1.52 on time line 2 \
 #|           which actually lie in the removal zone! [`introduction-inactive-removals`]"
 figure7 = new_figure(figure3,
     Guide.annotation(compose(context(),

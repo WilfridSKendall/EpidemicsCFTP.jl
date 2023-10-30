@@ -68,7 +68,9 @@ Markdown.parse("""
 | Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
 | Running under `julia`        | `$VERSION`                      | ---                            |
 
-This script takes 8 minutes to run on `jemima`.
+This script takes 
+- 8 minutes to run on `jemima`; 
+- 5 minutes to run on `benjamin`.
 """)
 ```
 

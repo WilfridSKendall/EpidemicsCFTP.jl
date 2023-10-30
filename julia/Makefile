@@ -7,7 +7,6 @@ QUARTO_OPTIONS :=  --csl=$(CSL)
 MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
 PRODUCTS       := production.pdf introduction.pdf check.pdf
-
 # ====================
 # Main targets
 main: $(PRODUCTS)

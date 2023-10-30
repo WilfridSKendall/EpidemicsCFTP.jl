@@ -693,6 +693,7 @@ for infectious periods!
 
 ## Example
 Three cases: basic use, missing a conditioned removal, employing an (unconditioned) removal.
+Notice that we introduce some non-standard removals and infections in the "basic use" case!
 
 I: Basic use
 ```jldoctest CEvolution; setup = :(using EpidemicsCFTP)
@@ -700,8 +701,8 @@ julia> initial    = SIR(0.0, 2, 1, 0)
 SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
-julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+julia> infections = [NoFlyInfection(0,2,3), CancelledInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
+AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)]
 AbstractRemoval[ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1)]
@@ -709,17 +710,17 @@ CRemoval[𝒞₀.₀₀¹]
 
 julia> innov      = Innovation(population, infections, removals, cremovals) 
 Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
 )
 
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: AbstractIncident[𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹]
 )

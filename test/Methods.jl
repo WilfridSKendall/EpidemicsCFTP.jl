@@ -53,8 +53,9 @@ end
     state = SIR(0.0, 1, 1, 1)
     @test (st = infect(0.0, state) ; st.s == 0 && st.i == 2     )
     @test (st = remove(0.0, state) ; st.i == 0 && st.r == 2     )
-    @test is_same_config(SIR(0.0, 0, 2, 1), infect(0.0, state)  )
-    @test is_same_config(SIR(0.0, 1, 0, 2), remove(0.0, state)  )
+    # NB configurations agree but times do not!
+    @test is_same_config(SIR(0.0, 0, 2, 1), infect(4.0, state)  )
+    @test is_same_config(SIR(0.0, 1, 0, 2), remove(4.0, state)  )
     
     t, s, i, r = 0.0, 1, 2, 3
     state = SIR(t, s, i, r)
@@ -85,7 +86,7 @@ end
     end
 
     for infectiontype in allconcretesubtypes(OperativeInfection)
-	@test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,0,3,3)
+        @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,0,3,3)
         @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 5)) == SIR(0.1,1,2,3)
     end
 

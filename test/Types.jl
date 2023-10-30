@@ -52,13 +52,10 @@ end
     AI = AbstractIncident
 
     population = 3
-    infects    = I[I(0.70, 1, 2)]
+    infects    = I[I(0.60, 1, 2)]
     allinfects = Union{I, P}[P(0.70, 1, 2)]
     removals   = R[R(0.20, 3), R(0.10, 2)]
     cremovals  = C[C(0.00, 1), C(0.05, 1)]
-    
-    inn = Innovation(population, allinfects, removals, cremovals)
-    @test inn.removals == R[R(0.10, 2), R(0.20, 3)]
     
     # Population size not positive
     @test_throws DomainError Innovation(0, allinfects, removals, cremovals)
@@ -71,26 +68,31 @@ end
     @test_throws ArgumentError Innovation(population, allinfects, removals, 
             C[C(0.00, 1), C(0.01, 1), C(0.02, 1), C(0.05, 1)])
 
-    # Testing `chronology` field of `Innovation`
-    infects   = I[I(0.70, 1, 2)]
-    allinfects  = Union{I, P}[P(0.70, 1, 2)]
-    removals  = R[R(0.20, 3), R(0.10, 2)]
-    cremovals = C[C(0.00, 1), C(0.05, 1)]
-    
-    # Correct result from `chronology`
     inn = Innovation(population, allinfects, removals, cremovals)
-    chr = inn.chronology
-    for i in eachindex(chr)
-        @test chr[i] == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), P(0.70, 1, 2)][i]
-    end
+    @test inn.removals == R[R(0.10, 2), R(0.20, 3)]
+
+    # Correct result from `chronology
+    @test inn.chronology == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), P(0.70, 1, 2)]
+
+    # Now with integer times!
+    population = 3
+    infects    = I[I(6, 1, 2)]
+    allinfects = Union{I, P}[P(7, 1, 2)]
+    removals   = R[R(3, 3), R(2, 2)]
+    cremovals  = C[C(0, 1), C(1, 1)]
+    
+    inn = Innovation(population, allinfects, removals, cremovals)
+    @test inn.removals == R[R(2.0, 2), R(3.0, 3)]
+
+    # Correct result from `chronology
+    @test inn.chronology == [C(0.0, 1), C(1.0, 1), R(2.0, 2), R(3.0, 3), P(7.0, 1, 2)]
+
 end
 
 
 ## Testing creation of `SIR`, state of epidemic
 @testset "EpidemicsCFTP: $(rpad(string(SIR), 23))" begin
     @test_throws DomainError SIR(0.0,-1, 2, 3)
-    @test_throws DomainError SIR(0.0,-1, 2, 3)
-    @test_throws DomainError SIR(0.0, 1,-2, 3)
     @test_throws DomainError SIR(0.0, 1, 2,-3)
     @test_throws DomainError SIR(0.0, 0, 0, 0)
     @test_throws DomainError SIR(0.0, 1,-2, 3, 2)

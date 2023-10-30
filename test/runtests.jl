@@ -15,5 +15,4 @@ end
     
 include("Types.jl")
 include("Methods.jl")
-# include("Trajectories.jl")
 

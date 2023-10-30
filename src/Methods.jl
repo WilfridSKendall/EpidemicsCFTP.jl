@@ -126,7 +126,7 @@ end
 
 Applies [`AbstractIncident`](@ref)
 to a given state and returns resulting state if it is activated (and hence operative).
-Otherwise does nothing.
+Otherwise returns original state but with updated time `t`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)

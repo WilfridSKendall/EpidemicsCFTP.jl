@@ -2,20 +2,27 @@
 
 ## Testing `isearlier`
 # =================================
-@testset "EpidemicsCFTP: $(rpad(string(isearlier), 23))" begin
-    @test  isearlier(Removal(0.10, 2),      Removal(0.5, 3))
-    @test !isearlier(Removal(0.5, 2),       Removal(0.1, 3))
-    @test  isearlier(Removal(0.5, 3),       Removal(0.90, 2))
-    @test  isearlier(CRemoval(0.10, 2),     Removal(0.5, 3))
-    @test  isearlier(Removal(0.5, 3),       CRemoval(0.90, 2))
-    @test  isearlier(CRemoval(0.10, 2),     CRemoval(0.5, 3))
-    @test  isearlier(CRemoval(0.5, 3),      CRemoval(0.90, 2))
-    @test  isearlier(Infection(0.10, 1, 2), Infection(0.5, 1, 3))
-    @test !isearlier(Infection(0.70, 1, 2), Infection(0.5, 1, 3))
-    @test  isearlier(Infection(0.10, 1, 2), Removal(0.5, 3))
-    @test  isearlier(Removal(0.5, 3),       Infection(0.90, 1, 2))
-    @test  isearlier(SIR(0.0, 1, 2, 1),     SIR(0.5, 0, 3, 1))
-    @test !isearlier(SIR(0.0, 1, 2, 1),     SIR(0.0, 0, 3, 1))
+@testset "EpidemicsCFTP: $(rpad(isearlier, 23))" begin
+    for removaltype1 in allconcretesubtypes(AbstractRemoval)
+        for removaltype2 in allconcretesubtypes(AbstractRemoval)
+            @test   isearlier(removaltype1(0.1, 2),      removaltype2(0.5, 3))
+            @test ! isearlier(removaltype1(0.5, 2),      removaltype2(0.1, 3))
+        end
+        for infectiontype2 in allconcretesubtypes(AbstractInfection)
+            @test   isearlier(removaltype1(0.1, 2),      infectiontype2(0.5, 1, 3))
+            @test ! isearlier(removaltype1(0.5, 2),      infectiontype2(0.1, 1, 3))
+        end
+    end
+    for infectiontype1 in allconcretesubtypes(AbstractInfection)
+        for infectiontype2 in allconcretesubtypes(AbstractInfection)
+            @test   isearlier(infectiontype1(0.1, 1, 2), infectiontype2(0.5, 1, 3))
+            @test ! isearlier(infectiontype1(0.5, 1, 2), infectiontype2(0.1, 1, 3))
+        end
+        for removaltype2 in allconcretesubtypes(AbstractRemoval)
+            @test   isearlier(infectiontype1(0.1, 1, 2), removaltype2(0.5, 3))
+            @test ! isearlier(infectiontype1(0.5, 1, 2), removaltype2(0.1, 3))
+        end
+    end
 end
 
 ## Testing `alter`
@@ -35,10 +42,14 @@ end
     infect = EpidemicsCFTP.infect
     remove = EpidemicsCFTP.remove
     update = EpidemicsCFTP.update
+    is_infectable = EpidemicsCFTP.is_infectable
+    is_removeable = EpidemicsCFTP.is_removeable
     is_same_config = EpidemicsCFTP.is_same_config
+    
     state = SIR(0.0, 0, 0, 1)
     @test_throws DomainError infect(0.0, state)
     @test_throws DomainError remove(0.0, state)
+    
     state = SIR(0.0, 1, 1, 1)
     @test (st = infect(0.0, state) ; st.s == 0 && st.i == 2     )
     @test (st = remove(0.0, state) ; st.i == 0 && st.r == 2     )
@@ -47,45 +58,46 @@ end
     
     t, s, i, r = 0.0, 1, 2, 3
     state = SIR(t, s, i, r)
-    for inc in [Infection, PInfection, NoFlyInfection]
-        is_infectable = EpidemicsCFTP.is_infectable
-        @test   is_infectable(state, inc(0.0, r + 1, r + i + 1))
-        @test ! is_infectable(state, inc(0.0, r + 1, r + i)    )
-    end
-
-    is_infectable = EpidemicsCFTP.is_infectable
-    for inc in [KilledInfection, CancelledInfection]
-        @test ! is_infectable(state, inc(0.0, r + 1, r + i + 1))
-        @test ! is_infectable(state, inc(0.0, r + 1, r + i)    )
+    for infecttype in allconcretesubtypes(OperativeInfection)
+        @test   is_infectable(state, infecttype(0.0, r + 1, r + i + 1))
+        @test ! is_infectable(state, infecttype(0.0, r + 1, r + i)    )
     end
     
-	is_removeable = EpidemicsCFTP.is_removeable
-	for inc in [Removal, CRemoval]
-	    @test ! is_removeable(state, inc(0.0, 1)               )
-	    @test ! is_removeable(state, inc(0.0, r)               )
-	    @test   is_removeable(state, inc(0.0, r + 1)           )
-	    @test   is_removeable(state, inc(0.0, r + i)           )
-	    @test ! is_removeable(state, inc(0.0, r + i + 1)       )
-	end
-    begin
-        inc = KilledRemoval
-	    @test ! is_removeable(state, inc(0.0, 1)               )
-	    @test ! is_removeable(state, inc(0.0, r)               )
-	    @test ! is_removeable(state, inc(0.0, r + 1)           )
-	    @test ! is_removeable(state, inc(0.0, r + i)           )
-	    @test ! is_removeable(state, inc(0.0, r + i + 1)       )
-	end
-
-	for inc in [Infection, PInfection, NoFlyInfection]
-	    @test update(SIR(0.0, 1, 2, 3), inc(0.1, 4, 6)) == SIR(0.1,0,3,3)
-	    @test update(SIR(0.0, 1, 2, 3), inc(0.1, 4, 5)) == SIR(0.1,1,2,3)
-	end
-
-    for inc in [Removal, CRemoval]
-        @test update(SIR(0.0, 1, 2, 3), inc(0.1, 4))    == SIR(0.1,1,1,4)
-        @test update(SIR(0.0, 1, 2, 3), inc(0.1, 2))    == SIR(0.1,1,2,3)
+    for infecttype in allconcretesubtypes(NonOperativeInfection)
+        @test ! is_infectable(state, infecttype(0.0, r + 1, r + i + 1))
+        @test ! is_infectable(state, infecttype(0.0, r + 1, r + i)    )
+    end
+	
+    for removaltype in allconcretesubtypes(OperativeRemoval)
+        @test ! is_removeable(state, removaltype(0.0, 1)               )
+        @test ! is_removeable(state, removaltype(0.0, r)               )
+        @test   is_removeable(state, removaltype(0.0, r + 1)           )
+        @test   is_removeable(state, removaltype(0.0, r + i)           )
+        @test ! is_removeable(state, removaltype(0.0, r + i + 1)       )
     end
 
+    for removaltype in allconcretesubtypes(NonOperativeRemoval)
+        @test ! is_removeable(state, removaltype(0.0, 1)               )
+        @test ! is_removeable(state, removaltype(0.0, r)               )
+        @test ! is_removeable(state, removaltype(0.0, r + 1)           )
+        @test ! is_removeable(state, removaltype(0.0, r + i)           )
+        @test ! is_removeable(state, removaltype(0.0, r + i + 1)       )
+    end
+
+    for infectiontype in allconcretesubtypes(OperativeInfection)
+	@test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,0,3,3)
+        @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 5)) == SIR(0.1,1,2,3)
+    end
+
+    for infectiontype in allconcretesubtypes(NonOperativeInfection)
+	@test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,1,2,3)
+        @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 5)) == SIR(0.1,1,2,3)
+    end
+
+    for removaltype in allconcretesubtypes(NonOperativeRemoval)
+        @test update(SIR(0.0, 1, 2, 3), removaltype(0.1, 4))    == SIR(0.1,1,2,3)
+        @test update(SIR(0.0, 1, 2, 3), removaltype(0.1, 2))    == SIR(0.1,1,2,3)
+    end
 end
 
 

@@ -135,10 +135,10 @@ struct Removal <: OperativeRemoval
     t         ::Float64
     target    ::Int
 
-    function Removal(t::Float64, target::Int)
+    function Removal(t::T, target::Int) where T <: Union{Float64, Int}
         noun = "Removal($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("ℛ", t, target))
+                new("ℛ", float(t), target))
     end
 
     function Removal(z::AbstractRemoval)
@@ -169,10 +169,10 @@ struct CRemoval <: OperativeRemoval
     t         ::Float64
     target    ::Int
 
-    function CRemoval(t::Float64, target::Int)
+    function CRemoval(t::T, target::Int) where T <: Union{Float64, Int}
         noun = "CRemoval($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("𝒞", t, target))
+                new("𝒞", float(t), target))
     end
 
     function CRemoval(z::AbstractRemoval)
@@ -203,10 +203,10 @@ struct KilledRemoval <: NonOperativeRemoval
     t         ::Float64
     target    ::Int
 
-    function KilledRemoval(t::Float64, target::Int)
+    function KilledRemoval(t::T, target::Int) where T <: Union{Float64, Int}
         noun = "KilledRemoval($t, $target)"
         (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("𝒦", t, target))
+                new("𝒦", float(t), target))
     end
 
     function KilledRemoval(z::AbstractRemoval)
@@ -235,14 +235,14 @@ struct Infection <: OperativeInfection
     target    ::Int
     infectee  ::Int
 
-    function Infection(t::Float64, target::Int, infectee::Int)
+    function Infection(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
         noun = "Infection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
-            new("ℐ", t, target, infectee)
+            new("ℐ", float(t), target, infectee)
         end
     end
 
@@ -276,14 +276,14 @@ struct PInfection <: OperativeInfection
     target    ::Int
     infectee  ::Int
     
-    function PInfection(t::Float64, target::Int, infectee::Int)
+    function PInfection(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
         noun = "PInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒫", t, target, infectee)
+            new("𝒫", float(t), target, infectee)
         end
     end
     
@@ -321,14 +321,14 @@ struct NoFlyInfection <: OperativeInfection
     target    ::Int
     infectee  ::Int
     
-    function NoFlyInfection(t::Float64, target::Int, infectee::Int)
+    function NoFlyInfection(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
         noun = "NoFlyInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒩", t, target, infectee)
+            new("𝒩", float(t), target, infectee)
         end
     end
     
@@ -362,14 +362,14 @@ struct KilledInfection <: NonOperativeInfection
     target    ::Int
     infectee  ::Int
     
-    function KilledInfection(t::Float64, target::Int, infectee::Int)
+    function KilledInfection(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
         noun = "KilledInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒦", t, target, infectee)
+            new("𝒦", float(t), target, infectee)
         end
     end
     
@@ -410,14 +410,14 @@ struct CancelledInfection <: NonOperativeInfection
     target    ::Int
     infectee  ::Int
     
-    function CancelledInfection(t, target::Int, infectee::Int)
+    function CancelledInfection(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
         noun = "CancelledInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒳", t, target, infectee)
+            new("𝒳", float(t), target, infectee)
         end
     end
     

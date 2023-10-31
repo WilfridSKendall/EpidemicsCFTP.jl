@@ -213,7 +213,20 @@ function periods(trajectory::Vector{SIR},
 
     return births, deaths
 end
+
+"""
+    inactive_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
     
+This function extracts the inactive `AbstractRemoval`s from an `Evolution`.
+Those which lie in the removals zone are converted to `KilledRemoval`s.
+"""
+function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
+    t0, t1 = ev.start_times, ev.finis_times
+    not_killed = [z for z in innov.removals if z.t < t0[z.target]]
+    killed     = [KilledRemoval(z) for z in innov.removals if t1[z.target] ≤ z.t]
+    return sort(union(not_killed, killed), lt=isearlier)
+end    
+
 """
     evolution(::SIR, ::Innovation; conditioned::Bool=false)          
         ::Tuple{Vector{SIR},Vector{AbstractIncident}}

@@ -12,5 +12,7 @@ image/production*
 .Rhistory
 VERSION.txt
 
+*.kate-swp
 *.kilepr
 *.pdf
+

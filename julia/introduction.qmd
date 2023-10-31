@@ -598,21 +598,9 @@ returns a list composed of:
 a) removals occurring before respective time line is infected;
 
 b) removals occurring on or after respective time line is removed
-(which are all converted to `KilledRemoval`):
-```julia
-function inactive_removals(ev, innov)   # For EpidemicsCFTP
-    t0, t1 = ev.start_times, ev.finis_times
-    not_killed = [z for z in innov.removals if z.t < t0[z.target]]
-    killed     = [KilledRemoval(z) for z in innov.removals if t1[z.target] ≤ z.t]
-    return sort(union(not_killed, killed), lt=isearlier)
-end ;
-```
-Here are the results:
-```{julia}
-println(sprint(show, MIME("text/plain"), EpidemicsCFTP.inactive_removals(evol1, innov2)))
-```
+(which are all converted to `KilledRemoval`).
 
-So now we add the new inactive removals from `innov2` to `innov1_0`,
+This allows us to add the new inactive removals from `innov2` to `innov1_0`,
 converting those in the removals zone to `KilledRemoval`s, forming
 a resulting (intermediate) evolution `innov1_1` which is
 used to plot @fig-introduction-inactive-removals.

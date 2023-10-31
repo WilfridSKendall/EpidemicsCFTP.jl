@@ -42,6 +42,8 @@ source = "introduction.qmd"
 
 
 ```{julia}
+#| label: tbl-software
+#| tbl-cap: Versions of main software packages _etc_.
 #| echo: false
 #| eval: true
 #| cache: false
@@ -89,15 +91,18 @@ gadfly_theme = Theme(
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-# Introduction to the \(\SIR\) epidemic
+
+
+Introduction to the \(\SIR\) epidemic
+=====================================
 In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
 \begin{tabbing}
-\emph{Xemovals:}\qquad\= Rate of occurence of the transition \(S\to S-1\), \;\= \((R \to R+1\) \= 
-is \(\;\beta \, I\), \kill
-\emph{Infections:}    \> Rate of occurence of the transition \(S\to S-1\),   \> \(I \to I+1\)  \> 
-is \(\;\alpha \, S \, I\),\\
-\emph{Removals:}      \> Rate of occurence of the transition \(I \to I-1\),  \> \(R \to R+1\)  \> 
-is \(\;\beta \, I\).     
+\emph{Xemovals:}\qquad\= The transition \(S\to S-1\), \;\= \((R \to R+1\) \= 
+occurs at rate \(\;\beta \, I\), \kill
+\emph{Infections:}    \> The transition \(S\to S-1\),   \> \(I \to I+1\)  \> 
+occurs at rate \(\;\alpha \, S \, I\),\\
+\emph{Removals:}      \> The transition \(I \to I-1\),  \> \(R \to R+1\)  \> 
+occurs at rate \(\;\beta \, I\).     
 \end{tabbing}
 The structural parameter of epidemic `duration` 
 (a positive real number)
@@ -107,8 +112,8 @@ and the `initial` configuration
 as are the per-pair infection rate `α` and the per-individual rate of removal `β`.
 The population size is computed as part of the construction of `initial`, producing an extra
 mark obtained by computing the sum of 
-its three fields 
-(the non-negative integers supplied by the last three parameters of the `SIR` invocation).
+three of the fields of the `SIR` constructor
+(namely, the non-negative integers supplied by the last three parameters).
 ```{julia}
 const duration = 2.0;
 const α, β = 0.2, 1.5;
@@ -132,8 +137,11 @@ function timelinelabels2(i)
 end ;                                                                           
 ```   
 
-# Structure of potential infections and removals
-We work with an `Innovation`
+
+
+Structure of potential infections and removals
+==============================================
+The epidemic is defined by `initial` together with an `Innovation`
 structure recording times of potential incidents,
 using convenient single-letter abbreviations
 (potential infections `I`,
@@ -153,26 +161,67 @@ innov1 = Innovation(initial.n,
         R(1.85, 2) ],
     C[  C(1.3, 2), C(0.8, 1), C(1.7, 4), C(1.8, 4), C(1.92, 5) ])
 ```
-Incidents are displayed using corresponding script letters
-(`I ⇒ ℐ`, `P ⇒ 𝒫`, `R ⇒ ℛ`, `C ⇒ 𝒞`).
+@fig-introduction-key is a graphical key for
+incidents (using script letters
+`I ⇒ ℐ`, `P ⇒ 𝒫`, `R ⇒ ℛ`, `C ⇒ 𝒞`).
 
+```{julia}
+#| echo: false
+#| label: fig-introduction-key
+#| fig-cap: "At the lower level (time line 1) there is an `Infection` (`I`), then               \
+#|           its activated variant, followed by a `Removal` (`R`), then its activated variant.  \
+#|           At the higher level (time line 2) there is a `PInfection` (`P`), then              \
+#|           its activated variant, followed by a `CRemoval` (`C`), then its activated variant. \
+#|           Infection incidents possess arrows pointing to their `infectee` time lines.        \
+#|           [`introduction-key`]"
+function new_figure(old_figure, gadfly_list...)
+    figure = deepcopy(old_figure)
+    push!(figure, gadfly_list...)
+    return figure
+end ;
+
+set_default_plot_size(theme.figwidth, 0.6theme.figheight)
+
+key_template = plot(yintercept=1:3,
+    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
+    Coord.cartesian(xmin=0, xmax=3, ymin=0.5, ymax=3 + 0.25),
+    style(default_color=theme.background),
+    gadfly_theme) ;
+
+key_template = new_figure(key_template,
+    Scale.y_continuous(labels=timelinelabels2),
+    Guide.yticks(ticks=collect(1:3)),
+    ) ;
+
+push!(key_template,
+    Scale.y_continuous(labels=timelinelabels1),
+    ) ;
+
+depict("introduction-key", new_figure(key_template,
+    Guide.title("Key to graphical depiction of incidents"),
+    Guide.annotation(compose(context(),
+        draw_elements([I(0.2,1,3), P(1.0,2,3), R(1.8,1), C(2.4,2)], theme=theme),
+        draw_elements([I(0.6,1,3), P(1.4,2,3), R(2.2,1), C(2.8,2)], theme=theme),
+        draw_elements([I(0.6,1,3), P(1.4,2,3), R(2.2,1), C(2.8,2)], activated=true, theme=theme),
+        ))
+    ))
+```
+```{julia}
+#| echo: false
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
 
 {{< pagebreak >}}
 
 # Constructing the epidemic
-An epidemic is constructed by specifying a specific `initial` state
-(an `SIR` structure);
-the epidemic starts there at time \(0.0\) and then evolves
+Thus an epidemic is constructed as follows;
+the epidemic starts at the `initial` state at time \(0.0\) and then evolves
 based on subsequent (possibly) potential infections and removals 
-held in an `Innovations`
-structure.
-Thus the epidemic simulation is
-determined by construction of an instance
-of the `Evolution` type, with `initial` as first argument
-and a second argument `innov1` supplying subsequent potential incidents. 
+held in the `Innovations`
+structure `innov1` supplying subsequent potential incidents. 
 @tbl-evolution tabulates the epidemic trajectory 
 up to time `duration=2.0`
-for initial state `initial` and innovations `innov1`.
+for initial state `initial` and a particular innovations `innov1`.
 ```{julia}
 #| echo: false 
 evol1 = Evolution(initial, innov1)
@@ -188,28 +237,29 @@ Markdown.parse(pretty_table(String, flow[:,header],
 ```
 
 
-# Plotting the epidemic
+
+Plotting the epidemic
+=====================
 We need graphical visualizations of
 simulation of the epidemic
 conditional on all activated removals being observed
-(recall that such activated removals are denoted by `C ⇒ 𝒞`
-representing "conditional removal");
+(denoting such activated removals by `C ⇒ 𝒞`
+signifying "conditional removal");
 with the ultimate objective of deriving a perfect simulation under this conditioning.
 Note that the assumption of all activated removals being observed
 is idealized, but not entirely unrealistic.
 
-## The epidemic curve
+The epidemic curve
+------------------
 @fig-introduction-curves displays the epidemic curve together with 
 trajectories of removals and susceptibles.
-@fig-introduction-curves is also annotated at the two distinct epidemic curve peaks.
+@fig-introduction-curves is also annotated at the two distinct epidemic curve peaks
+of this particular simulation.
 ```{julia}
 #| echo: false
-function new_figure(old_figure, gadfly_list...)
-    figure = deepcopy(old_figure)
-    push!(figure, gadfly_list...)
-    return figure
-end ;
-
+#| label: fig-introduction-curves
+#| fig-cap: "Epidemic curve (with annotated peaks) together with monotonic \
+#|           trajectories of numbers of susceptibles and removals. [`introduction-curves`]"
 curves_template = plot(flow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
@@ -228,12 +278,7 @@ incidents_template = new_figure(curves_template,
 push!(curves_template,
     Scale.y_continuous(labels=timelinelabels2),
     Guide.ylabel("Numbers of individuals")) ;
-```
-```{julia}
-#| echo: false
-#| label: fig-introduction-curves
-#| fig-cap: "Epidemic curve (with annotated peaks) together with monotonic \
-#|           trajectories of numbers of susceptibles and removals. [`introduction-curves`]"
+
 figure1 = new_figure(curves_template, 
     layer(flow, x=:t, y=:infectives, Geom.step,
         style(line_width=theme.trail, default_color=theme.colour(I))),
@@ -255,10 +300,12 @@ depict("introduction-curves", new_figure(figure1,
     ))
 ```
 
-## Plotting zone boundaries
+
+Plotting zone boundaries
+------------------------
 For the coupling construction it is convenient to suppose the
-various time lines are infected in increasing index order (re-labelling symmetry
-means the statistics of the
+various time lines are infected in increasing index order (because of a re-labelling symmetry,
+the statistics of the
 evolutions of total numbers of `susceptibles`, `infectives` and `removals` are not affected).
 Thus the epidemic is now defined by boundaries between a _removals zone_ and
 an _infectivity zone_, and between the infectivity zone and a _susceptible zone_.
@@ -286,7 +333,9 @@ depict("introduction-boundary",
 )
 ```
 
-## Plotting infectivity and removed zones
+
+Plotting infectivity and removed zones
+--------------------------------------
 Space-time zones of infection and removal
 use a blend of the original data frame with lagged data
 (@tbl-evolution-enhanced).
@@ -321,7 +370,9 @@ Markdown.parse(pretty_table(String, xy_flow[:,header],
   header=header, tf=tf_markdown, alignment=[:l, :c, :c, :c, :c]))
 ```
 
-## Adding incidents to the plot
+
+Adding incidents to the plot
+----------------------------
 @fig-introduction-incidents adds incidents corresponding to the underlying `innov1`
 using the `EpidemicsUtilities` function `draw_elements`.
 ```{julia}
@@ -343,7 +394,9 @@ depict("introduction-incidents", new_figure(figure4,
 )
 ```
 
-## Indicating activated incidents
+
+Indicating activated incidents
+------------------------------
 Only some of these incidents are actually activated by the construction:
 
  * _Infections_ (`I ⇒ ℐ` and `P ⇒ 𝒫`) must lie inside the infectivity zone with
@@ -381,7 +434,10 @@ depict("introduction-activated", new_figure(figure5,
 )
 ```
 
-# Evolving the epidemic in algorithmic time
+
+
+Evolving the epidemic in algorithmic time
+=========================================
 We can now give a visual explanation of how to evolve
 an $\SIR$ epidemic _in algorithmic time_,
 subject to conditioning
@@ -418,7 +474,9 @@ the calculations required for making the decisions in item 5;
 _Secondly_, we will need to show that the algorithmic time evolution is monotonic in some useful sense
 that allows us to carry out a CFTP simulation,
 
-## Sample a new `Innovation` structure
+
+Sample a new `Innovation` structure
+-----------------------------------
 We first produce a randomly sampled innovation with conditioned removals
 occurring at the same times (using the function `generate_innovation`) but using different time lines,
 and then produce a new innovation for which the conditioned removals are obtained by altering the
@@ -478,7 +536,9 @@ push!(innov2.removals,
     Removal(0.3, 2), Removal(0.1, 3))
 ```
 
-## Remove all inactive removals from previous `Innovation`
+
+Remove all inactive removals from previous `Innovation`
+-------------------------------------------------------
 Remove all unactivated removals from `innov1`
 (these would in any case be rejected).
 The corresponding evolution is plotted in @fig-introduction-old-removals-gone, actually
@@ -521,7 +581,8 @@ will not be affected by this step.
 :::
 
 
-## Adding in removals from the new innovation which will be inactive
+Adding in those removals from the new innovation which remain inactive
+----------------------------------------------------------------------
 We now insert those of the removals from `innov2` which 
 would _not_ be activated by the old epidemic structure. 
 To do this, we use the attributes `start_times` and `finis_times`
@@ -598,7 +659,10 @@ depict("introduction-inactive-removals", new_figure(figure7,
 # Cleaning treatment of `CRemoval` re-sampling.
 Next step needs to use code in `EpidemicsCFTP`.
 :::
-## Re-sampling using proposed time lines for conditioned removals
+
+
+Re-sampling using proposed time lines for conditioned removals
+--------------------------------------------------------------
 Now consider the conditioned removals. Compare the old and new conditioned removals
 to see whether the old can be replaced by the corresponding new conditioned removal.
 ```{julia}
@@ -679,8 +743,8 @@ depict("introduction-processed-cremovals", new_figure(figure8,
 ```
 
 
-
-## Removing old infection incidents and introducing new infection incidents where suitable
+Removing old infection incidents and introducing new infection incidents where suitable
+---------------------------------------------------------------------------------------
 To carry out the next task we need to make some prior computations:
 
 a) Compute the \LFE curve. 
@@ -1018,7 +1082,8 @@ Place remaining code in a procedure.
 :::
 
 
-## Computing the \NOFLYZONE
+Computing the \NOFLYZONE
+------------------------
 We now determine the \NOFLYZONE.
 This is done in stages:
 

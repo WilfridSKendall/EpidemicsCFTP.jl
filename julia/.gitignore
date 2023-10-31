@@ -1,0 +1,16 @@
+
+
+ARCHIVE/
+../python-SBC
+EpidemicsCFTP/
+EpidemicsUtilities/
+
+image/introduction*
+image/production*
+
+.directory
+.Rhistory
+VERSION.txt
+
+*.kilepr
+*.pdf

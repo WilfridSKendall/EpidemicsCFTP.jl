@@ -261,7 +261,7 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
     return trajectory, history
 end
 
-    # Compute infectious periods
+# Compute infectious periods
 # -------------------------------
 """
     EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
@@ -338,6 +338,21 @@ function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{Abs
     killed     = [KilledRemoval(z) for z in innov.removals if t1[z.target] ≤ z.t]
     return sort(union(not_killed, killed), lt=isearlier)
 end    
+
+# Accept/reject procedure
+# -------------------------------
+
+"""
+    accept_reject(::CRemoval, ::CRemoval, ::Vector{Float64}, ::Vector{Float64})::CRemoval
+
+Performs an accept/reject procedure: accept `proposed_cremoval` only if it would actually
+be activated based on period `start_time`s and `finis_time`s: otherwise retain `old_cremoval`
+"""
+function accept_reject(old_cremoval::CRemoval, proposed_cremoval::CRemoval,
+                       start_time::Vector{Float64}, finis_time::Vector{Float64})::CRemoval
+    t, k = proposed_cremoval.t, proposed_cremoval.target
+    return start_time[k] ≤ t ≤ finis_time[k] ? proposed_cremoval : old_cremoval
+end
 
 # Generate an innovation
 # -------------------------------

@@ -814,10 +814,6 @@ depict("introduction-with-relevant-infections", new_figure(figure11,
 ```
 
 
-::: {.callout-tip}
-Retract \LFE computations to `EpidemicsCFTP`.
-:::
-
 We now compute the \LFE.
 It is required to compute the trajectory of the _last_ possible epidemic path that activates
 all the `CRemoval` events and none of the `Removal` events. 
@@ -827,6 +823,11 @@ in reverse time.
 The main function here is `last_feasible_evolution`.
 It first computes `chronology` by mixing the relevant infections and the conditioned removals
 and computes the reverse-initial state as the final state of the evolution (re-timed to `duration`).
+
+
+::: {.callout-tip}
+Check and retract \LFE computations in `last_feasible_evolution` to `EpidemicsCFTP`.
+:::
 
 ```{julia}
 function last_feasible_evolution(duration::Real, evol1::Evolution, innov1::Innovation;
@@ -840,7 +841,7 @@ function last_feasible_evolution(duration::Real, evol1::Evolution, innov1::Innov
     if ! isempty(reverse_chronology)
         for event in reverse_chronology
             prior_state = EpidemicsCFTP.reverse_update(reverse_trajectory[end], event)
-            if ! is_same_config(prior_state, reverse_trajectory[end])
+            if ! EpidemicsCFTP.is_same_config(prior_state, reverse_trajectory[end])
                 if conditioned && isa(event, Removal)
                     throw(EmployedRemoval(event))
                 end

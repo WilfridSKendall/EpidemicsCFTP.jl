@@ -18,11 +18,13 @@ alter
 
 ## Methods relating to epidemic dynamics
 Various methods relating to updating a trajectory (some of these are private to `EpidemicsCFTP`!).
-The first set concerns generation of a random [`Innovation`](@ref)
+The first set of methods concerns the generation of a random [`Innovation`](@ref)
 (`generate_innovation`)
 and production of an [`Evolution`](@ref) based on an initial [`SIR`](@ref) and 
 an [`Innovation`](@ref)
-([`evolution`](@ref) for trajectory and history, [`EpidemicsCFTP.periods`](@ref) for start and end times for infectious periods, [`EpidemicsCFTP.inactive_removals`](@ref) to process a list of the removals
+([`evolution`](@ref) for trajectory and history, 
+the method [`EpidemicsCFTP.periods`](@ref) for start and end times for infectious periods,
+and the method [`EpidemicsCFTP.inactive_removals`](@ref) to process a list of the removals
 from an epidemic which are inactive).
 ```@docs
 generate_innovation
@@ -31,7 +33,8 @@ EpidemicsCFTP.periods
 EpidemicsCFTP.inactive_removals
 ```
 
-The second set is employed in the course of applying `evolution` to generate trajectory and history
+The second set of methods is a set of utility methods which are
+employed in the course of applying `evolution` to generate trajectory and history
 in the course of initializing an [`Innovation`]](@ref).
 ```@docs
 EpidemicsCFTP.infect

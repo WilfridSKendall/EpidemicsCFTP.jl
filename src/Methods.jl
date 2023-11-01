@@ -169,63 +169,6 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
     state1.s == state2.s && state1.i == state2.i && state1.r == state2.r
     end
 
-"""
-    EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
-        ::Tuple{Vector{Float64}, Vector{Float64}}
-    
-Returns starts and ends of infectious periods.
-
-**NOTE:** _maybe later introduce start end and time options!_
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> trajectory = [SIR(0.01, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4)]
-SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
-julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)]
-AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
-
-julia> births, deaths = EpidemicsCFTP.periods(trajectory, history)
-([0.0, 0.0, 0.0, 0.0, 0.0, 0.6], [0.0, 0.0, 0.0, 0.5, Inf, Inf])
-julia> println(births)
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.6]
-julia> println(deaths)
-[0.0, 0.0, 0.0, 0.5, Inf, Inf]
-```
-"""
-function periods(trajectory::Vector{SIR},
-                 history::Vector{AbstractIncident})::Tuple{Vector{Float64}, Vector{Float64}}
-    start, finis = trajectory[1], trajectory[end]
-    
-    # Compute birth times
-    births = sort([z.t for z in history if isa(z, OperativeInfection)])
-    prepend!(births, repeat([0.0], start.i + start.r))
-    append!(births, repeat([Inf], finis.s)) # Or replace `Inf` by `duration`
-    
-    # Compute death times
-    deaths = sort([z.t for z in history if isa(z, OperativeRemoval)])
-    prepend!(deaths, repeat([0.0], start.r))
-    append!(deaths, repeat([Inf], finis.i + finis.s)) # Or replace `Inf` by `duration`
-    
-    # Check same number of births as deaths
-    if length(births) != length(deaths)
-        error("birth and death numbers ($(length(births)), $(length(deaths))) disagree")
-    end
-
-    return births, deaths
-end
-
-"""
-    inactive_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
-    
-This function extracts the inactive `AbstractRemoval`s from an `Evolution`.
-Those which lie in the removals zone are converted to `KilledRemoval`s.
-"""
-function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
-    t0, t1 = ev.start_times, ev.finis_times
-    not_killed = [z for z in innov.removals if z.t < t0[z.target]]
-    killed     = [KilledRemoval(z) for z in innov.removals if t1[z.target] ≤ z.t]
-    return sort(union(not_killed, killed), lt=isearlier)
-end    
 
 """
     evolution(::SIR, ::Innovation; conditioned::Bool=false)          
@@ -307,6 +250,80 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
     end
     return trajectory, history
 end
+
+"""
+    EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
+        ::Tuple{Vector{Float64}, Vector{Float64}}
+    
+Returns starts and ends of infectious periods.
+
+**NOTE:** _maybe later introduce start end and time options!_
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> trajectory = [SIR(0.01, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4)]
+SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
+julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)]
+AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+
+julia> births, deaths = EpidemicsCFTP.periods(trajectory, history)
+([0.0, 0.0, 0.0, 0.0, 0.0, 0.6], [0.0, 0.0, 0.0, 0.5, Inf, Inf])
+julia> println(births)
+[0.0, 0.0, 0.0, 0.0, 0.0, 0.6]
+julia> println(deaths)
+[0.0, 0.0, 0.0, 0.5, Inf, Inf]
+```
+"""
+function periods(trajectory::Vector{SIR},
+                 history::Vector{AbstractIncident})::Tuple{Vector{Float64}, Vector{Float64}}
+    start, finis = trajectory[1], trajectory[end]
+    
+    # Compute birth times
+    births = sort([z.t for z in history if isa(z, OperativeInfection)])
+    prepend!(births, repeat([0.0], start.i + start.r))
+    append!(births, repeat([Inf], finis.s)) # Or replace `Inf` by `duration`
+    
+    # Compute death times
+    deaths = sort([z.t for z in history if isa(z, OperativeRemoval)])
+    prepend!(deaths, repeat([0.0], start.r))
+    append!(deaths, repeat([Inf], finis.i + finis.s)) # Or replace `Inf` by `duration`
+    
+    # Check same number of births as deaths
+    if length(births) != length(deaths)
+        error("birth and death numbers ($(length(births)), $(length(deaths))) disagree")
+    end
+
+    return births, deaths
+end
+
+"""
+    inactive_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
+    
+This function extracts the inactive `AbstractRemoval`s from an `Evolution`.
+Those which lie in the removals zone are converted to `KilledRemoval`s.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> initial_state = SIR(0.55, 1, 2, 3) ; n = 6 ;
+
+julia> innovation = Innovation(n, [Infection(0.6, 5, 6)], Removal[Removal(0.5, 4)], CRemoval[]) ;
+
+julia> ev = Evolution(initial_state, innovation) ;
+
+julia> rem = Removal[Removal(0.56, 1), Removal(0.57, 2), Removal(0.58, 6)]
+Removal[ℛ₀.₅₆¹,ℛ₀.₅₇²,ℛ₀.₅₈⁶]
+julia> innov2 = Innovation(n, [Infection(0.6, 5, 6)], rem, [CRemoval(0.5, 1)]) ;
+
+julia> EpidemicsCFTP.inactive_removals(ev, innov2)
+AbstractRemoval[𝒦₀.₅₆¹,𝒦₀.₅₇²,ℛ₀.₅₈⁶]
+```
+"""
+function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
+    t0, t1 = ev.start_times, ev.finis_times
+    not_killed = [z for z in innov.removals if z.t < t0[z.target]]
+    killed     = [KilledRemoval(z) for z in innov.removals if t1[z.target] ≤ z.t]
+    return sort(union(not_killed, killed), lt=isearlier)
+end    
 
 """
     generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)

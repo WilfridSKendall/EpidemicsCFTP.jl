@@ -341,8 +341,8 @@ Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and returns
 those which are relevant to construction of the "last feasible epidemic".
 """
 function relevant_infections(ev::Evolution, iv::Innovation)::Vector{AbstractInfection}
-    unkilled = [z for z in EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate) 
-                                if isa(z, OperativeInfection)]
+    unkilled = [z for z in EpidemicsCFTP.kill_irrelevant_infections(ev, iv) if  
+                    isa(z, OperativeInfection)]
     relevant_inf = [z for z in ev.history if typeof(z) <: AbstractInfection]
     rsup, running_supremum_list = 0, CRemoval[]
     for z in sort(union(ev.cremovals, unkilled), lt=isearlier)

@@ -4,6 +4,8 @@ QUARTO         := /usr/local/bin/quarto
 CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 QUARTO_OPTIONS :=  --csl=$(CSL)
 
+JULIA          := $(HOME)/.local/bin/julia
+
 MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
 PRODUCTS       := production.pdf introduction.pdf check.pdf
@@ -17,10 +19,20 @@ verify: $(PRODUCTS) $(wildcard image/VERIFY_*.png)
 clean:
 	-rm -f $(wildcard *.ipynb)
 	-rm -Rf .jupyter_cache
-	$(HOME)/.local/bin/julia -e 'import EpidemicsCFTP'
-	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsCFTP"))'
-	$(HOME)/.local/bin/julia -e 'import EpidemicsUtilities'
-	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsUtilities"))'
+	$(JULIA) -e 'import EpidemicsCFTP'
+	$(JULIA) -e 'Base.compilecache(Base.identify_package("EpidemicsCFTP"))'
+	$(JULIA) -e 'import EpidemicsUtilities'
+	$(JULIA) -e 'Base.compilecache(Base.identify_package("EpidemicsUtilities"))'
+
+# ====================
+# Installation
+install:
+	@make -C EpidemicsCFTP install
+	@echo ----------
+	@make -C EpidemicsUtilities install
+	@echo ----------
+	$(JULIA) -e 'import EpidemicsCFTP: version      ; println(version)'
+	$(JULIA) -e 'import EpidemicsUtilities: version ; println(version)'
 
 # ====================
 # Verification

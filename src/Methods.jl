@@ -279,11 +279,11 @@ julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)]
 AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 
 julia> births, deaths = EpidemicsCFTP.periods(trajectory, history)
-([0.0, 0.0, 0.0, 0.0, 0.0, 0.6], [0.0, 0.0, 0.0, 0.5, Inf, Inf])
+(Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6], Real[0.0, 0.0, 0.0, 0.5, Inf, Inf])
 julia> println(births)
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.6]
+Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6]
 julia> println(deaths)
-[0.0, 0.0, 0.0, 0.5, Inf, Inf]
+Real[0.0, 0.0, 0.0, 0.5, Inf, Inf]
 ```
 """
 function periods(trajectory::Vector{SIR},

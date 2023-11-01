@@ -1,4 +1,8 @@
-## Types for various incidents.
+# Types for various incidents
+# -------------------------------
+
+# Abstract occurrence
+# -------------------------------
 """
     AbstractTimedOccurrence
 
@@ -10,6 +14,8 @@ to time-order lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
 
+# Abstract incident
+# -------------------------------
 """
     AbstractIncident
 
@@ -20,8 +26,8 @@ to represent the particular kind of incident).
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
-## AbstractIncidents representing removals and infections and their markers
-
+# AbstractIncidents representing removals
+# -------------------------------
 """
     AbstractRemoval
 
@@ -64,6 +70,8 @@ Such an incident will never be realized.
 """
 abstract type NonOperativeRemoval <: AbstractRemoval end
 
+# AbstractIncidents representing infections
+# -------------------------------
 """
     AbstractInfection
 
@@ -113,8 +121,8 @@ Such an incident will never be realized.
 abstract type NonOperativeInfection <: AbstractInfection end
 
 
-## Various kinds of removal
-
+# Actual removals
+# -------------------------------
 """
     Removal(::Float64, ::Int)
 
@@ -214,8 +222,8 @@ struct KilledRemoval <: NonOperativeRemoval
     end
 end
 
-## Various kinds of infection
-
+# Actual infections
+# -------------------------------
 """
     Infection(::Float64, ::Int, ::Int)
     
@@ -426,8 +434,8 @@ struct CancelledInfection <: NonOperativeInfection
     end
 end
 
-## Environments and trajectories
-
+# Environments
+# -------------------------------
 """
     AbstractEnvironment
 
@@ -445,6 +453,8 @@ Instances should always possess the following fields:
 """
 abstract type AbstractEnvironment end
 
+# Innovations
+# -------------------------------
 """
     Innovation(::Int, ::Vector{S}, ::Vector{T},
                ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
@@ -512,7 +522,8 @@ struct Innovation <: AbstractEnvironment
 end
 
 
-## An `SIR` state for an $\SIR$ epidemic and associated functions
+# An `SIR` state for an $\SIR$ epidemic and associated functions
+# -------------------------------
 """
     SIR(::Float64, ::Int, ::Int, ::Int)
 
@@ -574,7 +585,9 @@ struct SIR <: AbstractTimedOccurrence
 
 end
 
-## Structures capturing $SIR$ epidemics
+## Structures for $\text{S-I-R}$ epidemics
+# -------------------------------
+
 
 """
     AbstractEvolution 
@@ -774,7 +787,8 @@ struct CEvolution <: AbstractEvolution
     end
 end
 
-
+# Exceptions
+# -------------------------------
 """
     BadIncident
 

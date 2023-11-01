@@ -1,5 +1,5 @@
-## Comparison of incidents by time
-
+# Comparison of incidents by time
+# -------------------------------
 """
     isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
 
@@ -19,7 +19,8 @@ function isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)
   inc1.t < inc2.t
 end
 
-## Altering `CRemoval` timeline
+# Altering `CRemoval` timeline
+# -------------------------------
 """
     alter(crem::CRemoval, timeline::Integer)::CRemoval
 
@@ -47,7 +48,8 @@ function alter(crem::CRemoval, new_timeline::Integer)::CRemoval
     end
 end
 
-
+# Implement an infection
+# -------------------------------
 """
     EpidemicsCFTP.infect(t::Real, state::SIR)::SIR
 
@@ -63,7 +65,8 @@ function infect(t::Real, state::SIR)::SIR
     SIR(t, state.s - 1, state.i + 1, state.r)
 end
 
-
+# Check if infection is implementable
+# -------------------------------
 """
     EpidemicsCFTP.is_infectable(state::SIR, inc::OperativeInfection)::Bool
 
@@ -84,6 +87,8 @@ function is_infectable(state::SIR, z::AbstractInfection)::Bool
         z.t >= state.t && z.target > state.r && z.infectee == state.i + state.r + 1
 end
 
+# Implement a removal
+# -------------------------------
 """
     EpidemicsCFTP.remove(t::Real, state::SIR)::SIR
 
@@ -99,7 +104,8 @@ function remove(t::Real, state::SIR)::SIR
     SIR(t, state.s, state.i - 1, state.r + 1)
 end
 
-
+# Check in removal is implementable
+# -------------------------------
 """
     EpidemicsCFTP.is_removeable(state::SIR, z::AbstractRemoval)::Bool
 
@@ -120,7 +126,8 @@ function is_removeable(state::SIR, z::AbstractRemoval)::Bool
         z.t >= state.t && z.target > state.r && z.target <= state.i + state.r
 end
 
-
+# Update using an incident
+# -------------------------------
 """
     EpidemicsCFTP.update(state::SIR, z::AbstractIncident)::SIR
 
@@ -153,6 +160,8 @@ function update(state::SIR, z::AbstractIncident)::SIR
     end
 end
 
+# Test if two configurations agree (except for time!)
+# -------------------------------
 """
     EpidemicsCFTP.is_same_config(state1::SIR, state2::SIR)::Bool
 
@@ -169,7 +178,8 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
     state1.s == state2.s && state1.i == state2.i && state1.r == state2.r
     end
 
-
+# Evolve an epidemic
+# -------------------------------
 """
     evolution(::SIR, ::Innovation; conditioned::Bool=false)          
         ::Tuple{Vector{SIR},Vector{AbstractIncident}}
@@ -251,6 +261,8 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
     return trajectory, history
 end
 
+    # Compute infectious periods
+# -------------------------------
 """
     EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
         ::Tuple{Vector{Float64}, Vector{Float64}}
@@ -296,10 +308,12 @@ function periods(trajectory::Vector{SIR},
     return births, deaths
 end
 
+# Extract and classify inactive removals
+# -------------------------------
 """
     inactive_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
     
-This function extracts the inactive `AbstractRemoval`s from an `Evolution`.
+This function extracts and classifies the inactive `AbstractRemoval`s from an `Evolution`.
 Those which lie in the removals zone are converted to `KilledRemoval`s.
 
 ## Example
@@ -325,6 +339,8 @@ function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{Abs
     return sort(union(not_killed, killed), lt=isearlier)
 end    
 
+# Generate an innovation
+# -------------------------------
 """
     generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
 
@@ -377,8 +393,8 @@ function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=
 end
 
 
-## Compact printing
-
+# Compact printing
+# -------------------------------
 ### Helper functions and format specifications for subscripts and superscripts
 subs = split("₀₁₂₃₄₅₆₇₈₉._ ", "")
 sups = split("⁰¹²³⁴⁵⁶⁷⁸⁹˙¯ ", "")
@@ -400,8 +416,8 @@ function timespec(t::Float64)::String
     lowers(fmt(fspec, t))
 end
 
-### Actual display functions
-
+# Actual display functions
+# -------------------------------
 """
     Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     
@@ -662,8 +678,6 @@ function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab
         end
     end
 end
-
-
 
 """
     Base.show(io::IO, e::BadIncident)

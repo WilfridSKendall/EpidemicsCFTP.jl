@@ -35,6 +35,13 @@ virgin: ; rm -rf docs/build/*
 
 rebuild:
 	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsCFTP"))'
+
+# ====================
+# Installation
+install:
+	touch src/EpidemicsCFTP.jl
+	$(JULIA) -e 'import EpidemicsCFTP: version ; println(version)'
+
 # ========================
 
 tested.stamp: $(src_files) $(test_files)

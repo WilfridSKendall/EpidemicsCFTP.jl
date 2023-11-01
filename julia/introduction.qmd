@@ -710,20 +710,15 @@ c) Now work through new infections occurring _earlier_ than the previous epidemi
 (working in reverse time again)
 but rejecting those which would lead to activation of a previously unactivated removal.
 
-
-::: {.callout-info}
-Retract \LFE computations to `EpidemicsCFTP`.
-:::
-
 ### The \LFE curve
 Compare the active and inactive infections derived from the original `Evolution` structure
 with those proposed by the new `Innovation` structure:
 ```{julia}
 #| echo: false
 println(
-    rpad("old infections:", 20, " "), 
+    rpad("old infections:", 20), 
         sprint(show, MIME("text/plain"), evol1.infections),
-    rpad("new infections:", 20, " "), 
+    rpad("new infections:", 20), 
         sprint(show, MIME("text/plain"), innov_candidate.infections)
 )
 ```
@@ -752,20 +747,7 @@ If an infection has `target` mark referring to a time line which is
 activated and so is essentially irrelevant. We signal this by
 replacing the infection by a `KilledInfection` using the following function.
 (And similarly for removals.)
-```{julia}
-function determine_killed_infections(ev, iv)
-    t0, t1 = ev.start_times, ev.finis_times
-    [ z.t ≤ t1[z.target] ? z : KilledInfection(z) for z in iv.infections ]
-end ;
-
-function determine_killed_removals(ev, iv)
-    t0, t1 = ev.start_times, ev.finis_times
-    [ z.t ≤ t1[z.target] ? z : KilledRemoval(z) for z in iv.removals ]
-end ;
-```
-
-
-We can then distinguish between infections occurring before and after removal
+We can then distinguish visually between infections occurring before and after removal
 (@fig-introduction-dividing-infections1).
 ```{julia}
 #| echo: false
@@ -774,7 +756,7 @@ We can then distinguish between infections occurring before and after removal
 #|            `KilledInfection`s all `Infection`s occurring after removal for  \
 #|           the relevant time line. `KilledInfection`s are displayed in light \
 #|           gray with no inscription. `[introduction-dividing-infections1]`"
-differentiated = determine_killed_infections(evol1_2, innov_candidate)
+differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
 figure10 = new_figure(figure8a,
     Guide.annotation(compose(context(),
          draw_elements([z for z in differentiated if typeof(z) == KilledInfection], 
@@ -798,59 +780,30 @@ This observation helps us to consider which
 of the new infections _prior_ to removal
 ```{julia}
 #| echo: false
-[z for z in determine_killed_infections(evol1_2, innov_candidate) 
-                if isa(z, OperativeInfection)]
+[z for z in EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate) if 
+    isa(z, OperativeInfection)]
 ```
 are relevant
 to construction of the \LFE. 
 For such an infection, the `target` mark must lie in the infectious
 zone, and the `infectee` mark must not lie below the most recent running supremum.
-
-The relevant infections are computed by the following function,
-and are depicted in @fig-introduction-with-relevant-infections.
-```{julia}
-function relevant_infections(ev, iv)
-    t0, t1 = ev.start_times, ev.finis_times
-    unkilled = [z for z in determine_killed_infections(evol1_2, innov_candidate) 
-                                if isa(z, OperativeInfection)]
-    relevant_inf = [z for z in ev.history if typeof(z) <: AbstractInfection]
-    rsup, running_supremum_list = 0, CRemoval[]
-    for z in sort(union(ev.cremovals, unkilled), lt=isearlier)
-        if (typeof(z) == CRemoval) && (z.target > rsup)
-            push!(running_supremum_list, z)
-            rsup = z.target
-        elseif typeof(z) <: AbstractInfection &&
-                t0[z.target] ≤ z.t < t1[z.target] && 
-                z.infectee > rsup
-            push!(relevant_inf, z)
-        end
-    end
-    return sort(relevant_inf, lt=isearlier)
-end ;
-```
+The relevant infections are depicted in @fig-introduction-with-relevant-infections.
 Note that the relevant infections
 ```{julia}
 #| echo: false
-relevant_infections(evol1_2, innov_candidate)
+EpidemicsCFTP.relevant_infections(evol1_2, innov_candidate)
 ```
 include some infections that will not be considered for the \LFE,
 because their `target` marks are above the epidemic trajectory.
-
-::: {.callout-note}
-# Possible improvement
-Modify `relevant_infections` to exclude potential infections that
-rise above current epidemic trajectory? Not doing it now, because
-I don't think it affects the programming, but it may help clarity
-when moving on to deal with the (so-called) \NOFLYZONE.
-:::
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-with-relevant-infections
 #| fig-cap: "This improves on @fig-introduction-dividing-infections1 by emphasizing the _relevant_ \
-#|           infections from `innov_candidate` (those which are additionally relevant to                    \
-#|           \"last feasible epidemic\" are coloured in hot-pink outline with text). [`introduction-with-relevant-infections`]"
-relevant = relevant_infections(evol1_2, innov_candidate)
+#|           infections from `innov_candidate` (those which are additionally relevant to           \
+#|           \"last feasible epidemic\" are coloured in hot-pink outline with text).               \
+#|           [`introduction-with-relevant-infections`]"
+relevant = EpidemicsCFTP.relevant_infections(evol1_2, innov_candidate)
 figure11 = new_figure(figure10,
     Guide.annotation(compose(context(),
          draw_feasible_incident(relevant, 2, theme=theme))),
@@ -861,44 +814,15 @@ depict("introduction-with-relevant-infections", new_figure(figure11,
 ```
 
 
+::: {.callout-tip}
+Retract \LFE computations to `EpidemicsCFTP`.
+:::
+
 We now compute the \LFE.
 It is required to compute the trajectory of the _last_ possible epidemic path that activates
 all the `CRemoval` events and none of the `Removal` events. 
-This is most easily accomplished by computing it
-in reverse time, adapting the `EpidemicsCFTP.evolution` function and the
-update function `EpidemicsCFTP.update` accordingly,
-and employing a helper function `antecedent`.
-```{julia}
-is_removeable  = EpidemicsCFTP.is_removeable
-is_infectable  = EpidemicsCFTP.is_infectable
-is_same_config = EpidemicsCFTP.is_same_config
-
-function antecedent(state::SIR, event::AbstractInfection)::SIR
-    SIR(event.t, state.s + 1, state.i - 1, state.r)
-end
-function antecedent(state::SIR, event::AbstractRemoval)::SIR
-    SIR(event.t, state.s, state.i + 1, state.r - 1)
-end
-
-function reverse_update(state::SIR, event::AbstractIncident)::SIR
-    if event.t > state.t
-        return state
-    end
-    inc = typeof(event)
-    # Need to avoid creating `SIR` with negative number of removals!
-    if inc <: AbstractRemoval && state.r == 0
-        return SIR(event.t, state.s, state.i, state.r)
-    end
-    prior = antecedent(state, event)
-    if inc <: AbstractRemoval        && is_removeable(prior, event)
-        return prior
-    elseif inc <: AbstractInfection  && is_infectable(prior, event)
-        return prior
-    else
-        return SIR(event.t, state.s, state.i, state.r)
-    end
-end
-```
+This is most easily accomplished by computing
+in reverse time.
 
 The main function here is `last_feasible_evolution`.
 It first computes `chronology` by mixing the relevant infections and the conditioned removals
@@ -915,7 +839,7 @@ function last_feasible_evolution(duration::Real, evol1::Evolution, innov1::Innov
     reverse_chronology  = reverse([x for x in chronology if x.t <= final_state.t])
     if ! isempty(reverse_chronology)
         for event in reverse_chronology
-            prior_state = reverse_update(reverse_trajectory[end], event)
+            prior_state = EpidemicsCFTP.reverse_update(reverse_trajectory[end], event)
             if ! is_same_config(prior_state, reverse_trajectory[end])
                 if conditioned && isa(event, Removal)
                     throw(EmployedRemoval(event))

@@ -25,17 +25,20 @@ an [`Innovation`](@ref)
 ([`evolution`](@ref) for trajectory and history, 
 also other helper functions:
 
-| Method                                    | Summary                                                                |
-|:------------------------------------------|:-----------------------------------------------------------------------|
-| [`generate_innovation`](@ref)             | Generates random [`Innovation`](@ref)                                  |
-| [`evolution`](@ref)                       | Generates trajectory and history for an [`Evolution`](@ref)            |
-|                                           |                                                                        |
-| [`EpidemicsCFTP.periods`](@ref)           | Computes start and end times for infectious periods                    |
-| [`EpidemicsCFTP.inactive_removals`](@ref) | Processes list of inactive removals from an epidemic                   |
-| [`EpidemicsCFTP.accept_reject`](@ref)     | Performs accept/reject procedure on a proposed [`CRemoval`](@ref)      |
-| [`EpidemicsCFTP.kill_irrelevant_infections`](@rev) | Kill new [`Infection`](@ref)s occurring in removal zone       |
-| [`EpidemicsCFTP.kill_irrelevant_removals`](@rev)   | Kill new [`Removal`](@ref)s occurring in removal zone         |
-| [`EpidemicsCFTP.relevant_infections`](@rev)        | Identify new [`Infection`](@ref)s relevant to LFE             |
+| Method                                    | Summary                                                           |
+|:------------------------------------------|:------------------------------------------------------------------|
+| [`generate_innovation`](@ref)             | Generates random [`Innovation`](@ref)                             |
+| [`evolution`](@ref)                       | Generates trajectory and history for an [`Evolution`](@ref)       |
+|                                           |                                                                   |
+| [`EpidemicsCFTP.periods`](@ref)           | Computes start and end times for infectious periods               |
+| [`EpidemicsCFTP.inactive_removals`](@ref) | Processes list of inactive removals from an epidemic              |
+| [`EpidemicsCFTP.accept_reject`](@ref)     | Performs accept/reject procedure on a proposed [`CRemoval`](@ref) |
+| [`EpidemicsCFTP.kill_irrelevant_infections`](@ref) | Kill new [`Infection`](@ref)s occurring in removal zone  |
+| [`EpidemicsCFTP.kill_irrelevant_removals`](@ref)   | Kill new [`Removal`](@ref)s occurring in removal zone    |
+| [`EpidemicsCFTP.relevant_infections`](@ref)        | Identify new [`Infection`](@ref)s relevant to LFE        |
+|                                           |                                                                   |
+| [`EpidemicsCFTP.antecedent`](@ref)        | Computes state before stated incident (no checks!)                |
+| [`EpidemicsCFTP.reverse_update`](@ref)    | Performs reverse update if this is possible                       |
 ```@docs 
 generate_innovation
 evolution
@@ -45,6 +48,8 @@ EpidemicsCFTP.accept_reject
 EpidemicsCFTP.kill_irrelevant_infections
 EpidemicsCFTP.kill_irrelevant_removals
 EpidemicsCFTP.relevant_infections
+EpidemicsCFTP.antecedent
+EpidemicsCFTP.reverse_update
 ```
 
 The second set of methods is a set of utility methods which are
@@ -53,17 +58,15 @@ in the course of initializing an [`Innovation`](@ref):
 
 | Method                                 | Summary                                                            |
 |:---------------------------------------|:-------------------------------------------------------------------|
-| [`EpidemicsCFTP.infect`](@ref)         | Implements an [`Infection`](@ref)                                  |
-| [`EpidemicsCFTP.is_infectable`](@ref)  | Checks whether an [`Infection`](@ref) can be implemented           |
-| [`EpidemicsCFTP.remove`](@ref)         | Implements a [`Removal`](@ref)                                     |
-| [`EpidemicsCFTP.is_removeable`](@ref)  | Checks whether a [`Removal`](@ref) can be implemented              |
+| [`EpidemicsCFTP.is_activatable`](@ref) | Checks whether an [`AbstractIncident`](@ref) can be activated      |
+| [`EpidemicsCFTP.infect`](@ref)         | Activates an [`Infection`](@ref)                                   |
+| [`EpidemicsCFTP.remove`](@ref)         | Activates a [`Removal`](@ref)                                      |
 | [`EpidemicsCFTP.is_same_config`](@ref) | Tests whether two [`SIR`](@ref) agree up to but not including time |
 | [`EpidemicsCFTP.update`](@ref)         | Updates an [`SIR`](@ref), given an [`AbstractIncident`](@ref)`     |
 ```@docs
+EpidemicsCFTP.is_activatable
 EpidemicsCFTP.infect
-EpidemicsCFTP.is_infectable
 EpidemicsCFTP.remove
-EpidemicsCFTP.is_removeable
 EpidemicsCFTP.is_same_config
 EpidemicsCFTP.update
 ```

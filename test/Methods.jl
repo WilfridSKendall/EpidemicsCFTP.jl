@@ -42,8 +42,7 @@ end
     infect = EpidemicsCFTP.infect
     remove = EpidemicsCFTP.remove
     update = EpidemicsCFTP.update
-    is_infectable = EpidemicsCFTP.is_infectable
-    is_removeable = EpidemicsCFTP.is_removeable
+    is_activatable = EpidemicsCFTP.is_activatable
     is_same_config = EpidemicsCFTP.is_same_config
     
     state = SIR(0.0, 0, 0, 1)
@@ -60,29 +59,29 @@ end
     t, s, i, r = 0.0, 1, 2, 3
     state = SIR(t, s, i, r)
     for infecttype in allconcretesubtypes(OperativeInfection)
-        @test   is_infectable(state, infecttype(0.0, r + 1, r + i + 1))
-        @test ! is_infectable(state, infecttype(0.0, r + 1, r + i)    )
+        @test   is_activatable(state, infecttype(0.0, r + 1, r + i + 1))
+        @test ! is_activatable(state, infecttype(0.0, r + 1, r + i)    )
     end
     
     for infecttype in allconcretesubtypes(NonOperativeInfection)
-        @test ! is_infectable(state, infecttype(0.0, r + 1, r + i + 1))
-        @test ! is_infectable(state, infecttype(0.0, r + 1, r + i)    )
+        @test ! is_activatable(state, infecttype(0.0, r + 1, r + i + 1))
+        @test ! is_activatable(state, infecttype(0.0, r + 1, r + i)    )
     end
 	
     for removaltype in allconcretesubtypes(OperativeRemoval)
-        @test ! is_removeable(state, removaltype(0.0, 1)               )
-        @test ! is_removeable(state, removaltype(0.0, r)               )
-        @test   is_removeable(state, removaltype(0.0, r + 1)           )
-        @test   is_removeable(state, removaltype(0.0, r + i)           )
-        @test ! is_removeable(state, removaltype(0.0, r + i + 1)       )
+        @test ! is_activatable(state, removaltype(0.0, 1)               )
+        @test ! is_activatable(state, removaltype(0.0, r)               )
+        @test   is_activatable(state, removaltype(0.0, r + 1)           )
+        @test   is_activatable(state, removaltype(0.0, r + i)           )
+        @test ! is_activatable(state, removaltype(0.0, r + i + 1)       )
     end
 
     for removaltype in allconcretesubtypes(NonOperativeRemoval)
-        @test ! is_removeable(state, removaltype(0.0, 1)               )
-        @test ! is_removeable(state, removaltype(0.0, r)               )
-        @test ! is_removeable(state, removaltype(0.0, r + 1)           )
-        @test ! is_removeable(state, removaltype(0.0, r + i)           )
-        @test ! is_removeable(state, removaltype(0.0, r + i + 1)       )
+        @test ! is_activatable(state, removaltype(0.0, 1)               )
+        @test ! is_activatable(state, removaltype(0.0, r)               )
+        @test ! is_activatable(state, removaltype(0.0, r + 1)           )
+        @test ! is_activatable(state, removaltype(0.0, r + i)           )
+        @test ! is_activatable(state, removaltype(0.0, r + i + 1)       )
     end
 
     for infectiontype in allconcretesubtypes(OperativeInfection)

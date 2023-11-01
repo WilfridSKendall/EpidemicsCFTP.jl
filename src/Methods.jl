@@ -48,12 +48,45 @@ function alter(crem::CRemoval, new_timeline::Integer)::CRemoval
     end
 end
 
-# Implement an infection
+# Check if incident is activatable
+# -------------------------------
+"""
+    EpidemicsCFTP.is_activatable(state::SIR, inc::AbstractInfection)::Bool
+    EpidemicsCFTP.is_activatable(state::SIR, inc::AbstractRemoval)::Bool
+
+Tests whether an incident should be activated for a given state.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 6))
+true
+julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), CancelledInfection(0.1, 4, 6))
+false
+julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 5))
+false
+julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), Removal(0.1, 4))
+true
+julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), KilledRemoval(0.1, 4))
+false
+julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), Removal(0.1, 6))
+false
+```
+"""
+function is_activatable(state::SIR, z::AbstractInfection)::Bool
+    isa(z, OperativeInfection) && 
+        z.t >= state.t && z.target > state.r && z.infectee == state.i + state.r + 1
+end
+function is_activatable(state::SIR, z::AbstractRemoval)::Bool
+    isa(z, OperativeRemoval) && 
+        z.t >= state.t && z.target > state.r && z.target <= state.i + state.r
+end
+
+# Activate an infection
 # -------------------------------
 """
     EpidemicsCFTP.infect(t::Real, state::SIR)::SIR
 
-Change state of a `S-I-R` epidemic to implement an infection at time `t`.
+Change state of a `S-I-R` epidemic to activate an infection at time `t`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -65,34 +98,12 @@ function infect(t::Real, state::SIR)::SIR
     SIR(t, state.s - 1, state.i + 1, state.r)
 end
 
-# Check if infection is implementable
-# -------------------------------
-"""
-    EpidemicsCFTP.is_infectable(state::SIR, inc::OperativeInfection)::Bool
-
-Tests whether an infection should be implemented for a given state.
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 6))
-true
-julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), CancelledInfection(0.1, 4, 6))
-false
-julia> EpidemicsCFTP.is_infectable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 5))
-false
-```
-"""
-function is_infectable(state::SIR, z::AbstractInfection)::Bool
-    isa(z, OperativeInfection) && 
-        z.t >= state.t && z.target > state.r && z.infectee == state.i + state.r + 1
-end
-
-# Implement a removal
+# Activate a removal
 # -------------------------------
 """
     EpidemicsCFTP.remove(t::Real, state::SIR)::SIR
 
-Change state of a `S-I-R` epidemic to implement a removal at time `t`.
+Change state of a `S-I-R` epidemic to activate a removal at time `t`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -102,28 +113,6 @@ SIR₀.₁₀(1:1:4)
 """
 function remove(t::Real, state::SIR)::SIR
     SIR(t, state.s, state.i - 1, state.r + 1)
-end
-
-# Check in removal is implementable
-# -------------------------------
-"""
-    EpidemicsCFTP.is_removeable(state::SIR, z::AbstractRemoval)::Bool
-
-Tests whether an [`AbstractRemoval`](@ref) should be implemented for a given state.
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 4))
-true
-julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), KilledRemoval(0.1, 4))
-false
-julia> EpidemicsCFTP.is_removeable(SIR(0.0, 1, 2, 3), Removal(0.1, 6))
-false
-```
-"""
-function is_removeable(state::SIR, z::AbstractRemoval)::Bool
-    isa(z, OperativeRemoval) && 
-        z.t >= state.t && z.target > state.r && z.target <= state.i + state.r
 end
 
 # Update using an incident
@@ -148,17 +137,52 @@ SIR₀.₂₀(1:2:3)
 ```
 """
 function update(state::SIR, z::AbstractIncident)::SIR
-    inc = typeof(z)
     if state.t > z.t
         return state
-    elseif isa(z, OperativeRemoval)   && is_removeable(state, z)
+    elseif isa(z, OperativeRemoval)   && is_activatable(state, z)
         return remove(z.t, state)
-    elseif isa(z, OperativeInfection) && is_infectable(state, z)
+    elseif isa(z, OperativeInfection) && is_activatable(state, z)
         return infect(z.t, state)
     else
         return SIR(z.t, state.s, state.i, state.r)
     end
 end
+
+# Updating in reverse time
+# -------------------------------
+"""
+    function antecedent(::SIR, ::AbstractInfection)::SIR
+    function antecedent(::SIR, ::AbstractRemoval)::SIR
+
+Computes state before stated incident (no check made as to whether this is possible!).
+"""
+function antecedent(state::SIR, event::AbstractInfection)::SIR
+    SIR(event.t, state.s + 1, state.i - 1, state.r)
+end
+function antecedent(state::SIR, event::AbstractRemoval)::SIR
+    SIR(event.t, state.s, state.i + 1, state.r - 1)
+end
+
+"""
+    reverse_update(::SIR, ::AbstractIncident)::SIR
+
+Performs reverse update if this is possible
+"""
+function reverse_update(state::SIR, event::AbstractIncident)::SIR
+    if event.t > state.t
+        return state
+    end
+    result = SIR(event.t, state.s, state.i, state.r)
+    if (isa(event, AbstractRemoval) && state.r > 0) || 
+            (isa(event, AbstractInfection) && state.i > 0)
+        prior = EpidemicsCFTP.antecedent(state, event)
+        if EpidemicsCFTP.is_activatable(prior, event)
+            result = prior
+        end
+    end
+    return result
+end
+
 
 # Test if two configurations agree (except for time!)
 # -------------------------------

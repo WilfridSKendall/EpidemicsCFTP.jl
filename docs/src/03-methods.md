@@ -42,8 +42,8 @@ EpidemicsCFTP.accept_reject
 ```
 
 The second set of methods is a set of utility methods which are
-employed in the course of applying `evolution` to generate trajectory and history
-in the course of initializing an [`Innovation`]](@ref):
+employed in the course of applying [`evolution`]( to generate trajectory and history
+in the course of initializing an [`Innovation`](@ref):
 
 | Method                                 | Summary                                                            |
 |:---------------------------------------|:-------------------------------------------------------------------|

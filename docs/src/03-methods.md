@@ -33,12 +33,18 @@ also other helper functions:
 | [`EpidemicsCFTP.periods`](@ref)           | Computes start and end times for infectious periods                    |
 | [`EpidemicsCFTP.inactive_removals`](@ref) | Processes list of inactive removals from an epidemic                   |
 | [`EpidemicsCFTP.accept_reject`](@ref)     | Performs accept/reject procedure on a proposed [`CRemoval`](@ref)      |
-```@docs
+| [`EpidemicsCFTP.kill_irrelevant_infections`](@rev) | Kill new [`Infection`](@ref)s occurring in removal zone       |
+| [`EpidemicsCFTP.kill_irrelevant_removals`](@rev)   | Kill new [`Removal`](@ref)s occurring in removal zone         |
+| [`EpidemicsCFTP.relevant_infections`](@rev)        | Identify new [`Infection`](@ref)s relevant to LFE             |
+```@docs 
 generate_innovation
 evolution
 EpidemicsCFTP.periods
 EpidemicsCFTP.inactive_removals
 EpidemicsCFTP.accept_reject
+EpidemicsCFTP.kill_irrelevant_infections
+EpidemicsCFTP.kill_irrelevant_removals
+EpidemicsCFTP.relevant_infections
 ```
 
 The second set of methods is a set of utility methods which are

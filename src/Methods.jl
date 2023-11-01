@@ -308,6 +308,56 @@ function periods(trajectory::Vector{SIR},
     return births, deaths
 end
 
+# Kill irrelevant infections and removals
+# -------------------------------
+"""
+    kill_irrelevant_infections(::Evolution, ::Innovation)::Vector{AbstractInfection}
+
+Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and determines which
+are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
+to [`KilledRemoval`](@ref)s.
+"""
+function kill_irrelevant_infections(ev::Evolution, iv::Innovation)::Vector{AbstractInfection}
+    [ z.t ≤ ev.finis_times[z.target] ? z : KilledInfection(z) for z in iv.infections ]
+end ;
+
+"""
+    kill_irrelevant_removals(::Evolution, ::Innovation)::Vector{AbstractRemoval}
+
+Examines [`AbstractRemoval`](@ref)s from [`Innovation`](@ref) and determines which
+are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
+to [`KilledInfection`](@ref)s.
+"""
+function kill_irrelevant_removals(ev::Evolution, iv::Innovation)::Vector{AbstractRemoval}
+    [ z.t ≤ ev.finis_times[z.target] ? z : KilledRemoval(z) for z in iv.removals ]
+end ;
+
+# Identify relevant infections
+# -------------------------------
+"""
+    relevant_infections(::Evolution, ::Innovation)::Vector{AbstractInfection}
+
+Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and returns
+those which are relevant to construction of the "last feasible epidemic".
+"""
+function relevant_infections(ev::Evolution, iv::Innovation)::Vector{AbstractInfection}
+    unkilled = [z for z in EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate) 
+                                if isa(z, OperativeInfection)]
+    relevant_inf = [z for z in ev.history if typeof(z) <: AbstractInfection]
+    rsup, running_supremum_list = 0, CRemoval[]
+    for z in sort(union(ev.cremovals, unkilled), lt=isearlier)
+        if (typeof(z) == CRemoval) && (z.target > rsup)
+            push!(running_supremum_list, z)
+            rsup = z.target
+        elseif typeof(z) <: AbstractInfection &&
+                ev.start_times[z.target] ≤ z.t < ev.finis_times[z.target] && 
+                z.infectee > rsup
+            push!(relevant_inf, z)
+        end
+    end
+    return sort(relevant_inf, lt=isearlier)
+end 
+    
 # Extract and classify inactive removals
 # -------------------------------
 """
@@ -315,6 +365,12 @@ end
     
 This function extracts and classifies the inactive [`AbstractRemoval`](@ref)s from an [`Evolution`](@ref).
 Those which lie in the removals zone are converted to [`KilledRemoval`](@ref)s.
+
+### Possible improvement
+Modify `relevant_infections` to exclude potential infections that
+rise above current epidemic trajectory? Not doing it now, because
+I don't think it affects the programming, but it may help clarity
+when moving on to deal with the (so-called) "no fly zone"!
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -333,9 +389,8 @@ AbstractRemoval[𝒦₀.₅₆¹,𝒦₀.₅₇²,ℛ₀.₅₈⁶]
 ```
 """
 function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
-    t0, t1 = ev.start_times, ev.finis_times
-    not_killed = [z for z in innov.removals if z.t < t0[z.target]]
-    killed     = [KilledRemoval(z) for z in innov.removals if t1[z.target] ≤ z.t]
+    not_killed = [z for z in innov.removals if z.t < ev.start_times[z.target]]
+    killed     = [KilledRemoval(z) for z in innov.removals if ev.finis_times[z.target] ≤ z.t]
     return sort(union(not_killed, killed), lt=isearlier)
 end    
 

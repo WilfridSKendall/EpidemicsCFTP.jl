@@ -39,6 +39,7 @@ also other helper functions:
 |                                           |                                                                   |
 | [`EpidemicsCFTP.antecedent`](@ref)        | Computes state before stated incident (no checks!)                |
 | [`EpidemicsCFTP.reverse_update`](@ref)    | Performs reverse update if this is possible                       |
+| [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)                   |              |
 ```@docs 
 generate_innovation
 evolution
@@ -50,6 +51,7 @@ EpidemicsCFTP.kill_irrelevant_removals
 EpidemicsCFTP.relevant_infections
 EpidemicsCFTP.antecedent
 EpidemicsCFTP.reverse_update
+EpidemicsCFTP.last_feasible_evolution
 ```
 
 The second set of methods is a set of utility methods which are

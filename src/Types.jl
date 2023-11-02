@@ -1,21 +1,21 @@
-# Types for various incidents
-# -------------------------------
+# # Types for various incidents
+# # -------------------------------
 
-# Abstract occurrence
-# -------------------------------
+# # Abstract occurrence
+# # -------------------------------
 """
     AbstractTimedOccurrence
 
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 
-# Expects field `t<:Real` (used by function [`isearlier`](@ref)
+# # Expects field `t<:Real` (used by function [`isearlier`](@ref)
 to time-order lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
 
-# Abstract incident
-# -------------------------------
+# # Abstract incident
+# # -------------------------------
 """
     AbstractIncident
 
@@ -26,8 +26,8 @@ to represent the particular kind of incident).
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
-# AbstractIncidents representing removals
-# -------------------------------
+# # AbstractIncidents representing removals
+# # -------------------------------
 """
     AbstractRemoval
 
@@ -70,8 +70,8 @@ Such an incident will never be realized.
 """
 abstract type NonOperativeRemoval <: AbstractRemoval end
 
-# AbstractIncidents representing infections
-# -------------------------------
+# # AbstractIncidents representing infections
+# # -------------------------------
 """
     AbstractInfection
 
@@ -121,8 +121,8 @@ Such an incident will never be realized.
 abstract type NonOperativeInfection <: AbstractInfection end
 
 
-# Actual removals
-# -------------------------------
+# # Actual removals
+# # -------------------------------
 """
     Removal(::Float64, ::Int)
 
@@ -222,8 +222,8 @@ struct KilledRemoval <: NonOperativeRemoval
     end
 end
 
-# Actual infections
-# -------------------------------
+# # Actual infections
+# # -------------------------------
 """
     Infection(::Float64, ::Int, ::Int)
     
@@ -434,8 +434,8 @@ struct CancelledInfection <: NonOperativeInfection
     end
 end
 
-# Environments
-# -------------------------------
+# # Environments
+# # -------------------------------
 """
     AbstractEnvironment
 
@@ -453,8 +453,8 @@ Instances should always possess the following fields:
 """
 abstract type AbstractEnvironment end
 
-# Innovations
-# -------------------------------
+# # Innovations
+# # -------------------------------
 """
     Innovation(::Int, ::Vector{S}, ::Vector{T},
                ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
@@ -522,8 +522,8 @@ struct Innovation <: AbstractEnvironment
 end
 
 
-# An `SIR` state for an $\SIR$ epidemic and associated functions
-# -------------------------------
+# # An `SIR` state for an $\SIR$ epidemic and associated functions
+# # -------------------------------
 """
     SIR(::Float64, ::Int, ::Int, ::Int)
 
@@ -586,7 +586,7 @@ struct SIR <: AbstractTimedOccurrence
 end
 
 ## Structures for $\text{S-I-R}$ epidemics
-# -------------------------------
+# # -------------------------------
 
 
 """
@@ -787,8 +787,8 @@ struct CEvolution <: AbstractEvolution
     end
 end
 
-# Exceptions
-# -------------------------------
+# # Exceptions
+# # -------------------------------
 """
     BadIncident
 
@@ -813,7 +813,7 @@ innov      = Innovation(population, infections, removals, cremovals) ;
 initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
 
-# output
+# # output
 ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.05, 3)
 ```
 """
@@ -838,7 +838,7 @@ innov      = Innovation(population, infections, removals, cremovals) ;
 initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
 
-# output
+# # output
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.2, 1)
 ```
 """

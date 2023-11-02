@@ -7,16 +7,16 @@ loc     = dirname(dirname(pathof(EpidemicsCFTP)))
 version = "$(read(Cmd(`git describe --tags`, dir=loc), String)[1:end-1])"
 branch  = "$(read(Cmd(`git branch --show-current`, dir=loc), String)[1:end-1])"
 
-# Imports
-# -------
-# The `Formatting` module is required in order to define `show` methods for the various types.
+# # Imports
+# # -------
+# # The `Formatting` module is required in order to define `show` methods for the various types.
 using Formatting
-# Import `Distributions` module.
+# # Import `Distributions` module.
 import Distributions
 
-# Exports
-# =======
-# These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
+# # Exports
+# # =======
+# # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
 
 export AbstractTimedOccurrence
 export AbstractIncident, AbstractRemoval, AbstractInfection
@@ -43,13 +43,16 @@ export alter
 
 export BadIncident, MissedCRemoval, EmployedRemoval
 
-# Included files
-# ==============
-# Include types defined in this package.
+# # Included files
+# # ==============
+# # Include types defined in this package.
 include("Types.jl")
 
-# Include subsidiary functions defined or extended in this package.
+# # Include methods defined in this package.
 include("Methods.jl")
+
+# # Include subsidiary display methods extended in this package.
+include("Methods-display.jl")
 
 end
 

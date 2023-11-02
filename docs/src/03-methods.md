@@ -1,7 +1,8 @@
+# Methods
 
-# Associated methods
+## Associated methods
 
-## Comparison method
+### Comparison method
 A partial order is provided by [`isearlier`](@ref), based on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
@@ -10,13 +11,13 @@ instances of
 isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
 ```
 
-## Conversion methods
+### Conversion methods
 A method concerning conversion of one incident into another.
 ```@docs
 alter
 ```
 
-## Methods relating to epidemic dynamics
+### Methods relating to epidemic dynamics
 Various methods relating to updating a trajectory (some of these are private to `EpidemicsCFTP`!).
 The first set of methods concerns the generation of a random [`Innovation`](@ref)
 ([`generate_innovation`](@ref))
@@ -47,6 +48,7 @@ evolution
 EpidemicsCFTP.periods
 EpidemicsCFTP.inactive_removals
 EpidemicsCFTP.accept_reject
+EpidemicsCFTP.resulting_cremovals
 EpidemicsCFTP.kill_irrelevant_infections
 EpidemicsCFTP.kill_irrelevant_removals
 EpidemicsCFTP.relevant_infections

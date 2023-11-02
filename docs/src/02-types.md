@@ -1,6 +1,7 @@
+# Types
 
-# Abstract timed occurrences
-Most entities of `EpidemicsCFPT` are based on the generic type `AbstractTimedOccurrence`.
+## Abstract timed occurrences
+Most entities of `EpidemicsCFTP` are based on the generic type `AbstractTimedOccurrence`.
 The only requirement on objects of this type is that they should possess
 a real-valued attribute `t` corresponding to a (process) time.
 ```@docs
@@ -14,8 +15,8 @@ incident at a particular moment of time).
 
 [`AbstractTimedOccurrence`](@ref)
 
-## State of an epidemic
-`SIR` is a type for recording the state of an $SIR$ epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
+## The state of an epidemic
+`SIR` is a type for recording the state of an $\text{S-I-R}$ epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
 ```@docs
 SIR
 ```
@@ -111,7 +112,7 @@ KilledInfection
 CancelledInfection
 ```
 
-# Representing different kinds of environments
+## Representing different kinds of environments
 `AbstractEnvironment` is a generic type for a collection of lists of `infections`,
 `removals` and `cremovals` (conditioned removals).
 ```@docs
@@ -119,14 +120,14 @@ AbstractEnvironment
 AbstractEvolution
 ```
 
-## `Innovation`
+### `Innovation`
 `Innovation` fills the lists of an abstract environment with simulated contents
 of lists of the requisite infections or removals. 
 ```@docs
 Innovation
 ```
 
-## Two kinds of `Evolution`
+### Two kinds of `Evolution`
 `Evolution` carries out the simulation of an epidemic from a given initial `SIR` value,
 based on an `Innovation`. 
 `CEvolution` does the same, but returns an error if it violates conditioning 

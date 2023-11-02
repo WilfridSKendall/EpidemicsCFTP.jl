@@ -1,5 +1,5 @@
 
-# Display methods
+## Display methods
 These definitions overload `Base.show`. Versions without `MIME"text/plain"`
 are not listed here. These have
 only two arguments, and are "vanilla" versions which will be applied for 

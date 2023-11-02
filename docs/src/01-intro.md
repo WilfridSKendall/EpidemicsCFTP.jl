@@ -1,5 +1,5 @@
 
-# Brief description of `EpidemicsCFTP` 
+## Brief description of `EpidemicsCFTP`  
 
 Here follows a brief description of the module (under development):
 ```@docs
@@ -29,7 +29,7 @@ and conditioned on all removal times.
 
 ![Screen shot of a resulting simulation.](image/introduction-no-fly-zone.png)
 
-# Installation of the package and production of documentation
+## Installation and documentation  
 General advice on developing a `julia` package is given at <https://julialang.org/contribute/developing_package/>.
 Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
 

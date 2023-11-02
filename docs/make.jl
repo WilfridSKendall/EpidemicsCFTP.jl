@@ -18,9 +18,11 @@ makedocs(;
         "Start"            => "index.md",
         "Introduction"     => "01-intro.md",
         "Types"            => "02-types.md",
-        "Methods"          => "03-methods.md",
-        "Exceptions"       => "04-exceptions.md",
-        "Display Methods"  => "05-methods-show.md",
+        "Methods"          => [
+            "Methods for computation" => "03-methods.md",
+            "Methods for display"     => "04-methods-show.md"
+                ],
+        "Exceptions"       => "05-exceptions.md",
         "Index"            => "06-index.md"
     ],
 )

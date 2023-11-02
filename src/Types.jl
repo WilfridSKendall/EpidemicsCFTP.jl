@@ -813,7 +813,8 @@ innov      = Innovation(population, infections, removals, cremovals) ;
 initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
 
-# # output
+# output
+
 ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.05, 3)
 ```
 """
@@ -838,7 +839,8 @@ innov      = Innovation(population, infections, removals, cremovals) ;
 initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
 
-# # output
+# output
+
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.2, 1)
 ```
 """

@@ -449,6 +449,12 @@ end
         
 # # Computing the last feasible epidemic trajectory
 # # ---------------------------------
+"""
+    last_feasible_evolution(::Real, ::Evolution, ::Innovation; ::Bool=false)
+            ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+
+Computes the last feasible epidemic trajectory.
+"""
 function last_feasible_evolution(duration::Real, ev::Evolution, iv::Innovation;
     conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}          # <1>
 

@@ -25,21 +25,22 @@ an [`Innovation`](@ref)
 ([`evolution`](@ref) for trajectory and history, 
 also other helper functions:
 
-| Method                                    | Summary                                                           |
-|:------------------------------------------|:------------------------------------------------------------------|
-| [`generate_innovation`](@ref)             | Generates random [`Innovation`](@ref)                             |
-| [`evolution`](@ref)                       | Generates trajectory and history for an [`Evolution`](@ref)       |
-|                                           |                                                                   |
-| [`EpidemicsCFTP.periods`](@ref)           | Computes start and end times for infectious periods               |
-| [`EpidemicsCFTP.inactive_removals`](@ref) | Processes list of inactive removals from an epidemic              |
-| [`EpidemicsCFTP.accept_reject`](@ref)     | Performs accept/reject procedure on a proposed [`CRemoval`](@ref) |
-| [`EpidemicsCFTP.kill_irrelevant_infections`](@ref) | Kill new [`Infection`](@ref)s occurring in removal zone  |
-| [`EpidemicsCFTP.kill_irrelevant_removals`](@ref)   | Kill new [`Removal`](@ref)s occurring in removal zone    |
-| [`EpidemicsCFTP.relevant_infections`](@ref)        | Identify new [`Infection`](@ref)s relevant to LFE        |
-|                                           |                                                                   |
-| [`EpidemicsCFTP.antecedent`](@ref)        | Computes state before stated incident (no checks!)                |
-| [`EpidemicsCFTP.reverse_update`](@ref)    | Performs reverse update if this is possible                       |
-| [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)                   |              |
+| Method                                     | Summary                                                           |
+|:-------------------------------------------|:------------------------------------------------------------------|
+| [`generate_innovation`](@ref)              | Generates random [`Innovation`](@ref)                             |
+| [`evolution`](@ref)                        | Generates trajectory and history for an [`Evolution`](@ref)       |
+|                                            |                                                                   |
+| [`EpidemicsCFTP.periods`](@ref)            | Computes start and end times for infectious periods               |
+| [`EpidemicsCFTP.inactive_removals`](@ref)  | Processes list of inactive removals from an epidemic              |
+| [`EpidemicsCFTP.accept_reject`](@ref)      | Performs accept/reject procedure on a proposed [`CRemoval`](@ref) |
+| [`EpidemicsCFTP.resulting_cremovals`](@ref)| Determine set of re-sampled [`CRemoval`](@ref)s                   |
+| [`EpidemicsCFTP.kill_irrelevant_infections`](@ref) | Kill new [`Infection`](@ref)s occurring in removal zone   |
+| [`EpidemicsCFTP.kill_irrelevant_removals`](@ref)   | Kill new [`Removal`](@ref)s occurring in removal zone     |
+| [`EpidemicsCFTP.relevant_infections`](@ref)| Identify new [`Infection`](@ref)s relevant to LFE                 |
+|                                            |                                                                   |
+| [`EpidemicsCFTP.antecedent`](@ref)         | Computes state before stated incident (no checks!)                |
+| [`EpidemicsCFTP.reverse_update`](@ref)     | Performs reverse update if this is possible                       |
+| [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)                    |
 ```@docs 
 generate_innovation
 evolution

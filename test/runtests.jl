@@ -8,7 +8,7 @@ function allconcretesubtypes(T)
     if isempty(Tl)
         return [T]
     else
-        return union([allconcretesubtypes(S) for S in Tl]...)
+        return ∪([allconcretesubtypes(S) for S ∈ Tl]...)
     end
 end
 

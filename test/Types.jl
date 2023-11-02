@@ -2,7 +2,7 @@
 
 ## Testing creation of concrete subtypes of `AbstractRemoval`
 @testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (A)" begin
-    for removaltype in allconcretesubtypes(AbstractRemoval)
+    for removaltype ∈ allconcretesubtypes(AbstractRemoval)
         @test_throws DomainError    removaltype(0.05,-2)
         @test_throws DomainError    removaltype(0.05, 0)
         @test_throws MethodError    removaltype(0.05, 2.5)
@@ -12,8 +12,8 @@ end
 
 ## Testing conversion of concrete subtypes of `AbstractRemoval`
 @testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (B)" begin
-    for removaltype1 in allconcretesubtypes(AbstractRemoval)
-        for removaltype2 in allconcretesubtypes(AbstractRemoval)
+    for removaltype1 ∈ allconcretesubtypes(AbstractRemoval)
+        for removaltype2 ∈ allconcretesubtypes(AbstractRemoval)
             @test removaltype1(removaltype2(0.05, 2)) == removaltype1(0.05, 2)
             @test removaltype1(removaltype2(0.15, 3)) == removaltype1(0.15, 3)
         end
@@ -22,7 +22,7 @@ end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
 @testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (A)" begin
-    for infectiontype in allconcretesubtypes(AbstractInfection)
+    for infectiontype ∈ allconcretesubtypes(AbstractInfection)
         @test_throws DomainError  infectiontype(0.10,-1,   2)
         @test_throws DomainError  infectiontype(0.10, 1,  -2)
         @test_throws DomainError  infectiontype(0.10,-1,  -2)
@@ -39,8 +39,8 @@ end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
 @testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (B)" begin
-    for infectiontype1 in allconcretesubtypes(AbstractInfection)
-        for infectiontype2 in allconcretesubtypes(AbstractInfection)
+    for infectiontype1 ∈ allconcretesubtypes(AbstractInfection)
+        for infectiontype2 ∈ allconcretesubtypes(AbstractInfection)
             @test infectiontype1(infectiontype2(0.05, 2, 3)) == infectiontype1(0.05, 2, 3)
             @test infectiontype1(infectiontype2(0.15, 1, 4)) == infectiontype1(0.15, 1, 4)
         end

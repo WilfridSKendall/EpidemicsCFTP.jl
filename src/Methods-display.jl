@@ -8,11 +8,11 @@ lows = Dict(nums[i]=>subs[i]  for i = 1:13)
 upps = Dict(nums[i]=>sups[i]  for i = 1:13)
 
 function lowers(x::String)::String
-    join(lows[c] for c in split(x, ""))
+    join(lows[c] for c ∈ split(x, ""))
 end
 
 function uppers(x::String)::String
-    join(upps[c] for c in split(x, ""))
+    join(upps[c] for c ∈ split(x, ""))
 end
 
 fspec = FormatSpec(".2f")
@@ -259,12 +259,12 @@ function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab
     if isempty(xv)
         println(io, "$(string(T))[]")
     else
-        parts = [sprint(show, MIME("text/plain"), a) for a in xv]
+        parts = [sprint(show, MIME("text/plain"), a) for a ∈ xv]
         parts[1] = "$(string(T))[" * parts[1]
         parts[end] = parts[end]*"]"
         broken = []
         cumulative, clength, initial = [], 0, true
-        for bit in parts
+        for bit ∈ parts
             clength = clength + length(bit)
             if clength > width
                 addition = join(cumulative, ',') * ','
@@ -278,7 +278,7 @@ function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab
             addition = join(cumulative, ',')
             push!(broken, initial ? addition :  tab * addition)
         end
-        for section in broken
+        for section ∈ broken
             println(io, section)
         end
     end

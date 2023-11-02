@@ -3,22 +3,22 @@
 ## Testing `isearlier`
 # =================================
 @testset "EpidemicsCFTP: $(rpad(isearlier, 23))" begin
-    for removaltype1 in allconcretesubtypes(AbstractRemoval)
-        for removaltype2 in allconcretesubtypes(AbstractRemoval)
+    for removaltype1 ∈ allconcretesubtypes(AbstractRemoval)
+        for removaltype2 ∈ allconcretesubtypes(AbstractRemoval)
             @test   isearlier(removaltype1(0.1, 2),      removaltype2(0.5, 3))
             @test ! isearlier(removaltype1(0.5, 2),      removaltype2(0.1, 3))
         end
-        for infectiontype2 in allconcretesubtypes(AbstractInfection)
+        for infectiontype2 ∈ allconcretesubtypes(AbstractInfection)
             @test   isearlier(removaltype1(0.1, 2),      infectiontype2(0.5, 1, 3))
             @test ! isearlier(removaltype1(0.5, 2),      infectiontype2(0.1, 1, 3))
         end
     end
-    for infectiontype1 in allconcretesubtypes(AbstractInfection)
-        for infectiontype2 in allconcretesubtypes(AbstractInfection)
+    for infectiontype1 ∈ allconcretesubtypes(AbstractInfection)
+        for infectiontype2 ∈ allconcretesubtypes(AbstractInfection)
             @test   isearlier(infectiontype1(0.1, 1, 2), infectiontype2(0.5, 1, 3))
             @test ! isearlier(infectiontype1(0.5, 1, 2), infectiontype2(0.1, 1, 3))
         end
-        for removaltype2 in allconcretesubtypes(AbstractRemoval)
+        for removaltype2 ∈ allconcretesubtypes(AbstractRemoval)
             @test   isearlier(infectiontype1(0.1, 1, 2), removaltype2(0.5, 3))
             @test ! isearlier(infectiontype1(0.5, 1, 2), removaltype2(0.1, 3))
         end
@@ -58,17 +58,17 @@ end
     
     t, s, i, r = 0.0, 1, 2, 3
     state = SIR(t, s, i, r)
-    for infecttype in allconcretesubtypes(OperativeInfection)
+    for infecttype ∈ allconcretesubtypes(OperativeInfection)
         @test   is_activatable(state, infecttype(0.0, r + 1, r + i + 1))
         @test ! is_activatable(state, infecttype(0.0, r + 1, r + i)    )
     end
     
-    for infecttype in allconcretesubtypes(NonOperativeInfection)
+    for infecttype ∈ allconcretesubtypes(NonOperativeInfection)
         @test ! is_activatable(state, infecttype(0.0, r + 1, r + i + 1))
         @test ! is_activatable(state, infecttype(0.0, r + 1, r + i)    )
     end
 	
-    for removaltype in allconcretesubtypes(OperativeRemoval)
+    for removaltype ∈ allconcretesubtypes(OperativeRemoval)
         @test ! is_activatable(state, removaltype(0.0, 1)               )
         @test ! is_activatable(state, removaltype(0.0, r)               )
         @test   is_activatable(state, removaltype(0.0, r + 1)           )
@@ -76,7 +76,7 @@ end
         @test ! is_activatable(state, removaltype(0.0, r + i + 1)       )
     end
 
-    for removaltype in allconcretesubtypes(NonOperativeRemoval)
+    for removaltype ∈ allconcretesubtypes(NonOperativeRemoval)
         @test ! is_activatable(state, removaltype(0.0, 1)               )
         @test ! is_activatable(state, removaltype(0.0, r)               )
         @test ! is_activatable(state, removaltype(0.0, r + 1)           )
@@ -84,17 +84,17 @@ end
         @test ! is_activatable(state, removaltype(0.0, r + i + 1)       )
     end
 
-    for infectiontype in allconcretesubtypes(OperativeInfection)
+    for infectiontype ∈ allconcretesubtypes(OperativeInfection)
         @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,0,3,3)
         @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 5)) == SIR(0.1,1,2,3)
     end
 
-    for infectiontype in allconcretesubtypes(NonOperativeInfection)
+    for infectiontype ∈ allconcretesubtypes(NonOperativeInfection)
 	@test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,1,2,3)
         @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 5)) == SIR(0.1,1,2,3)
     end
 
-    for removaltype in allconcretesubtypes(NonOperativeRemoval)
+    for removaltype ∈ allconcretesubtypes(NonOperativeRemoval)
         @test update(SIR(0.0, 1, 2, 3), removaltype(0.1, 4))    == SIR(0.1,1,2,3)
         @test update(SIR(0.0, 1, 2, 3), removaltype(0.1, 2))    == SIR(0.1,1,2,3)
     end

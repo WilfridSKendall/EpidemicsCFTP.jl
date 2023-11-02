@@ -499,18 +499,18 @@ struct Innovation <: AbstractEnvironment
             throw(DomainError(noun, "non-positive population size $population"))
         elseif length(cremovals) > population
             throw(ArgumentError("too many conditional removals in \n$noun"))
-        elseif any(cr.target > population for cr in cremovals)
+        elseif any(cr.target > population for cr ∈ cremovals)
             throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
-        elseif any(r.target > population for r in removals)
+        elseif any(r.target > population for r ∈ removals)
             throw(ArgumentError("some removal timelines too high in \n$noun"))
-        elseif any(i.target > population for i in infections)
+        elseif any(i.target > population for i ∈ infections)
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
             chron = Iterators.flatten([infections, removals, cremovals])
             new(population, sort(infections, lt=isearlier), 
                 sort(removals,   lt=isearlier), 
                 sort(cremovals,  lt=isearlier),
-                [x::AbstractIncident for x in sort(collect(chron), lt=isearlier)])
+                [x::AbstractIncident for x ∈ sort(collect(chron), lt=isearlier)])
         end
     end
 

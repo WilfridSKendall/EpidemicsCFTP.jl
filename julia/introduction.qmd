@@ -491,6 +491,8 @@ with `CRemoval`s located at the same instants but with different marks:
 #| echo: false
 innov_candidate = generate_innovation(innov1, duration, α=α, β=β)
 ```
+1. 
+
 Clearly we cannot simply replace `innov1` by `innov_candidate`, as this will break the conditioning.
 Instead we have to consider each change (removal of old incident, introduction of new incident,
 replacing old by new conditioned removal mark) individually, to see if this breaks the conditioning.
@@ -819,56 +821,14 @@ It is required to compute the trajectory of the _last_ possible epidemic path th
 all the `CRemoval` events and none of the `Removal` events. 
 This is most easily accomplished by computing
 in reverse time.
-
-The main function here is `last_feasible_evolution`.
-It first computes `chronology` by mixing the relevant infections and the conditioned removals
-and computes the reverse-initial state as the final state of the evolution (re-timed to `duration`).
-
-
-::: {.callout-tip}
-Check and retract \LFE computations in `last_feasible_evolution` to `EpidemicsCFTP`.
-:::
-
-```{julia}
-function last_feasible_evolution(duration::Real, evol1::Evolution, innov1::Innovation;
-    conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
-    chronology = sort(union(innov1.infections, evol1.history), lt=isearlier) 
-    penultimate_state = evol1.trajectory[end]
-    final_state = SIR(duration, 
-        penultimate_state.s, penultimate_state.i, penultimate_state.r)
-    reverse_trajectory, reverse_history = SIR[final_state], AbstractIncident[]
-    reverse_chronology  = reverse([x for x in chronology if x.t <= final_state.t])
-    if ! isempty(reverse_chronology)
-        for event in reverse_chronology
-            prior_state = EpidemicsCFTP.reverse_update(reverse_trajectory[end], event)
-            if ! EpidemicsCFTP.is_same_config(prior_state, reverse_trajectory[end])
-                if conditioned && isa(event, Removal)
-                    throw(EmployedRemoval(event))
-                end
-                push!(reverse_trajectory, prior_state)
-                push!(reverse_history, event)
-            elseif conditioned && isa(event, CRemoval)
-                    throw(MissedCRemoval(event))
-            end
-        end
-    end
-    starting = reverse_trajectory[end]
-    push!(reverse_trajectory, SIR(0.0, starting.s, starting.i, starting.r))
-    return Base.reverse(reverse_trajectory), Base.reverse(reverse_history)
-end ;
-```
-
-::: {.callout=caution}
-May be better in `last_feasible_evolution` to compute `penultimate_state` as
-last state before `duration`, and truncate `chronology` to run only up to `duration`.
-:::
-
-We use `last_feasible_evolution` to compute the trajectory and history of the \LFE.
-```{julia}
+We use `EpidemicsCFTP.last_feasible_evolution`.
+It first computes a `chronology` by mixing the relevant infections and the conditioned removals
+and then computes the reverse-initial state as the final state of the evolution
+(epidemic state at time `duration`).
+By this means we can compute and display the trajectory and history of the \LFE using:
+```julia
 last_feasible_trajectory, last_feasible_history = 
-    last_feasible_evolution(duration, evol1_2, innov_candidate) ;
-println(rpad("trajectory:", 12, " "), sprint(show, MIME("text/plain"), last_feasible_trajectory))
-println(rpad("history:", 12, " "), sprint(show, MIME("text/plain"), last_feasible_history))
+    EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate) ;
 ```
 
 Now @fig-introduction-last-feasible-epidemic computes and superposes the resulting \LFE flow
@@ -877,88 +837,85 @@ on the previous @fig-introduction-with-relevant-infections.
 ```{julia}
 #| echo: false
 #| label: fig-introduction-last-feasible-epidemic
-#| fig-cap: "This improves on @fig-introduction-with-all-new-infections by adding the last      \
-#|           feasible epidemic trajectory (coloured in pink) and extra delayed     \
+#| fig-cap: "This improves on @fig-introduction-with-all-new-infections by adding the last \
+#|           feasible epidemic trajectory (coloured in pink) and last feasible new         \
 #|           infections (outlined in deep pink). [`introduction-last-feasible-epidemic`]"
+last_feasible_trajectory, last_feasible_history = 
+    EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate) ;
+
+last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections] 
+
 flow_last_feasible = 
     table_trajectories1(duration, last_feasible_trajectory[1], last_feasible_trajectory)
-extra = [z for z in intersect(last_feasible_history, innov_candidate.infections)] 
-# Need the right type for resulting list!
+
 figure12 = new_figure(figure10,
     Guide.annotation(compose(context(),
-         draw_feasible_incident(extra, 3, theme=theme))),
-    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
+         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
+    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh),          # <1> 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
 )
 depict("introduction-last-feasible-epidemic", new_figure(figure12,
     Guide.title("Last feasible epidemic"))
 )
+# 1. Notice argument to `Geom.step` is `direction=:vh` here, to get the right trajectory!  
+# See <http://gadflyjl.org/stable/lib/geometries/#Gadfly.Geom.step-Tuple{}>.
 ```
 
-::: {.callout-note}
-# Plotting note
-Notice argument to `Geom.step` is `direction=:vh`.  
-See <http://gadflyjl.org/stable/lib/geometries/#Gadfly.Geom.step-Tuple{}>.
-:::
 
-::: {.callout-note}
-# Note on exposition
-Revise the following to achieve more clarity.
-:::
-
-
-The next step is to abandon all the infections from the previous `Evolution`
-_except that_ we perpetuate those infections which turn out to
-last viable infections. We perpetuate the following infections.
-```{julia}
-#| echo: false
-[z for z in intersect(evol1.infections, last_feasible_history)]
-```
-This is carried out by
-```{julia}
-perpetuated_infections = 
-    [PInfection(z) for z in intersect(evol1.infections, last_feasible_history)]
-```
-so that the working set of potential infections now becomes
-```{julia}
-working_infections = union(innov_candidate.infections, perpetuated_infections)
-```
+The next step is to abandon even the activated infections from the previous `Evolution`
+excepting only those used in the
+last viable epidemic, which have to be perpetuated.
 See @fig-introduction-last-feasible-epidemic-bis.
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-last-feasible-epidemic-bis
-#| fig-cap: "This varies @fig-introduction-with-all-new-infections by omitting the active \
-#|           infections carried over from the previous epidemic which are now superseded  \
-#|           by the \"last feasible epidemic\". [`introduction-last-feasible-epidemic-bis-DEPRECATED`]" 
+#| fig-cap: "This varies @fig-introduction-with-all-new-infections by omitting those active \
+#|           infections carried over from the previous epidemic which are now superseded    \
+#|           by the \"last feasible epidemic\": the only remaining old infections are those \
+#|           involved in the \"last feasible epidemic\". However the original epidemic      \
+#|           trajectory is still included. [`introduction-last-feasible-epidemic-bis`]" 
+
+perpetuated_infections = 
+    [PInfection(z) for z ∈ evol1.infections ∩ last_feasible_history]
+working_infections = innov_candidate.infections ∪ perpetuated_infections
+
 figure13 = new_figure(figure3,
+    # perpetuation
     Guide.annotation(compose(context(),
         draw_incident(perpetuated_infections, theme=theme))),
     Guide.annotation(compose(context(),
         draw_elements(perpetuated_infections, activated=true, theme=theme))),
+    # feasible
     Guide.annotation(compose(context(),
-         draw_feasible_incident(innov_candidate.infections, 1, inscribe=false, theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_incident(evol1_2.removals, theme=theme))),
+         draw_elements([z for z in differentiated if typeof(z) == KilledInfection], 
+            inscribe=false, theme=theme),
+         draw_elements([z for z in differentiated if typeof(z) != KilledInfection], 
+            inscribe=true, theme=theme),
+        )
+    ),
+    # cremovals
     Guide.annotation(compose(context(),
         draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
-   Guide.annotation(compose(context(),
-       draw_activated_elements(initial, last_feasible_history, theme=theme))),
     Guide.annotation(compose(context(),
-         draw_feasible_incident(extra, 3, theme=theme))),
+        draw_incident(evol1_2.cremovals, theme=theme))),
+    # removals
+    Guide.annotation(compose(context(),
+        draw_incident(evol1_2.removals, theme=theme))),
+    # activation for last feasible history
+    Guide.annotation(compose(context(),
+        draw_activated_elements(initial, last_feasible_history, theme=theme))),
+    # feasible infections
+    Guide.annotation(compose(context(),
+        draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
+    # last feasible epidemic
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
 )
-depict("introduction-last-feasible-epidemic-bis-DEPRECATED", new_figure(figure13,
+depict("introduction-last-feasible-epidemic-bis", new_figure(figure13,
     Guide.title("Last feasible epidemic, perpetuating any infections from previous version"))
 )
 ```
-
-::: {.callout-warning}
-# EXPLORATORY FROM NOW ON
-:::
-
-
 ::: {.callout-note}
 # TODO
 Place remaining code in a procedure.
@@ -967,6 +924,12 @@ Place remaining code in a procedure.
 
 Computing the \NOFLYZONE
 ------------------------
+
+::: {.callout-warning}
+# EXPLORATORY FROM NOW ON
+:::
+
+
 We now determine the \NOFLYZONE.
 This is done in stages:
 
@@ -991,14 +954,14 @@ We begin with step (a).
 ```{julia}
 t0, t1 = evol1_2.start_times, evol1_2.finis_times
 early_inactivated_removals = 
-    [z for z in evol1_2.removals if z.t < t1[z.target]]
+    [z for z ∈ evol1_2.removals if z.t < t1[z.target]]
 ```
 @fig-introduction-relevant-removals provides a visual check!
 
 We now compute the time of last early inactivated removal for each time line, forming the vector `nfz1`.
 ```{julia}
 nfz1 = repeat([0.0], initial.n)
-for removal in early_inactivated_removals
+for removal ∈ early_inactivated_removals
     nfz1[removal.target] = max(nfz1[removal.target], removal.t)
 end
 ```
@@ -1007,7 +970,7 @@ Then we take step (b), and compute the monotonic envelope `nfz2`.
 ```{julia}
 rnfz = 0.0
 nfz2 = repeat([0.0], initial.n)
-for k in 2:initial.n
+for k ∈ 2:initial.n
     nfz2[k] = max(nfz2[k-1], nfz1[k])
 end
 ```
@@ -1032,14 +995,14 @@ figure14 = new_figure(figure3,
    Guide.annotation(compose(context(),
        draw_activated_elements(initial, last_feasible_history, theme=theme))),
     Guide.annotation(compose(context(),
-         draw_feasible_incident(extra, 3, theme=theme))),
+         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz1) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     )
 depict("introduction-relevant-removals-DEPRECATED", new_figure(figure14,
@@ -1052,7 +1015,7 @@ We now need to move on to step (c). We prepare for this by reducing the set of
 with `target` lying in one of the susceptible or infectious zones.
 ```{julia}
 current_infections = 
-    sort([z for z in innov_candidate.infections if z.t < t1[z.target]], lt=isearlier)
+    sort([z for z ∈ innov_candidate.infections if z.t < t1[z.target]], lt=isearlier)
 ```
 Note here that the vectors `t0` and `t1` are the vectors of infection and removal times for the original epidemic trajectory
 computed above from `t0, t1 = life_dates(evol1_2)`.
@@ -1074,8 +1037,8 @@ infections working backwards through time ...
 @fig-introduction-prior-relevant-removals illustrates this emphasis on `prior_relevant_infections`
 ```{julia}
 #| echo: false
-posterior_relevant_infections =  [z for z in current_infections if z.t ≥ t0[z.infectee]]
-prior_relevant_infections = [z for z in current_infections if z.t < t0[z.infectee]]
+posterior_relevant_infections =  [z for z ∈ current_infections if z.t ≥ t0[z.infectee]]
+prior_relevant_infections = [z for z ∈ current_infections if z.t < t0[z.infectee]]
 println("Prior relevant infections:    \n", sprint(show, MIME("text/plain"), prior_relevant_infections))
 println("Posterior relevant infections:\n", sprint(show, MIME("text/plain"), posterior_relevant_infections))
 ```
@@ -1103,14 +1066,14 @@ figure15 = new_figure(figure3,
    Guide.annotation(compose(context(),
        draw_activated_elements(initial, last_feasible_history, theme=theme))),
     Guide.annotation(compose(context(),
-         draw_feasible_incident(extra, 3, theme=theme))),
+         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz1) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     )
 depict("introduction-prior-relevant-removals-DEPRECATED", new_figure(figure15,
@@ -1139,7 +1102,7 @@ prior_boundary_time, current_boundary_time = nfz2[prior_level], nfz2[current_lev
 nfz3 = []
 
 prior_relevant_infections2 = Infection[]
-for z in reverse(prior_relevant_infections)
+for z ∈ reverse(prior_relevant_infections)
     if !(current_boundary_time < z.t ≤ prior_boundary_time && z.infectee == prior_level && z.t ≥ t0[z.target])
         push!(prior_relevant_infections2, z)
     end
@@ -1196,7 +1159,7 @@ figure16 = new_figure(figure3,
    Guide.annotation(compose(context(),
        draw_activated_elements(initial, last_feasible_history, theme=theme))),
     Guide.annotation(compose(context(),
-         draw_feasible_incident(extra, 3, theme=theme))),
+         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.dormant, default_color=theme.lastfeasible2)),
     layer(flow_nofly, x=:t, y=:y,  Geom.step(direction=:vh),
@@ -1204,10 +1167,10 @@ figure16 = new_figure(figure3,
     layer(xy_flow_nofly, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.forbid1)),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz1) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z in enumerate(nfz2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     ) ;
 

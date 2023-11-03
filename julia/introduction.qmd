@@ -954,7 +954,7 @@ Computing the \NOFLYZONE
 We now determine the \NOFLYZONE.
 This is done in stages:
 
-(a) compute `nfz1`, a vector giving the times at which each time line becomes free of inactivated removals;
+(a) compute `max_removal_time`, a vector giving the times at which each time line becomes free of inactivated removals;
 (b) compute `nfz2`, the monotonically increasing envelope of `nftz1`;
 (c) compute `nfz3`, a vector giving the times at which each time line starts to be available for infection
 without hazard of causing activation of an inactivated removal.
@@ -978,21 +978,17 @@ early_inactivated_removals =
 ```
 @fig-introduction-relevant-removals provides a visual check!
 
-We now compute the time of last early inactivated removal for each time line, forming the vector `nfz1`.
+We now compute the time of last early inactivated removal for each time line, forming the vector `max_removal_time`.
 ```{julia}
-nfz1 = repeat([0.0], initial.n)
+max_removal_time = repeat([0.0], initial.n)
 for removal ∈ early_inactivated_removals
-    nfz1[removal.target] = max(nfz1[removal.target], removal.t)
+    max_removal_time[removal.target] = max(max_removal_time[removal.target], removal.t)
 end
 ```
 
-Then we take step (b), and compute the monotonic envelope `nfz2` of `nfz1`.
+Then we take step (b), and compute the monotonic envelope `nfz2` of `max_removal_time`.
 ```{julia}
-rnfz = 0.0
-nfz2 = repeat([0.0], initial.n)
-for k ∈ 2:initial.n
-    nfz2[k] = max(nfz2[k-1], nfz1[k])
-end
+nfz2 = accumulate(max, max_removal_time)
 ```
 
 
@@ -1019,7 +1015,7 @@ figure14 = new_figure(figure3,
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
@@ -1064,10 +1060,11 @@ and `prior_relevant_infections`
 ```{julia}
 posterior_relevant_infections =  [z for z ∈ current_infections if 
                                     z.t ≥ evol1_2.start_times[z.infectee]]
-prior_relevant_infections = [z for z ∈ current_infections if 
-                                    z.t < evol1_2.start_times[z.infectee]]
-println("Prior relevant infections:    \n", sprint(show, MIME("text/plain"), prior_relevant_infections))
-println("Posterior relevant infections:\n", sprint(show, MIME("text/plain"), posterior_relevant_infections))
+prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
+println("Prior relevant infections:    \n", 
+    sprint(show, MIME("text/plain"), prior_relevant_infections))
+println("Posterior relevant infections:\n", 
+    sprint(show, MIME("text/plain"), posterior_relevant_infections))
 ```
 
 @fig-introduction-prior-relevant-removals illustrates this emphasis on `prior_relevant_infections`
@@ -1098,7 +1095,7 @@ figure15 = new_figure(figure3,
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
@@ -1109,8 +1106,8 @@ depict("introduction-prior-relevant-removals", new_figure(figure15,
 )
 ```
 
-Now we perform a careful computation of the "true` boundary: we
-work backwards through `prior_relevant_infections` as follows. 
+Now we perform a careful computation of the "true" boundary: we
+work backwards through the `prior_relevant_infections` as follows. 
 
 First we make a copy `nfz3` of `nfz2`. Then
 
@@ -1132,10 +1129,12 @@ nfz3 = []
 
 prior_relevant_infections2 = Infection[]
 for z ∈ reverse(prior_relevant_infections)
-    if !(current_boundary_time < z.t ≤ prior_boundary_time && z.infectee == prior_level && z.t ≥ evol1_2.start_times[z.target])
+    if !(current_boundary_time < z.t ≤ prior_boundary_time && 
+                    z.infectee == prior_level && z.t ≥ evol1_2.start_times[z.target])
         push!(prior_relevant_infections2, z)
     end
-    if current_boundary_time < z.t ≤ prior_boundary_time && z.infectee == prior_level && z.t < evol1_2.start_times[z.target]
+    if current_boundary_time < z.t ≤ prior_boundary_time && z.infectee == prior_level &&
+                    z.t < evol1_2.start_times[z.target]
         push!(nfz3, prior_boundary_time)
         current_level, prior_level = current_level - 1, current_level
         current_boundary_time, prior_boundary_time = nfz2[current_level], z.t
@@ -1196,7 +1195,7 @@ figure16 = new_figure(figure3,
     layer(xy_flow_nofly, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.forbid1)),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),

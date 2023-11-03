@@ -988,7 +988,7 @@ end
 
 Then we take step (b), and compute the monotonic envelope `nfz2` of `max_removal_time`.
 ```{julia}
-nfz2 = accumulate(max, max_removal_time)
+nfz2 = accumulate(max, max_removal_time) ;
 ```
 
 

@@ -7,6 +7,8 @@ python-SBC/
 python/DOC/
 python/__pycache__/
 
+.jupyter_cache/
+
 image/introduction*
 image/production*
 

@@ -955,8 +955,8 @@ We now determine the \NOFLYZONE.
 This is done in stages:
 
 (a) compute `max_removal_time`, a vector giving the times at which each time line becomes free of inactivated removals;
-(b) compute `nfz2`, the monotonically increasing envelope of `nftz1`;
-(c) compute `nfz3`, a vector giving the times at which each time line starts to be available for infection
+(b) compute `nofly_envelope0`, the monotonically increasing envelope of `nftz1`;
+(c) compute `nofly_envelope`, a vector giving the times at which each time line starts to be available for infection
 without hazard of causing activation of an inactivated removal.
 
 Step (c) involves the use of the `relevant_infections`. 
@@ -986,9 +986,10 @@ for removal ∈ early_inactivated_removals
 end
 ```
 
-Then we take step (b), and compute the monotonic envelope `nfz2` of `max_removal_time`.
+Then we take step (b), and compute the monotonic envelope `nofly_envelope0` of `max_removal_time`.
 ```{julia}
-nfz2 = accumulate(max, max_removal_time) ;
+nofly_envelope0 = accumulate(max, max_removal_time) ;
+println(nofly_envelope0)
 ```
 
 
@@ -1018,7 +1019,7 @@ figure14 = new_figure(figure3,
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     )
 depict("introduction-relevant-removals", new_figure(figure14,
@@ -1048,8 +1049,9 @@ focus only on those infections in `current_infections` which extend beyond the o
 
 ::: {.callout-note}
 # Exposition alert
-We deal with the trajectory of `evol1_2` which is the original trajectory:
-this needs careful explanation, justified because our basic plan is to renew
+We deal with the _trajectory_ of `evol1_2`, which is the original trajectory:
+it needs careful explanation why we use this not some new trajectory.
+It is justified because our basic plan is to renew
 infections working backwards through time ...
 :::
 
@@ -1072,8 +1074,8 @@ println("Posterior relevant infections:\n",
 #| echo: false
 #| label: fig-introduction-prior-relevant-removals
 #| fig-cap: "First (steel blue) and second (light steel blue) iterations                \
-#|           of \"no-fly zone\", highlighting infections from `innov_candidate`          \
-#|           which are not confined within original epidemic. These are                 \
+#|           of \"no-fly zone\", highlighting infections from `innov_candidate`         \
+#|           which are not confined within original epidemic. These infections are      \
 #|           described as `prior_relevant_infections`. [`introduction-prior-relevant-removals`]"  
 figure15 = new_figure(figure3,
     Guide.annotation(compose(context(),
@@ -1098,7 +1100,7 @@ figure15 = new_figure(figure3,
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     )
 depict("introduction-prior-relevant-removals", new_figure(figure15,
@@ -1109,12 +1111,12 @@ depict("introduction-prior-relevant-removals", new_figure(figure15,
 Now we perform a careful computation of the "true" boundary: we
 work backwards through the `prior_relevant_infections` as follows. 
 
-First we make a copy `nfz3` of `nfz2`. Then
+First we make a copy `nofly_envelope` of `nofly_envelope0`. Then
 
-(i) We discard infections connecting infectious zone to lower boundary `nfz3` of \NOFLYZONE;
-(ii) If an infection has `infectee` on the lower boundary `nfz3` of \NOFLYZONE
+(i) We discard infections connecting infectious zone to lower boundary `nofly_envelope` of \NOFLYZONE;
+(ii) If an infection has `infectee` on the lower boundary `nofly_envelope` of \NOFLYZONE
 and `target` above original epidemic, then 
-we bring the lower boundary `nfz3` of \NOFLYZONE down to `target` time line
+we bring the lower boundary `nofly_envelope` of \NOFLYZONE down to `target` time line
 and discard infection.
 (iii) We retain all other infections in a new structure.
 
@@ -1123,43 +1125,90 @@ Step (ii) involves an update of the boundary, so this has to be done using a loo
 
 
 ```{julia}
-current_level, prior_level = initial.n - 1, initial.n
-prior_boundary_time, current_boundary_time = nfz2[prior_level], nfz2[current_level]
-nfz3 = []
+previous_level, current_level = initial.n, initial.n - 1                                        # <1>
+previous_boundary_time, current_boundary_time =                                                 # <2>
+    nofly_envelope0[previous_level], nofly_envelope0[current_level]                 # <2>
+nofly_envelope = []                                                                       # <2>
+prior_relevant_infections2 = Infection[] ;                                                      # <3>
+```
+1. Here `previous_level` is the last level fully processed,
+while `current_level` is the level being processed.
+Note that the setting of `previous_boundary_time` at the initial 
+level of `previous_level=initial.n`, namely nofly_envelope0[previous_level], 
+is automatically **correct**, since there are no higher levels to be protected against.
+2. Initialize `current_boundary_time`  at the initial 
+level of `previous_level=initial.n`
+using the simple monotonic `nofly_envelope0`. This however may be changed
+under the influence of the higher level `previous_level=initial.n`.
+3. `prior_relevant_infections2` is a list of retained `Infection`s.
 
-prior_relevant_infections2 = Infection[]
-for z ∈ reverse(prior_relevant_infections)
-    if !(current_boundary_time < z.t ≤ prior_boundary_time && 
-                    z.infectee == prior_level && z.t ≥ evol1_2.start_times[z.target])
-        push!(prior_relevant_infections2, z)
-    end
-    if current_boundary_time < z.t ≤ prior_boundary_time && z.infectee == prior_level &&
+
+The next piece of code is tricky!
+
+
+{{< pagebreak >}}
+
+
+```{julia}
+for z ∈ reverse(prior_relevant_infections)                                                      # <4> 
+
+    if !(current_boundary_time < z.t ≤ previous_boundary_time &&                                # <5>
+                    z.infectee == previous_level && z.t ≥ evol1_2.start_times[z.target])        # <5>
+        push!(prior_relevant_infections2, z)                                                    # <5>
+    end                                                                                         # <5>
+
+    if current_boundary_time < z.t ≤ previous_boundary_time && z.infectee == previous_level &&        # <6>
                     z.t < evol1_2.start_times[z.target]
-        push!(nfz3, prior_boundary_time)
-        current_level, prior_level = current_level - 1, current_level
-        current_boundary_time, prior_boundary_time = nfz2[current_level], z.t
+        push!(nofly_envelope, previous_boundary_time)
+        previous_level, current_level = current_level, current_level - 1
+        previous_boundary_time, current_boundary_time = z.t, nofly_envelope0[current_level]
+        
     elseif z.t ≤ current_boundary_time
         while z.t ≤ current_boundary_time && current_level > 1 
-            push!(nfz3, prior_boundary_time)
-            current_level, prior_level = current_level - 1, current_level
-            current_boundary_time, prior_boundary_time = nfz2[current_level], current_boundary_time
+            push!(nofly_envelope, previous_boundary_time)
+            current_level, previous_level = current_level - 1, current_level
+            current_boundary_time, previous_boundary_time = 
+                nofly_envelope0[current_level], current_boundary_time
         end
         if current_level == 1
-            push!(nfz3, prior_boundary_time)
+            push!(nofly_envelope, previous_boundary_time)
             break
         end
     end
-end
 
+end ;
+```
+```
+4. Work backwards through incidents in `prior_relevant_infections` (this is the big `do`-loop).
+5. An incident `z` is added to `prior_relevant_infections2` if (a) later than the
+`current_boundary_time` (so adding extra risk!) and no later than the `previous_boundary_time`
+(since otherwise will not present further risk other than what has been previously considered); 
+also (b) `z.infectee` is at `previous_level`;
+**but** (c) the incident is later than infection of the `z.target` level.
+Note that by construction of `current_infections` the incident is no later than the removal
+time relevant to its `target` level, and `prior_relevant_infections ⊆ current_infections`.
+Then this incident `z` potentially leads to infection of the \NOFLYZONE: however it may do so
+if `z.infectee-1` is infected at `z.t`, so AARGH
 
+6. If 5(a) and (b) hold but (c) does not hold (**room to be more concise?**) then we have
+previously worked
+through all the incidents that might matter. Add `previous_boundary_time` to the `nofly_envelope`,
+shift down `current_level` and `previous_level`, set `z.t` to be `previous_boundary_time` (because if it
+gets infected then 
+
+```{julia}
 x0 = initial.i + initial.r
-nfz3 = reverse(append!(nfz3, repeat([0.0], x0)))
+nofly_envelope = reverse(append!(nofly_envelope, repeat([0.0], x0)))
 levels = (1:initial.n).+1
-flow_nofly = DataFrame(t=nfz3, y=levels, top=(initial.n)+1)
+flow_nofly = DataFrame(t=nofly_envelope, y=levels, top=(initial.n)+1)
 
 
 xy_flow_nofly = table_trajectories2(flow_nofly; theme=theme)
 deleteat!(xy_flow_nofly, [(2*initial.n)-1])
+
+header = [:t, :y]
+Markdown.parse(pretty_table(String, xy_flow_nofly[:,header], 
+  header=header, tf=tf_markdown, formatters = ft_round(1, [1]), alignment=[:r, :r]))
 ```
 
 ::: {.callout-warning}
@@ -1198,7 +1247,7 @@ figure16 = new_figure(figure3,
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nfz2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     ) ;
 

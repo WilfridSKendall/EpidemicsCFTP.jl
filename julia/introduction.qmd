@@ -1178,7 +1178,6 @@ for z ∈ reverse(prior_relevant_infections)                                    
 
 end ;
 ```
-```
 4. Work backwards through incidents in `prior_relevant_infections` (this is the big `do`-loop).
 5. An incident `z` is added to `prior_relevant_infections2` if (a) later than the
 `current_boundary_time` (so adding extra risk!) and no later than the `previous_boundary_time`

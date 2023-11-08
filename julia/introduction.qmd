@@ -1109,218 +1109,137 @@ depict("introduction-prior-relevant-removals", new_figure(figure15,
 ```
 
 Now we perform a careful computation of the "true" boundary: we
-work backwards through the `prior_relevant_infections` as follows. 
-
-First we make a copy `nofly_envelope` of `nofly_envelope0`. Then
-
-(i) We discard infections connecting infectious zone to lower boundary `nofly_envelope` of \NOFLYZONE;
-(ii) If an infection has `infectee` on the lower boundary `nofly_envelope` of \NOFLYZONE
-and `target` above original epidemic, then 
-we bring the lower boundary `nofly_envelope` of \NOFLYZONE down to `target` time line
-and discard infection.
-(iii) We retain all other infections in a new structure.
-
-Step (ii) involves an update of the boundary, so this has to be done using a loop rather than a list comprehension.
-
-
-
-```{julia}
-previous_level, current_level = initial.n, initial.n - 1                                        # <1>
-previous_boundary_time, current_boundary_time =                                                 # <2>
-    nofly_envelope0[previous_level], nofly_envelope0[current_level]                 # <2>
-nofly_envelope = []                                                                       # <2>
-prior_relevant_infections2 = Infection[] ;                                                      # <3>
-```
-1. Here `previous_level` is the last level fully processed,
-while `current_level` is the level being processed.
-Note that the setting of `previous_boundary_time` at the initial 
-level of `previous_level=initial.n`, namely nofly_envelope0[previous_level], 
-is automatically **correct**, since there are no higher levels to be protected against.
-2. Initialize `current_boundary_time`  at the initial 
-level of `previous_level=initial.n`
-using the simple monotonic `nofly_envelope0`. This however may be changed
-under the influence of the higher level `previous_level=initial.n`.
-3. `prior_relevant_infections2` is a list of retained `Infection`s.
-
-
-The next piece of code is tricky!
-
-
-{{< pagebreak >}}
-
-
-```{julia}
-for z ∈ reverse(prior_relevant_infections)                                                      # <4> 
-
-    if !(current_boundary_time < z.t ≤ previous_boundary_time &&                                # <5>
-                    z.infectee == previous_level && z.t ≥ evol1_2.start_times[z.target])        # <5>
-        push!(prior_relevant_infections2, z)                                                    # <5>
-    end                                                                                         # <5>
-
-    if current_boundary_time < z.t ≤ previous_boundary_time && z.infectee == previous_level &&        # <6>
-                    z.t < evol1_2.start_times[z.target]
-        push!(nofly_envelope, previous_boundary_time)
-        previous_level, current_level = current_level, current_level - 1
-        previous_boundary_time, current_boundary_time = z.t, nofly_envelope0[current_level]
-        
-    elseif z.t ≤ current_boundary_time
-        while z.t ≤ current_boundary_time && current_level > 1 
-            push!(nofly_envelope, previous_boundary_time)
-            current_level, previous_level = current_level - 1, current_level
-            current_boundary_time, previous_boundary_time = 
-                nofly_envelope0[current_level], current_boundary_time
-        end
-        if current_level == 1
-            push!(nofly_envelope, previous_boundary_time)
-            break
-        end
-    end
-
-end ;
-```
-4. Work backwards through incidents in `prior_relevant_infections` (this is the big `do`-loop).
-5. An incident `z` is added to `prior_relevant_infections2` if (a) later than the
-`current_boundary_time` (so adding extra risk!) and no later than the `previous_boundary_time`
-(since otherwise will not present further risk other than what has been previously considered); 
-also (b) `z.infectee` is at `previous_level`;
-**but** (c) the incident is later than infection of the `z.target` level.
-Note that by construction of `current_infections` the incident is no later than the removal
-time relevant to its `target` level, and `prior_relevant_infections ⊆ current_infections`.
-Then this incident `z` potentially leads to infection of the \NOFLYZONE: however it may do so
-if `z.infectee-1` is infected at `z.t`, so AARGH
-
-6. If 5(a) and (b) hold but (c) does not hold (**room to be more concise?**) then we have
-previously worked
-through all the incidents that might matter. Add `previous_boundary_time` to the `nofly_envelope`,
-shift down `current_level` and `previous_level`, set `z.t` to be `previous_boundary_time` (because if it
-gets infected then 
-
-```{julia}
-x0 = initial.i + initial.r
-nofly_envelope = reverse(append!(nofly_envelope, repeat([0.0], x0)))
-levels = (1:initial.n).+1
-flow_nofly = DataFrame(t=nofly_envelope, y=levels, top=(initial.n)+1)
-
-
-xy_flow_nofly = table_trajectories2(flow_nofly; theme=theme)
-deleteat!(xy_flow_nofly, [(2*initial.n)-1])
-```
-
-::: {.callout-warning}
-\NOFLYZONE code needs checking!
-:::
-
+work backwards through the `prior_relevant_infections` 
+as explained by the annotations to the code below. 
 ```{julia}
 function compute_nofly(initial, ev, innov, early_inactivated_removals)
+		
+	envelope0 = repeat([0.0], initial.n)                                       # <1>
+	for removal ∈ early_inactivated_removals  # ev.removals?                   # <1>
+	    envelope0[removal.target] = max(envelope0[removal.target], removal.t)  # <1>
+	end                                                                        # <1>
+	envelope = accumulate(max, envelope0)                                      # <1>
 	
-	# Here `envelope` is **a list of times** indexed by time line ("level"),
-	# where each time is initially defined as the supremum of times of 
-	# **inactivated** `Removal`s at given level or below. So the envelope
-	# increases monotonically with level.
+	processed_infections = AbstractInfection[]                                 # <2>
 	
-	# Here is the initial computation of `envelope`.
-	envelope0 = repeat([0.0], initial.n)
-	for removal ∈ early_inactivated_removals
-	    envelope0[removal.target] = max(envelope0[removal.target], removal.t)
-	end
-	envelope = accumulate(max, envelope0)
-	
-	
-	previous_level, current_level = initial.n, initial.n - 1
-	
-	# The list `processed_infections` of processed `AbstractInfection`s will
-	# eventually store (initially in reverse time order) a transformation of each
-	# infection supplied by the new `Innovation` `innov`.
-	processed_infections = AbstractInfection[]
-	
-	# Narrative: work backwards through `Infection`s supplied by `innov`,
-	# determining in each case how to transform the supplied `Infection`
-	# when adding it to the list `processed_infections`.
-	for z ∈ reverse(innov.infections)
+	for z ∈ reverse(sort(innov.infections, lt=isearlier))                      # <3>
 	    
-	    # If the `Infection` `z` has `target` on the removed portion of a level
-	    # then it will never be activated, so add `z` as a `KilledInfection`.
-	    if (z.t ≥ ev.finis_times[z.target])
-	        push!(processed_infections, KilledInfection(z))
-	        continue
-	    end
+	    if (z.t ≥ ev.finis_times[z.target])                                    # <4>
+	        push!(processed_infections, KilledInfection(z))                    # <4>
+            # @info "$(KilledInfection(z))"
+	        continue                                                           # <4>
+	    end                                                                    # <4>
 	    
-	    # If the iteration has progressed to this point 
-	    @assert(z.t < ev.finis_times[z.target])
+	    # At this stage of the iteration 
+	    # @assert(z.t < ev.finis_times[z.target])
 	    #
-	    # If the `Infection` `z` potentially infects a level _later_ than the 
-	    # current `envelope` at that level, then its activation will never
-	    # break the conditioning (**needs proof!**), so add `z` as-is.
-	    # (I think the point is: since we are working backwards in time, once
-	    # `z.t` is considered then `envelope` is frozen from time `t` onwards.
-	    if (z.t ≥ envelope[z.infectee])
-	        push!(processed_infections, z)
-	        continue
-	    end
+        if (z.t ≥ envelope[z.infectee])                                        # <5>
+	        push!(processed_infections, z)                                     # <5>
+	        continue                                                           # <5>
+	    end                                                                    # <5>
 	    
-	    # If the iteration has progressed to this point 
-	    @assert(z.t < ev.finis_times[z.target])
-	    @assert(z.t < envelope[z.infectee])
+	    # At this stage of the iteration 
+	    # @assert(z.t < ev.finis_times[z.target])
+	    # @assert(z.t < envelope[z.infectee])
 	    #
-	    # However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
-	    # infection of the level immediately below `z.infectee` will then not be
-	    # allowed at this time. So again add `z` as-is.
-	    if (z.t < envelope[z.infectee - 1])
-	        push!(processed_infections, z)
-	        continue
-	    end
+        if (z.t < envelope[z.infectee - 1])                                    # <6>
+	        push!(processed_infections, z)                                     # <6>
+	        continue                                                           # <6>
+	    end                                                                    # <6>
 	    
-	    # If the iteration has progressed to this point 
-	    @assert(z.t < envelope[z.infectee])
-	    @assert(z.t ≥ envelope[z.infectee - 1])
-	    @assert(z.t < ev.finis_times[z.target])
-	    
-	    # Suppose z.t ≥ ev.start_times[z.target]`: then an issue would arise if the
-	    # level at `z.infectee - 1` were to become infected before `z.t`. So we
-	    # must then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
-	    # preclude this possibility. We also transform `z` to a
-	    # `NoFlyInfection` when we add it to `processed_infections`, to signal
-	    # that it should never become infected.
-	    if (z.t ≥ ev.start_times[z.target])
-	        envelope[z.infectee - 1] = z.t
-	        push!(processed_infections, NoFlyInfection(z))
-	        continue
-	    end
-	    
-	    # If the iteration has progressed to this point 
-	    @assert(z.t < envelope[z.infectee])
-	    @assert(z.t ≥ envelope[z.infectee - 1])
-	    @assert(z.t < ev.start_times[z.target])
+	    # At this stage of the iteration 
+	    # @assert(z.t < envelope[z.infectee])
+	    # @assert(z.t ≥ envelope[z.infectee - 1])
+	    # @assert(z.t < ev.finis_times[z.target])
 	    #
-	    # Consider now that potential `Infection`s to be treated later in this
-	    # iteration must have time mark earlier than `z.t`. If one of these were
-	    # to infect the level `z.infectee - 1` then it would follow by monotonicity
-	    # that the `z.target` level would become infected by that time `z.t`; and 
-	    # thus would create an infection of the `z.infectee` level at time `z.t`. 
-	    # In order for this to be prevented, we need to extend the `envelope` 
-	    # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
-	    # to a `NoFlyInfection` when we add it to `processed_infections`, to
-	    # signal that it should never become infected.
-	    envelope[z.infectee - 1] = z.t
-	    push!(processed_infections, NoFlyInfection(z))
+	    if (z.t ≥ ev.start_times[z.target])                                    # <7>
+            if (z.t < ev.start_times[z.infectee - 1])                          # <8>
+                envelope[z.infectee - 1] = z.t                                 # <8>
+                push!(processed_infections, NoFlyInfection(z))                 # <8>
+                # @info "$(NoFlyInfection(z))"
+                continue                                                       # <8>
+            else                                                               # <8>
+                push!(processed_infections, CancelledInfection(z))             # <8>
+                # @info "$(CancelledInfection(z))"
+                continue                                                       # <8>
+            end                                                                # <8>
+	    end
+	    
+	    # At this stage of the iteration 
+	    # @assert(z.t < envelope[z.infectee])
+	    # @assert(z.t ≥ envelope[z.infectee - 1])
+	    # @assert(z.t < ev.start_times[z.target])
+	    # 
+	    envelope[z.infectee - 1] = z.t                                         # <9>
+	    push!(processed_infections, NoFlyInfection(z))                         # <9>
+        # @info "$(NoFlyInfection(z))"
 	
 	end
 	
-	flow_nofly = DataFrame(t=nofly_envelope, y=(1:initial.n).+1, top=(initial.n)+1)
+	flow_nofly = DataFrame(t=envelope, y=(1:initial.n).+1, top=(initial.n)+1)
 	xy_flow_nofly = table_trajectories2(flow_nofly; theme=theme)
 	deleteat!(xy_flow_nofly, [(2*initial.n)-1])
 	
-	return flow_nofly, xy_flow_nofly
+	return processed_infections, flow_nofly, xy_flow_nofly
 end ;
 ```
+1. Here is the initial computation of `envelope`, a **list of times** 
+indexed by time line ("level"), where each time is initially defined as
+the supremum of times of **inactivated** `Removal`s at given level or 
+below. So the envelope increases monotonically with level.
+2. The list `processed_infections` of processed `AbstractInfection`s will
+eventually store (initially in reverse time order) a transformation of
+each infection supplied by the new `Innovation` `innov`.
+3. Iteration: work backwards through `Infection`s supplied by `innov`,
+determining in each case how to transform the supplied `Infection`
+when adding it to the list `processed_infections`.
+4. If the `Infection` `z` has `target` on the removed portion of a level
+then it will never be activated, so add `z` as a `KilledInfection`.
+5. If the `Infection` `z` potentially infects a level at a _later time_ 
+than the current `envelope` at that level, then its activation will
+never break the conditioning (**needs proof!**), so add `z` as-is.
+(I think the point is: since we are working backwards in time, once
+`z.t` is considered then `envelope` is frozen from time `t` onwards.)
+6. However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
+infection of the level immediately below `z.infectee` will then not be
+allowed at this time. So again add `z` as-is.
+7. Suppose `z.t ≥ ev.start_times[z.target]`: then an issue would arise
+if the level at `z.infectee - 1` were to become infected before
+`z.t`. One of two cases must hold:
+8. Case (a): Suppose `z.t < ev.start_times[z.infectee - 1]`.
+Then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
+preclude the time line getting infected, and also transform `z` to a
+`NoFlyInfection` when added to `processed_infections`, to signal
+that it should never become infected.  
+Case (b): Suppose `z.t ≥ ev.start_times[z.infectee - 1]`.
+Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
+problem, since this level is infected at time `z.t`. Therefore we
+transform `z` to a `CancelledInfection` when we add it to 
+`processed_infections`, so that it is treated as an
+`InoperativeInfection`.
+9. Consider now that potential `Infection`s to be treated later in this
+iteration must have time mark earlier than `z.t`. If one of these were
+to infect the level `z.infectee - 1` then it would follow by monotonicity
+that the `z.target` level would become infected by that time `z.t`; and 
+thus would create an infection of the `z.infectee` level at time `z.t`. 
+In order for this to be prevented, we need to extend the `envelope` 
+at level `z.infectee - 1` up to time `z.t`. We also transform `z`
+to a `NoFlyInfection` when we add it to `processed_infections`, to
+signal that it should never become infected.
+
+
+
 
 ```{julia}
 #| echo: false
 header = [:t, :y]
-flow_nofly1, xy_flow_nofly1 = 
+processed_infections, flow_nofly1, xy_flow_nofly1 = 
     compute_nofly(initial, evol1_2, innov_candidate, early_inactivated_removals)
 Markdown.parse(pretty_table(String, xy_flow_nofly1[:,header], 
-  header=header, tf=tf_markdown, formatters = ft_round(1, [1]), alignment=[:r, :r]))
+  header=header, tf=tf_markdown, 
+#  formatters = ft_round(3, [1]), 
+  formatters = ft_printf("%4.2f", [1]), 
+  alignment=[:r, :r]))
 ```
 
 ```{julia}
@@ -1333,18 +1252,20 @@ figure16 = new_figure(figure3,
         draw_incident(perpetuated_infections, activated=true, theme=theme))),
     Guide.annotation(compose(context(),
         EpidemicsUtilities.draw_connect(perpetuated_infections, activated=true, theme=theme))),
+
     Guide.annotation(compose(context(),
-         draw_feasible_incident(prior_relevant_infections2, 2, inscribe=false, theme=theme))),
+         draw_incident(processed_infections, theme=theme))),
     Guide.annotation(compose(context(),
-         draw_feasible_incident(posterior_relevant_infections, 1, inscribe=false, theme=theme))),
+         draw_connect(processed_infections, theme=theme))),
+
     Guide.annotation(compose(context(),
         draw_incident(early_inactivated_removals, theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
-   Guide.annotation(compose(context(),
-       draw_activated_elements(initial, last_feasible_history, theme=theme))),
+
     Guide.annotation(compose(context(),
-         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
+       draw_activated_elements(initial, last_feasible_history, theme=theme))),
+
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.dormant, default_color=theme.lastfeasible2)),
     layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:vh),

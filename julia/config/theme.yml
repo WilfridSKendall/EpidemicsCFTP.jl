@@ -9,9 +9,9 @@ colour:
     CRemoval:                  "purple"
     Infection:                 "orange"
     PInfection:                "darkgreen"
-    KilledInfection:           "gray80"           
+    KilledInfection:           "gray90"           
     NoFlyInfection:            "hotpink2"
-    CancelledInfection:        "violetred1"
+    CancelledInfection:        "gray50"
     KilledRemoval:             "burlywood1"
 
 # named colour for other purposes

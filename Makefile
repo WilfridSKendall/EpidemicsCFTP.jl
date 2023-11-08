@@ -25,6 +25,8 @@ view: serve
 serve: documentation
 	pushd docs ; mkdocs serve
 
+online: docs/build/index.md
+	
 doctest:
 	@$(JULIA) --color=yes docs/make_doctests.jl
 

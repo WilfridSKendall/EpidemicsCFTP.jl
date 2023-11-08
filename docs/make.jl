@@ -27,9 +27,13 @@ makedocs(;
     ],
 )
 
+deploydocs(;
+    repo="github.com/WilfridSKendall/EpidemicsCFTP.jl",
+)
+        
 # deploydocs(;
 #     repo="github.com/WilfridSKendall/EpidemicsCFTP.jl",
-# #     julia  = "1.5",
+# #     julia  = "1.9",
 # #     osname = "linus"
 # )
 

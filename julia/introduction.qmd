@@ -149,9 +149,7 @@ perpetuated infections `P`,
 potential removals `R`
 and conditioned removals `C`),
 ```{julia}
-A = AbstractInfection;
-I = Infection;      P = PInfection;
-R = Removal;        C = CRemoval;
+A = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
 
 innov1 = Innovation(initial.n,
     A[  I(0.11, 2, 3), I(0.2, 2, 5), P(0.4, 1, 2), I(0.5, 2, 5),  I(0.6, 2, 4), I(0.75, 1, 2), 
@@ -164,7 +162,12 @@ innov1 = Innovation(initial.n,
 @fig-introduction-key is a graphical key for
 incidents (using script letters such as
 `I ⇒ ℐ`, `P ⇒ 𝒫`, `R ⇒ ℛ`, `C ⇒ 𝒞`).
-
+There is a variety of different kinds of incidents: 
+`NoFlyInfection`, `ExpungedInfection` are when computing no-fly zone (respectively, infections which could be
+activated, but for whom activation would signal infection of no fly zone and therefore an error; and infections
+which are not permitted because they would immediately cause violation of the conditioning);
+`KilledInfection` and `KilledRemoval` are rooted in the removed zone so will never be activated.
+ 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-key
@@ -253,7 +256,7 @@ held in the `Innovations`
 structure `innov1` supplying subsequent potential incidents. 
 @tbl-evolution tabulates the epidemic trajectory 
 up to time `duration=2.0`
-for initial state `initial` and a particular innovations `innov1`.
+for initial state `initial` and a particular `Innovation` structure `innov1`.
 ```{julia}
 #| echo: false 
 evol1 = Evolution(initial, innov1)
@@ -1282,7 +1285,8 @@ Now compute the new innovation and evolution.
 ```{julia}
 innov2 = Innovation(initial.n, 
                 sort(processed_infections ∪ 
-                    [z for z in last_feasible_history if isa(z, AbstractInfection)], lt=isearlier), 
+                    [z for z in last_feasible_history if isa(z, AbstractInfection)], 
+                            lt=isearlier), 
                 early_inactivated_removals, 
                 evol1_2.cremovals) ;
 evol2  = Evolution(initial, innov2) ; 
@@ -1320,7 +1324,7 @@ figure16 = new_figure(figure3,
         linewidth(theme.boundary), stroke(theme.forbid2))),
     
     # Draw Nofly region and boundary
-    layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:vh),
+    layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:hv),
         style(line_width=theme.trail, default_color=theme.forbid2)),
     layer(xy_flow_nofly1, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.forbid1)),
@@ -1385,7 +1389,7 @@ figure17 = new_figure(incidents_template,
         linewidth(theme.boundary), stroke(theme.forbid2))),
     
     # Draw Nofly region and boundary
-    layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:vh),
+    layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:hv),
         style(line_width=theme.trail, default_color=theme.forbid2)),
     layer(xy_flow_nofly1, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.forbid1)),

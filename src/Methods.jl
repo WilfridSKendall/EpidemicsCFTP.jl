@@ -60,7 +60,7 @@ Tests whether an incident should be activated for a given state.
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 6))
 true
-julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), CancelledInfection(0.1, 4, 6))
+julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), ExpungedInfection(0.1, 4, 6))
 false
 julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), Infection(0.1, 4, 5))
 false
@@ -132,7 +132,7 @@ julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), KilledRemoval(0.2, 4))
 SIR₀.₂₀(1:2:3)
 julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), Infection(0.2, 4, 6))
 SIR₀.₂₀(0:3:3)
-julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), CancelledInfection(0.2, 4, 6))
+julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), ExpungedInfection(0.2, 4, 6))
 SIR₀.₂₀(1:2:3)
 ```
 """

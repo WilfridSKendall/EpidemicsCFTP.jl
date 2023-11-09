@@ -389,7 +389,7 @@ end
 
 
 """
-    CancelledInfection(::Float64, ::Int, ::Int)
+    ExpungedInfection(::Float64, ::Int, ::Int)
 
 Represent an infection using a sub-type of [`OperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
@@ -403,23 +403,23 @@ to an error being raised when a [`Removal`](@ref)
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> CancelledInfection(0.2, 1, 2)
+julia> ExpungedInfection(0.2, 1, 2)
 𝒳₀.₂₀¹⁻²
 julia> z = Infection(0.2, 1, 2) ;
 
-julia> CancelledInfection(z)
+julia> ExpungedInfection(z)
 𝒳₀.₂₀¹⁻²
 ```
 """
-struct CancelledInfection <: NonOperativeInfection
+struct ExpungedInfection <: NonOperativeInfection
 
     kind      ::String
     t         ::Float64
     target    ::Int
     infectee  ::Int
     
-    function CancelledInfection(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
-        noun = "CancelledInfection($t, $target, $infectee)"
+    function ExpungedInfection(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
+        noun = "ExpungedInfection($t, $target, $infectee)"
         if infectee ≤ target
             throw(DomainError(noun, "disordered marks"))
         elseif target ≤ 0
@@ -429,8 +429,8 @@ struct CancelledInfection <: NonOperativeInfection
         end
     end
     
-    function CancelledInfection(z::AbstractInfection)
-        CancelledInfection(z.t, z.target, z.infectee)
+    function ExpungedInfection(z::AbstractInfection)
+        ExpungedInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -714,7 +714,7 @@ julia> initial    = SIR(0.0, 2, 1, 0)
 SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
-julia> infections = [NoFlyInfection(0,2,3), CancelledInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
+julia> infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
 AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 julia> removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)]
 AbstractRemoval[ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²]

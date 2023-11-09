@@ -27,7 +27,7 @@ export KilledRemoval
 
 export OperativeInfection, NonOperativeInfection
 export Infection, PInfection
-export KilledInfection, NoFlyInfection, CancelledInfection
+export KilledInfection, NoFlyInfection, ExpungedInfection
 
 export SIR
 

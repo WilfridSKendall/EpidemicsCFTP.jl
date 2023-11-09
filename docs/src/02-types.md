@@ -79,15 +79,14 @@ NonOperativeInfection
 ```
 Concrete sub-types are tabulated as follows:
 
-
-| **Type of `AbstractInfection`** | **Sub-type of ...**     | **Explanation**                                          |
-|:--------------------------------|---------|:-------------------------------------------------------------------------|
-| `Infection`                     | `OperativeInfection`    | Supplied by new `Innovation`                             | 
-| `PInfection`                    | `OperativeInfection`    | Held over from previous `Innovation`                     | 
-| `NoFlyInfection`                | `OperativeInfection`    | `infectee` leads to "no-fly" zone                        | 
-|                                 |                         |----------------------------------------------------------|
-| `KilledInfection`               | `NonOperativeInfection` | `target` removed                                         | 
-| `CancelledInfection`            | `NonOperativeInfection` | `target` infected, `infectee` leads to "no-fly" zone     | 
+| **Type of `AbstractInfection`** | **Sub-type of ...**     | **Explanation**                                      |
+|:--------------------------------|---------|:---------------------------------------------------------------------|
+| `Infection`                     | `OperativeInfection`    | Supplied by new `Innovation`                         |
+| `PInfection`                    | `OperativeInfection`    | Held over from previous `Innovation`                 |
+| `NoFlyInfection`                | `OperativeInfection`    | `infectee` leads to "no-fly" zone                    |
+|                                 |                         |------------------------------------------------------|
+| `KilledInfection`               | `NonOperativeInfection` | `target` removed                                     |
+| `ExpungedInfection`             | `NonOperativeInfection` | `target` infected, `infectee` leads to "no-fly" zone |
 
 #### Three different kinds of `OperativeInfection`s
 `Infection` and `PInfection` are specific potential infection incidents;
@@ -104,12 +103,12 @@ NoFlyInfection
 
 #### Two different kinds of `NonOperativeInfection`s
 `KilledInfection`,
-`CancelledInfection` are specific non-operative infection incidents as tabulated.
+`ExpungedInfection` are specific non-operative infection incidents as tabulated.
 They are _never_ realized!
 
 ```@docs
 KilledInfection
-CancelledInfection
+ExpungedInfection
 ```
 
 ## Representing different kinds of environments

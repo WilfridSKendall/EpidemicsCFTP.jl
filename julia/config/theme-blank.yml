@@ -6,7 +6,7 @@ colour:
     PInfection:                "white"
     KilledInfection:           "white"           
     NoFlyInfection:            "white"
-    CancelledInfection:        "white"
+    ExpungedInfection:         "white"
     KilledRemoval:             "white"
 
 

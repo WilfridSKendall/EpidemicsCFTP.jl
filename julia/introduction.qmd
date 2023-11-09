@@ -168,13 +168,10 @@ incidents (using script letters such as
 ```{julia}
 #| echo: false
 #| label: fig-introduction-key
-#| fig-cap: "Reading from left to right, the figure displays:                               \
-#|           `Infection`, `PInfection`, `NoFlyInfection`, `CancelledInfection`,             \
-#|           `KilledInfection`, then `Removal`, `KilledRemoval`, `CRemoval`.                \
-#|           Each is followed by its activated version (though this will not be used for    \
-#|           `NoFlyInfection`, `CancelledInfection`, `KilledInfection` and `KilledRemoval`  \
-#|           incidents, for which activation would signify an error).                       \
-#|           Infection incidents possess arrows pointing to their `infectee` time lines.    \
+#| fig-cap: "Each `AbstractIncident` is followed by its activated version (though this will \
+#|           not be used for `NoFlyInfection`, `ExpungedInfection`, `KilledInfection` and   \
+#|           `KilledRemoval` incidents, for which activation would signify an error).       \
+#|           `Infection` incidents possess arrows pointing to their `infectee` time lines.  \
 #|           [`introduction-key`]"
 function new_figure(old_figure, gadfly_list...)
     figure = deepcopy(old_figure)
@@ -200,25 +197,45 @@ push!(key_template,
     ) ;
 
 x, dx = 0.1, 0.18
+x1    = x + 0.5dx
 
 depict("introduction-key", new_figure(key_template,
     Guide.title("Key to graphical depiction of incidents"),    
     Guide.annotation(compose(context(),
         draw_elements([I(x,1,3), P(x+2dx,2,3), 
-            NoFlyInfection(x+4dx,1,3), CancelledInfection(x+6dx,2,3), 
-            KilledInfection(x+8dx,1,3), R(x+10dx,2), 
-            KilledRemoval(x+12dx,1), C(x+14dx,2)], theme=theme),
-        draw_elements([I(x+dx,1,3), P(x+3dx,2,3), 
-            NoFlyInfection(x+5dx,1,3), CancelledInfection(x+7dx,2,3), 
+            NoFlyInfection(x+4dx,1,3), 
+            ExpungedInfection(x+6dx,2,3), 
+            KilledInfection(x+8dx,1,3),
+            R(x+10dx,2), 
+            KilledRemoval(x+12dx,1), 
+            C(x+14dx,2)], theme=theme),
+        draw_elements([I(x+dx,1,3), 
+            P(x+3dx,2,3), 
+            NoFlyInfection(x+5dx,1,3), 
+            ExpungedInfection(x+7dx,2,3), 
             KilledInfection(x+9dx,1,3), 
-            R(x+11dx,2), KilledRemoval(x+13dx,1), 
+            R(x+11dx,2), 
+            KilledRemoval(x+13dx,1), 
             C(x+15dx,2)], theme=theme),
-        draw_elements([I(x+dx,1,3), P(x+3dx,2,3), 
-            NoFlyInfection(x+5dx,1,3), CancelledInfection(x+7dx,2,3), 
+        draw_elements([I(x+dx,1,3), 
+            P(x+3dx,2,3), 
+            NoFlyInfection(x+5dx,1,3), 
+            ExpungedInfection(x+7dx,2,3), 
             KilledInfection(x+9dx,1,3), 
-            R(x+11dx,2), KilledRemoval(x+13dx,1), 
+            R(x+11dx,2), 
+            KilledRemoval(x+13dx,1), 
             C(x+15dx,2)], activated=true, theme=theme),
-        ))
+        )),
+    Guide.annotation(compose(context(),
+        text(x1,      0.53, "Infection",          hcenter),
+        text(x1+ 2dx, 0.35, "PInfection",         hcenter),
+        text(x1+ 4dx, 0.53, "NoFlyInfection",     hcenter),
+        text(x1+ 6dx, 0.35, "ExpungedInfection",  hcenter),
+        text(x1+ 8dx, 0.53, "KilledInfection",    hcenter),
+        text(x1+10dx, 0.35, "Removal",            hcenter),
+        text(x1+12dx, 0.53, "Killed Removal",     hcenter),
+        text(x1+14dx, 0.35, "CRemoval",           hcenter),
+        fontsize(6pt))),
     ))
 ```
 ```{julia}
@@ -1174,8 +1191,8 @@ function compute_nofly(initial, ev, innov, early_inactivated_removals)
                 # @info "$(NoFlyInfection(z))"
                 continue                                                       # <8>
             else                                                               # <8>
-                push!(processed_infections, CancelledInfection(z))             # <8>
-                # @info "$(CancelledInfection(z))"
+                push!(processed_infections, ExpungedInfection(z))              # <8>
+                # @info "$(ExpungedInfection(z))"
                 continue                                                       # <8>
             end                                                                # <8>
 	    end
@@ -1229,7 +1246,7 @@ that it should never become infected.
 Case (b): Suppose `z.t ≥ ev.start_times[z.infectee - 1]`.
 Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
 problem, since this level is infected at time `z.t`. Therefore we
-transform `z` to a `CancelledInfection` when we add it to 
+transform `z` to a `ExpungedInfection` when we add it to 
 `processed_infections`, so that it is treated as an
 `InoperativeInfection`.
 9. Consider now that potential `Infection`s to be treated later in this
@@ -1249,24 +1266,25 @@ signal that it should never become infected.
 #| echo: false
 header = [:t, :y]
 processed_infections, flow_nofly1, xy_flow_nofly1 = 
-    compute_nofly(initial, evol1_2, innov_candidate, early_inactivated_removals)
-Markdown.parse(pretty_table(String, xy_flow_nofly1[:,header], 
-  header=header, tf=tf_markdown, 
-#  formatters = ft_round(3, [1]), 
-  formatters = ft_printf("%4.2f", [1]), 
-  alignment=[:r, :r]))
+    compute_nofly(initial, evol1_2, innov_candidate, early_inactivated_removals) ;
+#Markdown.parse(pretty_table(String, xy_flow_nofly1[:,header], 
+#  header=header, tf=tf_markdown, 
+#  formatters = ft_printf("%5.3f", [1]), 
+#  alignment=[:r, :r]))
+```
+
+```{julia}
+#| echo: false
+xy_flow_last_feasible = table_trajectories2(flow_last_feasible; theme=theme, forward=false) ;
 ```
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-no-fly-zone
 #| fig-cap: "Third (final) iteration of \"no-fly zone\", removing potential infections       \
-#|           which would infect \"no-fly zone\". [`introduction-no-fly-zone`]"  
+#|           which would infect \"no-fly zone\" (and illustrating zone of last feasible      \
+#|           epidemic by shading). [`introduction-no-fly-zone`]"  
 figure16 = new_figure(figure3,
-    Guide.annotation(compose(context(),
-        draw_incident(perpetuated_infections, activated=true, theme=theme))),
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_connect(perpetuated_infections, activated=true, theme=theme))),
 
     Guide.annotation(compose(context(),
          draw_incident(processed_infections, theme=theme))),
@@ -1278,21 +1296,33 @@ figure16 = new_figure(figure3,
     Guide.annotation(compose(context(),
         draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
 
+    # Draw activated incidents from last feasible epidemic (derived from previous
+    # `evolution`!), without inscriptions.
     Guide.annotation(compose(context(),
        draw_activated_elements(initial, last_feasible_history, theme=theme))),
 
-    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
-        style(line_width=theme.dormant, default_color=theme.lastfeasible2)),
+    # Draw, for each time line, nofly boundaries determined by running maximum calculation.
+    Guide.annotation(compose(context(),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
+        linewidth(theme.boundary), stroke(theme.forbid1))),
+        
+    # Draw, for each time line, nofly boundaries determined by latest `Removal`.
+    Guide.annotation(compose(context(),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
+        linewidth(theme.boundary), stroke(theme.forbid2))),
+    
+    # Draw Nofly region and boundary
     layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:vh),
         style(line_width=theme.trail, default_color=theme.forbid2)),
     layer(xy_flow_nofly1, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.forbid1)),
-    Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
-        linewidth(theme.boundary), stroke(theme.forbid1))),
-    Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
-        linewidth(theme.boundary), stroke(theme.forbid2))),
+
+    # Draw Last Feasible Epidemic region and boundary
+    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
+        style(line_width=theme.dormant, default_color=theme.lastfeasible2)),
+    layer(xy_flow_last_feasible, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+        #alpha=[theme.opacity], 
+        style(default_color=theme.lastfeasible1)),
     ) ;
 
 depict("introduction-no-fly-zone", new_figure(figure16,

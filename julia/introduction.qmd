@@ -316,7 +316,7 @@ push!(curves_template,
 
 figure1 = new_figure(curves_template, 
     layer(flow, x=:t, y=:infectives, Geom.step,
-        style(line_width=theme.trail, default_color=theme.colour(I))),
+        style(line_width=theme.boundary, default_color=theme.colour(I))),
     layer(flow, x=:t, y=:removals, Geom.step,
         style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R))),
     layer(flow[flow.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
@@ -357,7 +357,7 @@ figure2 = new_figure(incidents_template,
     layer(flow, x=:t, y=:removals, Geom.step,
         style(line_width=theme.boundary, default_color=theme.colour(R))),
     layer(flow, x=:t, y=:epidemic, Geom.step,
-        style(line_width=theme.trail, default_color=theme.colour(I)))
+        style(line_width=theme.boundary, default_color=theme.colour(I)))
 )
 
 depict("introduction-boundary", 
@@ -1388,6 +1388,10 @@ figure17 = new_figure(incidents_template,
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     
+    # Draw epidemic trajectory
+    layer(flow, x=:t, y=:epidemic, Geom.step,
+        style(line_width=theme.boundary, default_color=theme.colour(I))),
+
     # Draw Nofly region and boundary
     layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:hv),
         style(line_width=theme.trail, default_color=theme.forbid2)),
@@ -1401,11 +1405,9 @@ figure17 = new_figure(incidents_template,
         #alpha=[theme.opacity], 
         style(default_color=theme.lastfeasible1)),
         
-    # Draw boundaries and zones of new epidemic
+    # Draw boundaries and zones of new epidemic, excluding epidemic trajectory
     layer(flow, x=:t, y=:removals, Geom.step,
         style(line_width=theme.boundary, default_color=theme.colour(R))),
-    layer(flow, x=:t, y=:epidemic, Geom.step,
-        style(line_width=theme.trail, default_color=theme.colour(I))),
     layer(xy_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
         alpha=[2theme.opacity], style(default_color=theme.colour(R))),
     layer(xy_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,

@@ -1278,6 +1278,16 @@ processed_infections, flow_nofly1, xy_flow_nofly1 =
 xy_flow_last_feasible = table_trajectories2(flow_last_feasible; theme=theme, forward=false) ;
 ```
 
+Now compute the new innovation and evolution.
+```{julia}
+innov2 = Innovation(initial.n, 
+                sort(processed_infections ∪ 
+                    [z for z in last_feasible_history if isa(z, AbstractInfection)], lt=isearlier), 
+                early_inactivated_removals, 
+                evol1_2.cremovals) ;
+evol2  = Evolution(initial, innov2) ; 
+```
+
 ```{julia}
 #| echo: false
 #| label: fig-introduction-no-fly-zone
@@ -1287,14 +1297,12 @@ xy_flow_last_feasible = table_trajectories2(flow_last_feasible; theme=theme, for
 figure16 = new_figure(figure3,
 
     Guide.annotation(compose(context(),
-         draw_incident(processed_infections, theme=theme))),
-    Guide.annotation(compose(context(),
-         draw_connect(processed_infections, theme=theme))),
+         draw_elements(innov2.infections, theme=theme))),
 
     Guide.annotation(compose(context(),
-        draw_incident(early_inactivated_removals, theme=theme))),
+        draw_incident(innov2.removals, theme=theme))),
     Guide.annotation(compose(context(),
-        draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
+        draw_incident(innov2.cremovals, activated=true, theme=theme))),
 
     # Draw activated incidents from last feasible epidemic (derived from previous
     # `evolution`!), without inscriptions.
@@ -1326,13 +1334,86 @@ figure16 = new_figure(figure3,
     ) ;
 
 depict("introduction-no-fly-zone", new_figure(figure16,
-    Guide.title("Third (final) iteration of no-fly zone"))
+    Guide.title("Third (final) rendering of no-fly zone"))
 )
+```
+::: {.callout-note}
+# TODO
+Introduce `draw_elements` for `AbstractRemoval`s as well. 
+:::
+
+
+Now it remains to add the computation of the _new_ epidemic evolution.
+We need the new flow.
+
+```{julia}
+flow = table_trajectories1(duration, initial, evol2.trajectory) ;
+xy_flow = table_trajectories2(flow, theme=theme) ;
 ```
 
 
+```{julia}
+#| echo: false
+#| label: fig-introduction-one-iteration
+#| fig-cap: "Evolution of epidemic after a single step in algorithmic time but currently \
+#|           omitting zone boundaries, while still depicting no-fly zone and least       \
+#|           feasible zone as determined by previous step and proposed innovation.       \
+#|           [`introduction-one-iteration`]"  
+figure17 = new_figure(incidents_template,
+
+    Guide.annotation(compose(context(),
+         draw_elements(innov2.infections, theme=theme))),
+
+    Guide.annotation(compose(context(),
+        draw_incident(innov2.removals, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(innov2.cremovals, activated=true, theme=theme))),
+
+    # Draw activated incidents from new feasible epidemic (derived from new
+    # `evolution`!), without inscriptions.
+    Guide.annotation(compose(context(),
+       draw_activated_elements(initial, evol2.history, theme=theme))),
+
+    # Draw, for each time line, nofly boundaries determined by running maximum calculation.
+    Guide.annotation(compose(context(),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
+        linewidth(theme.boundary), stroke(theme.forbid1))),
+        
+    # Draw, for each time line, nofly boundaries determined by latest `Removal`.
+    Guide.annotation(compose(context(),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
+        linewidth(theme.boundary), stroke(theme.forbid2))),
+    
+    # Draw Nofly region and boundary
+    layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:vh),
+        style(line_width=theme.trail, default_color=theme.forbid2)),
+    layer(xy_flow_nofly1, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
+        alpha=[theme.opacity], style(default_color=theme.forbid1)),
+
+    # Draw Last Feasible Epidemic region and boundary
+    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
+        style(line_width=theme.dormant, default_color=theme.lastfeasible2)),
+    layer(xy_flow_last_feasible, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+        #alpha=[theme.opacity], 
+        style(default_color=theme.lastfeasible1)),
+        
+    # Draw boundaries and zones of new epidemic
+    layer(flow, x=:t, y=:removals, Geom.step,
+        style(line_width=theme.boundary, default_color=theme.colour(R))),
+    layer(flow, x=:t, y=:epidemic, Geom.step,
+        style(line_width=theme.trail, default_color=theme.colour(I))),
+    layer(xy_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+        alpha=[2theme.opacity], style(default_color=theme.colour(R))),
+    layer(xy_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+        alpha=[theme.opacity], style(default_color=theme.colour(I))),
+    ) ;
+
+depict("introduction-one-iteration", new_figure(figure17,
+    Guide.title("Evolution of epidemic after a single step in algorithmic time"))
+)
+```
 ::: {.callout-note}
 # TODO
-Finally, compute new epidemic!  
-And then clean-up in terms of drawing an epidemic derived from an `Innovation`.
+1. Clean-up in terms of drawing an epidemic derived from an `Innovation`.
+2. Also produce figures focussing entirely on how boundaries change over algorithmic time.
 :::

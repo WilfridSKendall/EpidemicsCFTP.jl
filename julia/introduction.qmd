@@ -1284,9 +1284,7 @@ xy_flow_last_feasible = table_trajectories2(flow_last_feasible; theme=theme, for
 Now compute the new innovation and evolution.
 ```{julia}
 innov2 = Innovation(initial.n, 
-                sort(processed_infections ∪ 
-                    [z for z in last_feasible_history if isa(z, AbstractInfection)], 
-                            lt=isearlier), 
+                sort(processed_infections ∪ perpetuated_infections, 
                 early_inactivated_removals, 
                 evol1_2.cremovals) ;
 evol2  = Evolution(initial, innov2) ; 

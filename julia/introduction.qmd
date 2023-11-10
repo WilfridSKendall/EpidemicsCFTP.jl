@@ -1284,7 +1284,7 @@ xy_flow_last_feasible = table_trajectories2(flow_last_feasible; theme=theme, for
 Now compute the new innovation and evolution.
 ```{julia}
 innov2 = Innovation(initial.n, 
-                sort(processed_infections ∪ perpetuated_infections, 
+                sort(processed_infections ∪ perpetuated_infections, lt=isearlier), 
                 early_inactivated_removals, 
                 evol1_2.cremovals) ;
 evol2  = Evolution(initial, innov2) ; 
@@ -1418,6 +1418,7 @@ depict("introduction-one-iteration", new_figure(figure17,
 ```
 ::: {.callout-note}
 # TODO
-1. Clean-up in terms of drawing an epidemic derived from an `Innovation`.
-2. Also produce figures focussing entirely on how boundaries change over algorithmic time.
+1. Check calculations underlying @fig-introduction-one-iteration.
+2. Clean-up in terms of drawing an epidemic derived from an `Innovation`.
+3. Also produce figures focussing entirely on how boundaries change over algorithmic time.
 :::

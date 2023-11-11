@@ -1364,12 +1364,7 @@ xy_flow = table_trajectories2(flow, theme=theme) ;
 figure17 = new_figure(incidents_template,
 
     Guide.annotation(compose(context(),
-         draw_elements(innov2.infections, theme=theme))),
-
-    Guide.annotation(compose(context(),
-        draw_incident(innov2.removals, theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_incident(innov2.cremovals, activated=true, theme=theme))),
+         draw_elements(innov2.chronology, theme=theme))),
 
     # Draw activated incidents from new feasible epidemic (derived from new
     # `evolution`!), without inscriptions.

@@ -11,11 +11,9 @@ makedocs(;
 #    repo="github.com/WilfridSKendall/EpidemicsCFTP.jl",
     sitename="EpidemicsCFTP",
     pages=[
-        "Introduction"     => [
-            "index.md",
-            "01-intro.md",
-            ],
-        "Types2"           => "02-types.md",
+        "index.md",
+        "01-intro.md",
+        "Types"           => "02-types.md",
         "Methods"          => [
             "03-methods.md",
             "04-methods-show.md"

@@ -1,5 +1,4 @@
-# Types
-
+# Types of infection, removal, etc
 ## Abstract timed occurrences
 Most entities of `EpidemicsCFTP` are based on the generic type `AbstractTimedOccurrence`.
 The only requirement on objects of this type is that they should possess

@@ -274,7 +274,7 @@ function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab
                 push!(cumulative, bit)
             end
         end
-        if length(cumulative) > 0
+        if ! isempty(cumulative)
             addition = join(cumulative, ',')
             push!(broken, initial ? addition :  tab * addition)
         end

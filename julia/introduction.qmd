@@ -448,11 +448,12 @@ If an ordinary removal
 (`R ⇒ ℛ`) is activated then this breaks the imposed conditioning (of all
 observed removals).
 
+Sensitive to signature errors:
 ```{julia}
 figure5 = new_figure(figure3,
-    Guide.annotation(compose(context(),
+    Guide.annotation(
         draw_evolution(initial, evol1, theme=theme)
-        ))
+        )
     ) ;
 ```
 ```{julia}

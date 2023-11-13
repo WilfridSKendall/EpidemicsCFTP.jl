@@ -71,7 +71,6 @@ Markdown.parse("""
 """)
 ```
 
-
 ```{julia}
 #| include: false
 Random.seed!(2)
@@ -96,14 +95,13 @@ set_default_plot_size(theme.figwidth, theme.figheight)
 Introduction to the \(\SIR\) epidemic
 =====================================
 In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
-\begin{tabbing}
-\emph{Xemovals:}\qquad\= The transition \(S\to S-1\), \;\= \((R \to R+1\) \= 
-occurs at rate \(\;\beta \, I\), \kill
-\emph{Infections:}    \> The transition \(S\to S-1\),   \> \(I \to I+1\)  \> 
-occurs at rate \(\;\alpha \, S \, I\),\\
-\emph{Removals:}      \> The transition \(I \to I-1\),  \> \(R \to R+1\)  \> 
-occurs at rate \(\;\beta \, I\).     
-\end{tabbing}
+\[
+\begin{aligned}
+\text{\emph{Infection: }} & &\text{transition }S\to S-1\,,\; I \to I+1 & \text{ occurs at rate } & \alpha \, S\, I
+\\
+\text{\emph{Removal: }}   & &\text{transition }I\to I-1\,,\; R \to R+1 & \text{ occurs at rate } & \beta \, I
+\end{aligned}
+\]
 The structural parameter of epidemic `duration` 
 (a positive real number)
 and the `initial` configuration
@@ -451,6 +449,13 @@ If an ordinary removal
 observed removals).
 
 ```{julia}
+figure5 = new_figure(figure3,
+    Guide.annotation(compose(context(),
+        draw_evolution(initial, evol1, theme=theme)
+        ))
+    ) ;
+```
+```{julia}
 #| echo: false
 #| label: fig-introduction-activated
 #| fig-cap: "Activated incidents (thicker arrows) driving the epidemic:        \
@@ -459,10 +464,6 @@ observed removals).
 #|           those infections reaching from within the infectivity zone to    \
 #|           just above it. [`introduction-activated`]"
 
-figure5 = new_figure(figure4,
-    Guide.annotation(compose(context(),
-        draw_activated_elements(initial, evol1.history, theme=theme))),
-)
 depict("introduction-activated", new_figure(figure5,
     Guide.title("Incidents driving the epidemic, emphasizing activated incidents"))
 )

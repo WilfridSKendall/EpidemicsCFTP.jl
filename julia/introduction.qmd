@@ -418,7 +418,15 @@ does not yet take account of whether incidents are activated or not.
 #|           of the infectivity zone is \"infected\",                         \
 #|           while the upper boundary of the removal zone is \"removed\".     \
 #|                                             [`introduction-incidents`]"
-figure4 = new_figure(figure3,
+figure4 = new_figure(incidents_template,
+    layer(flow, x=:t, y=:removals, Geom.step,
+        style(line_width=theme.boundary, default_color=theme.colour(R))),
+    layer(flow, x=:t, y=:epidemic, Geom.step,
+        style(line_width=theme.boundary, default_color=theme.colour(I))),
+    layer(xy_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+        alpha=[2theme.opacity], style(default_color=theme.colour(R))),
+    layer(xy_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+        alpha=[theme.opacity], style(default_color=theme.colour(I))),
     Guide.annotation(compose(context(),
         draw_elements(innov1; theme=theme))),
 )
@@ -451,7 +459,15 @@ observed removals).
 
 Sensitive to signature errors:
 ```{julia}
-figure5 = new_figure(figure3,
+figure5 = new_figure(incidents_template,
+    layer(flow, x=:t, y=:removals, Geom.step,
+        style(line_width=theme.boundary, default_color=theme.colour(R))),
+    layer(flow, x=:t, y=:epidemic, Geom.step,
+        style(line_width=theme.boundary, default_color=theme.colour(I))),
+    layer(xy_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+        alpha=[2theme.opacity], style(default_color=theme.colour(R))),
+    layer(xy_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+        alpha=[theme.opacity], style(default_color=theme.colour(I))),
     Guide.annotation( # Move?
         draw_evolution(initial, evol1, theme=theme)
     ) # Move?

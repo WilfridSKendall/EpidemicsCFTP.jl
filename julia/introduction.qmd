@@ -452,10 +452,10 @@ observed removals).
 Sensitive to signature errors:
 ```{julia}
 figure5 = new_figure(figure3,
-    Guide.annotation(
+    Guide.annotation( # Move?
         draw_evolution(initial, evol1, theme=theme)
-        )
-    ) ;
+    ) # Move?
+) ;
 ```
 ```{julia}
 #| echo: false

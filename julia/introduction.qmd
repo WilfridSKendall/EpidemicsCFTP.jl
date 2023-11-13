@@ -49,8 +49,11 @@ source = "introduction.qmd"
 #| cache: false
 using EpidemicsCFTP, EpidemicsUtilities
 
-import Gadfly: Theme, Guide
-# Specific `Gadfly` imports, to avoid clashes with `Compose`.
+import Compose: context, compose, line, text, fontsize, 
+    hcenter, linewidth, stroke
+import Gadfly: Coord, Geom, Guide, Scale, Theme, 
+    pt, mm, set_default_plot_size, style, plot, layer
+# Specific `Gadfly` and 'Compose' imports, to avoid clashes.
 # `Gadfly` documentation <http://gadflyjl.org/stable/>
 using DataFrames
 # `DataFrames` documentation <https://dataframes.juliadata.org/stable/>
@@ -457,30 +460,37 @@ If an ordinary removal
 (`R ⇒ ℛ`) is activated then this breaks the imposed conditioning (of all
 observed removals).
 
-Sensitive to signature errors:
+The following convenience function returns a `Gadfly` figure for the evolution of an epidemic.
 ```{julia}
-figure5 = new_figure(incidents_template,
-    layer(flow, x=:t, y=:removals, Geom.step,
-        style(line_width=theme.boundary, default_color=theme.colour(R))),
-    layer(flow, x=:t, y=:epidemic, Geom.step,
-        style(line_width=theme.boundary, default_color=theme.colour(I))),
-    layer(xy_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
-        alpha=[2theme.opacity], style(default_color=theme.colour(R))),
-    layer(xy_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
-        alpha=[theme.opacity], style(default_color=theme.colour(I))),
-    Guide.annotation( # Move?
-        draw_evolution(initial, evol1, theme=theme)
-    ) # Move?
-) ;
+function draw_evolution1(template, initial::SIR, ev::Evolution, flow, xy_flow; theme=theme)
+    push!(deepcopy(template),
+        layer(flow, x=:t, y=:removals, Geom.step,
+            style(line_width=theme.boundary, default_color=theme.colour(R))),
+        layer(flow, x=:t, y=:epidemic, Geom.step,
+            style(line_width=theme.boundary, default_color=theme.colour(I))),
+        layer(xy_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+            alpha=[2theme.opacity], style(default_color=theme.colour(R))),
+        layer(xy_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+            alpha=[theme.opacity], style(default_color=theme.colour(I))),
+        Guide.annotation(
+            compose(context(), (context(), 
+            draw_elements(ev.chronology, theme=theme),
+            draw_activated_elements(initial, ev.history, theme=theme),
+        ))
+        ),
+    )
+end
 ```
+
 ```{julia}
 #| echo: false
 #| label: fig-introduction-activated
-#| fig-cap: "Activated incidents (thicker arrows) driving the epidemic:        \
+#| fig-cap: "Activated incidents (thicker arrows) driving the epidemic:       \
 #|           notice that activated removals are exactly those removals lying  \
 #|           in the infectivity zone, while activated infections are exactly  \
 #|           those infections reaching from within the infectivity zone to    \
 #|           just above it. [`introduction-activated`]"
+figure5 = draw_evolution1(incidents_template, initial, evol1, flow, xy_flow, theme=theme)
 
 depict("introduction-activated", new_figure(figure5,
     Guide.title("Incidents driving the epidemic, emphasizing activated incidents"))

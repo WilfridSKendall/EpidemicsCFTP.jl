@@ -49,7 +49,8 @@ source = "introduction.qmd"
 #| cache: false
 using EpidemicsCFTP, EpidemicsUtilities
 
-using Gadfly, Compose
+import Gadfly: Theme, Guide
+# Specific `Gadfly` imports, to avoid clashes with `Compose`.
 # `Gadfly` documentation <http://gadflyjl.org/stable/>
 using DataFrames
 # `DataFrames` documentation <https://dataframes.juliadata.org/stable/>

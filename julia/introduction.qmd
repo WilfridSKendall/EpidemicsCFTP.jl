@@ -404,11 +404,9 @@ an _infectivity zone_, and between the infectivity zone and a _susceptible zone_
 #|           susceptible and infected is itself infected; similarly the    \
 #|           boundary between infected and removed (or between susceptible \
 #|           and removed) is itself removed. [`introduction-boundary`]"
-figure2 = draw_evolution(initial, evol1, incidents_template, theme=theme,
-    select=BOUNDARIES | TOP)
-
 depict("introduction-boundary", 
-        new_figure(figure2,
+    new_figure(
+        draw_evolution(initial, evol1, incidents_template, theme=theme, select=BOUNDARIES | TOP),
         Guide.title("Boundaries for the coupling construction"))
 )
 ```
@@ -435,10 +433,8 @@ Markdown.parse(pretty_table(String, xy_flow[:,header],
 #| echo: false
 #| label: fig-introduction-zones
 #| fig-cap: "Infectivity and removal zones. [`introduction-zones`]"
-figure3 = draw_evolution(initial, evol1, incidents_template, theme=theme,
-    select=BOUNDARIES | REGIONS)
-
-depict("introduction-zones", new_figure(figure3,
+depict("introduction-zones", new_figure(
+    draw_evolution(initial, evol1, incidents_template, theme=theme, select=BOUNDARIES | REGIONS),
     Guide.title("Zones of infectivity and removal"))
 )
 ```
@@ -460,10 +456,8 @@ does not yet take account of whether incidents are activated or not.
 #|           of the infectivity zone is \"infected\",                         \
 #|           while the upper boundary of the removal zone is \"removed\".     \
 #|                                             [`introduction-incidents`]"
-figure4 = draw_evolution(initial, evol1, incidents_template, theme=theme,
-    select=BOUNDARIES | REGIONS | ELEMENTS)
-
-depict("introduction-incidents", new_figure(figure4,
+depict("introduction-incidents", new_figure(
+    draw_evolution(initial, evol1, incidents_template, theme=theme, select=BOUNDARIES | REGIONS | ELEMENTS),
     Guide.title("Incidents driving the epidemic"))
 )
 ```
@@ -498,11 +492,8 @@ observed removals).
 #|           in the infectivity zone, while activated infections are exactly  \
 #|           those infections reaching from within the infectivity zone to    \
 #|           just above it. [`introduction-activated`]"
-
-figure5 =  draw_evolution(initial, evol1, incidents_template, theme=theme,
-    select=BASIC)
-
-depict("introduction-activated", new_figure(figure5,
+depict("introduction-activated", new_figure(
+    draw_evolution(initial, evol1, incidents_template, theme=theme, select=BASIC),
     Guide.title("Incidents driving the epidemic, emphasizing activated incidents"))
 )
 ```
@@ -641,11 +632,8 @@ evol1_0 = Evolution(initial, innov1_0)
 #|           removals taken away, while retaining conditioned removals, using    \
 #| `innov1_0 = Innovation(initial.n, innov1.infections, R[], innov1.cremovals)`. \
 #| [`introduction-old-removals-gone`]"
-
-figure6 =  draw_evolution(initial, evol1_0, incidents_template, theme=theme,
-    select=BASIC)
-
-depict("introduction-old-removals-gone", new_figure(figure6,
+depict("introduction-old-removals-gone", new_figure(
+    draw_evolution(initial, evol1_0, incidents_template, theme=theme, select=BASIC),
     Guide.title("The epidemic as before, deleting all non-activated removals"))
 )
 ```
@@ -715,15 +703,8 @@ so that the epidemic trajectory will not be affected by this step.
 #| `innov1_1 = Innovation(initial.n, innov1_0.infections, ` \
 #| `   EpidemicsCFTP.inactive_removals(evol1, innov_candidate), innov1_0.cremovals)` \
 #|           [`introduction-inactive-removals`]"
-#figure7 = new_figure(figure3,
-#    Guide.annotation(compose(context(),
-#        draw_elements(innov1_1, theme=theme))),
-#    Guide.annotation(compose(context(),
-#        draw_activated_elements(initial, evol1_1.history, theme=theme)))
-#)
-figure5 =  draw_evolution(initial, evol1_1, incidents_template, theme=theme,
-    select=BASIC)
-depict("introduction-inactive-removals", new_figure(figure7,
+depict("introduction-inactive-removals", new_figure(
+    draw_evolution(initial, evol1_1, incidents_template, theme=theme, select=BASIC),
     Guide.title("Inactive removals added from new innovation"))
 )
 ```
@@ -767,19 +748,18 @@ evol1_2 = Evolution(initial, innov1_2) ;
 #| EpidemicsCFTP.resulting_cremovals(innov1, innov_candidate, \
 #|                    evol1_1.start_times, evol1_1.finis_times))`\
 #| [`introduction-processed-cremovals`]" 
-
-figure8a = new_figure(figure3,
+figure8a = new_figure(
+    draw_evolution(initial, evol1, incidents_template, theme=theme, select=BOUNDARIES | REGIONS),
     Guide.annotation(compose(context(),
         draw_incident([z for z in innov1_2.infections if isa(z,PInfection)], theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(innov1_2.removals, theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(innov1_2.cremovals, theme=theme))),
-    #Guide.annotation(compose(context(),
-    #    draw_incident(killed, inscribe=false, theme=theme))),
     Guide.annotation(compose(context(),
         draw_activated_elements(initial, evol1_2.history, theme=theme))),
 )
+
 
 figure8 = new_figure(figure8a,                   
     Guide.annotation(compose(context(),
@@ -974,6 +954,11 @@ perpetuated_infections =
     [PInfection(z) for z ∈ evol1.infections ∩ last_feasible_history]
 working_infections = innov_candidate.infections ∪ perpetuated_infections
 
+
+## NOTA BENE!
+figure3 = draw_evolution(initial, evol1, incidents_template, theme=theme,
+    select=BOUNDARIES | REGIONS)
+
 figure13 = new_figure(figure3,
     # perpetuation
     Guide.annotation(compose(context(),
@@ -1070,7 +1055,12 @@ println(nofly_envelope0)
 #| echo: false
 #| label: fig-introduction-relevant-removals
 #| fig-cap: "First (steel blue) and second (light steel blue) iterations \
-#|           of \"no-fly zone\". [`introduction-relevant-removals`]"  
+#|           of \"no-fly zone\". [`introduction-relevant-removals`]" 
+
+## NOTA BENE!
+figure3 = draw_evolution(initial, evol1, incidents_template, theme=theme,
+    select=BOUNDARIES | REGIONS)
+
 figure14 = new_figure(figure3,
     Guide.annotation(compose(context(),
         draw_incident(perpetuated_infections, activated=true, theme=theme))),
@@ -1150,6 +1140,13 @@ println("Posterior relevant infections:\n",
 #|           of \"no-fly zone\", highlighting infections from `innov_candidate`         \
 #|           which are not confined within original epidemic. These infections are      \
 #|           described as `prior_relevant_infections`. [`introduction-prior-relevant-removals`]"  
+
+
+## NOTA BENE!
+figure3 = draw_evolution(initial, evol1, incidents_template, theme=theme,
+    select=BOUNDARIES | REGIONS)
+
+
 figure15 = new_figure(figure3,
     Guide.annotation(compose(context(),
         draw_incident(perpetuated_infections, activated=true, theme=theme))),
@@ -1334,6 +1331,13 @@ evol2  = Evolution(initial, innov2) ;
 #| fig-cap: "Third (final) iteration of \"no-fly zone\", removing potential infections       \
 #|           which would infect \"no-fly zone\" (and illustrating zone of last feasible      \
 #|           epidemic by shading). [`introduction-no-fly-zone`]"  
+
+
+## NOTA BENE!
+figure3 = draw_evolution(initial, evol1, incidents_template, theme=theme,
+    select=BOUNDARIES | REGIONS)
+
+
 figure16 = new_figure(figure3,
 
     Guide.annotation(compose(context(),

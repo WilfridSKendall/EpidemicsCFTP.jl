@@ -748,25 +748,8 @@ evol1_2 = Evolution(initial, innov1_2) ;
 #| EpidemicsCFTP.resulting_cremovals(innov1, innov_candidate, \
 #|                    evol1_1.start_times, evol1_1.finis_times))`\
 #| [`introduction-processed-cremovals`]" 
-figure8a = new_figure(
-    draw_evolution(initial, evol1, incidents_template, theme=theme, select=BOUNDARIES | REGIONS),
-    Guide.annotation(compose(context(),
-        draw_incident([z for z in innov1_2.infections if isa(z,PInfection)], theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_incident(innov1_2.removals, theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_incident(innov1_2.cremovals, theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_activated_elements(initial, evol1_2.history, theme=theme))),
-)
-
-
-figure8 = new_figure(figure8a,                   
-    Guide.annotation(compose(context(),
-        draw_elements(innov1_2, theme=theme))),
-)   
-     
-depict("introduction-processed-cremovals", new_figure(figure8,
+depict("introduction-processed-cremovals", new_figure(
+    draw_evolution(initial, evol1_2, incidents_template, theme=theme, select=BASIC),
     Guide.title("Marks for conditioned removals changed by accept/reject"))
 )
 ```
@@ -802,6 +785,20 @@ println(
 superimposed on removals, active infections and epidemic and removal boundaries from @fig-introduction-processed-cremovals.
 Note that the new infection incidents have not yet been used to determine the 
 new epidemic trajectory!
+
+```{julia}
+figure8a = new_figure(
+    draw_evolution(initial, evol1_2, incidents_template, theme=theme, select=BOUNDARIES | REGIONS),
+    Guide.annotation(compose(context(),
+        draw_incident([z for z in innov1_2.infections if isa(z,PInfection)], theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(innov1_2.removals, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_incident(innov1_2.cremovals, theme=theme))),
+    Guide.annotation(compose(context(),
+        draw_activated_elements(initial, evol1_2.history, theme=theme))),
+) 
+```
 
 ```{julia}
 #| echo: false

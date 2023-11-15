@@ -705,12 +705,10 @@ so that the epidemic trajectory will not be affected by this step.
 ```{julia}
 #| echo: false
 #| label: fig-introduction-inactive-removals
-#| fig-cap: "This is @fig-introduction-old-removals-gone, but with non-activated removals added   \
-#|           from `innov_candidate`. Note the three inactive removals (now rendered in different colour    \
-#|           and labelled by script K) at time 1.61 on time line 1, also times 1.46, 1.52 on time line 2 \
-#|           which actually lie in the removal zone! \
-#| `innov1_1 = Innovation(initial.n, innov1_0.infections, ` \
-#| `   EpidemicsCFTP.inactive_removals(evol1, innov_candidate), innov1_0.cremovals)` \
+#| fig-cap: "This is @fig-introduction-old-removals-gone, but with non-activated removals added        \
+#|           from `innov_candidate` to form `evol1_1`. Note the three inactive removals (now rendered  \
+#|           in different colour and labelled by script K) at time 1.61 on time line 1 and times 1.46, \
+#|           1.52 on time line 2, all of which actually lie in the removal zone!                       \
 #|           [`introduction-inactive-removals`]"
 depict("introduction-inactive-removals", new_figure(
     draw_evolution(initial, evol1_1, figure_zones, theme=theme, select=BASIC),
@@ -750,13 +748,10 @@ evol1_2 = Evolution(initial, innov1_2) ;
 #| echo: false
 #| label: fig-introduction-processed-cremovals
 #| fig-cap: "This is @fig-introduction-inactive-removals, but with accept/reject applied  to  \
-#|           `cremoval` marks. Under the current seed (`Random.seed!(2)`) only the first       \
-#|           conditioned removal (at time `t=0.80`) has actually had its mark    \
-#|           changed (from `target=1` to `target=2`). \
-#| `innov1_2 = Innovation(initial.n, innov1_1.infections, innov1_1.removals, \
-#| EpidemicsCFTP.resulting_cremovals(innov1, innov_candidate, \
-#|                    evol1_1.start_times, evol1_1.finis_times))`\
-#| [`introduction-processed-cremovals`]" 
+#|           `cremoval` marks to form `evol1_2`. Under the current seed (`Random.seed!(2)`)   \
+#|           only the first onditioned removal (at time `t=0.80`) has actually had its mark   \
+#|           changed (from `target=1` to `target=2`).                                         \
+#|           [`introduction-processed-cremovals`]" 
 depict("introduction-processed-cremovals", new_figure(
     draw_evolution(initial, evol1_2, figure_zones, theme=theme, select=BASIC),
     Guide.title("Marks for conditioned removals changed by accept/reject"))
@@ -797,24 +792,28 @@ new epidemic trajectory!
 
 ```{julia}
 figure8a = new_figure(
-    draw_evolution(initial, evol1_2, incidents_template, theme=theme, select=BOUNDARIES | REGIONS),
-    Guide.annotation(compose(context(),
-        draw_incident([z for z in innov1_2.infections if isa(z,PInfection)], theme=theme))),
+    figure_zones,
+#    Guide.annotation(compose(context(),
+#        draw_incident([z for z in innov1_2.infections if isa(z,PInfection)], theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(innov1_2.removals, theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(innov1_2.cremovals, theme=theme))),
     Guide.annotation(compose(context(),
         draw_activated_elements(initial, evol1_2.history, theme=theme))),
-) 
+) ;
 ```
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-with-all-new-infections
-#| fig-cap: "This displays _all_ the new infections from `innov_candidate`, (having removed all previous infections) together \
-#|           with re-marked conditional removals, new inactivated removals, activated infections all derived         \
-#|           from @fig-introduction-processed-cremovals. [`introduction-with-all-new-infections`]"
+#| fig-cap: "This displays _all_ the new infections from `innov_candidate`, (having removed      \
+#|           all previous infections) together with re-marked conditional removals, new          \
+#|           inactivated removals, and activated (but non-labelled) infections all derived from  \
+#|           @fig-introduction-processed-cremovals. Note that the new infections would           \
+#|           _not_ produce the old epidemic (still displayed on the figure): in fact there       \
+#|           is no guarantee that the new epidemic would even satisfy the removals conditioning! \
+#|           [`introduction-with-all-new-infections`]"
 figure9 = new_figure(figure8a,
     Guide.annotation(compose(context(),
          draw_elements(innov_candidate.infections, theme=theme))),

@@ -122,16 +122,15 @@ Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 julia> Innovation(population, infections, removals, CRemoval[])
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-)
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
     println(io, "$(typeof(z))($(z.population),")
-    print(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
+    println(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
     print(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
-    isempty(z.cremovals) ? nothing : print(io, rpad("cremovals:",12," "),sprint(show, MIME("text/plain"), z.cremovals))
-    print(io, ")")
+    isempty(z.cremovals) ? nothing : print(io, rpad("\ncremovals:",12," "),sprint(show, MIME("text/plain"), z.cremovals))
+    print(io, ")\n")
 end
 
 """
@@ -201,8 +200,7 @@ CRemoval[𝒞₀.₆₀²]
 julia> innovation = Innovation(population, infections, removals, CRemoval[])
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-)
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 
 julia> Evolution(initial, innovation) 
 Evolution(3,
@@ -210,15 +208,13 @@ infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0)]
-history:    AbstractIncident[𝒫₀.₅₀¹⁻²]
-)
+history:    AbstractIncident[𝒫₀.₅₀¹⁻²])
 
 julia> innovation = Innovation(population, infections, removals, cremovals)
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₆₀²]
-)
+cremovals:  CRemoval[𝒞₀.₆₀²])
 
 julia> Evolution(initial, innovation)
 Evolution(3,
@@ -227,19 +223,18 @@ removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₆₀²]
 chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0),SIR₀.₆₀(1:1:1)]
-history:    AbstractIncident[𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²]
-) 
+history:    AbstractIncident[𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²]) 
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution) 
     println(io, "$(typeof(z))($(z.population),")
-    print(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
-    print(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
-    isempty(z.cremovals) ? nothing : print(io, rpad("cremovals:",12," "), sprint(show, MIME("text/plain"), z.cremovals))
-    print(io, rpad("chronology:",12," "), sprint(show, MIME("text/plain"), z.chronology))
-    print(io, rpad("trajectory:",12," "), sprint(show, MIME("text/plain"), z.trajectory))
+    println(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
+    println(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
+    isempty(z.cremovals) ? nothing : println(io, rpad("cremovals:",12," "), sprint(show, MIME("text/plain"), z.cremovals))
+    println(io, rpad("chronology:",12," "), sprint(show, MIME("text/plain"), z.chronology))
+    println(io, rpad("trajectory:",12," "), sprint(show, MIME("text/plain"), z.trajectory))
     print(io, rpad("history:",12," "), sprint(show, MIME("text/plain"), z.history))
-    print(io, ")")
+    println(io, ")")
 end
 
 """
@@ -257,7 +252,7 @@ OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻
 """
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
     if isempty(xv)
-        println(io, "$(string(T))[]")
+        print(io, "$(string(T))[]")
     else
         parts = [sprint(show, MIME("text/plain"), a) for a ∈ xv]
         parts[1] = "$(string(T))[" * parts[1]
@@ -278,9 +273,10 @@ function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab
             addition = join(cumulative, ',')
             push!(broken, initial ? addition :  tab * addition)
         end
-        for section ∈ broken
-            println(io, section)
-        end
+        print(io, join(broken, '\n'))
+        #for section ∈ broken
+        #    print(io, section)
+        #end
     end
 end
 

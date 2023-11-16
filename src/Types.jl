@@ -480,8 +480,7 @@ julia> Innovation(population, infections, removals, cremovals)
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-)
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])
 ```
 """
 struct Innovation <: AbstractEnvironment
@@ -643,8 +642,8 @@ julia> innov      = Innovation(population, infections, removals, cremovals)
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-)
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])
+
 julia> ev = Evolution(initial, innov)
 Evolution(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
@@ -652,8 +651,8 @@ removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹]
-)
+history:    AbstractIncident[𝒞₀.₀₀¹])
+
 julia> println(ev.start_times)
 Real[0.0, Inf, Inf]
 julia> println(ev.finis_times)
@@ -725,8 +724,7 @@ julia> innov      = Innovation(population, infections, removals, cremovals)
 Innovation(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹]
-)
+cremovals:  CRemoval[𝒞₀.₀₀¹])
 
 julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
 CEvolution(3,
@@ -735,8 +733,7 @@ removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
 chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹]
-)
+history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 
 II: Missing a conditioned removal

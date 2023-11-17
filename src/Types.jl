@@ -508,13 +508,13 @@ for a single step of algorithmic time.
 
 Instances should always possess the following fields: 
 
-| Field name   | Type                        |              | Further remarks                       |
-|:-------------|:----------------------------|:-----------------------------------------------------|
-| `population` | `Int`                       |              | positive`Int`                         |
-| `infections` | `Vector{AbstractInfection}` |              | time-ordered list                     |
-| `removals`   | `Vector{AbstractRemoval}`   |              | time-ordered list                     |
-| `cremovals`  | `Vector{CRemoval}`          |              | time-ordered list if nonempty         |
-| `chronology` | `Vector{AbstractIncident}`  | **computed** | time-ordered list of previous 3 lists |
+| Field name   | Type                        |              | Further remarks                        |
+|:-------------|:----------------------------|:-------------|----------------------------------------|
+| `population` | `Int`                       |              | positive`Int`                          |
+| `infections` | `Vector{AbstractInfection}` |              | time-ordered list                      |
+| `removals`   | `Vector{AbstractRemoval}`   |              | time-ordered list                      |
+| `cremovals`  | `Vector{CRemoval}`          |              | time-ordered list if nonempty          |
+| `chronology` | `Vector{AbstractIncident}`  | **computed** | time-ordered union of previous 3 lists |
 """
 abstract type AbstractEnvironment end
 

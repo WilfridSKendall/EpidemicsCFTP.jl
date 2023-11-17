@@ -67,7 +67,7 @@ quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
 ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
 ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
-| Software                     | Version                         | Branch                         |
+| _Software_                   | _Version_                       | _Branch_                       |
 |:-----------------------------|:--------------------------------|-------------------------------:|
 | Quarto                       | `$(quartoversion)`              | ---                            |
 | Running under `julia`        | `$VERSION`                      | ---                            |
@@ -1182,8 +1182,8 @@ Now we perform a careful computation of the "true" boundary: we
 work backwards through the `prior_relevant_infections` 
 as explained by the annotations to the code below. 
 ```{julia}
-function compute_nofly(initial, ev, innov, early_inactivated_removals)
-		
+function compute_nofly(ev, innov, early_inactivated_removals)
+    initial = ev.trajectory[1]
 	envelope0 = repeat([0.0], initial.n)                                       # <1>
 	for removal ∈ early_inactivated_removals  # ev.removals?                   # <1>
 	    envelope0[removal.target] = max(envelope0[removal.target], removal.t)  # <1>
@@ -1304,7 +1304,7 @@ signal that it should never become infected.
 #| echo: false
 header = [:t, :y]
 processed_infections, flow_nofly1, xy_flow_nofly1 = 
-    compute_nofly(initial, evol1_2, innov_candidate, early_inactivated_removals) ;
+    compute_nofly(evol1_2, innov_candidate, early_inactivated_removals) ;
 ```
 
 ```{julia}

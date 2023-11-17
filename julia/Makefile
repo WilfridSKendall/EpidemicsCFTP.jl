@@ -43,10 +43,10 @@ reset-verify: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 image/VERIFY_%.png: image/%.png
 	@if /usr/bin/cmp -s $@ $<  ;                                       \
 	then                                                               \
-	    echo No change in image $< ;                                   \
+	    echo No change in $< ;                                         \
 	    touch $@ ;                                                     \
 	else                                                               \
-	    echo **Issue** in image $< ;                                       \
+	    echo **Issue** in $< ;                                         \
 	    /usr/bin/compare $< $@ $(<D)/.diff.$(<F) ;                     \
 	    $(MONTAGE) $< $(<D)/.diff.$(<F) $@ miff:- | /usr/bin/display ; \
 	    rm $(<D)/.diff.$(<F) ;                                         \

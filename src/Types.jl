@@ -1,21 +1,21 @@
-# # Types for various incidents
-# # -------------------------------
+# Types for various incidents
+# -------------------------------
 
-# # Abstract occurrence
-# # -------------------------------
+# Abstract occurrence
+# -------------------------------
 """
     AbstractTimedOccurrence
 
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 
-# # Expects field `t<:Real` (used by function [`isearlier`](@ref)
+# Expects field `t<:Real` (used by function [`isearlier`](@ref)
 to time-order lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
 
-# # Abstract incident
-# # -------------------------------
+# Abstract incident
+# -------------------------------
 """
     AbstractIncident
 
@@ -26,8 +26,8 @@ to represent the particular kind of incident).
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
-# # AbstractIncidents representing removals
-# # -------------------------------
+# AbstractIncidents representing removals
+# -------------------------------
 """
     AbstractRemoval
 
@@ -70,8 +70,8 @@ Such an incident will never be realized.
 """
 abstract type NonOperativeRemoval <: AbstractRemoval end
 
-# # AbstractIncidents representing infections
-# # -------------------------------
+# AbstractIncidents representing infections
+# -------------------------------
 """
     AbstractInfection
 
@@ -121,8 +121,8 @@ Such an incident will never be realized.
 abstract type NonOperativeInfection <: AbstractInfection end
 
 
-# # Actual removals
-# # -------------------------------
+# Actual removals
+# -------------------------------
 """
     Removal(::Float64, ::Int)
 
@@ -222,8 +222,8 @@ struct KilledRemoval <: NonOperativeRemoval
     end
 end
 
-# # Actual infections
-# # -------------------------------
+# Actual infections
+# -------------------------------
 """
     Infection(::Float64, ::Int, ::Int)
     
@@ -434,8 +434,72 @@ struct ExpungedInfection <: NonOperativeInfection
     end
 end
 
-# # Environments
-# # -------------------------------
+# Structures for $\text{S-I-R}$ epidemics
+# -------------------------------
+
+# ### An `SIR` state for an $\SIR$ epidemic
+"""
+    SIR(::Float64, ::Int, ::Int, ::Int)
+
+This represents a state of a `S-I-R` epidemic (`s`, `i`, `r`)
+(all non-negative integers adding up to a positive integer `n`
+which is the population size, given by the computed field `population`)
+at a specified time `t` (a real number). Note that `n` is computed
+at initialization of the state structure and accessed as `sir.n`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> sir = SIR(0.1, 1, 2, 3)
+SIR₀.₁₀(1:2:3)
+
+julia> sir.n
+6
+
+julia> sir == SIR(0.1, 1, 2, 3, 6)
+true
+```
+"""
+struct SIR <: AbstractTimedOccurrence
+    t::Float64
+    s::Int
+    i::Int
+    r::Int
+    n::Int
+
+    function SIR(t::Float64, s::Int, i::Int, r::Int, n::Int)
+        noun = "SIR($t, $s, $i, $r, $n)"
+        if s < 0
+            throw(DomainError(noun, "negative number $s of susceptibles"))
+        elseif i < 0
+            throw(DomainError(noun, "negative number $i of infectives"))
+        elseif r < 0
+            throw(DomainError(noun, "negative number $r of removals"))
+        elseif s + i + r == 0
+            throw(DomainError(noun, "zero total computed population"))
+        elseif s + i + r != n
+            throw(DomainError(noun, "population n=$n is not sum of s=$s, i=$i, r=$r"))
+        end
+        
+        new(t, s, i, r, n)
+    end
+
+    function SIR(t::Float64, s::Int, i::Int, r::Int)
+        noun = "SIR($t, $s, $i, $r)"
+        if s < 0
+            throw(DomainError(noun, "negative number $s of susceptibles"))
+        elseif i < 0
+            throw(DomainError(noun, "negative number $i of infectives"))
+        elseif r < 0
+            throw(DomainError(noun, "negative number $r of removals"))
+        elseif s + i + r == 0
+            throw(DomainError(noun, "zero total computed population"))
+        end
+        new(t, s, i, r, s + i + r)
+    end
+
+end
+
+# ### Abstract environment for an $\SIR$ epidemic
 """
     AbstractEnvironment
 
@@ -444,17 +508,17 @@ for a single step of algorithmic time.
 
 Instances should always possess the following fields: 
 
-| Field name   | Type                         | Further remarks               |
-|:-------------|:-----------------------------|:------------------------------|
-| `population` | `Int`                    | positive`Int`             |
-| `infections` | `Vector{AbstractInfection}`  | time-ordered list             |
-| `removals`   | `Vector{AbstractRemoval}`    | time-ordered list             |
-| `cremovals`  | `Vector{CRemoval}`           | time-ordered list if nonempty |
+| Field name   | Type                        |              | Further remarks                       |
+|:-------------|:----------------------------|:-----------------------------------------------------|
+| `population` | `Int`                       |              | positive`Int`                         |
+| `infections` | `Vector{AbstractInfection}` |              | time-ordered list                     |
+| `removals`   | `Vector{AbstractRemoval}`   |              | time-ordered list                     |
+| `cremovals`  | `Vector{CRemoval}`          |              | time-ordered list if nonempty         |
+| `chronology` | `Vector{AbstractIncident}`  | **computed** | time-ordered list of previous 3 lists |
 """
 abstract type AbstractEnvironment end
 
-# # Innovations
-# # -------------------------------
+# ### Innovations
 """
     Innovation(::Int, ::Vector{S}, ::Vector{T},
                ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
@@ -520,74 +584,7 @@ struct Innovation <: AbstractEnvironment
     
 end
 
-
-# # An `SIR` state for an $\SIR$ epidemic and associated functions
-# # -------------------------------
-"""
-    SIR(::Float64, ::Int, ::Int, ::Int)
-
-This represents a state of a `S-I-R` epidemic (`s`, `i`, `r`)
-(all non-negative integers adding up to a positive integer `n`
-which is the population size, given by the computed field `population`)
-at a specified time `t` (a real number). Note that `n` is computed
-at initialization of the state structure and accessed as `sir.n`.
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> sir = SIR(0.1, 1, 2, 3)
-SIR₀.₁₀(1:2:3)
-
-julia> sir.n
-6
-
-julia> sir == SIR(0.1, 1, 2, 3, 6)
-true
-```
-"""
-struct SIR <: AbstractTimedOccurrence
-    t::Float64
-    s::Int
-    i::Int
-    r::Int
-    n::Int
-
-    function SIR(t::Float64, s::Int, i::Int, r::Int, n::Int)
-        noun = "SIR($t, $s, $i, $r, $n)"
-        if s < 0
-            throw(DomainError(noun, "negative number $s of susceptibles"))
-        elseif i < 0
-            throw(DomainError(noun, "negative number $i of infectives"))
-        elseif r < 0
-            throw(DomainError(noun, "negative number $r of removals"))
-        elseif s + i + r == 0
-            throw(DomainError(noun, "zero total computed population"))
-        elseif s + i + r != n
-            throw(DomainError(noun, "population n=$n is not sum of s=$s, i=$i, r=$r"))
-        end
-        
-        new(t, s, i, r, n)
-    end
-
-    function SIR(t::Float64, s::Int, i::Int, r::Int)
-        noun = "SIR($t, $s, $i, $r)"
-        if s < 0
-            throw(DomainError(noun, "negative number $s of susceptibles"))
-        elseif i < 0
-            throw(DomainError(noun, "negative number $i of infectives"))
-        elseif r < 0
-            throw(DomainError(noun, "negative number $r of removals"))
-        elseif s + i + r == 0
-            throw(DomainError(noun, "zero total computed population"))
-        end
-        new(t, s, i, r, s + i + r)
-    end
-
-end
-
-## Structures for $\text{S-I-R}$ epidemics
-# # -------------------------------
-
-
+# ### Abstract evolution for an $\SIR$ epidemic
 """
     AbstractEvolution 
 
@@ -609,6 +606,7 @@ Instances should always possess fields as follows:
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
+# ### Instances of evolution for an $\SIR$ epidemic
 """
     Evolution(::SIR, ::Innovation)
 
@@ -784,8 +782,8 @@ struct CEvolution <: AbstractEvolution
     end
 end
 
-# # Exceptions
-# # -------------------------------
+# Exceptions
+# -------------------------------
 """
     BadIncident
 

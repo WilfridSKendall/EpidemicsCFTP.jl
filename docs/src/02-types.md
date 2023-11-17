@@ -44,12 +44,12 @@ NonOperativeRemoval
 ```
 Concrete sub-types are tabulated as follows:
 
-| **Type of `AbstractRemoval`** | **Sub-type of ...**    | **Explanation**                                     |
-|:------------------------------|:-----------------------|:----------------------------------------------------|
-| `Removal`                     | `OperativeRemoval`     | Remove an infection if `target` infected            | 
-| `CRemoval`                    | `OperativeRemoval`     | As above but **conditioned** to be removed          | 
-|                               |                        |                                                     |
-| `KilledRemoval`               | `NonOperativeRemoval`  | Never to be removed (expect error if this happens!) | 
+| _Type of `AbstractRemoval`_ | _Sub-type of ..._    | _Explanation_                              |
+|:----------------------------|:---------------------|:-------------------------------------------|
+| `Removal`                   | `OperativeRemoval`   | Remove an infection if `target` infected   | 
+| `CRemoval`                  | `OperativeRemoval`   | As above but **conditioned** to be removed | 
+|                             |                      |                                            |
+| `KilledRemoval`             | `NonOperativeRemoval`| Raises error if activated                  | 
 
 #### Two different kinds of [`OperativeRemoval`](@ref)s
 `Removal` and `CRemoval` are specific potential removal incidents: 
@@ -78,14 +78,14 @@ NonOperativeInfection
 ```
 Concrete sub-types are tabulated as follows:
 
-| **Type of `AbstractInfection`** | **Sub-type of ...**     | **Explanation**                                      |
-|:--------------------------------|---------|:---------------------------------------------------------------------|
-| `Infection`                     | `OperativeInfection`    | Supplied by new `Innovation`                         |
-| `PInfection`                    | `OperativeInfection`    | Held over from previous `Innovation`                 |
-| `NoFlyInfection`                | `OperativeInfection`    | `infectee` leads to "no-fly" zone                    |
-|                                 |                         |------------------------------------------------------|
-| `KilledInfection`               | `NonOperativeInfection` | `target` removed                                     |
-| `ExpungedInfection`             | `NonOperativeInfection` | `target` infected, `infectee` leads to "no-fly" zone |
+| _Type of `AbstractInfection`_ | _Sub-type of ..._       | _Explanation_                            |
+|:------------------------------|:------------------------|:-----------------------------------------|
+| `Infection`                   | `OperativeInfection`    | Supplied by new `Innovation`             |
+| `PInfection`                  | `OperativeInfection`    | Held over from previous `Innovation`     |
+| `NoFlyInfection`              | `OperativeInfection`    | `infectee` leads to "no-fly" zone        |
+|                               |                         |                                          |
+| `KilledInfection`             | `NonOperativeInfection` | `target` removed                         |
+| `ExpungedInfection`           | `NonOperativeInfection` | Infection would infect "no-fly" zone     |
 
 #### Three different kinds of `OperativeInfection`s
 `Infection` and `PInfection` are specific potential infection incidents;

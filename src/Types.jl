@@ -508,8 +508,8 @@ for a single step of algorithmic time.
 
 Instances should always possess the following fields: 
 
-| Field name   | Type                        |              | Further remarks                        |
-|:-------------|:----------------------------|:-------------|----------------------------------------|
+| _Field name_ | _Type_                      |              | _Further remarks_                      |
+|:-------------|:----------------------------|:-------------|:---------------------------------------|
 | `population` | `Int`                       |              | positive`Int`                          |
 | `infections` | `Vector{AbstractInfection}` |              | time-ordered list                      |
 | `removals`   | `Vector{AbstractRemoval}`   |              | time-ordered list                      |
@@ -593,8 +593,8 @@ It is a generic sub-type of [`AbstractEnvironment`](@ref)
 
 Instances should always possess fields as follows:
 
-| Field name    | Type                         |              |                   |
-|:--------------|:-----------------------------|:-------------|-------------------|
+| _Field name_  | _Type_                       |              | _Further remarks_ |
+|:--------------|:-----------------------------|:-------------|:------------------|
 | `infections`  | `Vector{AbstractInfection}`  |              | time-ordered list |
 | `removals`    | `Vector{AbstractRemoval}`    |              | time-ordered list |
 | `cremovals`   | `Vector{CRemoval}`           |              | time-ordered list |

@@ -118,14 +118,14 @@ AbstractEnvironment
 AbstractEvolution
 ```
 
-### `Innovation`
-`Innovation` fills the lists of an abstract environment with simulated contents
+### `Innovation` as an `AbstractEnvironment`
+`Innovation` fills the lists of an abstract environment with (typically simulated) contents
 of lists of the requisite infections or removals. 
 ```@docs
 Innovation
 ```
 
-### Two kinds of `Evolution`
+### Two kinds of `AbstractEvolution`
 `Evolution` carries out the simulation of an epidemic from a given initial `SIR` value,
 based on an `Innovation`. 
 `CEvolution` does the same, but returns an error if it violates conditioning 

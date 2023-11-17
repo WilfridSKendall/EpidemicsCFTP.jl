@@ -750,6 +750,7 @@ innov1_2 = Innovation(initial.n, innov1_1.infections,
 evol1_2 = Evolution(initial, innov1_2) ;
 ```
 
+{{< pagebreak >}}
 
 ```{julia}
 #| echo: false
@@ -807,9 +808,7 @@ new epidemic trajectory!
 #|           _not_ produce the old epidemic (still displayed on the figure together with         \
 #|           activated elements): indeed there is no guarantee that the new epidemic would even  \
 #|           satisfy the removals conditioning! [`introduction-with-all-new-infections`]"
-innov1_2a = Innovation(initial.n, innov_candidate.infections, 
-                innov1_2.removals, 
-                innov1_2.cremovals) ;
+innov1_2a = Innovation(initial.n, innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
 
 depict("introduction-with-all-new-infections", new_figure(
@@ -833,21 +832,13 @@ We can then distinguish visually between infections occurring before and after r
 #| fig-cap: "This improves on @fig-introduction-with-all-new-infections by converting to    \
 #|            `KilledInfection`s all `Infection`s occurring after removal for               \
 #|           the relevant time line. `KilledInfection`s are displayed in light              \
-#|           gray with no inscription. Note again   that the new infections would           \
-#|           _not_ produce the old epidemic (still displayed on the figure together with    \
-#|           activated elements) `[introduction-dividing-infections1]`"
+#|           gray. Note again  that the new infections would _not_ produce the              \
+#|           old epidemic (still displayed on the figure together with activated elements)  \
+#|           `[introduction-dividing-infections1]`"
 differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
-figure10 = new_figure(figure_zones,
-    Guide.annotation(compose(context(),
-        draw_incident(innov1_2.removals, theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_incident(innov1_2.cremovals, theme=theme))),
-    Guide.annotation(compose(context(),
-         draw_elements([z for z in differentiated if typeof(z) == KilledInfection], 
-            inscribe=false, theme=theme),
-         draw_elements([z for z in differentiated if typeof(z) != KilledInfection], 
-            inscribe=true, theme=theme),
-        )),
+innov1_2b = Innovation(initial.n, differentiated, innov1_2.removals, innov1_2.cremovals) ;
+figure10 = new_figure(
+    draw_innovation(innov1_2b, figure_zones, theme=theme, cc=true),
     Guide.annotation(compose(context(),
         draw_activated_elements(initial, evol1_2.history, theme=theme))),
 )
@@ -857,7 +848,9 @@ depict("introduction-dividing-infections1", new_figure(figure10,
 )
 ```
 
-The \LFE is formed by the slowest possible chain of activated infections that triggers all of the conditioned removals of `evol1_2`,
+The \LFE is formed by the slowest possible chain of activatable infections from `evol1_2`,
+together with new infections from `innov_candidate`,
+that trigger all of the conditioned removals of `evol1_2`,
 and this is achieved so long as the proposed chain triggers those 
 conditional removals for which the `target` field delivers
 an increase in the running supremum.
@@ -904,8 +897,10 @@ the trajectory of the _last_ possible epidemic path that activates
 all the `CRemoval` events and none of the `Removal` events. 
 This is most easily accomplished by computing
 in reverse time.
-We use `EpidemicsCFTP.last_feasible_evolution`.
-It first computes a `chronology` by mixing the relevant infections and the conditioned removals
+We use the function `EpidemicsCFTP.last_feasible_evolution`.
+It first computes a new `chronology` by mixing the relevant infections from `innov_candidate`,
+the activated infections from `innov1_2`,
+and the conditioned removals
 and then computes the reverse-initial state as the final state of the evolution
 (epidemic state at time `duration`).
 By this means we can compute and display the trajectory and history of the \LFE using:
@@ -915,35 +910,23 @@ last_feasible_trajectory, last_feasible_history =
 ```
 
 Now @fig-introduction-last-feasible-epidemic computes and superposes the resulting \LFE flow
-on the previous @fig-introduction-with-relevant-infections.
+on @fig-introduction-with-relevant-infections.
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-last-feasible-epidemic
-#| fig-cap: "This improves on @fig-introduction-with-all-new-infections by adding the last \
-#|           feasible epidemic trajectory (coloured in pink) and last feasible new         \
+#| fig-cap: "This refines @fig-introduction-with-relevant-infections, adding only the last  \
+#|           feasible epidemic trajectory (coloured in pink) and last feasible new          \
 #|           infections (outlined in deep pink). [`introduction-last-feasible-epidemic`]"
 last_feasible_trajectory, last_feasible_history = 
     EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate) ;
 
-last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections] 
+# Next list comprehension is required to make sure type is correct!
+last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections]
+perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ evol1.infections]
+flow_last_feasible           = table_trajectories1(duration, last_feasible_trajectory)
 
-flow_last_feasible = 
-    table_trajectories1(duration, last_feasible_trajectory)
-
-figure12 = new_figure(figure_zones,
-    Guide.annotation(compose(context(),
-        draw_incident(innov1_2.removals, theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_incident(innov1_2.cremovals, theme=theme))),
-    Guide.annotation(compose(context(),
-         draw_elements([z for z in differentiated if typeof(z) == KilledInfection], 
-            inscribe=false, theme=theme),
-         draw_elements([z for z in differentiated if typeof(z) != KilledInfection], 
-            inscribe=true, theme=theme),
-        )),
-    Guide.annotation(compose(context(),
-        draw_activated_elements(initial, evol1_2.history, theme=theme))),
+figure12 = new_figure(figure10,
     Guide.annotation(compose(context(),
         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh),          # <1> 
@@ -957,8 +940,8 @@ depict("introduction-last-feasible-epidemic", new_figure(figure12,
 ```
 
 The next step is to abandon even the activated infections from the previous `Evolution`
-excepting only those used in the
-last viable epidemic, which have to be perpetuated.
+excepting only those which are required in the
+last viable epidemic, and therefore have to be perpetuated.
 See @fig-introduction-last-feasible-epidemic-bis.
 
 ```{julia}
@@ -968,43 +951,26 @@ See @fig-introduction-last-feasible-epidemic-bis.
 #|           infections carried over from the previous epidemic which are now superseded    \
 #|           by the \"last feasible epidemic\": the only remaining old infections are those \
 #|           involved in the \"last feasible epidemic\". However the original epidemic      \
-#|           trajectory is still included. [`introduction-last-feasible-epidemic-bis`]" 
+#|           trajectory is still depicted. [`introduction-last-feasible-epidemic-bis`]" 
+innov1_2c = Innovation(initial.n, differentiated ∪ perpetuated_infections,
+                    innov1_2.removals, innov1_2.cremovals) ;
+figure13 = new_figure(
+    draw_innovation(innov1_2c, figure_zones, theme=theme, cc=true),
+    Guide.annotation(compose(context(),
+        draw_activated_elements(initial, innov1_2.cremovals, theme=theme))),
 
-perpetuated_infections = 
-    [PInfection(z) for z ∈ evol1.infections ∩ last_feasible_history]
-working_infections = innov_candidate.infections ∪ perpetuated_infections
-figure13 = new_figure(figure_zones,
-    # perpetuation
-    Guide.annotation(compose(context(),
-        draw_incident(perpetuated_infections, theme=theme))),
-    Guide.annotation(compose(context(),
+    # last feasible infections
+        Guide.annotation(compose(context(),
         draw_elements(perpetuated_infections, activated=true, theme=theme))),
-    # feasible
     Guide.annotation(compose(context(),
-         draw_elements([z for z in differentiated if typeof(z) == KilledInfection], 
-            inscribe=false, theme=theme),
-         draw_elements([z for z in differentiated if typeof(z) != KilledInfection], 
-            inscribe=true, theme=theme),
-        )
-    ),
-    # cremovals
-    Guide.annotation(compose(context(),
-        draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
-    Guide.annotation(compose(context(),
-        draw_incident(evol1_2.cremovals, theme=theme))),
-    # removals
-    Guide.annotation(compose(context(),
-        draw_incident(evol1_2.removals, theme=theme))),
-    # activation for last feasible history
-    Guide.annotation(compose(context(),
-        draw_activated_elements(initial, last_feasible_history, theme=theme))),
-    # feasible infections
-    Guide.annotation(compose(context(),
-        draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
-    # last feasible epidemic
+        draw_feasible_incident(setdiff(last_feasible_new_infections, perpetuated_infections), 
+            3, theme=theme))),
+
+    # last feasible epidemic trajectory
     layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
 )
+
 depict("introduction-last-feasible-epidemic-bis", new_figure(figure13,
     Guide.title("Last feasible epidemic, perpetuating any infections from previous version"))
 )

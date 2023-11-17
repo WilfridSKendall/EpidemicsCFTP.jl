@@ -84,7 +84,7 @@ Concrete sub-types are tabulated as follows:
 | `PInfection`                  | `OperativeInfection`    | Held over from previous `Innovation`     |
 | `NoFlyInfection`              | `OperativeInfection`    | `infectee` leads to "no-fly" zone        |
 |                               |                         |                                          |
-| `KilledInfection`             | `NonOperativeInfection` | `target` removed                         |
+| `KilledInfection`             | `NonOperativeInfection` | `target` is in removed region            |
 | `ExpungedInfection`           | `NonOperativeInfection` | Infection would infect "no-fly" zone     |
 
 #### Three different kinds of `OperativeInfection`s

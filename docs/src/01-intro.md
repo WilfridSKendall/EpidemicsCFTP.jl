@@ -18,7 +18,7 @@ Version information is as follows:
 ```@eval
 import Markdown, EpidemicsCFTP
 Markdown.parse("""
-| Module                | Version                         | Branch                         |
+| _Module_              | _Version_                       | _Branch_                       |
 |:----------------------|:--------------------------------|:------------------------------:|
 | `julia`               | `$VERSION`                      |                                |
 | `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
@@ -38,7 +38,8 @@ and conditioned on all removal times.
 ![Screen shot of a resulting simulation.](image/introduction-no-fly-zone.png)
 
 ## Installation and documentation  
-General advice on developing a `julia` package is given at <https://julialang.org/contribute/developing_package/>.
+General advice on developing a `julia` package is given at 
+[`julialang.org/contribute/developing_package`](https://julialang.org/contribute/developing_package/).
 Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
 
 1. Inform `pkg` that the package folder exists and is under development with `dev`.
@@ -55,7 +56,7 @@ Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
 (v1.0) pkg> test EpidemicsCFTP
 ```
 
-An alternative way to test package is to run `make test` in the directory `EpidemicsCFTP`.
+An alternative way to test the package is to run `make test` in the directory `EpidemicsCFTP`.
 One should run `make doctest` to perform doctests.
 
 Produce this documentation as follows: in directory `EpidemicsCFTP`, 

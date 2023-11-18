@@ -302,12 +302,8 @@ function draw_evolution(ev::AbstractEvolution, template::Plot;
 end ;
 
 function draw_innovation(iv::AbstractEnvironment, template::Plot;
-                cc=false, theme::NamedTuple=theme, select=ELEMENTS)
-    if cc
-        figure = deepcopy(template) # NB this differs from `draw_evolution`!
-    else
-        figure = template
-    end
+                theme::NamedTuple=theme, select=ELEMENTS)
+    figure = deepcopy(template)
     if (select & ELEMENTS == ELEMENTS)
         push!(figure, Guide.annotation(compose(context(), 
             draw_elements(iv.chronology, theme=theme))))
@@ -808,13 +804,14 @@ new epidemic trajectory!
 #|           _not_ produce the old epidemic (still displayed on the figure together with         \
 #|           activated elements): indeed there is no guarantee that the new epidemic would even  \
 #|           satisfy the removals conditioning! [`10-with-all-new-infections`]"
+evol1_2x  = Evolution(initial, evol1_2.history) ;
+
 innov1_2a = Innovation(initial.n, innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
 
+figure_temp = draw_innovation(innov1_2a, figure_zones, theme=theme)
 depict("introduction-10-with-all-new-infections", new_figure(
-    draw_evolution(evol1_2a, figure_zones, theme=theme, select=ELEMENTS),
-    Guide.annotation(compose(context(),
-        draw_activated_elements(initial, evol1_2.history, theme=theme))),
+    draw_evolution(evol1_2x, figure_temp, theme=theme),
     Guide.title("New infections superimposed"))
 )
 ```
@@ -837,11 +834,8 @@ We can then distinguish visually between infections occurring before and after r
 #|           `[introduction-11-dividing-infections1]`"
 differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
 innov1_2b = Innovation(initial.n, differentiated, innov1_2.removals, innov1_2.cremovals) ;
-figure11 = new_figure(
-    draw_innovation(innov1_2b, figure_zones, theme=theme, cc=true),
-    Guide.annotation(compose(context(),
-        draw_activated_elements(initial, evol1_2.history, theme=theme))),
-)
+figure_temp = draw_innovation(innov1_2b, figure_zones, theme=theme)
+figure11 = draw_evolution(evol1_2x, figure_temp, theme=theme)
 
 depict("introduction-11-dividing-infections1", new_figure(figure11,
     Guide.title("Distinguishing between new infections occurring before and after removal"))
@@ -955,7 +949,7 @@ See @fig-introduction-14-last-feasible-epidemic-bis.
 innov1_2c = Innovation(initial.n, differentiated ∪ perpetuated_infections,
                     innov1_2.removals, innov1_2.cremovals) ;
 figure14 = new_figure(
-    draw_innovation(innov1_2c, figure_zones, theme=theme, cc=true),
+    draw_innovation(innov1_2c, figure_zones, theme=theme),
     Guide.annotation(compose(context(),
         draw_activated_elements(initial, innov1_2.cremovals, theme=theme))),
 

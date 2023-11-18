@@ -145,12 +145,12 @@ struct Removal <: OperativeRemoval
 
     function Removal(t::T, target::Int) where T <: Union{Float64, Int}
         noun = "Removal($t, $target)"
-        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
+        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("ℛ", float(t), target))
     end
 
     function Removal(z::AbstractRemoval)
-        Removal(z.t, z.target)
+        return Removal(z.t, z.target)
     end
 end
 
@@ -179,12 +179,12 @@ struct CRemoval <: OperativeRemoval
 
     function CRemoval(t::T, target::Int) where T <: Union{Float64, Int}
         noun = "CRemoval($t, $target)"
-        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
+        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("𝒞", float(t), target))
     end
 
     function CRemoval(z::AbstractRemoval)
-        CRemoval(z.t, z.target)
+        return CRemoval(z.t, z.target)
     end
 end
 
@@ -213,12 +213,12 @@ struct KilledRemoval <: NonOperativeRemoval
 
     function KilledRemoval(t::T, target::Int) where T <: Union{Float64, Int}
         noun = "KilledRemoval($t, $target)"
-        (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
+        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("𝒦", float(t), target))
     end
 
     function KilledRemoval(z::AbstractRemoval)
-        KilledRemoval(z.t, z.target)
+        return KilledRemoval(z.t, z.target)
     end
 end
 
@@ -291,12 +291,12 @@ struct PInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒫", float(t), target, infectee)
+            return new("𝒫", float(t), target, infectee)
         end
     end
     
     function PInfection(z::AbstractInfection)
-        PInfection(z.t, z.target, z.infectee)
+        return PInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -336,12 +336,12 @@ struct NoFlyInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒩", float(t), target, infectee)
+            return new("𝒩", float(t), target, infectee)
         end
     end
     
     function NoFlyInfection(z::AbstractInfection)
-        NoFlyInfection(z.t, z.target, z.infectee)
+        return NoFlyInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -377,12 +377,12 @@ struct KilledInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒦", float(t), target, infectee)
+            return new("𝒦", float(t), target, infectee)
         end
     end
     
     function KilledInfection(z::AbstractInfection)
-        KilledInfection(z.t, z.target, z.infectee)
+        return KilledInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -425,12 +425,12 @@ struct ExpungedInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            new("𝒳", float(t), target, infectee)
+            return new("𝒳", float(t), target, infectee)
         end
     end
     
     function ExpungedInfection(z::AbstractInfection)
-        ExpungedInfection(z.t, z.target, z.infectee)
+        return ExpungedInfection(z.t, z.target, z.infectee)
     end
 end
 
@@ -480,7 +480,7 @@ struct SIR <: AbstractTimedOccurrence
             throw(DomainError(noun, "population n=$n is not sum of s=$s, i=$i, r=$r"))
         end
         
-        new(t, s, i, r, n)
+        return new(t, s, i, r, n)
     end
 
     function SIR(t::Float64, s::Int, i::Int, r::Int)
@@ -494,7 +494,7 @@ struct SIR <: AbstractTimedOccurrence
         elseif s + i + r == 0
             throw(DomainError(noun, "zero total computed population"))
         end
-        new(t, s, i, r, s + i + r)
+        return new(t, s, i, r, s + i + r)
     end
 
 end
@@ -570,7 +570,7 @@ struct Innovation <: AbstractEnvironment
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
             chron = Iterators.flatten([infections, removals, cremovals])
-            new(population, sort(infections, lt=isearlier), 
+            return new(population, sort(infections, lt=isearlier), 
                 sort(removals,   lt=isearlier), 
                 sort(cremovals,  lt=isearlier),
                 [x::AbstractIncident for x ∈ sort(collect(chron), lt=isearlier)])
@@ -579,7 +579,7 @@ struct Innovation <: AbstractEnvironment
 
     function Innovation(population::Int, infections::Vector{S},
                         removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
-        Innovation(population, infections, removals, CRemoval[])
+        return Innovation(population, infections, removals, CRemoval[])
     end
     
 end
@@ -651,6 +651,15 @@ chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 
+julia> ev = Evolution(initial, infections ∪ removals ∪ cremovals)
+Evolution(3,
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹])
+
 julia> println(ev.start_times)
 Real[0.0, Inf, Inf]
 julia> println(ev.finis_times)
@@ -677,9 +686,19 @@ struct Evolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
         start_times, finis_times = periods(trajectory, history)
-        new(population, infections, removals, cremovals, chronology, 
+        return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, start_times, finis_times)
     end
+    
+    function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
+        innovation = Innovation(initial_state.n,
+                        AbstractInfection[z for z in chronology if isa(z, AbstractInfection)],
+                        AbstractRemoval[z for z in chronology if isa(z, AbstractRemoval) && ! isa(z, CRemoval)],
+                        CRemoval[z for z in chronology if isa(z, CRemoval)],
+                        )
+        return Evolution(initial_state, innovation)
+    end
+
 end
 
 """
@@ -724,7 +743,16 @@ infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫�
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹])
 
-julia> CEvolution(SIR(0.0, 2, 1, 0), innov)
+julia> CEvolution(initial, innov)
+CEvolution(3,
+infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹]
+chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹])
+
+julia> ev = CEvolution(initial, infections ∪ removals ∪ cremovals)
 CEvolution(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
@@ -777,9 +805,19 @@ struct CEvolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start_times, finis_times = periods(trajectory, history)
-        new(population, infections, removals, cremovals, chronology, 
+        return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, start_times, finis_times)
     end
+    
+    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident})
+        innovation = Innovation(initial_state.n,
+                        AbstractInfection[z for z in chronology if isa(z, AbstractInfection)],
+                        AbstractRemoval[z for z in chronology if isa(z, AbstractRemoval) && ! isa(z, CRemoval)],
+                        CRemoval[z for z in chronology if isa(z, CRemoval)],
+                        )
+        return CEvolution(initial_state, innovation)
+    end
+
 end
 
 # Exceptions

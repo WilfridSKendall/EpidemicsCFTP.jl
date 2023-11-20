@@ -124,25 +124,6 @@ const α, β = 0.2, 1.5;
 const initial = SIR(0.0, 5, 1, 0);
 ```
 
-```{julia}                                                                              
-#| echo: false
-if initial.n ≤ EpidemicsUtilities.MAXPOP
-  function timelinelabels1(i; n=initial.n) 
-    EpidemicsUtilities.timelinelabels_circled(i; n=n)
-  end
-else
-  function timelinelabels1(i; n=initial.n) 
-    EpidemicsUtilities.timelinelabels_bracketed(i; n=n)
-  end
-end ;
-
-function timelinelabels2(i)
-  EpidemicsUtilities.timelinelabel_raw(i; n=initial.n)
-end ;                                                                           
-```   
-
-
-
 Structure of potential infections and removals
 ==============================================
 The epidemic is defined by `initial` together with an `Innovation`
@@ -179,12 +160,6 @@ activated, causing infection of the \NOFLYZONE so raising an error; and `𝒳` i
 #|           `NoFlyInfection`, `ExpungedInfection`, `KilledInfection` and `KilledRemoval`!). \
 #|           Arrows from `AbstractInfection` incidents point to `infectee` time lines.       \
 #|           [`01-key`]"
-function new_figure(old_figure, gadfly_list...)
-    figure = deepcopy(old_figure)
-    push!(figure, gadfly_list...)
-    return figure
-end ;
-
 set_default_plot_size(theme.figwidth, 0.6theme.figheight)
 
 key_template = plot(yintercept=1:3,
@@ -194,12 +169,14 @@ key_template = plot(yintercept=1:3,
     gadfly_theme) ;
 
 key_template = new_figure(key_template,
-    Scale.y_continuous(labels=timelinelabels2),
+    Scale.y_continuous(labels=(i -> EpidemicsUtilities.timelinelabel_raw(i; n=initial.n))),
     Guide.yticks(ticks=collect(1:3)),
     ) ;
 
 push!(key_template,
-    Scale.y_continuous(labels=timelinelabels1),
+    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
     ) ;
 
 x, dx = 0.1, 0.18
@@ -383,12 +360,14 @@ push!(curves_template, layer(flow, x=:t, y=:empty, Geom.line,
     style(line_width=2theme.trail, default_color=theme.scaffold))) ;
 
 incidents_template = new_figure(curves_template,
-    Scale.y_continuous(labels=timelinelabels1),
+    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
     Guide.yticks(ticks=collect(1:(initial.n))),
     Guide.ylabel("Time lines")) ;
 
 push!(curves_template,
-    Scale.y_continuous(labels=timelinelabels2),
+    Scale.y_continuous(labels=(i -> EpidemicsUtilities.timelinelabel_raw(i; n=initial.n))),
     Guide.ylabel("Numbers of individuals")) ;
 
 figure03 = new_figure(curves_template, 
@@ -608,17 +587,17 @@ We modify `innov_candidate`, inserting extra incidents
 so that particular issues arise in implementation of
 the algorithm time step:
 
-1. an extra infection which might affect the \LFE infection;
+a) an extra infection which might affect the \LFE infection;
 ```{julia}
 push!(innov_candidate.infections, Infection(1.1, 2, 4), )
 ```
-2. some extra infections which might produce a faster 
+b) some extra infections which might produce a faster 
 epidemic without hitting new removals;
 ```{julia}
 push!(innov_candidate.infections,Infection(0.5, 1, 2), Infection(0.85, 2, 4), 
     Infection(1.05, 2, 3), Infection(1.55, 4, 6))
 ```
-3. a couple of inactivated removals early in time lines 2 and 3 
+c) a couple of inactivated removals early in time lines 2 and 3 
 which might affect the \NOFLYZONE;
 ```{julia}
 push!(innov_candidate.removals, Removal(0.3, 2), Removal(0.1, 3))
@@ -636,6 +615,15 @@ First remove all unactivated removals from `innov1`: see @fig-introduction-07-ol
 innov1_0 = Innovation(initial.n, innov1.infections, R[], innov1.cremovals)
 evol1_0 = Evolution(initial, innov1_0)
 ```
+::: {.callout-tip}
+# Explanatory note for `innov1_0`
+This is obtained from `innov1` 
+by omitting all (old) `inactive_removals`.
+
+The resulting `Evolution` structure 
+`evol1_0 = Evolution(initial, innov1_0)` 
+therefore yields the same trajectory as `evol1_0`.
+:::
 
 ```{julia}
 #| echo: false
@@ -648,14 +636,6 @@ depict("introduction-07-old-removals-gone", new_figure(
     Guide.title("The epidemic as before, deleting all non-activated removals"))
 )
 ```
-
-
-::: {.callout-note}
-# Deleted inactive removals cannot affect epidemic
-We emphasize that the deleted removals are all inactive, so that the epidemic trajectory
-will not be affected by this step.
-:::
-
 
 Adding in those removals from the new innovation which remain inactive
 ----------------------------------------------------------------------
@@ -674,7 +654,7 @@ returns a list composed of:
 a) removals occurring before respective time line is infected (before relevant `start_time`);
 
 b) removals occurring on or after respective time line is removed
-(after relevant `finis_time`: these removals are all converted to `KilledRemoval`).
+(after relevant `finis_time`: these removals are all converted to `KilledRemoval`s).
 
 This allows us to add the new inactive removals from `innov_candidate` to `innov1_0`,
 converting those in the removals zone to `KilledRemoval`s, forming
@@ -685,23 +665,18 @@ innov1_1 = Innovation(initial.n, innov1_0.infections,
     EpidemicsCFTP.inactive_removals(evol1, innov_candidate), innov1_0.cremovals)
 evol1_1 = Evolution(initial, innov1_1)
 ```
-
-
 ::: {.callout-tip}
-# Explanatory note for @fig-introduction-08-inactive-removals
-`innov1_1` is obtained from `innov1` 
-by using the `inactive_removals` method to consider replacement of old inactive removals 
-by insertion of non-conditional removals
-in `innov_candidate`, rendering those in the removals zone as `KilledRemoval`s.
-The resulting `Evolution` structure is  
-`evol1_1 = Evolution(initial, innov1_1)`  
-which actually gives the same epidemic as in the original `Evolution` 
-(since inserted removals are inactive).
+# Explanatory note for `innov1_1`
+This is obtained from `innov1_0` 
+by using the `inactive_removals` method to insert all (non-conditional) removals
+in `innov_candidate` which would not be activated by the trajectory of `evol1`
+equivalently `evol1_0`. Removals in the removals zone 
+are re-typed as `KilledRemoval`.
 
-Exposition should emphasize that the newly added removals 
-of `innov1_1`
-are all chosen to be inactive, 
-so that the epidemic trajectory will not be affected by this step.
+The resulting `Evolution` structure 
+`evol1_1 = Evolution(initial, innov1_1)` 
+actually yields the same trajectory as `evol1`
+equivalently `evol1_0` (since no inserted removals will be activated).
 :::
 
 ```{julia}
@@ -745,8 +720,18 @@ innov1_2 = Innovation(initial.n, innov1_1.infections,
                     evol1_1.start_times, evol1_1.finis_times)) ;
 evol1_2 = Evolution(initial, innov1_2) ;
 ```
+::: {.callout-tip}
+# Explanatory note for `innov1_2`
+This is obtained from `innov1_1` 
+by re-marking the `CRemoval`s using `EpidemicsCFTP.resulting_cremovals`.
 
-{{< pagebreak >}}
+Again the resulting `Evolution` structure 
+`evol1_2 = Evolution(initial, innov1_2)` 
+actually yields the same trajectory as `evol1`
+equivalently `evol1_0` or `evol1_1`,
+as marks are changed only if they do not de-activate the respective `CRemoval`,
+hence do not affect the trajectory.
+:::
 
 ```{julia}
 #| echo: false

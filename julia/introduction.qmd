@@ -266,7 +266,7 @@ function draw_evolution!(template::Plot, ev::AbstractEvolution;
     if (select & (BOUNDARIES | REGIONS | TOP)) > 0
         figure = draw_regions(ev, template, theme=theme, select=select)
     else
-        figure = deepcopy(template)
+        figure = template
     end
     if (select & ELEMENTS) > 0   
         figure = draw_innovation!(figure, ev, theme=theme, select=select & ELEMENTS)
@@ -280,25 +280,24 @@ end ;
 
 function draw_innovation!(template::Plot, iv::AbstractEnvironment;
                 theme::NamedTuple=theme, select=ELEMENTS)
-    figure = deepcopy(template)
     if (select & ELEMENTS == ELEMENTS)
-        push!(figure, Guide.annotation(compose(context(), 
+        push!(template, Guide.annotation(compose(context(), 
             draw_elements(iv.chronology, theme=theme))))
     else
         if (select & INFECTIONS) > 0        
-            push!(figure, Guide.annotation(compose(context(), 
+            push!(template, Guide.annotation(compose(context(), 
                 draw_elements(iv.infections, theme=theme))))
         end
         if (select & REMOVALS) > 0        
-            push!(figure, Guide.annotation(compose(context(), 
+            push!(template, Guide.annotation(compose(context(), 
                 draw_elements(iv.removals, theme=theme))))
         end
         if (select & CREMOVALS) > 0        
-            push!(figure, Guide.annotation(compose(context(), 
+            push!(template, Guide.annotation(compose(context(), 
                 draw_elements(iv.cremovals, theme=theme))))
         end
     end
-    return figure
+    return template
 end ;
 ```
 
@@ -796,7 +795,7 @@ evol1_2a  = Evolution(initial, innov1_2a) ;
 
 figure_temp = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
 depict("introduction-10-with-all-new-infections", new_figure(
-    draw_evolution!(deepcopy(figure_temp), evol1_2x, theme=theme),
+    draw_evolution!(figure_temp, evol1_2x, theme=theme),
     Guide.title("New infections superimposed"))
 )
 ```
@@ -820,7 +819,7 @@ We can then distinguish visually between infections occurring before and after r
 differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
 innov1_2b = Innovation(initial.n, differentiated, innov1_2.removals, innov1_2.cremovals) ;
 figure_temp = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
-figure11 = draw_evolution!(deepcopy(figure_temp), evol1_2x, theme=theme)
+figure11 = draw_evolution!(figure_temp, evol1_2x, theme=theme)
 
 depict("introduction-11-dividing-infections1", new_figure(figure11,
     Guide.title("Distinguishing between new infections occurring before and after removal"))

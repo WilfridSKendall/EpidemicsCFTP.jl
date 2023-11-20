@@ -261,7 +261,7 @@ function draw_regions(ev::Evolution, template::Plot;
     return figure
 end ;
 
-function draw_evolution(ev::AbstractEvolution, template::Plot;
+function draw_evolution!(template::Plot, ev::AbstractEvolution;
                 theme::NamedTuple=theme, select=ELEMENTS | ACTIVATED)
     if (select & (BOUNDARIES | REGIONS | TOP)) > 0
         figure = draw_regions(ev, template, theme=theme, select=select)
@@ -269,7 +269,7 @@ function draw_evolution(ev::AbstractEvolution, template::Plot;
         figure = deepcopy(template)
     end
     if (select & ELEMENTS) > 0   
-        figure = draw_innovation(ev, figure, theme=theme, select=select & ELEMENTS)
+        figure = draw_innovation!(figure, ev, theme=theme, select=select & ELEMENTS)
     end
     if (select & ACTIVATED) > 0      
         push!(figure, Guide.annotation(compose(context(), 
@@ -278,7 +278,7 @@ function draw_evolution(ev::AbstractEvolution, template::Plot;
     return figure
 end ;
 
-function draw_innovation(iv::AbstractEnvironment, template::Plot;
+function draw_innovation!(template::Plot, iv::AbstractEnvironment;
                 theme::NamedTuple=theme, select=ELEMENTS)
     figure = deepcopy(template)
     if (select & ELEMENTS == ELEMENTS)
@@ -458,7 +458,7 @@ does not yet take account of whether or not incidents are activated.
 #|           whilst the upper boundary of the removal zone is \"removed\".    \
 #|                                             [`05-incidents`]"
 depict("introduction-05-incidents", new_figure(
-    draw_evolution(evol1, figure_zones, theme=theme, select=ELEMENTS),
+    draw_evolution!(deepcopy(figure_zones), evol1, theme=theme, select=ELEMENTS),
     Guide.title("Incidents driving the epidemic"))
 )
 ```
@@ -494,7 +494,7 @@ observed removals).
 #|           those infections reaching from within the infectivity zone to    \
 #|           just above it. [`06-activated`]"
 depict("introduction-06-activated", new_figure(
-    draw_evolution(evol1, figure_zones, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1, theme=theme, select=BASIC),
     Guide.title("Incidents driving the epidemic, emphasizing activated incidents"))
 )
 ```
@@ -632,7 +632,7 @@ therefore yields the same trajectory as `evol1_0`.
 #|           taken away, while retaining conditioned removals, as specified in `innov1_0`. \
 #|           [`07-old-removals-gone`]"
 depict("introduction-07-old-removals-gone", new_figure(
-    draw_evolution(evol1_0, figure_zones, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1_0, theme=theme, select=BASIC),
     Guide.title("The epidemic as before, deleting all non-activated removals"))
 )
 ```
@@ -688,7 +688,7 @@ equivalently `evol1_0` (since no inserted removals will be activated).
 #|           1.52 on time line 2, all of which actually lie in the removal zone!                       \
 #|           [`08-inactive-removals`]"
 depict("introduction-08-inactive-removals", new_figure(
-    draw_evolution(evol1_1, figure_zones, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1_1, theme=theme, select=BASIC),
     Guide.title("Inactive removals added from new innovation"))
 )
 ```
@@ -742,7 +742,7 @@ hence do not affect the trajectory.
 #|           changed (from `target=1` to `target=2`).                                         \
 #|           [`09-processed-cremovals`]" 
 depict("introduction-09-processed-cremovals", new_figure(
-    draw_evolution(evol1_2, figure_zones, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1_2, theme=theme, select=BASIC),
     Guide.title("Marks for conditioned removals changed by accept/reject"))
 )
 ```
@@ -794,9 +794,9 @@ evol1_2x  = Evolution(initial, evol1_2.history) ;
 innov1_2a = Innovation(initial.n, innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
 
-figure_temp = draw_innovation(innov1_2a, figure_zones, theme=theme)
+figure_temp = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
 depict("introduction-10-with-all-new-infections", new_figure(
-    draw_evolution(evol1_2x, figure_temp, theme=theme),
+    draw_evolution!(deepcopy(figure_temp), evol1_2x, theme=theme),
     Guide.title("New infections superimposed"))
 )
 ```
@@ -819,8 +819,8 @@ We can then distinguish visually between infections occurring before and after r
 #|           `[introduction-11-dividing-infections1]`"
 differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
 innov1_2b = Innovation(initial.n, differentiated, innov1_2.removals, innov1_2.cremovals) ;
-figure_temp = draw_innovation(innov1_2b, figure_zones, theme=theme)
-figure11 = draw_evolution(evol1_2x, figure_temp, theme=theme)
+figure_temp = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
+figure11 = draw_evolution!(deepcopy(figure_temp), evol1_2x, theme=theme)
 
 depict("introduction-11-dividing-infections1", new_figure(figure11,
     Guide.title("Distinguishing between new infections occurring before and after removal"))
@@ -934,7 +934,7 @@ See @fig-introduction-14-last-feasible-epidemic-bis.
 innov1_2c = Innovation(initial.n, differentiated ∪ perpetuated_infections,
                     innov1_2.removals, innov1_2.cremovals) ;
 figure14 = new_figure(
-    draw_innovation(innov1_2c, figure_zones, theme=theme),
+    draw_innovation!(deepcopy(figure_zones), innov1_2c, theme=theme),
     Guide.annotation(compose(context(),
         draw_activated_elements(initial, innov1_2.cremovals, theme=theme))),
 
@@ -1273,7 +1273,7 @@ evol2  = Evolution(initial, innov2) ;
 #|           which would infect \"no-fly zone\" and illustrating trajectory and zone (by     \
 #|           shading) of the last feasible epidemic. [`17-no-fly-zone`]"  
 figure17 = new_figure(
-    draw_evolution(evol2, figure_zones, theme=theme, select=ELEMENTS),
+    draw_evolution!(deepcopy(figure_zones), evol2, theme=theme, select=ELEMENTS),
     
     # Draw activated incidents from last feasible epidemic (derived from previous
     # `evolution`!), without inscriptions.
@@ -1331,7 +1331,7 @@ figure_zones2 = draw_regions(evol2, incidents_template,
 
 figure18 = new_figure(
     # Draw second algorithmic step of epidemic
-    draw_evolution(evol2, figure_zones2, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones2), evol2, theme=theme, select=BASIC),
 
     # Draw, for each time line, "no fly" boundaries determined by running maximum calculation.
     Guide.annotation(compose(context(),

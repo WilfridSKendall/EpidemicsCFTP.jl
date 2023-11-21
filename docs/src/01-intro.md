@@ -18,10 +18,10 @@ Version information is as follows:
 ```@eval
 import Markdown, EpidemicsCFTP
 Markdown.parse("""
-| _Module_              | _Version_                       | _Branch_                       |
-|:----------------------|:--------------------------------|:------------------------------:|
-| `julia`               | `$VERSION`                      |                                |
-| `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| _Software_             | _Version_                  | _Branch_                  | _Date of last commit_  |
+|:-----------------------|:---------------------------|:--------------------------|:-----------------------|
+| Running under `julia`  | `$VERSION`                 | ---                       |                        |
+| Module `EpidemicsCFTP` | `$(EpidemicsCFTP.version)` | `$(EpidemicsCFTP.branch)` | $(EpidemicsCFTP.date)  |
 """)
 ```
 

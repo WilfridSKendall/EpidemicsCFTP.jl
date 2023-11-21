@@ -66,14 +66,16 @@ import Markdown
 quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
 ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
 ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => ""), " +0000" => "")
+
 Markdown.parse("""
-| _Software_                   | _Version_                       | _Branch_                       |
-|:-----------------------------|:--------------------------------|-------------------------------:|
-| Quarto                       | `$(quartoversion)`              | ---                            |
-| Running under `julia`        | `$VERSION`                      | ---                            |
-| Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 |
-| Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
-| Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| _Software_                   | _Version_                       | _Branch_                       | _Date of last commit_        |
+|:-----------------------------|:--------------------------------|-------------------------------:|:-----------------------------|
+| Quarto                       | `$(quartoversion)`              | ---                            |                              |
+| Running under `julia`        | `$VERSION`                      | ---                            |                              |
+| Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 | `$owndate`                   |
+| Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` | `$(EpidemicsUtilities.date)` |
+| Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      | `$(EpidemicsCFTP.date)`      |
 """)
 ```
 
@@ -237,34 +239,39 @@ INFECTIONS = 0b000001000 ; REMOVALS   = 0b000010000 ; CREMOVALS  = 0b000100000 ;
 ACTIVATED  = 0b001000000 ;
 ELEMENTS   = INFECTIONS | REMOVALS | CREMOVALS ; BASIC = ACTIVATED | ELEMENTS ;
 ALL        = TOP | BOUNDARIES | REGIONS | BASIC
-function draw_regions(ev::Evolution, template::Plot;
+#function draw_regions(ev::Evolution, template::Plot;
+#                theme::NamedTuple=theme, select=BOUNDARIES | REGIONS | TOP)
+#    figure = deepcopy(template)
+function draw_regions!(template::Plot, ev::Evolution;
                 theme::NamedTuple=theme, select=BOUNDARIES | REGIONS | TOP)
-    figure = deepcopy(template)
     SIR_flow = table_trajectories1(duration, ev.trajectory)
     xy_SIR_flow = table_trajectories2(flow, theme=theme)
     if (select & TOP) > 0            
-        push!(figure, layer(flow, x=:t, y=:population, Geom.line,
+        push!(template, 
+            layer(flow, x=:t, y=:population, Geom.line,
                     style(line_width=theme.trail, default_color=theme.scaffold)))
     end
     if (select & BOUNDARIES) > 0     
-        push!(figure,layer(SIR_flow, x=:t, y=:removals, Geom.step,
-                    style(line_width=theme.boundary, default_color=theme.colour(R))),
-                layer(SIR_flow, x=:t, y=:epidemic, Geom.step,
-                    style(line_width=theme.boundary, default_color=theme.colour(I))))
+        push!(template, 
+            layer(SIR_flow, x=:t, y=:removals, Geom.step,
+                style(line_width=theme.boundary, default_color=theme.colour(R))),
+            layer(SIR_flow, x=:t, y=:epidemic, Geom.step,
+                style(line_width=theme.boundary, default_color=theme.colour(I))))
     end
     if (select & REGIONS) > 0        
-        push!(figure, layer(xy_SIR_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
-                    alpha=[2theme.opacity], style(default_color=theme.colour(R))),
-                layer(xy_SIR_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
-                    alpha=[theme.opacity], style(default_color=theme.colour(I))))
+        push!(template, 
+            layer(xy_SIR_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+                alpha=[2theme.opacity], style(default_color=theme.colour(R))),
+            layer(xy_SIR_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+                alpha=[theme.opacity], style(default_color=theme.colour(I))))
     end
-    return figure
+    return template
 end ;
 
 function draw_evolution!(template::Plot, ev::AbstractEvolution;
                 theme::NamedTuple=theme, select=ELEMENTS | ACTIVATED)
     if (select & (BOUNDARIES | REGIONS | TOP)) > 0
-        figure = draw_regions(ev, template, theme=theme, select=select)
+        figure = draw_regions!(template, ev, theme=theme, select=select)
     else
         figure = template
     end
@@ -410,7 +417,8 @@ an _infectivity zone_, and between the infectivity zone and a _susceptible zone_
 #|           and removed) is itself removed. [`03-boundary`]"
 depict("introduction-03-boundary", 
     new_figure(
-        draw_regions(evol1, incidents_template, theme=theme, select=BOUNDARIES | TOP),
+        draw_regions!(deepcopy(incidents_template), 
+            evol1, theme=theme, select=BOUNDARIES | TOP),
         Guide.title("Boundaries for the coupling construction"))
 )
 ```
@@ -437,7 +445,8 @@ Markdown.parse(pretty_table(String, xy_flow[:,header],
 #| echo: false
 #| label: fig-introduction-04-zones
 #| fig-cap: "Infectivity and removal zones. [`04-zones`]"
-figure_zones = draw_regions(evol1, incidents_template, theme=theme, select=BOUNDARIES | REGIONS)
+figure_zones = draw_regions!(deepcopy(incidents_template), 
+    evol1, theme=theme, select=BOUNDARIES | REGIONS)
 depict("introduction-04-zones", new_figure(figure_zones, Guide.title("Zones of infectivity and removal")))
 ```
 
@@ -1325,7 +1334,7 @@ xy_flow = table_trajectories2(flow, theme=theme) ;
 #|           \"no-fly\" zone and last feasible zone as determined by previous step and  \
 #|           proposed innovation. Note that the infected region has altered to conform  \
 #|           to the new `Innovation` (`innov2`). [`18-one-iteration`]"  
-figure_zones2 = draw_regions(evol2, incidents_template, 
+figure_zones2 = draw_regions!(deepcopy(incidents_template), evol2, 
                             theme=theme, select=BOUNDARIES | REGIONS)
 
 figure18 = new_figure(

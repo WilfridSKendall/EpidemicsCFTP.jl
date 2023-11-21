@@ -70,7 +70,7 @@ owndate       = replace(replace(split(read(Cmd(`git log -1`), String), "\n")[3],
 
 Markdown.parse("""
 | _Software_                   | _Version_                       | _Branch_                       | _Date of last commit_        |
-|:-----------------------------|:--------------------------------|-------------------------------:|:-----------------------------|
+|:-----------------------------|:--------------------------------|:-------------------------------|:-----------------------------|
 | Quarto                       | `$(quartoversion)`              | ---                            |                              |
 | Running under `julia`        | `$VERSION`                      | ---                            |                              |
 | Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 | `$owndate`                   |
@@ -239,9 +239,6 @@ INFECTIONS = 0b000001000 ; REMOVALS   = 0b000010000 ; CREMOVALS  = 0b000100000 ;
 ACTIVATED  = 0b001000000 ;
 ELEMENTS   = INFECTIONS | REMOVALS | CREMOVALS ; BASIC = ACTIVATED | ELEMENTS ;
 ALL        = TOP | BOUNDARIES | REGIONS | BASIC
-#function draw_regions(ev::Evolution, template::Plot;
-#                theme::NamedTuple=theme, select=BOUNDARIES | REGIONS | TOP)
-#    figure = deepcopy(template)
 function draw_regions!(template::Plot, ev::Evolution;
                 theme::NamedTuple=theme, select=BOUNDARIES | REGIONS | TOP)
     SIR_flow = table_trajectories1(duration, ev.trajectory)
@@ -310,10 +307,12 @@ end ;
 
 # Constructing the epidemic
 Thus an epidemic is constructed as follows;
-the epidemic starts at the `initial` state at time \(0.0\) and then evolves
-based on subsequent (possibly) potential infections and removals 
+the epidemic
+`evol1 = Evolution(initial, innov1)`
+starts at the `initial` state at time \(0.0\) and then evolves
+based on the various potential incidents
 held in the `Innovations`
-structure `innov1` supplying subsequent potential incidents. 
+structure `innov1`. 
 @tbl-evolution tabulates the epidemic trajectory 
 up to time `duration=2.0`
 for initial state `initial` and a particular `Innovation` structure `innov1`.
@@ -541,9 +540,12 @@ whether it is to be introduced:
  If that
  turns out to be the case, then the new infection incident is not introduced.
  
-There are two issues. _Firstly_, we need to organize 
+There are two substantial issues:
+
+A) we need to organize 
 the calculations required for making the decisions in item 5;
-_Secondly_, we must show the algorithmic time evolution 
+
+B) we must show the algorithmic time evolution 
 is "monotonic" in a way
 that permits implementation of CFTP,
 
@@ -591,31 +593,31 @@ preserve the conditional distribution of the $\SIR$ epidemic. This should be dis
 in the paper now being drafted: it is one of the crucial steps of the entire argument!
 :::
 
-We modify `innov_candidate`, inserting extra incidents 
-so that particular issues arise in implementation of
-the algorithm time step:
+We insert some incidents in `innov_candidate`
+to force some issues to arise in algorithm implementation:
 
 a) an extra infection which might affect the \LFE infection;
 ```{julia}
-push!(innov_candidate.infections, Infection(1.1, 2, 4), )
+push!(innov_candidate.infections, I(1.1, 2, 4), )
 ```
 b) some extra infections which might produce a faster 
 epidemic without hitting new removals;
 ```{julia}
-push!(innov_candidate.infections,Infection(0.5, 1, 2), Infection(0.85, 2, 4), 
-    Infection(1.05, 2, 3), Infection(1.55, 4, 6))
+push!(innov_candidate.infections, I(0.5, 1, 2), I(0.85, 2, 4), I(1.05, 2, 3), I(1.55, 4, 6))
 ```
-c) a couple of inactivated removals early in time lines 2 and 3 
+c) a couple of inactivated removals in time lines 2 and 3 
 which might affect the \NOFLYZONE;
 ```{julia}
-push!(innov_candidate.removals, Removal(0.3, 2), Removal(0.1, 3))
+push!(innov_candidate.removals, R(0.3, 2), R(0.1, 3))
 ```
 
 
 Remove all inactive removals from previous `Innovation`
 -------------------------------------------------------
-We now sequentially deploy `innov_candidate`, inserting selected incidents 
-into successive stages of `innov1_x` (for `x=0, 1, ...`)
+We now sequentially deploy the incidents of `innov_candidate`, inserting selected 
+kinds of incidents 
+into successive modifications `innov1_x` (for `x=0, 1, ...`)
+of the original `Innovation` `innov1`
 so as to ensure that conditions on activated removals are not violated
 when `innov1_x` is used to update `innov1` to produce `evol_x`.
 First remove all unactivated removals from `innov1`: see @fig-introduction-07-old-removals-gone. 
@@ -630,7 +632,7 @@ by omitting all (old) `inactive_removals`.
 
 The resulting `Evolution` structure 
 `evol1_0 = Evolution(initial, innov1_0)` 
-therefore yields the same trajectory as `evol1_0`.
+therefore yields the same trajectory as `evol1 = Evolution(initial, innov1)`.
 :::
 
 ```{julia}
@@ -656,13 +658,18 @@ it is still alive at the time `duration`,
 and is born at time `0.0` if it has not been infected by time `duration`: 
 evidently this is unrealistic
 but flags absence of data.
+
+::: {.callout-warning}
+It might be more logical to have default time line "birth" occurring at time `-Inf`?
+:::
+
 We now employ a function `EpidemicsCFTP.inactive_removals` which
 returns a list composed of:
 
 a) removals occurring before respective time line is infected (before relevant `start_time`);
 
 b) removals occurring on or after respective time line is removed
-(after relevant `finis_time`: these removals are all converted to `KilledRemoval`s).
+(after relevant `finis_time`): these removals are all converted to `KilledRemoval`s.
 
 This allows us to add the new inactive removals from `innov_candidate` to `innov1_0`,
 converting those in the removals zone to `KilledRemoval`s, forming
@@ -708,10 +715,10 @@ and determine whether the old can be replaced by the corresponding new condition
 ```{julia}
 #| echo: false
 Markdown.parse("""
-| `CRemoval` source         | Resulting list of `CRemoval`s                             |
-|:--------------------------|:----------------------------------------------------------|
-| Old conditioned removals: | `$(sprint(show, MIME("text/plain"), innov1.cremovals))`   |
-| New conditioned removals: | `$(sprint(show, MIME("text/plain"), innov1_1.cremovals))` |
+| `CRemoval` source               | Resulting list of `CRemoval`s                             |
+|:--------------------------------|:----------------------------------------------------------|
+| Old conditioned removals:       | `$(sprint(show, MIME("text/plain"), innov1.cremovals))`   |
+| Candidate conditioned removals: | `$(sprint(show, MIME("text/plain"), innov1_1.cremovals))` |
 """)
 ```
 Replacement is permitted exactly if
@@ -731,7 +738,8 @@ evol1_2 = Evolution(initial, innov1_2) ;
 ::: {.callout-tip}
 # Explanatory note for `innov1_2`
 This is obtained from `innov1_1` 
-by re-marking the `CRemoval`s using `EpidemicsCFTP.resulting_cremovals`.
+by using `EpidemicsCFTP.resulting_cremovals`
+to re-mark the `CRemoval`s.
 
 Again the resulting `Evolution` structure 
 `evol1_2 = Evolution(initial, innov1_2)` 
@@ -793,18 +801,17 @@ new epidemic trajectory!
 #| fig-cap: "This displays _all_ the new infections from `innov_candidate`, (replacing           \
 #|           all previous infections) together with re-marked conditional removals, new          \
 #|           inactivated removals, and activated (but non-labelled) infections all derived from  \
-#|           @fig-introduction-09-processed-cremovals. Note that the new infections would           \
+#|           @fig-introduction-09-processed-cremovals. Note that the new infections would        \
 #|           _not_ produce the old epidemic (still displayed on the figure together with         \
 #|           activated elements): indeed there is no guarantee that the new epidemic would even  \
 #|           satisfy the removals conditioning! [`10-with-all-new-infections`]"
-evol1_2x  = Evolution(initial, evol1_2.history) ;
-
 innov1_2a = Innovation(initial.n, innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
+figure10 = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
 
-figure_temp = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
+evol1_2x  = Evolution(initial, evol1_2.history) ;
 depict("introduction-10-with-all-new-infections", new_figure(
-    draw_evolution!(figure_temp, evol1_2x, theme=theme),
+    draw_evolution!(figure10, evol1_2x, theme=theme),
     Guide.title("New infections superimposed"))
 )
 ```
@@ -827,8 +834,8 @@ We can then distinguish visually between infections occurring before and after r
 #|           `[introduction-11-dividing-infections1]`"
 differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
 innov1_2b = Innovation(initial.n, differentiated, innov1_2.removals, innov1_2.cremovals) ;
-figure_temp = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
-figure11 = draw_evolution!(figure_temp, evol1_2x, theme=theme)
+figure11  = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
+figure11  = draw_evolution!(figure11, evol1_2x, theme=theme)
 
 depict("introduction-11-dividing-infections1", new_figure(figure11,
     Guide.title("Distinguishing between new infections occurring before and after removal"))
@@ -852,13 +859,14 @@ are relevant
 to construction of the \LFE. 
 For such an infection, the `target` mark must lie in the infectious
 zone, and the `infectee` mark must not lie below the most recent running supremum.
-The relevant infections are depicted in @fig-introduction-12-with-relevant-infections.
-Note that the relevant infections
+The relevant infections are computing using the function `EpidemicsCFTP.relevant_infections`
+and are depicted in @fig-introduction-12-with-relevant-infections.
+Note that the displayed set of relevant infections
 ```{julia}
 #| echo: false
 EpidemicsCFTP.relevant_infections(evol1_2, innov_candidate)
 ```
-include some infections that will not be considered for the \LFE,
+includes some infections that will not be considered for the \LFE,
 because their `target` marks are above the epidemic trajectory.
 
 ```{julia}
@@ -891,20 +899,7 @@ and the conditioned removals
 and then computes the reverse-initial state as the final state of the evolution
 (epidemic state at time `duration`).
 By this means we can compute and display the trajectory and history of the \LFE using:
-```julia
-last_feasible_trajectory, last_feasible_history = 
-    EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate) ;
-```
-
-Now @fig-introduction-13-last-feasible-epidemic computes and superposes the resulting \LFE flow
-on @fig-introduction-12-with-relevant-infections.
-
 ```{julia}
-#| echo: false
-#| label: fig-introduction-13-last-feasible-epidemic
-#| fig-cap: "This refines @fig-introduction-12-with-relevant-infections, adding only the last  \
-#|           feasible epidemic trajectory (coloured in pink) and last feasible new          \
-#|           infections (outlined in deep pink). [`13-last-feasible-epidemic`]"
 last_feasible_trajectory, last_feasible_history = 
     EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate) ;
 
@@ -912,7 +907,21 @@ last_feasible_trajectory, last_feasible_history =
 last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections]
 perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ evol1.infections]
 flow_last_feasible           = table_trajectories1(duration, last_feasible_trajectory)
+```
+::: {.callout-info
+# ``perpetuated_infections`, `flow_last_feasible`
+Needs to be computed within a function?
+:::
 
+Now @fig-introduction-13-last-feasible-epidemic computes and superposes the resulting \LFE flow
+on @fig-introduction-12-with-relevant-infections. 
+
+```{julia}
+#| echo: false
+#| label: fig-introduction-13-last-feasible-epidemic
+#| fig-cap: "This refines @fig-introduction-12-with-relevant-infections, adding only the last  \
+#|           feasible epidemic trajectory (coloured in pink) and last feasible new          \
+#|           infections (outlined in deep pink). [`13-last-feasible-epidemic`]"
 figure13 = new_figure(figure11,
     Guide.annotation(compose(context(),
         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
@@ -928,7 +937,7 @@ depict("introduction-13-last-feasible-epidemic", new_figure(figure13,
 
 The next step is to abandon even the activated infections from the previous `Evolution`
 excepting only those which are required in the
-last viable epidemic, and therefore have to be perpetuated.
+last viable epidemic, and therefore have to be perpetuated (computed above as `perpetuated_infections`).
 See @fig-introduction-14-last-feasible-epidemic-bis.
 
 ```{julia}
@@ -1005,17 +1014,26 @@ early_inactivated_removals =
 
 We now compute the time of last early inactivated removal for each time line, forming the vector `max_removal_time`.
 ```{julia}
-max_removal_time = repeat([0.0], initial.n)
-for removal ∈ early_inactivated_removals
-    max_removal_time[removal.target] = max(max_removal_time[removal.target], removal.t)
+max_removal_time = repeat([0.0], evol1_2.trajectory[1].n)
+for z ∈ early_inactivated_removals
+    max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
 end
 ```
+::: {.callout-info
+# ``max_removal_time`
+Needs to be computed within `compute_nofly` function (below).
+:::
+
 
 Then we take step (b), and compute the monotonic envelope `nofly_envelope0` of `max_removal_time`.
 ```{julia}
-nofly_envelope0 = accumulate(max, max_removal_time) ;
+nofly_envelope0 = accumulate(max, max_removal_time)
 println(nofly_envelope0)
 ```
+::: {.callout-info
+# ``nofly_envelope0`
+Needs to be computed within `compute_nofly` function (below).
+:::
 
 
 ```{julia}
@@ -1093,6 +1111,11 @@ println("Prior relevant infections:    \n",
 println("Posterior relevant infections:\n", 
     sprint(show, MIME("text/plain"), posterior_relevant_infections))
 ```
+::: {.callout-info
+# ``posterior_relevant_infections`, `prior_relevant_infections`
+Needs to be computed within a function?
+:::
+
 
 @fig-introduction-16-prior-relevant-removals illustrates this emphasis on `prior_relevant_infections`
 ```{julia}
@@ -1135,7 +1158,7 @@ Now we perform a careful computation of the "true" boundary: we
 work backwards through the `prior_relevant_infections` 
 as explained by the annotations to the code below. 
 ```{julia}
-function compute_nofly(ev, innov, early_inactivated_removals)
+function compute_nofly(ev, iv, early_inactivated_removals)
     initial = ev.trajectory[1]
 	envelope0 = repeat([0.0], initial.n)                                       # <1>
 	for removal ∈ early_inactivated_removals  # ev.removals?                   # <1>
@@ -1144,8 +1167,8 @@ function compute_nofly(ev, innov, early_inactivated_removals)
 	envelope = accumulate(max, envelope0)                                      # <1>
 	
 	processed_infections = AbstractInfection[]                                 # <2>
-	
-	for z ∈ reverse(sort(innov.infections, lt=isearlier))                      # <3>
+	 
+	for z ∈ reverse(sort(iv.infections, lt=isearlier))                         # <3>
 	    
 	    if (z.t ≥ ev.finis_times[z.target])                                    # <4>
 	        push!(processed_infections, KilledInfection(z))                    # <4>

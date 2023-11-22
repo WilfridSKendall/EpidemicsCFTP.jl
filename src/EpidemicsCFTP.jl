@@ -6,7 +6,7 @@ module EpidemicsCFTP
 loc     = dirname(dirname(pathof(EpidemicsCFTP)))
 version = "$(read(Cmd(`git describe --tags`, dir=loc), String)[1:end-1])"
 branch  = "$(read(Cmd(`git branch --show-current`, dir=loc), String)[1:end-1])"
-date    = replace(replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => ""), " +0000" => "")
+date    = replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => "", " +0000" => "")
 
 # # Imports
 # # -------

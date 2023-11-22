@@ -25,9 +25,8 @@ Markdown.parse("""
 """)
 ```
 
-The aim of the module is to provide perfect simulation for a ``\operatorname{S-I-R}`` system
-conditioned on all removal times and obeying the following
-stochastic dynamics.
+Aimed at providing CFTP for a ``\operatorname{S-I-R}`` system
+conditioned on all removal times and obeying
 ```math
 \begin{align*}
 S \to S-1\,, \quad I \to I+1 \qquad & \text{ at rate } \alpha \; S I
@@ -35,7 +34,8 @@ S \to S-1\,, \quad I \to I+1 \qquad & \text{ at rate } \alpha \; S I
 I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I
 \end{align*}
 ```
-![Screen shot of a resulting simulation.](image/introduction-no-fly-zone.png)
+
+![Screen shot of a resulting simulation.](image/small-no-fly-zone.png)
 
 ## Installation and documentation  
 General advice on developing a `julia` package is given at 

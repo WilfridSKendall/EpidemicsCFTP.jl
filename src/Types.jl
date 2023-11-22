@@ -8,8 +8,7 @@
 
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
-
-# Expects field `t<:Real` (used by function [`isearlier`](@ref)
+Concrete sub-types are expected to possess a field `t<:Real` (used by function [`isearlier`](@ref)
 to time-order lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end

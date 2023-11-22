@@ -66,7 +66,7 @@ import Markdown
 quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
 ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
 ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
-owndate       = replace(replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => ""), " +0000" => "")
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
 | _Software_                   | _Version_                       | _Branch_                       | _Date of last commit_        |
@@ -150,17 +150,18 @@ innov1 = Innovation(initial.n,
 A graphical key for various incidents
 -------------------------------------
 @fig-introduction-01-key displays
-various kinds of incidents including also
-`NoFlyInfection` (`𝒩`), `ExpungedInfection` (`𝒳`) (useful when computing no-fly zone: respectively, `𝒩` _could_ be
-activated, causing infection of the \NOFLYZONE so raising an error; and `𝒳` immediately causes violation of the conditioning if activated);
-`KilledInfection` (`𝒦`) and `KilledRemoval` (`𝒦`) lie in the removed zone so never activated.
+various incident types also including
+`NoFlyInfection` (`𝒩`), `ExpungedInfection` (`𝒳`) (used for no-fly zone: respectively, `𝒩` _could_ be
+activated, but then would cause infection of the \NOFLYZONE so raising an error; 
+activation of `𝒳` would immediately cause violation of conditioning);
+`KilledRemoval` (`𝒦`) and `KilledInfection` (also `𝒦`) lie in the removed zone so are never activated.
  
 ```{julia}
 #| echo: false
 #| label: fig-introduction-01-key
-#| fig-cap: "`AbstractIncident`s with activated versions (activation signals error for       \
-#|           `NoFlyInfection`, `ExpungedInfection`, `KilledInfection` and `KilledRemoval`!). \
-#|           Arrows from `AbstractInfection` incidents point to `infectee` time lines.       \
+#| fig-cap: "`AbstractIncident`s with activated versions (activation leads to an error for  \
+#|           `NoFlyInfection`, `ExpungedInfection`, `KilledInfection` and `KilledRemoval`). \
+#|           Arrows from `AbstractInfection` incidents point to `infectee` time lines.      \
 #|           [`01-key`]"
 set_default_plot_size(theme.figwidth, 0.6theme.figheight)
 
@@ -239,6 +240,7 @@ INFECTIONS = 0b000001000 ; REMOVALS   = 0b000010000 ; CREMOVALS  = 0b000100000 ;
 ACTIVATED  = 0b001000000 ;
 ELEMENTS   = INFECTIONS | REMOVALS | CREMOVALS ; BASIC = ACTIVATED | ELEMENTS ;
 ALL        = TOP | BOUNDARIES | REGIONS | BASIC
+
 function draw_regions!(template::Plot, ev::Evolution;
                 theme::NamedTuple=theme, select=BOUNDARIES | REGIONS | TOP)
     SIR_flow = table_trajectories1(duration, ev.trajectory)
@@ -305,11 +307,14 @@ function draw_innovation!(template::Plot, iv::AbstractEnvironment;
 end ;
 ```
 
+{{< pagebreak >}}
+
 # Constructing the epidemic
 Thus an epidemic is constructed as follows;
 the epidemic
 `evol1 = Evolution(initial, innov1)`
-starts at the `initial` state at time \(0.0\) and then evolves
+starts at the `initial` state at process time \(0.0\) and then evolves
+in process time 
 based on the various potential incidents
 held in the `Innovations`
 structure `innov1`. 
@@ -697,10 +702,10 @@ equivalently `evol1_0` (since no inserted removals will be activated).
 ```{julia}
 #| echo: false
 #| label: fig-introduction-08-inactive-removals
-#| fig-cap: "This is @fig-introduction-07-old-removals-gone, but with non-activated removals added        \
-#|           from `innov_candidate` to form `evol1_1`. Note the three inactive removals (now rendered  \
-#|           in different colour and labelled by script K) at time 1.61 on time line 1 and times 1.46, \
-#|           1.52 on time line 2, all of which actually lie in the removal zone!                       \
+#| fig-cap: "This is @fig-introduction-07-old-removals-gone, but with non-activated removals added     \
+#|           from `innov_candidate` to form `evol1_1`. Note three inactive removals (different colour, \
+#|           labelled by script K) at time 1.61 on time line 1; times 1.46, 1.52 on time line 2,       \
+#|           all in the removal zone.                       \
 #|           [`08-inactive-removals`]"
 depict("introduction-08-inactive-removals", new_figure(
     draw_evolution!(deepcopy(figure_zones), evol1_1, theme=theme, select=BASIC),
@@ -731,8 +736,9 @@ as determined by the function `EpidemicsCFTP.resulting_cremovals`.
 ```{julia}
 innov1_2 = Innovation(initial.n, innov1_1.infections, 
                 innov1_1.removals, 
-                EpidemicsCFTP.resulting_cremovals(innov1, innov_candidate, 
-                    evol1_1.start_times, evol1_1.finis_times)) ;
+#                EpidemicsCFTP.resulting_cremovals(innov1, innov_candidate, 
+#                    evol1_1.start_times, evol1_1.finis_times)) ;
+                EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
 evol1_2 = Evolution(initial, innov1_2) ;
 ```
 ::: {.callout-tip}

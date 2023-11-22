@@ -35,7 +35,6 @@ I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I
 \end{align*}
 ```
 
-![Screen shot of a resulting simulation.](image/small-no-fly-zone.png)
 
 ## Installation and documentation  
 General advice on developing a `julia` package is given at 

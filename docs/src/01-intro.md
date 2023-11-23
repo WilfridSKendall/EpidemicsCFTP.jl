@@ -29,9 +29,9 @@ Aimed at providing CFTP for a ``\operatorname{S-I-R}`` system
 conditioned on all removal times and obeying
 ```math
 \begin{align*}
-S \to S-1\,, \quad I \to I+1 \qquad & \text{ at rate } \alpha \; S I
+S \to S-1\,, \quad I \to I+1 \qquad & \text{ at rate } \alpha \; S I \,,
 \cr
-I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I
+I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I    \,.
 \end{align*}
 ```
 

@@ -11,6 +11,7 @@ image/production*
 .directory
 .Rhistory
 VERSION.txt
+Manifest.toml
 
 *.kate-swp
 *.kilepr

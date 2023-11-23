@@ -43,7 +43,7 @@ source = "introduction.qmd"
 
 ```{julia}
 #| label: tbl-software
-#| tbl-cap: Versions of main software packages _etc_.
+#| tbl-cap: Versions of locally-authored software packages used below _etc_.
 #| echo: false
 #| eval: true
 #| cache: false
@@ -102,12 +102,12 @@ set_default_plot_size(theme.figwidth, theme.figheight)
 
 Introduction to the \(\SIR\) epidemic
 =====================================
-In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
+In a population of fixed size, an \(\SIR\) epidemic runs under the following stochastic dynamics:
 \[
 \begin{aligned}
-\text{\emph{Infection: }} & &\text{transition }S\to S-1\,,\; I \to I+1 & \text{ occurs at rate } & \alpha \, S\, I
-\\
-\text{\emph{Removal: }}   & &\text{transition }I\to I-1\,,\; R \to R+1 & \text{ occurs at rate } & \beta \, I
+\text{\emph{Infection: }} & &\text{transition }S\to S-1\,,\; I \to I+1 & \text{ occurs at rate } & \alpha \, S\, I\,,
+\\\,.
+\text{\emph{Removal: }}   & &\text{transition }I\to I-1\,,\; R \to R+1 & \text{ occurs at rate } & \beta \, I\,.
 \end{aligned}
 \]
 The structural parameter of epidemic `duration` 
@@ -116,9 +116,10 @@ and the `initial` configuration
 (of `SIR` type) are given by
 `julia` constants,
 as are the per-pair infection rate `α` and the per-individual rate of removal `β`.
-The population size is computed as part of the construction of `initial`, producing an extra
-mark obtained by computing the sum of 
-three of the fields of the `SIR` constructor
+Population size is computed as part of the construction of `initial`, 
+generating an extra
+mark `n` obtained by computing the sum of 
+the `s`, `i`, and `r` fields of the `SIR` constructor
 (namely, the non-negative integers supplied by the last three parameters).
 ```{julia}
 const duration = 2.0;
@@ -279,7 +280,7 @@ function draw_evolution!(template::Plot, ev::AbstractEvolution;
     end
     if (select & ACTIVATED) > 0      
         push!(figure, Guide.annotation(compose(context(), 
-            draw_activated_elements(ev.trajectory[1], ev.history, theme=theme))))
+            draw_activated_elements(ev.initial, ev.history, theme=theme))))
     end
     return figure
 end ;
@@ -310,7 +311,7 @@ end ;
 {{< pagebreak >}}
 
 # Constructing the epidemic
-Thus an epidemic is constructed as follows;
+An epidemic can now be constructed as follows;
 the epidemic
 `evol1 = Evolution(initial, innov1)`
 starts at the `initial` state at process time \(0.0\) and then evolves
@@ -458,7 +459,8 @@ Adding incidents to the plot
 ----------------------------
 @fig-introduction-05-incidents adds incidents corresponding to the underlying `innov1`
 using the `EpidemicsUtilities` function `draw_elements`. This figure
-does not yet take account of whether or not incidents are activated.
+does not yet take account of whether or not incidents are activated,
+but merely illustrates the occurrences of the various incidents..
 ```{julia}
 #| echo: false
 #| label: fig-introduction-05-incidents
@@ -573,7 +575,7 @@ println("innov_candidate = ", sprint(show, MIME("text/plain"), innov_candidate))
 
 ::: {.callout-tip}
 # Explanatory note concerning `innov_candidate`
-`innov_candidate` is an independent innovation.
+Note that `innov_candidate` is an independent innovation.
 It is not used directly in defining a new `Evolution`, but is used
 as a supply of components in what follows.
 :::
@@ -736,8 +738,6 @@ as determined by the function `EpidemicsCFTP.resulting_cremovals`.
 ```{julia}
 innov1_2 = Innovation(initial.n, innov1_1.infections, 
                 innov1_1.removals, 
-#                EpidemicsCFTP.resulting_cremovals(innov1, innov_candidate, 
-#                    evol1_1.start_times, evol1_1.finis_times)) ;
                 EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
 evol1_2 = Evolution(initial, innov1_2) ;
 ```
@@ -813,9 +813,10 @@ new epidemic trajectory!
 #|           satisfy the removals conditioning! [`10-with-all-new-infections`]"
 innov1_2a = Innovation(initial.n, innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
-figure10 = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
-
 evol1_2x  = Evolution(initial, evol1_2.history) ;
+
+figure10  = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
+
 depict("introduction-10-with-all-new-infections", new_figure(
     draw_evolution!(figure10, evol1_2x, theme=theme),
     Guide.title("New infections superimposed"))
@@ -909,13 +910,19 @@ By this means we can compute and display the trajectory and history of the \LFE 
 last_feasible_trajectory, last_feasible_history = 
     EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate) ;
 
-# Next list comprehension is required to make sure type is correct!
+# Next list comprehension is required to make sure that the list type is correct!
 last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections]
 perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ evol1.infections]
 flow_last_feasible           = table_trajectories1(duration, last_feasible_trajectory)
+
+# This bit badly needs to be put in a function!
+for nn in DataFrames.names(flow_last_feasible)
+    append!(evol1_2x.LFE_flow[!, nn], flow_last_feasible[!, nn])
+end ;
 ```
-::: {.callout-info
-# ``perpetuated_infections`, `flow_last_feasible`
+
+::: {.callout-warning}
+# Reminder re `perpetuated_infections`, `flow_last_feasible`
 Needs to be computed within a function?
 :::
 
@@ -931,7 +938,7 @@ on @fig-introduction-12-with-relevant-infections.
 figure13 = new_figure(figure11,
     Guide.annotation(compose(context(),
         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
-    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh),          # <1> 
+    layer(evol1_2x.LFE_flow, x=:t, y=:epidemic, Geom.step(direction=:vh),          # <1> 
         style(line_width=theme.broad, default_color=theme.lastfeasible1)),
 )
 depict("introduction-13-last-feasible-epidemic", new_figure(figure13,
@@ -950,9 +957,9 @@ See @fig-introduction-14-last-feasible-epidemic-bis.
 #| echo: false
 #| label: fig-introduction-14-last-feasible-epidemic-bis
 #| fig-cap: "This varies @fig-introduction-10-with-all-new-infections by omitting those active \
-#|           infections carried over from the previous epidemic which are now superseded    \
-#|           by the \"last feasible epidemic\": the only remaining old infections are those \
-#|           involved in the \"last feasible epidemic\". However the original epidemic      \
+#|           infections carried over from the previous epidemic which are now superseded       \
+#|           by the \"last feasible epidemic\": the only remaining old infections are those    \
+#|           involved in the \"last feasible epidemic\". However the original epidemic         \
 #|           trajectory is still depicted. [`14-last-feasible-epidemic-bis`]" 
 innov1_2c = Innovation(initial.n, differentiated ∪ perpetuated_infections,
                     innov1_2.removals, innov1_2.cremovals) ;
@@ -1020,13 +1027,14 @@ early_inactivated_removals =
 
 We now compute the time of last early inactivated removal for each time line, forming the vector `max_removal_time`.
 ```{julia}
-max_removal_time = repeat([0.0], evol1_2.trajectory[1].n)
+max_removal_time = repeat([0.0], evol1_2.initial.n)
 for z ∈ early_inactivated_removals
     max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
 end
 ```
-::: {.callout-info
-# ``max_removal_time`
+
+::: {.callout-warning}
+# Reminder re `max_removal_time`
 Needs to be computed within `compute_nofly` function (below).
 :::
 
@@ -1036,8 +1044,8 @@ Then we take step (b), and compute the monotonic envelope `nofly_envelope0` of `
 nofly_envelope0 = accumulate(max, max_removal_time)
 println(nofly_envelope0)
 ```
-::: {.callout-info
-# ``nofly_envelope0`
+::: {.callout-warning}
+# Reminder re `nofly_envelope0`
 Needs to be computed within `compute_nofly` function (below).
 :::
 
@@ -1117,8 +1125,8 @@ println("Prior relevant infections:    \n",
 println("Posterior relevant infections:\n", 
     sprint(show, MIME("text/plain"), posterior_relevant_infections))
 ```
-::: {.callout-info
-# ``posterior_relevant_infections`, `prior_relevant_infections`
+::: {.callout-warning}
+# Reminder re `posterior_relevant_infections`, `prior_relevant_infections`
 Needs to be computed within a function?
 :::
 
@@ -1165,7 +1173,7 @@ work backwards through the `prior_relevant_infections`
 as explained by the annotations to the code below. 
 ```{julia}
 function compute_nofly(ev, iv, early_inactivated_removals)
-    initial = ev.trajectory[1]
+    initial = ev.initial
 	envelope0 = repeat([0.0], initial.n)                                       # <1>
 	for removal ∈ early_inactivated_removals  # ev.removals?                   # <1>
 	    envelope0[removal.target] = max(envelope0[removal.target], removal.t)  # <1>

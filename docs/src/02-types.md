@@ -32,7 +32,7 @@ to potential removals and potential incidents respectively. See above for an ill
 providing a visual key to the various concrete sub-types of 
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref):
 
-![Visual key to various sub-types of `AbstractIncident`.](image/small-01-key.png)
+![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.pdf)
 
 ### `AbstractRemoval`
 `AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref)
@@ -135,7 +135,7 @@ based on an `Innovation`.
 `CEvolution` does the same, but returns an error if it violates conditioning 
 in the way it treats`AbstractRemoval`s.
 (This distinctive behaviour is implemented in the [`evolution`](@ref) function
-when the `conditioned` keyword is set to `true`.)
+when keyword `conditioned` keyword is `true`.)
 ```@docs
 Evolution
 CEvolution

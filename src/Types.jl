@@ -505,11 +505,10 @@ end
 Represents variants of an entire innovation of environment 
 for a single step of algorithmic time.
 
-Instances should always possess the following fields: 
+Instances should always possess fields as given in the table. 
 
 | _Field name_ | _Type_                      |              | _Further remarks_                      |
 |:-------------|:----------------------------|:-------------|:---------------------------------------|
-| `population` | `Int`                       |              | positive`Int`                          |
 | `infections` | `Vector{AbstractInfection}` |              | time-ordered list                      |
 | `removals`   | `Vector{AbstractRemoval}`   |              | time-ordered list                      |
 | `cremovals`  | `Vector{CRemoval}`          |              | time-ordered list if nonempty          |
@@ -526,7 +525,8 @@ This represents an entire innovation corresponding to a single step of _algorith
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals).
 
-Note that there is a computed field `chronology` holding a
+Note that there is a first argument `population` (an `Int`),
+and a computed field `chronology` holding a
 time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 
 ## Example
@@ -590,17 +590,17 @@ end
 This represents variants of evolution of an `S-I-R` epidemic.
 It is a generic sub-type of [`AbstractEnvironment`](@ref)
 
-Instances should always possess fields as follows:
+Instances should always possess fields as given in the table.
 
 | _Field name_  | _Type_                       |              | _Further remarks_ |
 |:--------------|:-----------------------------|:-------------|:------------------|
+| `initial`     | `SIR`                        |              |                   |
 | `infections`  | `Vector{AbstractInfection}`  |              | time-ordered list |
 | `removals`    | `Vector{AbstractRemoval}`    |              | time-ordered list |
 | `cremovals`   | `Vector{CRemoval}`           |              | time-ordered list |
 | `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
-| `initial`     | `SIR`                        | **computed** |                   |
 | `start_times` | `Vector{Real}`               | **computed** | list              |
 | `finis_times` | `Vector{Real}`               | **computed** | list              |
 """

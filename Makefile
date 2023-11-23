@@ -6,11 +6,13 @@ package    := $(notdir $(shell pwd))
 
 src_files  := $(wildcard src/*.jl) 
 doc_files  := $(wildcard docs/src/*.md) 
+doc_images := docs/src/image/introduction-18-one-iteration.pdf \
+	docs/src/image/introduction-01-key.pdf 
 test_files :=$(wildcard test/*.jl)
 
 # ========================
 
-.PHONY: documentation view test
+.PHONY: documentation view test doc_images
 
 documentation: test docs/site/index.html
 
@@ -49,10 +51,10 @@ install:
 tested.stamp: $(src_files) $(test_files)
 	@$(JULIA) --color=yes test/runtests.jl
 
-docs/build/index.md: $(src_files) $(doc_files)
+docs/build/index.md: $(src_files) $(doc_files) $(doc_images)
 	@$(JULIA) --color=yes docs/make.jl
 
-docs/build/$(package).tex: $(doc_files) $(src_files)
+docs/build/$(package).tex: $(doc_files) $(src_files) $(doc_images)
 	@$(JULIA) --color=yes docs/make_latex.jl
 
 # Needs DocumenterLaTeX for julia
@@ -61,6 +63,8 @@ docs/build/$(package).pdf: docs/build/$(package).tex
 	cd docs/build ; \
 	latexmk -f -interaction=nonstopmode -view=none -lualatex -shell-escape $(notdir $<)
 
+docs/src/image/%.pdf: ../image/%.pdf 
+	cp $< docs/src/image 
 
 serve: SHELL:=/bin/bash 
 docs/site/index.html: docs/build/index.md

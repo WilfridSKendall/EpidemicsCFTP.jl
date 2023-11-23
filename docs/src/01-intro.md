@@ -5,7 +5,7 @@
 The package `EpidemicsCFTP` forms a crucial part of the code
 for perfect simulation of epidemics conditioned on their removals.
 
-![Screen shot of a resulting simulation.](image/introduction-no-fly-zone.png)
+![Screen shot of a resulting simulation.](image/introduction-18-one-iteration.pdf)
 
 ## Brief description of `EpidemicsCFTP`  
 

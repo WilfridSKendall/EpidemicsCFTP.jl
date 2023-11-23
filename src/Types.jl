@@ -600,6 +600,7 @@ Instances should always possess fields as follows:
 | `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
+| `initial`     | `SIR`                        | **computed** |                   |
 | `start_times` | `Vector{Real}`               | **computed** | list              |
 | `finis_times` | `Vector{Real}`               | **computed** | list              |
 """
@@ -616,7 +617,8 @@ and starting from a given [`SIR`](@ref) for initial state.
 
 It represents an entire simulation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
-(realized and unrealized infections, unrealized removals, conditional removals)
+(realized and unrealized infections, unrealized removals, conditional removals),
+initial state `initial`,
 and also computed fields `chronology`, `trajectory` and `history`.
 
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
@@ -673,6 +675,7 @@ struct Evolution <: AbstractEvolution
     chronology  ::Vector{<:AbstractIncident}
     trajectory  ::Vector{SIR}
     history     ::Vector{AbstractIncident}
+    initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
     
@@ -686,7 +689,7 @@ struct Evolution <: AbstractEvolution
         trajectory, history = evolution(initial_state, innovation)
         start_times, finis_times = periods(trajectory, history)
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, start_times, finis_times)
+            trajectory, history, initial_state, start_times, finis_times)
     end
     
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
@@ -712,7 +715,8 @@ an [`AbstractRemoval`](@ref) incident which is not a [`CRemoval`](@ref).
 
 It represents an entire simulation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
-(realized and unrealized infections, unrealized removals, conditional removals)
+(realized and unrealized infections, unrealized removals, conditional removals),
+initial state `initial`,
 and also computed fields `chronology`, `trajectory` and `history`.
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
 to compute the `trajectory` and `history` fields,
@@ -792,6 +796,7 @@ struct CEvolution <: AbstractEvolution
     chronology  ::Vector{<:AbstractIncident}
     trajectory  ::Vector{SIR}
     history     ::Vector{AbstractIncident}
+    initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
     
@@ -805,7 +810,7 @@ struct CEvolution <: AbstractEvolution
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start_times, finis_times = periods(trajectory, history)
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, start_times, finis_times)
+            trajectory, history, initial_state, start_times, finis_times)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident})

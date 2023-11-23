@@ -1,0 +1,53 @@
+---
+title:  Adaptation of `Gadfly` tutorial
+author:         
+    - name: Wilfrid S Kendall
+      url: https://www.warwick.ac.uk/WSK
+      affiliation: University of Warwick
+institute:      University of Warwick
+thanks:         |
+    Supported by EPSRC EP/R022100, Turing/EPSRC EP/N510129
+
+date:   today
+---
+
+---
+date-format: "D MMMM YYYY"
+
+format:
+    pdf:
+        link-citations: true
+        numbersections: true
+
+papersize: a4
+
+jupyter:    julia-1.9
+---
+
+The following demonstrates some simple features of `julia` combined with `jupyter`.
+
+# How to generate this output
+Produce a PDF file with this script, using the following `bash` invocation.
+```bash
+quarto render Gadfly-tutorial.qmd --to=pdf --from=markdown+tex_math_single_backslash
+```
+Note the untidy `--from=markdown+tex_math_single_backslash` parameter,
+required to avoid use of the unsophisticated `$` and `$$` switches.
+
+# Loading data
+After `jupyter` has invoked `julia`, load `RDatasets.jl`, capture `iris` data, display \(6\) rows.
+
+```{julia}
+    using RDatasets
+    iris = dataset("datasets", "iris") ;
+    first(iris, 6)
+```
+
+# A simple plot
+Now load `Gadfly.jl` and plot a test image in @fig-test.
+```{julia}
+#| label: fig-test
+#| fig-cap: "Test image"
+    using Gadfly
+    p = plot(iris, x=:SepalLength, y=:SepalWidth, Geom.point)
+```

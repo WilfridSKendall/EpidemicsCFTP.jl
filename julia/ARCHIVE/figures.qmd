@@ -1,0 +1,245 @@
+---
+title:  "Code base for figures for Perfect Epidemics"
+author: "Wilfrid Kendall"
+date:   today
+---
+
+---
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+params:
+  filename: "figures.qmd"
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+jupyter:    julia-1.9
+---
+
+
+```{julia}
+#| include: false
+#| tags: [parameters]
+source = "[current file not set]"
+```
+
+::: {.callout-note}
+# Software versions:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+import Markdown, EpidemicsCFTP, EpidemicsUtilities
+version = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
+branch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+Markdown.parse("""
+| Software                    | Version                         | Branch                         |
+|:----------------------------|:--------------------------------|-------------------------------:|
+| Quarto script `$(source)`   | `$(version)`                    | `$(branch)`                    |
+| Module `EpidemicsUtilities` | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`      | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`       | `$VERSION`                      | ---                            |
+""")
+```
+:::
+
+
+Run this notebook using `make figures.pdf`, invoking (in `bash`)
+```bash
+quarto render figures.qmd --to pdf
+```
+For cell execution options, see
+<https://quarto.org/docs/computations/execution-options.html>.
+
+A laconic description of the `julia` package `Compose.jl` 
+(the graphics package used for these figures, loaded together with other
+modules in the `include` statement below),
+is presented in
+<https://giovineitalia.github.io/Compose.jl/latest/>.
+See also
+<https://shashi.biz/ijulia-notebooks/funcgeo/>.
+
+# Initialisation and styling
+Load modules (`EpidemicsCFTP` and `EpidemicsUtilities` are both under development).
+
+```{julia}
+using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose
+```
+Load theme. (Use `theme-blank.yml` to test colours.)
+```{julia}
+theme = create_theme(load_theme("config/theme.yml")) ;
+
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
+    grid_line_width=0mm,
+)
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
+Basic simulation parameters are the `population` size 
+and the `duration` (assume epidemic simulation commences at time `0`).
+Note that (trivial) labelling issues arise if `population > MAXPOP=20`.
+```{julia}
+const initial = SIR(0.0, 4, 1, 0) ;
+population = initial.n ;
+const duration   = 2 ;
+const MAXPOP  = 20 ;
+if initial.n > MAXPOP                                                                  
+    circlabels = ["[$i]" for i in 1:initial.n]                                                                                         
+else                                                                                    
+    circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:initial.n]                                                           
+end                                                                                     
+function timelinelabels1(i) 
+    if round(i) > 0 && i ≤ initial.n
+        circlabels[round(Int, i)] 
+    else
+        "" 
+    end 
+end ;                                                                             
+function timelinelabels2(i) 
+    if i ≤ initial.n
+        string(trunc(Int, i)) 
+    else
+        "" 
+    end 
+end ;   
+```
+
+## Plot style choices
+Set up and establish graphics size and coordinates.
+```{julia}
+#set_default_graphic_size(6inch, 3.25inch) ;
+coordinates = UnitBox(0, population, duration, -population, 
+                      leftpad=0.5inch, rightpad=0.5inch, toppad=0.25inch, bottompad=0.3inch);
+```
+
+## Dealing with different kinds of incident
+Convenient abbreviations of various types of incident.
+```{julia}
+A = AbstractInfection ; R = Removal ; C = CRemoval ; I = Infection ; P = PInfection ;
+```
+
+# Drawing the underlying scaffolding
+@fig-scaffolding illustrates the kind of scaffolding used in (almost) all 
+following diagrams.
+```{julia}
+#| echo: false
+#| label: fig-scaffolding
+#| fig-cap: "Scaffolding: time axis and time-lines."
+depict("Scaffolding", compose(context(units=coordinates), 
+                              scaffolding(duration, population; theme=theme)))
+```
+
+
+# An innovation for an unconditioned \(\SIR\) epidemic
+Consider lists of potential incidents underlying
+an unconditional epidemic.
+```{julia}
+innov = Innovation(5, 
+  A[I(0.11,2,3), I(0.2,2,5), P(0.4,1,2), I(0.5,2,5), I(0.6,2,4), I(0.85,3,4), 
+    I(0.9,2,3), I(1.0,2,5), P(1.1,2,3), I(1.05,4,5), I(1.2,2,4), I(1.6,3,5), 
+    I(1.5,3,4)], 
+  R[R(0.3,5), R(0.42,3), R(0.7,3), R(0.55,3), R(0.95,5), R(1.4,2), R(1.55,1),
+    R(1.85,2)],
+  C[C(1.3,2), C(0.8,1), C(1.7,4), C(1.8,4), C(1.92,5)] ) ;
+```
+
+We now add graphical depictions of the potential incidents supplied by the innovation.
+Elements are plotted in reverse-order: for example, the first in sequence overlays 
+all subsequent elements. @fig-potential illustrates the required plot.
+```{julia}
+#| echo: false
+#| label: fig-potential
+#| fig-cap: "Potential incidents (both removals and infections):                        \
+#|           Removals (R for _removal_) are blue outline disks;                         \
+#|           conditional removals (C for _conditioned_) are purple outline disks;       \
+#|           Infections (I for _infected_) are orange outline disks;                    \
+#|           perpetuated infections (P for _perpetuated_) are dark green outline disks. \
+#|           Orange arrows connect infector time-lines                                  \
+#|           to corresponding infectee time-lines.                                      \
+#|           Each disk is annotated by a summary description of its incident."
+image = create_nodes_view(duration, innov; theme=theme)
+depict("nodes_view", compose(context(units=coordinates), image))
+```
+
+# Evolving the epidemic in process time
+Now plot an epidemic using a specific initial state at time \(0.0\),
+driven by an `SIR` structure and the structure of `Innovations`.
+The epidemic simulation is
+computed using `Evolution`. 
+
+```{julia}
+ev = Evolution(initial, innov)
+flow = table_trajectories1(duration, initial, ev.trajectory) ;
+```
+
+```{julia}
+#| echo: false
+#| label: fig-trajectories
+#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line), \
+#|           removals (brown dashed line)."  
+print(flow) ;
+timelines = layer(flow, yintercept=1:initial.n,
+    Geom.hline(style=:dot, size=0.25mm),
+    style(default_color=theme.scaffold))
+ll0 = layer(flow, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))
+ll1 = layer(flow, x=:t, y=:infectives, Geom.step,
+    style(line_width=theme.trail,  default_color=theme.colour(I)))
+ll2 = layer(flow, x=:t, y=:removals, Geom.step,
+    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
+ll3 = layer(flow[flow.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
+    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
+fig0 = plot(timelines, 
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n+0.25),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    gadfly_theme
+    )
+fig1 = deepcopy(fig0)
+push!(fig1, ll0, ll3, ll2, ll1,
+    Guide.annotation(compose(context(),
+    text(1.2, 3.2, "Peak #1"),
+    text(1.6, 3.2, "Peak #2"),
+    fontsize(6pt))),
+    Scale.y_continuous(labels=timelinelabels2),
+    Guide.ylabel("Numbers of individuals"),
+    Guide.title("Epidemic curve with removals and susceptibles")
+)
+```
+
+Now examine which of the potential incidents have been activated. 
+Amend @fig-potential: activated incident nodes have light-coloured backgrounds and 
+thicker line-widths, producing @fig-activated.
+```{julia}
+#| echo: false
+#| label: fig-activated
+#| fig-cap: "@fig-potential plus epidemic and removal curves. activated incidents have   \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are \
+#|           coloured yellow/purple."
+image = create_epidemic_view(duration, innov, flow, initial, ev.history; theme=theme) ;
+depict("epidemics_view", compose(context(units=coordinates), image))
+```
+
+```{julia}
+#| echo: false
+print(flow) ;
+```

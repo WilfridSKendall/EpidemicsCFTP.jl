@@ -1,0 +1,358 @@
+---
+title:  "Producing figures for Perfect Epidemics"
+author: "Wilfrid Kendall"
+date:   today
+bibliography: references.bib
+csl: ima-journal-of-applied-mathematics.csl
+---
+
+---
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+jupyter:    julia-1.9
+---
+
+
+```{julia}
+#| include: false
+#| tags: [parameters]
+source = "production.qmd"
+```
+
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false 
+import Markdown, EpidemicsCFTP, EpidemicsUtilities
+version = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
+branch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+Markdown.parse("""
+| Software                    | Version                         | Branch                         |
+|:----------------------------|:--------------------------------|-------------------------------:|
+| Quarto script `$(source)`   | `$(version)`                    | `$(branch)`                    |
+| Module `EpidemicsUtilities` | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`      | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`       | `$VERSION`                      | ---                            |
+""")
+```
+
+# Set-up details and utilities
+Hidden cells load required modules, load theme, set up and establish graphics size and coordinates,
+and define labelling functions for \(y\)-axis.
+Overall simulation parameters are set as constants. 
+```{julia}
+#| echo: false
+using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose ;
+```
+```{julia}
+const duration   = 15 ;
+const MAXPOP  = 20 ;
+const initial= SIR(0.0, 4, 1, 0)
+const population = 5 ;
+```
+
+```{julia}
+#| echo: false
+theme = create_theme(load_theme("config/theme.yml")) ;
+
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
+    grid_line_width=0mm,
+)
+
+set_default_plot_size(theme.figwidth, theme.figheight) ;
+
+if population > MAXPOP
+  error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
+end ;
+if initial.n > MAXPOP                                                                  
+    circlabels = ["[$i]" for i in 1:initial.n]                                                                                         
+else                                                                                    
+    circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:initial.n]                                                           
+end                                                                                     
+function timelinelabels1(i) 
+    (round(i) > 0 && i ≤ initial.n) ? circlabels[round(Int, i)] : "" 
+end ;                                                                             
+function timelinelabels2(i) 
+    (i ≤ initial.n) ? string(trunc(Int, i)) : ""
+end ;                                                                             
+```
+
+It is convenient to abbreviate various types of incident.
+```{julia}
+A = AbstractInfection ; R = Removal ; C = CRemoval ; I = Infection ; P = PInfection ;
+```
+
+# Production of Figure 1
+We first generate a precise equivalent of @ConnorKendall-2023 [Figure 1].
+
+**Caption in draft paper:** 
+"Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
+
+Here is the set of innovations, with epidemic effects tabulated in @tbl-evolution.
+```{julia}
+#| echo: false
+innov_figure1 = Innovation(duration, 
+  A[I(1.0,2,5),  I(2.0,1,2),  I(3.0,1,2),  I(4.0,2,4),  I(6.0,3,4),  I(7.0,2,3),  I(8.0,1,2), 
+    I(8.0,4,5),  I(9.0,1,4),  I(11.0,2,4), I(14.5,3,5)], 
+  R[R(3.0,5),    R(5.0,1),    R(7.5,5),  R(13.0,3),   R(14.0,3)],  C[])
+```
+The incidents for the resulting epidemic evolution are illustrated in @fig-nodes1.
+```{julia}
+#| label: tbl-evolution
+#| tbl-cap: Table giving evolution of the first epidemic
+#| echo: false 
+ev1 = Evolution(initial, innov_figure1)
+
+flow1 = table_trajectories1(duration, initial, ev1.trajectory)
+```
+
+
+```{julia}
+#| echo: false
+#| label: fig-nodes1
+#| fig-cap: "Illustration of nodes as used in Figure 1 of @ConnorKendall-2023. `[production-draftfigure0]`"
+timelines = layer(flow1, yintercept=1:initial.n,
+    Geom.hline(style=:dot, size=0.25mm),
+    style(default_color=theme.scaffold))
+
+fig0 = plot(flow1,  x=:t, y=:empty, Geom.line(),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n+0.25),
+    Scale.x_continuous(),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    gadfly_theme
+    )
+    
+fig0 = push!(fig0, timelines)
+
+fig_inc = deepcopy(fig0)
+fig_inc = push!(fig_inc,    
+    Scale.y_continuous(labels=timelinelabels1),
+    Guide.yticks(ticks=collect(1:(initial.n))),
+    Guide.ylabel("Time lines"),
+    )
+
+fig_nodes0 = deepcopy(fig_inc)
+fig_nodes0 = push!(fig_nodes0,
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_elements(innov_figure1; theme=theme)))
+    )
+depict("production-draftfigure0", fig_nodes0)
+```
+
+@fig-production-draftfigure1a illustrates the resulting epidemic in terms of infectious and removal zones,
+while 
+@fig-production-draftfigure1b illustrates the corresponding epidemic, susceptible and removal trajectories.
+```{julia}
+#| echo: false
+#| label: fig-production-draftfigure1a
+#| fig-cap: "@fig-nodes1 plus infectious and removal boundaries. Activated incidents have coloured       \
+#|           backgrounds and thicker line-widths. Epidemic/removal regions are coloured tan/light-brown. \
+#|           This is a candidate for Figure 1a of @ConnorKendall-2023. `[production-draftfigure1a]`"
+evolution1 = Evolution(initial, innov_figure1)
+
+lz2b = layer(flow1, x=:t, y=:removals, Geom.step,
+    style(line_width=theme.boundary, default_color=theme.colour(R)))
+lz4 = layer(flow1, x=:t, y=:epidemic, Geom.step,
+    style(line_width=theme.trail, default_color=theme.colour(I)))
+lz5 = layer(flow1, x=:t, y=:population, Geom.line,
+    style(line_width=theme.trail, default_color=theme.scaffold))
+
+flow1a = table_trajectories2(flow1, theme=theme) ;
+ll6 = layer(flow1a, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+    alpha=[theme.opacity], style(default_color=theme.colour(I)))
+ll7 = layer(flow1a, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+    alpha=[2theme.opacity], style(default_color=theme.colour(R)))
+
+fig_inc1 = deepcopy(fig_inc)
+
+fig_inc1 = push!(fig_inc1,   
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_activated_elements(initial, evolution1.history, theme=theme)))
+    )
+fig_inc1 =  push!(fig_inc1,
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_elements(innov_figure1; theme=theme)))
+    )
+
+
+fig_inc1 = push!(fig_inc1, lz4, lz2b)
+fig_inc1 = push!(fig_inc1, ll6, ll7)    
+
+draftfigure1a = deepcopy(fig_inc1)
+
+depict("production-draftfigure1a", draftfigure1a)
+```
+
+```{julia}
+#| echo: false
+#| label: fig-production-draftfigure1b
+#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line),        \
+#|           removals (brown dashed line).                                                           \
+#|           This is a candidate for Figure 1b of @ConnorKendall-2023. `[production-draftfigure1b]`"  
+
+fig_traj = deepcopy(fig0)
+fig_traj = push!(fig_traj, Scale.y_continuous(labels=timelinelabels2),
+    Guide.ylabel("Numbers of individuals"),
+    Guide.title("Epidemic curve with removals and susceptibles")
+    )
+draftfigure1a = deepcopy(fig0)
+
+ll0 = layer(flow1, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))
+ll1 = layer(flow1, x=:t, y=:infectives, Geom.step,
+    style(line_width=theme.trail,  default_color=theme.colour(I)))
+ll2 = layer(flow1, x=:t, y=:removals, Geom.step,
+    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
+ll3 = layer(flow1[flow1.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
+    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
+
+figure_1b = deepcopy(fig_traj)
+push!(figure_1b, ll0, ll3, ll2, ll1)
+
+depict("production-draftfigure1b", figure_1b)
+```
+
+\newpage
+
+# Production of Figure 3
+We now generate a precise equivalent of @ConnorKendall-2023 [Figure 3].
+
+**Caption in draft paper:** 
+"Modified graphical representation of \(\SIR\) epidemic, conditioned on removals. ..."
+
+Here is the set of innovations:
+```{julia}
+#| echo: false
+innov_figure3 = Innovation(duration, 
+  A[I(0.5,2,5),I(2.0,1,2),  I(2.5,3,4),I(3.0,1,3),  I(5.0,2,4),  I(5.5,3,4),
+    I(6.0,2,3),  I(8.0,2,5),  I(9.5,1,3),I(10.0,4,5), I(11.0,4,5), I(12.5,3,5)],
+  R[R(1.0,5),   R(2.0,4),  R(4.0,4),  R(7.0,5)],
+  C[C(3.5,1), C(6.5,4),C(7.0,3),  C(12.0,5), C(13.0,5)])
+```
+The effect of these is tabulated in @tbl-table3
+and zones are illustrated in @fig-production-draftfigure3-0.
+
+
+```{julia}
+#| label: tbl-table3
+#| tbl-cap: Table giving evolution of the second epidemic
+#| echo: false
+evolution3 = Evolution(initial, innov_figure3)
+
+
+flow3 = table_trajectories1(duration, initial, evolution3.trajectory) ;
+
+
+lx2 = layer(flow3, x=:t, y=:removals, Geom.step,
+    style(line_width=theme.boundary, default_color=theme.colour(R)))
+lx4 = layer(flow3, x=:t, y=:epidemic, Geom.step,
+    style(line_width=theme.trail, default_color=theme.colour(I)))
+lx5 = layer(flow3, x=:t, y=:population, Geom.line,
+    style(line_width=theme.trail, default_color=theme.scaffold))
+
+flow3
+```
+
+```{julia}
+#| echo: false
+#| label: fig-production-draftfigure3-0
+#| fig-cap: "Nodes used in Figure 3 of @ConnorKendall-2023. `[production-draftfigure3-0]`"
+fig_nodes3 = deepcopy(fig_inc)
+fig_nodes3 = push!(fig_nodes3,
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_elements(innov_figure3; theme=theme)))
+    )
+depict("production-draftfigure3-0", fig_nodes3)
+```
+
+@ConnorKendall-2023 Figure 3 is made up of (boundaries and zones) @fig-production-draftfigure3a
+and (trajectories) @fig-production-draftfigure3b.
+
+
+
+
+```{julia}
+#| echo: false
+#| label: fig-production-draftfigure3a
+#| fig-cap: "@fig-production-draftfigure3-0 plus epidemic and removal boundaries. Activated incidents have \
+#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are                   \
+#|           coloured tan/light-brown.                                                                    \
+#|           This is a candidate for Figure 3a of @ConnorKendall-2023. `[production-draftfigure3a]`" 
+
+flow3a = table_trajectories2(flow3, theme=theme) ;
+ll6 = layer(flow3a, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
+    alpha=[theme.opacity], style(default_color=theme.colour(I)))
+ll7 = layer(flow3a, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
+    alpha=[2theme.opacity], style(default_color=theme.colour(R)))
+
+
+fig_inc3 = deepcopy(fig_inc)
+
+fig_inc3 = push!(fig_inc3,   
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_activated_elements(initial, evolution3.history, theme=theme)))
+    )
+fig_inc3 =  push!(fig_inc3,
+    Guide.annotation(compose(context(),
+        EpidemicsUtilities.draw_elements(innov_figure3; theme=theme)))
+    )
+
+    
+fig_inc3 = push!(fig_inc3, lx2, lx4)
+fig_inc3 = push!(fig_inc3, ll6, ll7)    
+
+draftfigure3a = deepcopy(fig_inc3)
+
+    
+depict("production-draftfigure3a", draftfigure3a)
+```
+
+```{julia}
+#| echo: false
+#| label: fig-production-draftfigure3b
+#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line),        \
+#|           removals (brown dashed line).                                                           \
+#|           This is a candidate for Figure 3b of @ConnorKendall-2023. `[production-draftfigure3b]` " 
+ll1d = layer(flow3, x=:t, y=:infectives, Geom.step,
+    style(line_width=theme.trail,  default_color=theme.colour(I)))
+ll2d = layer(flow3, x=:t, y=:removals, Geom.step,
+    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
+ll3d = layer(flow3, x=:t, y=:susceptibles, Geom.step,
+    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
+    
+
+figure_3b = deepcopy(fig_traj)
+push!(figure_3b, ll3d, ll2d, ll1d)
+
+depict("production-draftfigure3b", figure_3b)
+```
+
+
+# References
+
+

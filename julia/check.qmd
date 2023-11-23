@@ -1,0 +1,300 @@
+---
+title:  "Checking Simulation of Innovations for Epidemics"
+author: "Wilfrid Kendall"
+date:   today
+bibliography: references.bib
+csl: ima-journal-of-applied-mathematics.csl
+---
+
+---
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+        \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
+        \newcommand{\LFE}{``last feasible epidemic"\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+jupyter:    julia-1.9
+---
+
+```{julia}
+#| include: false
+#| tags: [parameters]
+source = "check.qmd"
+```
+
+
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+using EpidemicsCFTP, EpidemicsUtilities
+
+using Gadfly, Compose
+# `Gadfly` documentation <http://gadflyjl.org/stable/>
+using DataFrames
+# `DataFrames` documentation <https://dataframes.juliadata.org/stable/>
+using PrettyTables
+# `PrettyTables` documentation at <https://ronisbr.github.io/PrettyTables.jl/stable/>
+
+import Distributions: Normal, ccdf
+import Random
+
+import Markdown
+ownversion = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
+ownbranch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+Markdown.parse("""
+| Software                     | Version                         | Branch                         |
+|:-----------------------------|:--------------------------------|-------------------------------:|
+| Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 |
+| Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`        | `$VERSION`                      | ---                            |
+
+This script takes 
+- 8 minutes to run on `jemima`; 
+- 5 minutes to run on `benjamin`.
+""")
+```
+
+
+```{julia}
+#| include: false
+Random.seed!(2)
+
+theme = create_theme(load_theme("config/theme.yml"))
+
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
+    grid_line_width=0mm,
+)
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
+
+# Testing the generation of an `Innovation`
+
+## Definition of epidemic parameters
+In a population of fixed size, the \(\SIR\) epidemic runs under the following stochastic dynamics:
+\begin{tabbing}
+\emph{Xemovals:}\qquad\= The transition \(S\to S-1\), \;\= \((R \to R+1\) \= 
+occurs at rate \(\beta \, I\), \kill
+\emph{Infections:}    \> The transition \(S\to S-1\),   \> \(I \to I+1\)  \> 
+occurs at rate \(\alpha \, S \, I\),\\
+\emph{Removals:}      \> The transition \(I \to I-1\),  \> \(R \to R+1\)  \> 
+occurs at rate \(\beta \, I\).     
+\end{tabbing}
+The structural parameter of epidemic `duration` 
+(a positive real number)
+and the `n₁` population size are given by
+`julia` constants,
+as are the per-pair infection rate `α` and the per-individual rate of removal `β`.
+The population size is also given explicitly.
+The variable `samplesize` holds the number of replicates of the simulation.
+```{julia}
+const duration = 2.0 
+const α, β     = 0.2, 1.5 
+const n₁       = 6  
+
+samplesize = 10000 ;
+```
+
+## Simulation and storage of results
+A sample of a random `Innovation` (with no conditional removals),
+based on \(n\) time lines,
+is generated using the following invocation:
+`generate_innovation(n, duration, α=α, β=β)`.
+Total numbers of `Infection`s with specified `infectee` marks
+and numbers of `Removal`s with specified `target` marks are tabulated
+in a `DataFrame` together with mean values.
+The logic here is as follows:
+
+(a) a given time line \(x+1\) accumulates (incoming) potential infections arising from contacts between
+a `target` time line (lies strictly below time line \(x+1\))
+and
+an `infectee` time line (namely time line \(x+1\))
+thus occurring at a rate \(α \, x(n-x)\), yielding specified infection rate;
+
+(b) a given time line \(x\) accumulates potential removals arising from each of the time lines
+\(x\) and lower,
+thus removals for time line \(x\) must occur at a rate \(β\, x\), yielding specified removal rate.
+
+The following function returns a `DataFrame` of time line identifiers, and
+also counts
+per time line of infections, removals
+and differenced removals together with their expected numbers:
+
+```{julia}
+function simulate_innovations(n, t, α, β, samplesize)
+  df = DataFrame() ;
+
+  df[:, "Time line"]      = 1:n
+  df.infections          .= 0 ;
+  df[:, "E[infections]"]  = [α * (x - 1) * (n - x + 1) *  samplesize * t for x in 1:n] ;
+  df.removals            .= 0 ;
+  df[:, "E[removals]"]    = [β * x * samplesize * t for x in 1:n] ;
+  
+  for x in 1:samplesize
+    iv = generate_innovation(n, t, α=α, β=β)
+    df.infections += [length([z for z in iv.infections if z.infectee == i]) for i in 1:n]
+    df.removals   += [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n]
+  end
+  
+  df[:, "Δremovals"]    = [df.removals[1];          diff(df.removals)]
+  df[:, "E[Δremovals]"] = [df[:, "E[removals]"][1]; diff(df[:, "E[removals]"])]
+  
+  df[:, "p-val(I)"] = 
+    2ccdf(Normal(), abs.(df.infections - df[:, "E[infections]"]) ./ .√(df[:, "E[infections]"]))
+  df[:, "p-val(R)"] = 
+    2ccdf(Normal(), abs.(df.removals - df[:, "E[removals]"]) ./ .√(df[:, "E[removals]"]))
+
+return df
+end ;
+```
+This simulation is invoked as follows, with the following result.
+```{julia}
+data = simulate_innovations(n₁, duration, α, β, samplesize);
+```
+
+```{julia}
+#| echo: false
+#| eval: true
+Markdown.parse("Total population size is $n₁, simulation uses $samplesize replicates.")
+```
+
+```{julia}
+#| echo: false
+#| eval: true
+header = [chop(sprint(show, MIME("text/plain"), nn), head=1, tail=1) for nn in names(data)]
+Markdown.parse(
+pretty_table(String, data[:, header[2:end]]; header=header[2:end], alignment=[:r, :r, :r, :r, :r, :r, :l, :l],
+formatters = (ft_printf("%5d",1:6), ft_round(2,7:8)), tf=tf_markdown)
+)
+```
+
+## Statistical analysis
+The `removals` column in `data` is cumulative over time lines, 
+so independent data is obtained from `Δremovals`
+together with `infections`.
+Entries in both of `infections` and `Δremovals` are independent Poisson
+with mean given by the corresponding `E[...]`. The 
+normal approximation to the Poisson distribution applies here, allowing us to compute \(p\)-values
+with ease.
+```{julia}
+function display_simulation_results(df)
+  headers  = ["Time line", "infections", "E[infections]", "p-val(I)", 
+                           "Δremovals",  "E[Δremovals]",  "p-val(R)"]
+  Markdown.parse(
+    pretty_table(String, df[:, headers], header=headers, tf=tf_markdown, 
+      alignment=[:c, :r, :r, :l, :r, :r, :l],
+      formatters = ((v, i, j)->(isnan(v) ? "---" : v),
+        (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<0.015 ? "** **$(round(v, digits=2))**" : v),
+        (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<0.055 ? "* *$(round(v, digits=2))*" : v),
+        (v, i, j)->(isa(v, Real) && j ∈ [4, 7]            ? "$(round(v, digits=2))" : v),
+        ft_printf("%4.2f", [4,7])),
+  ))
+end ;
+```
+
+```{julia}
+#| echo: false
+Markdown.parse("Total population size is $n₁, simulation uses $samplesize replicates:")
+```
+```{julia}
+#| echo: false
+display_simulation_results(data)
+```
+
+::: {.callout-tip}
+## Assessment
+In a sequence of \(11\) independent \(Z\)-tests, no \(p\)-values are at \(0.01\) level or lower.
+:::
+
+## An example using a larger population.
+This repeats the simulations of the previous section for a larger population.
+```{julia}
+#| echo: false
+const n₂ = 11 
+data = simulate_innovations(n₂, duration, α, β, samplesize) 
+
+Markdown.parse("Total population size is $n₂, simulation uses $samplesize replicates:")
+```
+```{julia}
+display_simulation_results(data)
+```
+::: {.callout-tip}
+## Assessment
+In a sequence of \(21\) independent \(Z\)-tests there is just one \(p\)-value at \(0.01\) level or lower.
+:::
+
+\newpage
+
+## An example using a still larger population.
+```{julia}
+#| echo: false
+const n₃ = 16 
+data = simulate_innovations(n₃, duration, α, β, samplesize) 
+
+Markdown.parse("Total population size is $n₃, simulation uses $samplesize replicates:")
+```
+```{julia}
+#| echo: false
+display_simulation_results(data)
+```
+
+::: {.callout-tip}
+## Assessment
+In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at the edge of \(0.01\) level.
+:::
+
+
+\newpage
+
+## An example using a yet larger population.
+```{julia}
+#| echo: false
+const n₄   = 24 
+samplesize = 4samplesize
+data = simulate_innovations(n₄, duration, α, β, samplesize) 
+
+Markdown.parse("Total population size is $n₄, simulation uses $samplesize replicates:")
+```
+```{julia}
+#| echo: false
+display_simulation_results(data)
+```
+
+::: {.callout-tip}
+## Assessment
+In a sequence of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is around or below level \(0.05\).
+:::
+
+
+::: {.callout-tip}
+## Overall assessment
+In a total of \(110\) independent \(Z\)-tests, one of the \(p\)-values is around or below level \(0.01\),
+and one other is around or below level \(0.05\).
+:::
+

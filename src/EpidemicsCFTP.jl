@@ -12,9 +12,10 @@ date    = replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " =>
 # # -------
 # # The `Formatting` module is required in order to define `show` methods for the various types.
 using Formatting
-# # Import `Distributions` module.
+# # The `Distributions` module is required in order to simulate new `Innovation`s.
 import Distributions
-
+# # The `DataFrames` module is required in order to provide placeholders for trajectory flows.
+import DataFrames
 # # Exports
 # # =======
 # # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.

@@ -603,7 +603,7 @@ Instances should always possess fields as given in the table.
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `start_times` | `Vector{Real}`               | **computed** | list              |
 | `finis_times` | `Vector{Real}`               | **computed** | list              |
-| `LFE_flow`    | `Dataframe`                  | **computed** | trajectory        |
+| `LFE `        | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
@@ -679,7 +679,7 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
-    LFE_flow    ::DataFrames.DataFrame
+    LFE         ::Vector{<:AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of initial.state entries
@@ -690,11 +690,9 @@ struct Evolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
         start_times, finis_times = periods(trajectory, history)
-        LFE_flow   = DataFrames.DataFrame(t=Float64[], 
-                               susceptibles=Int[], infectives=Int[], removals=Int[],
-                               population=Int[], empty=Int[], epidemic=Int[])
+        LFE        = AbstractIncident[]
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start_times, finis_times, LFE_flow)
+            trajectory, history, initial_state, start_times, finis_times, LFE)
     end
     
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
@@ -804,7 +802,7 @@ struct CEvolution <: AbstractEvolution
     initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
-    LFE_flow    ::DataFrames.DataFrame
+    LFE_        ::Vector{<:AbstractIncident}
     
     function CEvolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of `initial_state` entries
@@ -815,11 +813,9 @@ struct CEvolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start_times, finis_times = periods(trajectory, history)
-        LFE_flow   = DataFrames.DataFrame(t=Float64[], 
-                               susceptibles=Int[], infectives=Int[], removals=Int[],
-                               population=Int[], empty=Int[], epidemic=Int[])
+        LFE        = AbstractIncident[]
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start_times, finis_times, LFE_flow)
+            trajectory, history, initial_state, start_times, finis_times, LFE)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident})

@@ -465,7 +465,7 @@ struct SIR <: AbstractTimedOccurrence
     r::Int
     n::Int
 
-    function SIR(t::Float64, s::Int, i::Int, r::Int, n::Int)
+    function SIR(t::Real, s::Int, i::Int, r::Int, n::Int)
         noun = "SIR($t, $s, $i, $r, $n)"
         if s < 0
             throw(DomainError(noun, "negative number $s of susceptibles"))
@@ -482,7 +482,7 @@ struct SIR <: AbstractTimedOccurrence
         return new(t, s, i, r, n)
     end
 
-    function SIR(t::Float64, s::Int, i::Int, r::Int)
+    function SIR(t::Real, s::Int, i::Int, r::Int)
         noun = "SIR($t, $s, $i, $r)"
         if s < 0
             throw(DomainError(noun, "negative number $s of susceptibles"))

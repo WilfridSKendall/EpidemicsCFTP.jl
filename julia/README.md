@@ -3,26 +3,27 @@
 ## Producing primary files
 Primary files are produced by `quarto`. At the of writing these files are
 
+* `test.qmd` comprising some unit tests for `EpidemicsCFTP`;
 * `introduction.qmd` introducing the basic ideas of `EpidemicsCFTP`;
 * `production.qmd` generating figures for the paper;
-* `experiment.qmd` containing various experimental cnstructions.
+* `experiment.qmd` containing various experimental constructions.
 
-Run notebooks using (for example)
+Run the `quarto`notebooks using (for example)
 ```bash
 quarto render introduction.qmd --to pdf
 ```
-or (for example)
+or alternatively use `make` (for example)
 ```
-make experiment.pdf
+make introduction.pdf
 ```
 
 ## Checking whether any changes of code alter figures
 
-Nice figures are produced in `image` subdirectory such as
+Illustrative figures are produced in the `image` subdirectory, such as
 
-![](/home/wilfrid/ms/PerfectEpidemics/julia/image/introduction-processed-cremovals.png)
+![](/home/wilfrid/ms/PerfectEpidemics/julia/image/introduction-18-one-iteration.png)
 
-To check that the key pictures have not changed from reference versions (`image/VERIFY_*.png` use
+To check that  pictures have not changed from reference versions (`image/VERIFY_*.png` use
 ```bash
 make verify
 ```

@@ -2,11 +2,14 @@
 title:  "Testing `julia` code for perfect epidemics"
 author: "Wilfrid Kendall"
 date:   today
-bibliography: references.bib
-csl: ima-journal-of-applied-mathematics.csl
 ---
 
 ---
+toc: true
+
+bibliography: references.bib
+csl: ima-journal-of-applied-mathematics.csl
+
 date-format: "D MMMM YYYY"
 papersize:  a4
 
@@ -79,7 +82,6 @@ Markdown.parse("""
 """)
 ```
 
-
 ```{julia}
 #| include: false
 Random.seed!(2)
@@ -98,6 +100,8 @@ gadfly_theme = Theme(
 
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
+
+{{< pagebreak >}}
 
 Construction of epidemics
 =========================
@@ -139,7 +143,7 @@ The `CEvolution` of an (_conditioned_) epidemic is given by:
 ev1 = CEvolution(initial, iv1)
 ```
 
-{{< pagebreak >}}
+
 
 Displaying evolution of epidemics
 =================================
@@ -149,9 +153,8 @@ We import from `EpidemicsUtilities` some constants
 that can be used for the keyword argument `select`
 used by the functions `draw_regions!`, `draw_innovation!`, `draw_evolution!`.
 ```{julia}
-import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, 
-    INFECTIONS, REMOVALS, CREMOVALS, ACTIVATED, 
-    ELEMENTS, BASIC, ALL 
+import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, INFECTIONS, REMOVALS, CREMOVALS, 
+    ACTIVATED, ELEMENTS, BASIC, ALL 
 ```
 
 Tables and plots
@@ -216,8 +219,14 @@ Unconditioned and conditioned epidemics
 {{< pagebreak >}}
 
 
-Unit tests for unconditioned and conditioned `AbstractEvolution`s
-=================================================================
+Unit tests
+==========
+The following unit tests should eventually be incorporated in `EpidemicsCFTP/test`
+test files.
+
+Unconditioned and conditioned version of `AbstractEvolution`
+------------------------------------------------------------
+These tests are intended to check that fields are filled correctly.
 ```{julia}
 trajectory = [SIR(0,4,1,0), SIR(1,3,2,0), SIR(2,3,1,1), SIR(3,2,2,1), SIR(4,2,1,2)]
 @testset "EpidemicsCFTP: $(rpad(Evolution, 23))" begin

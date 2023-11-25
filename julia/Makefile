@@ -8,7 +8,7 @@ JULIA          := $(HOME)/.local/bin/julia
 
 MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
-PRODUCTS       := production.pdf introduction.pdf check.pdf
+PRODUCTS       := production.pdf introduction.pdf check.pdf test.pdf
 # ====================
 # Main targets
 main: $(PRODUCTS)
@@ -58,9 +58,9 @@ introduction.pdf: config/theme.yml
 
 # ====================
 # Automatic conversion of qmd to pdf
-#%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache-refresh
-%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< -P source:$< --to pdf $(QUARTO_OPTIONS) --no-cache
-#%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache
+#%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache-refresh
+%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; $(QUARTO) render $< -P source:$< --to pdf $(QUARTO_OPTIONS) --no-cache
+#%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache
 
 # ====================
 # NOTE

@@ -1,0 +1,239 @@
+---
+title:  "Testing `julia` code for perfect epidemics"
+author: "Wilfrid Kendall"
+date:   today
+bibliography: references.bib
+csl: ima-journal-of-applied-mathematics.csl
+---
+
+---
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+        \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
+        \newcommand{\LFE}{``last feasible epidemic"\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+jupyter:    julia-1.9
+---
+
+```{julia}
+#| include: false
+#| eval: true
+#| cache: false
+#| tags: [parameters]
+source = "test.qmd"
+
+using EpidemicsCFTP, EpidemicsUtilities
+
+using Gadfly, Compose
+# `Gadfly` documentation <http://gadflyjl.org/stable/>
+using DataFrames
+# `DataFrames` documentation <https://dataframes.juliadata.org/stable/>
+using PrettyTables
+# `PrettyTables` documentation at <https://ronisbr.github.io/PrettyTables.jl/stable/>
+
+import Random
+
+using Test
+```
+
+```{julia}
+#| label: tbl-software
+#| tbl-cap: Versions of locally-authored software packages used below _etc_.
+#| echo: false
+#| eval: true
+#| cache: false
+import Markdown
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+| _Software_                  | _Version_                      | _Branch_                      | _Date of last commit_       |
+|:----------------------------|:-------------------------------|:------------------------------|:----------------------------|
+| Quarto                      |`$(quartoversion)`              | ---                           |                             |
+| Running under `julia`       |`$VERSION`                      | ---                           |                             |
+| Quarto script `$(source)`   |`$(ownversion)`                 |`$(ownbranch)`                 |`$owndate`                   |
+| Module `EpidemicsUtilities` |`$(EpidemicsUtilities.version)` |`$(EpidemicsUtilities.branch)` |`$(EpidemicsUtilities.date)` |
+| Module `EpidemicsCFTP`      |`$(EpidemicsCFTP.version)`      |`$(EpidemicsCFTP.branch)`      |`$(EpidemicsCFTP.date)`      |
+""")
+```
+
+
+```{julia}
+#| include: false
+Random.seed!(2)
+
+theme = create_theme(load_theme("config/test-theme.yml"))
+
+gadfly_theme = Theme(
+    panel_fill=theme.blank,
+    default_color=theme.default,
+    background_color=theme.background,
+    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+    minor_label_color=theme.legend, major_label_color=theme.legend,
+    major_label_font_size=8pt,     minor_label_font_size=6pt,
+    grid_line_width=0mm,
+)
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
+
+Construction of epidemics
+=========================
+Parameters
+----------
+Since we shall only use artificial examples,
+we do not define the rate parameters.
+```{julia}
+const duration = 5.0;
+const initial  = SIR(0.0, 4, 1, 0);
+```
+
+Construction of unconditioned epidemic
+--------------------------------------
+Here is an `Innovation` to generate the `Evolution` of the unconditioned epidemic:
+```{julia}
+A = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
+infections = A[I(2t-1, t, t+1) for t in [1,2]] ∪ A[I(0,3,4), I(2,4,5)]
+uremovals  =  [R(2t, t) for t in [1,2]] ∪ [R(1,5), R(3,5), R(4,5)]
+
+uiv1 = Innovation(initial.n, infections, uremovals)
+```
+The `Evolution` of an (_unconditioned_) epidemic is given by:
+```{julia}
+uev1 = Evolution(initial, uiv1)
+```
+
+Construction of conditioned epidemic
+------------------------------------
+Here is an `Innovation` to generate the `CEvolution` of the corresponding conditioned epidemic:
+```{julia}
+removals   =  [R(1,5), R(3,5), R(4,5)]
+cremovals  =  [C(2t, t) for t in [1,2]] 
+
+iv1 = Innovation(initial.n, infections, removals, cremovals)
+```
+The `CEvolution` of an (_conditioned_) epidemic is given by:
+```{julia}
+ev1 = CEvolution(initial, iv1)
+```
+
+{{< pagebreak >}}
+
+Displaying evolution of epidemics
+=================================
+Preliminaries
+-------------
+We import from `EpidemicsUtilities` some constants 
+that can be used for the keyword argument `select`
+used by the functions `draw_regions!`, `draw_innovation!`, `draw_evolution!`.
+```{julia}
+import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, 
+    INFECTIONS, REMOVALS, CREMOVALS, ACTIVATED, 
+    ELEMENTS, BASIC, ALL 
+```
+
+Tables and plots
+----------------
+Here are the epidemics defined in the previous sub-sections, both unconditioned and conditioned,
+both as tabulated trajectories (@tbl-test-01, the same for both unconditioned and 
+conditioned versions)
+and figures (@fig-test-01-unconditioned, @fig-test-01-conditioned).
+
+```{julia}
+#| label: tbl-test-01
+#| tbl-cap: Versions of locally-authored software packages used below _etc_.
+#| echo: false 
+uflow = table_trajectories1(duration, uev1.trajectory) ;
+header = [:t, :susceptibles, :infectives, :removals, :epidemic]
+Markdown.parse(pretty_table(String, uflow[:,header], 
+  header=header, tf=tf_markdown, alignment=[:l, :c, :c, :c, :c]))
+```
+
+
+```{julia}
+#| echo: false
+curves_template = plot(uflow, yintercept=1:initial.n,
+    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    style(default_color=theme.background),
+    gadfly_theme) ;
+
+push!(curves_template, layer(uflow, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))) ;
+
+incidents_template = new_figure(curves_template,
+    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
+    Guide.yticks(ticks=collect(1:(initial.n))),
+    Guide.ylabel("Time lines")) ;
+
+figure_zones = draw_regions!(deepcopy(incidents_template), duration, uflow,
+    uev1, theme=theme, select=BOUNDARIES | REGIONS)
+depict("test-01-unconditioned", new_figure(
+    draw_evolution!(deepcopy(figure_zones), uev1, theme=theme, select=BASIC),
+        title="Evolution of unconditioned epidemic")
+) ;
+
+depict("test-01-conditioned", new_figure(
+    draw_evolution!(deepcopy(figure_zones), ev1, theme=theme, select=BASIC),
+        title="Evolution of conditioned epidemic")
+) ;
+```
+
+::: {#fig-test-01-pair layout-ncol=2}
+
+![Unconditioned epidemic](image/test-01-unconditioned.pdf){#fig-test-01-unconditioned}
+
+![Conditioned epidemic](image/test-01-conditioned.pdf){#fig-test-01-conditioned}
+
+Unconditioned and conditioned epidemics
+:::
+
+{{< pagebreak >}}
+
+
+Unit tests for unconditioned and conditioned `AbstractEvolution`s
+=================================================================
+```{julia}
+trajectory = [SIR(0,4,1,0), SIR(1,3,2,0), SIR(2,3,1,1), SIR(3,2,2,1), SIR(4,2,1,2)]
+@testset "EpidemicsCFTP: $(rpad(Evolution, 23))" begin
+    history    = [I(1,1,2), R(2,1), I(3,2,3), R(4,2)]
+    @test uev1.infections == sort(infections, lt=isearlier)
+    @test uev1.removals   == sort(uremovals,  lt=isearlier)
+    @test uev1.chronology == sort(infections ∪ uremovals, lt=isearlier)
+    @test uev1.trajectory == trajectory
+    @test uev1.history    == history
+end
+@testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
+    history    = [I(1,1,2), C(2,1), I(3,2,3), C(4,2)]
+    @test ev1.infections == sort(infections, lt=isearlier)
+    @test ev1.removals   == sort(removals,   lt=isearlier)
+    @test ev1.chronology == sort(infections ∪ removals ∪ cremovals, lt=isearlier)
+    @test ev1.trajectory == trajectory
+    @test ev1.history    == history
+end ;
+```

@@ -233,7 +233,7 @@ Here are figures comparing the candidate innovation for step \(1\)
 ```{julia}
 #| echo: false
 depict("test-02-candidate", new_figure(
-    draw_innovation!(deepcopy(figure_zones), iv2c, theme=theme, select=BASIC),
+    draw_innovation!(deepcopy(incidents_template), iv2c, theme=theme, select=ELEMENTS),
         title="Candidate innovation")
 ) ;
 ```
@@ -305,8 +305,8 @@ ev2_3 = CEvolution(initial, iv2_3)
 ```{julia}
 #| echo: false
 depict("test-04-cremovals1", new_figure(
-    draw_innovation!(deepcopy(figure_zones), iv2_3, theme=theme, select=BASIC),
-        title="Innovation with new CRemovals")
+    draw_innovation!(deepcopy(incidents_template), iv2_3, theme=theme, select=ELEMENTS),
+        title="Innovation up to new CRemovals")
 ) ;
 depict("test-04-cremovals2", new_figure(
     draw_evolution!(deepcopy(figure_zones), ev2_3, theme=theme, select=BASIC),
@@ -317,11 +317,11 @@ depict("test-04-cremovals2", new_figure(
 
 ::: {#fig-test-04-cremovals layout-ncol=2}
 
-![Conditioned evolution, step 2a](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
+![Innovation with modified removals](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
 
-![Conditioned evolution, step 2b](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
+![Resulting conditioned evolution](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
 
-Modifying inactivated removal structure
+Modifying conditional removal structure
 
 :::
 

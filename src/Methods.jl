@@ -448,12 +448,12 @@ end
 # # Computing the last feasible epidemic trajectory
 # # ---------------------------------
 """
-    last_feasible_evolution(::Real, ::Evolution, ::Innovation; ::Bool=false)
+    last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
             ::Tuple{Vector{SIR},Vector{AbstractIncident}}
 
 Computes the last feasible epidemic trajectory.
 """
-function last_feasible_evolution(duration::Real, ev::Evolution, iv::Innovation;
+function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
     conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}          # <1>
 
     chronology = sort(iv.infections ∪ ev.history, lt=isearlier)               # <2>

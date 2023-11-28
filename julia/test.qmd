@@ -58,9 +58,8 @@ import Random
 using Test
 ```
 
+Here is a table of software used in the following computations:
 ```{julia}
-#| label: tbl-software
-#| tbl-cap: Versions of locally-authored software packages used below _etc_.
 #| echo: false
 #| eval: true
 #| cache: false
@@ -105,40 +104,41 @@ set_default_plot_size(theme.figwidth, theme.figheight)
 
 Construction of epidemics
 =========================
-Parameters
-----------
-Since we shall only use artificial examples,
-we do not define the rate parameters.
+Parameters: initial state and duration
+--------------------------------------
+We shall only use artificial examples,
+so we do not define the rate parameters.
 ```{julia}
-const duration = 5.0;
-const initial  = SIR(0.0, 4, 1, 0);
+const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
 ```
 
 Construction of unconditioned epidemic
 --------------------------------------
 Here is an `Innovation` to generate the `Evolution` of the unconditioned epidemic:
 ```{julia}
-A = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
-infections = I[I(2t-1, t, t+1) for t in [1,2]] ∪ A[I(0,3,4), I(2,4,5)]
-uremovals  = R[R(2t, t) for t in [1,2]] ∪ [R(1,5), R(3,5), R(4,5)]
+AI = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
+infections = I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
+uremovals  = R[R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)]
 
 uiv1 = Innovation(initial.n, infections, uremovals)
 ```
-The `Evolution` of an (_unconditioned_) epidemic is given by:
+The `Evolution` of an epidemic (_unconditioned_) is given by:
 ```{julia}
 uev1 = Evolution(initial, uiv1)
 ```
+
+{{< pagebreak >}}
 
 Construction of conditioned epidemic
 ------------------------------------
 Here is an `Innovation` to generate the `CEvolution` of the corresponding conditioned epidemic:
 ```{julia}
 removals   = R[R(1,5), R(3,5), R(4,5)]
-cremovals  = C[C(2t, t) for t in [1,2]] 
+cremovals  = C[C(2t, t) for t ∈ [1,2]] 
 
 iv1 = Innovation(initial.n, infections, removals, cremovals)
 ```
-The `CEvolution` of an (_conditioned_) epidemic is given by:
+The `CEvolution` of an epidemic (_conditioned_) is given by:
 ```{julia}
 ev1 = CEvolution(initial, iv1)
 ```
@@ -147,7 +147,7 @@ ev1 = CEvolution(initial, iv1)
 
 Tabular and graphical displays of epidemics
 ===========================================
-We first import from `EpidemicsUtilities` some constants 
+`EpidemicsUtilities` supplies some constants 
 used for the plotting parameter `select`.
 ```{julia}
 import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, INFECTIONS, REMOVALS, CREMOVALS, 
@@ -198,14 +198,14 @@ depict("test-01-conditioned", new_figure(
 
 Plots of epidemic evolution
 ---------------------------
-Here are figures plotting unconditioned (@fig-test-01-unconditioned) 
-and conditioned (@fig-test-01-conditioned) epidemics.
+@fig-test-01-unconditioned and @fig-test-01-conditioned respectively 
+plot unconditioned and conditioned epidemics.
 
 ::: {#fig-test-01-pair layout-ncol=2}
 
-![Unconditioned epidemic](image/test-01-unconditioned.pdf){#fig-test-01-unconditioned}
+![Unconditioned epidemic `uev1`](image/test-01-unconditioned.pdf){#fig-test-01-unconditioned}
 
-![Conditioned epidemic](image/test-01-conditioned.pdf){#fig-test-01-conditioned}
+![Conditioned epidemic `ev1`](image/test-01-conditioned.pdf){#fig-test-01-conditioned}
 
 Unconditioned and conditioned evolutions of epidemic.
 
@@ -221,15 +221,14 @@ We introduce a new ("candidate")
 `Innovation` to be used to derive a single step in algorithmic time
 of the entire `CEvolution` trajectory.
 ```{julia}
-infections2c = A[I(1.2,1,2), I(1.3,3,4), I(1.5,2,3), I(3.2,3,4), I(3.6,4,5), I(3.9,4,5)] 
+infections2c = AI[I(1.2,1,2), I(1.3,3,4), I(1.5,2,3), I(3.2,3,4), I(3.6,4,5), I(3.9,4,5)] 
 removals2c   = R[R(0.5,2), R(2,3), R(2.3,4), R(3.3,1), R(4.5,5), R(4.8,1)]
 cremovals2c  = C[C(2, 2), C(4,5)]
 
 iv2c = Innovation(initial.n, infections2c, removals2c, cremovals2c)
 ```
-Here are figures comparing the candidate innovation for step \(1\)
-(@fig-test-02-candidate) and the conditional epidemic evolution at step \(0\)
-(@fig-test-02-conditioned, same as @fig-test-01-conditioned).
+@fig-test-02-candidate and @fig-test-02-conditioned respectively plot the candidate innovation for step \(1\)
+(@fig-test-02-candidate) and the conditional epidemic evolution at step \(0\) (@fig-test-02-conditioned).
 ```{julia}
 #| echo: false
 depict("test-02-candidate", new_figure(
@@ -241,11 +240,11 @@ depict("test-02-candidate", new_figure(
 
 ::: {#fig-test-02-innov layout-ncol=2}
 
-![Candidate innovation for step 1](image/test-02-candidate.pdf){#fig-test-02-candidate}
+![Candidate innovation `iv2c` for step 1](image/test-02-candidate.pdf){#fig-test-02-candidate}
 
-![Conditioned evolution, step 0](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
+![Conditioned evolution `ev1` of step 0](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
 
-Candidate innovation and current evolution of epidemic.
+Candidate innovation and previous evolution of epidemic.
 
 :::
 
@@ -257,8 +256,8 @@ Substitution of appropriate inactivated removals
 The first step is to create a new `Innovation` which 
 
 (a) removes _all_ old unconditioned
-`Removal`s and 
-(b) inserts those new `Removal`s which remain inactivated.
+`Removal`s (@fig-test-03-removals1) and 
+(b) inserts those new `Removal`s which remain inactivated (@fig-test-03-removals2).
 ```{julia}
 iv2_1 = Innovation(initial.n, ev1.infections, R[], ev1.cremovals)
 ev2_1 = CEvolution(initial, iv2_1)
@@ -282,9 +281,9 @@ depict("test-03-removals2", new_figure(
 
 ::: {#fig-test-03-removals layout-ncol=2}
 
-![Conditioned evolution, step 2a](image/test-03-removals1.pdf){#test-03-removals1}
+![Conditioned evolution `ev2_1`, step 2a](image/test-03-removals1.pdf){#fig-test-03-removals1}
 
-![Conditioned evolution, step 2b](image/test-03-removals2.pdf){#test-03-removals2}
+![Conditioned evolution `ev2_2`, step 2b](image/test-03-removals2.pdf){#fig-test-03-removals2}
 
 Modifying inactivated removal structure
 
@@ -317,55 +316,190 @@ depict("test-04-cremovals2", new_figure(
 
 ::: {#fig-test-04-cremovals layout-ncol=2}
 
-![Innovation with modified removals](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
+![Innovation with modified removals `iv2_3`](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
 
-![Resulting conditioned evolution](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
+![Resulting conditioned evolution `ev2_3`](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
 
 Modifying conditional removal structure
 
 :::
 
+Adding last feasible Epidemic
+-----------------------------
+For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evolution`
+(later this should be cone using a yet-to-be-written function
+`EpidemicsCFTP.algorithmic_step`).
+
+```{julia}
+last_feasible_trajectory, last_feasible_history = 
+    EpidemicsCFTP.last_feasible_evolution(duration, ev2_3, iv2c, conditioned=true)
+last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ iv2c.infections]
+perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
+#flow_last_feasible           = table_trajectories1(duration, last_feasible_trajectory)
+ev2_4 = CEvolution(initial, iv2_3)
+append!(ev2_4.LFE, last_feasible_history)
+
+LFE_times = append!([0.0], 
+    [z.t for z in ev2_4.LFE if z isa AbstractInfection], [duration])
+LFE_levels = 
+    collect((initial.r + initial.i):
+    (initial.r + initial.i + length(LFE_times)-1))
+LFE_levels[end] = initial.r + initial.i + length(LFE_times) - 2
+    
+LFE_flow = DataFrame(t=LFE_times, epidemic=LFE_levels)
+
+LFE_xy_flow = table_trajectories2(LFE_flow, theme=theme) ;
+header = [:t, :epidemic]
+Markdown.parse(pretty_table(String, LFE_flow[:,header], 
+  header=header, tf=tf_markdown, alignment=[:l, :c]))
+```
+
 {{< pagebreak >}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\appendix
 
 Unit tests
 ==========
+Preliminaries
+-------------
 The following unit tests should eventually be incorporated in `EpidemicsCFTP/test`
-test files.
+test files. To aid concise expression, 
+we define some abbreviations and a function to sort `AbstractIncident`s.
+We also add some structures used later for defining and testing
+`Innovation`s and `AbstractEvolution`s.
+```{julia}
+AI = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
+AR = AbstractRemoval;  KR = KilledRemoval;    
 
-Unconditioned and conditioned version of `AbstractEvolution`
-------------------------------------------------------------
+function sortA(zl::Vector{T}) where T <: AbstractIncident
+    sort(zl, lt=isearlier)
+end
+
+infections  = AI[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
+uremovals   = R[R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4.9,5)]
+removals    = R[R(1,5), R(3,5), R(4.9,5)]
+cremovals   = C[C(2t, t) for t ∈ [1,2]] 
+trajectory  = SIR[SIR(0,4,1,0), SIR(1,3,2,0), SIR(2,3,1,1), SIR(3,2,2,1), SIR(4,2,1,2)]
+uhistory    = [I(1,1,2), R(2,1), I(3,2,3), R(4,2)]
+history     = [I(1,1,2), C(2,1), I(3,2,3), C(4,2)]
+
+
+uiv1  = Innovation(initial.n, infections, uremovals)
+uev1  = Evolution(initial, uiv1)
+iv1   = Innovation(initial.n, infections, removals, cremovals)
+ev1   = CEvolution(initial, iv1)
+```
+
+{{< pagebreak >}}
+
+Testing unconditioned and conditioned versions of `AbstractEvolution`
+---------------------------------------------------------------------
 These tests are intended to check that fields are filled correctly.
 ```{julia}
 begin
-    A = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
-
     @testset "EpidemicsCFTP: $(rpad(Evolution, 23))" begin
-        infections = A[I(2t-1, t, t+1) for t in [1,2]] ∪ A[I(0,3,4), I(2,4,5)]
-        uremovals  =  [R(2t, t) for t in [1,2]] ∪ [R(1,5), R(3,5), R(4,5)]
-        trajectory =  [SIR(0,4,1,0), SIR(1,3,2,0), SIR(2,3,1,1), SIR(3,2,2,1), SIR(4,2,1,2)]
-        uiv1 = Innovation(initial.n, infections, uremovals)
-        uev1 = Evolution(initial, uiv1)
-        history    =  [I(1,1,2), R(2,1), I(3,2,3), R(4,2)]
-        @test uev1.infections == sort(infections, lt=isearlier)
-        @test uev1.removals   == sort(uremovals,  lt=isearlier)
-        @test uev1.chronology == sort(infections ∪ uremovals, lt=isearlier)
-        @test uev1.trajectory == trajectory
-        @test uev1.history    == history
+        @test uev1.infections  == sortA(infections)
+        @test uev1.removals    == sortA(uremovals)
+        @test uev1.chronology  == sortA(infections ∪ uremovals)
+        @test uev1.trajectory  == trajectory
+        @test uev1.history     == uhistory
     end
-
-    removals   =  [R(1,5), R(3,5), R(4,5)]
-    cremovals  =  [C(2t, t) for t in [1,2]] 
     @testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
-        infections = A[I(2t-1, t, t+1) for t in [1,2]] ∪ A[I(0,3,4), I(2,4,5)]
-        trajectory =  [SIR(0,4,1,0), SIR(1,3,2,0), SIR(2,3,1,1), SIR(3,2,2,1), SIR(4,2,1,2)]
-        iv1 = Innovation(initial.n, infections, removals, cremovals)
-        ev1 = CEvolution(initial, iv1)
-        history    = [I(1,1,2), C(2,1), I(3,2,3), C(4,2)]
-        @test ev1.infections == sort(infections, lt=isearlier)
-        @test ev1.removals   == sort(removals,   lt=isearlier)
-        @test ev1.chronology == sort(infections ∪ removals ∪ cremovals, lt=isearlier)
-        @test ev1.trajectory == trajectory
-        @test ev1.history    == history
+        @test sortA(uremovals) == [R(z) for z ∈ sortA(removals ∪ cremovals)]
+        @test ev1.infections   == sortA(infections)
+        @test ev1.removals     == sortA(removals)
+        @test ev1.chronology   == sortA(infections ∪ removals ∪ cremovals)
+        @test ev1.trajectory   == trajectory
+        @test ev1.history      == history
     end ;
 end ;
 ```
+
+{{< pagebreak >}}
+
+Substitution of various removals
+--------------------------------
+The current task is to check removal of all inactive `Removal`s and application of
+functions `inactive_removals` and `resulting_cremovals` from `EpidemicsCFTP`.
+
+The first test set considers `ev2_1`, obtained by removing all inactivated `Removal`s.
+History and trajectory should not change, while the chronology should be obtained by 
+subtracting inactive `Removal`s.
+```{julia}
+iv2_1   = Innovation(initial.n, infections, R[], cremovals)
+ev2_1   = CEvolution(initial, iv2_1)
+begin ; title = "Removing Removals"
+    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+        @test ev2_1.trajectory == ev1.trajectory
+        @test ev2_1.history    == ev1.history
+        @test ev2_1.chronology == setdiff(ev1.chronology, ev1.removals)
+    end
+end ;
+```
+Now consider `ev2_2`, obtained by using `EpidemicsCFTP.inactive_removals`
+to add in only the inactive removals from the candidate `Innovation` `iv2c` 
+which are not activated by the trajectory of `ev1` equivalently `ev2_1`.
+
+```{julia}
+infections2 = AI[I(2t-1.5, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
+removals2   = R[R(0.5,5), R(2.5,5), R(2.6,1), R(3.6,1), R(3.9,5), R(4.6,2)]
+cremovals2  = C[C(2t, 2t) for t ∈ [1,2]] 
+iv2c  = Innovation(initial.n, infections2, removals2, cremovals2)
+iv2_2 = Innovation(initial.n, iv2_1.infections, 
+    EpidemicsCFTP.inactive_removals(ev1, iv2c), iv2_1.cremovals)
+ev2_2 = CEvolution(initial, iv2_2)
+begin ; title = "Inserting Removals"
+    early_removals = [z for z ∈ ev2_2.chronology if z isa AR && z.t < ev2_2.start_times[z.target]]
+    late_removals  = [z for z ∈ ev2_2.chronology if z isa AR && z.t > ev2_2.finis_times[z.target]]
+    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+        @test ev2_2.trajectory == ev1.trajectory
+        @test [z for z ∈ ev2_2.chronology if z isa R]  == early_removals
+        @test [z for z ∈ ev2_2.chronology if z isa KR] == late_removals
+    end
+end ;
+```
+
+Finally consider the effect of `EpidemicsCFTP.resulting_cremovals`.
+
+```{julia}
+iv2_3 = Innovation(initial.n, iv2_2.infections, iv2_2.removals, 
+    EpidemicsCFTP.resulting_cremovals(ev2_2, iv2c))
+ev2_3 = CEvolution(initial, iv2_3)
+begin ; title = "Modifying CRemovals"
+    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+        @test ev2_3.trajectory == ev1.trajectory
+        @test ev2_3.infections == ev1.infections
+        @test [z for z ∈ ev2_3.chronology if z isa R]  == early_removals
+        @test [z for z ∈ ev2_3.chronology if z isa KR] == late_removals
+        @test ev2_3.cremovals  == C[C(2,2), C(4,2)] 
+    end
+end ;
+```
+

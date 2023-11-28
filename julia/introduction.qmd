@@ -868,7 +868,7 @@ of the new infections _prior_ to removal
 ```{julia}
 #| echo: false
 [z for z in EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate) if 
-    isa(z, OperativeInfection)]
+    z isa OperativeInfection]
 ```
 are relevant
 to construction of the \LFE. 
@@ -929,7 +929,7 @@ This next bit badly needs rigorous justification
 and should be put in a function! Examine it in `VScode`.
 ```{julia}
 LFE_times = append!([0.0], 
-    [z.t for z in evol1_2x.LFE if isa(z, AbstractInfection)], [duration])
+    [z.t for z in evol1_2x.LFE if z isa AbstractInfection], [duration])
 LFE_levels = 
     collect((initial.r + initial.i):
     (initial.r + initial.i + length(LFE_times)-1))

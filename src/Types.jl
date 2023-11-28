@@ -802,7 +802,7 @@ struct CEvolution <: AbstractEvolution
     initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
-    LFE_        ::Vector{<:AbstractIncident}
+    LFE         ::Vector{<:AbstractIncident}
     
     function CEvolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of `initial_state` entries

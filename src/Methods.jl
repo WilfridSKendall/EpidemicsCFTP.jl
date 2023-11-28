@@ -73,11 +73,11 @@ false
 ```
 """
 function is_activatable(state::SIR, z::AbstractInfection)::Bool
-    isa(z, OperativeInfection) && 
+    z isa OperativeInfection && 
         z.t >= state.t && z.target > state.r && z.infectee == state.i + state.r + 1
 end
 function is_activatable(state::SIR, z::AbstractRemoval)::Bool
-    isa(z, OperativeRemoval) && 
+    z isa OperativeRemoval && 
         z.t >= state.t && z.target > state.r && z.target <= state.i + state.r
 end
 
@@ -139,9 +139,9 @@ SIR₀.₂₀(1:2:3)
 function update(state::SIR, z::AbstractIncident)::SIR
     if state.t > z.t
         return state
-    elseif isa(z, OperativeRemoval)   && is_activatable(state, z)
+    elseif z isa OperativeRemoval   && is_activatable(state, z)
         return remove(z.t, state)
-    elseif isa(z, OperativeInfection) && is_activatable(state, z)
+    elseif z isa OperativeInfection && is_activatable(state, z)
         return infect(z.t, state)
     else
         return SIR(z.t, state.s, state.i, state.r)
@@ -173,8 +173,8 @@ function reverse_update(state::SIR, event::AbstractIncident)::SIR
         return state
     end
     result = SIR(event.t, state.s, state.i, state.r)
-    if (isa(event, AbstractRemoval) && state.r > 0) || 
-            (isa(event, AbstractInfection) && state.i > 0)
+    if (event isa AbstractRemoval && state.r > 0) || 
+            (event isa AbstractInfection && state.i > 0)
         prior = antecedent(state, event)
         if is_activatable(prior, event)
             result = prior
@@ -272,12 +272,12 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
         for z ∈ chronology
             new_state = update(trajectory[end], z)
             if ! is_same_config(new_state, trajectory[end])
-                if conditioned && isa(z, Removal)
+                if conditioned && z isa Removal
                     throw(EmployedRemoval(z))
                 end
                 push!(trajectory, new_state)
                 push!(history, z)
-            elseif conditioned && isa(z, CRemoval)
+            elseif conditioned && z isa CRemoval
                     throw(MissedCRemoval(z))
             end
         end
@@ -315,12 +315,12 @@ function periods(trajectory::Vector{SIR},
     start, finis = trajectory[1], trajectory[end]
     
     # Compute birth times
-    births = sort([z.t for z ∈ history if isa(z, OperativeInfection)])
+    births = sort([z.t for z ∈ history if z isa OperativeInfection])
     prepend!(births, repeat([0.0], start.i + start.r))
     append!(births, repeat([Inf], finis.s)) # Or replace `Inf` by `duration`
     
     # Compute death times
-    deaths = sort([z.t for z ∈ history if isa(z, OperativeRemoval)])
+    deaths = sort([z.t for z ∈ history if z isa OperativeRemoval])
     prepend!(deaths, repeat([0.0], start.r))
     append!(deaths, repeat([Inf], finis.i + finis.s)) # Or replace `Inf` by `duration`
     
@@ -365,8 +365,7 @@ Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and returns
 those which are relevant to construction of the "last feasible epidemic".
 """
 function relevant_infections(ev::Evolution, iv::Innovation)::Vector{AbstractInfection}
-    unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if  
-                    isa(z, OperativeInfection)]
+    unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if z isa OperativeInfection]
     relevant_inf = [z for z ∈ ev.history if typeof(z) <: AbstractInfection]
     rsup, running_supremum_list = 0, CRemoval[]
     for z ∈ sort(ev.cremovals ∪ unkilled, lt=isearlier)
@@ -469,12 +468,12 @@ function last_feasible_evolution(duration::Real, ev::Evolution, iv::Innovation;
             current_state = reverse_trajectory[end]
             prior_state = reverse_update(current_state, event)
             if ! is_same_config(prior_state, current_state)
-                if conditioned && isa(event, Removal)
+                if conditioned && event isa Removal
                     throw(EmployedRemoval(event))
                 end
                 push!(reverse_trajectory, prior_state)
                 push!(reverse_history, event)
-            elseif conditioned && isa(event, CRemoval)
+            elseif conditioned && event isa CRemoval
                 throw(MissedCRemoval(event))
             end
         end

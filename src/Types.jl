@@ -698,7 +698,7 @@ struct Evolution <: AbstractEvolution
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
         innovation = Innovation(initial_state.n,
                         AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
-                        AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && ! z isa CRemoval],
+                        AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                         CRemoval[z for z ∈ chronology if z isa CRemoval],
                         )
         return Evolution(initial_state, innovation)
@@ -820,8 +820,8 @@ struct CEvolution <: AbstractEvolution
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident})
         innovation = Innovation(initial_state.n,
-                        AbstractInfection[z for z ∈ chronology if z isa AbstractInfection)],
-                        AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && ! z isa CRemoval],
+                        AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
+                        AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                         CRemoval[z for z ∈ chronology if z isa CRemoval],
                         )
         return CEvolution(initial_state, innovation)

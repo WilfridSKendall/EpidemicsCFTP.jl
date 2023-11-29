@@ -250,10 +250,10 @@ ALL        = TOP | BOUNDARIES | REGIONS | BASIC
 function draw_regions!(template::Plot, ev::Evolution;
                 theme::NamedTuple=theme, select=BOUNDARIES | REGIONS | TOP)
     SIR_flow = table_trajectories1(duration, ev.trajectory)
-    xy_SIR_flow = table_trajectories2(flow, theme=theme)
+    xy_SIR_flow = table_trajectories2(SIR_flow, theme=theme)
     if (select & TOP) > 0            
         push!(template, 
-            layer(flow, x=:t, y=:population, Geom.line,
+            layer(SIR_flow, x=:t, y=:population, Geom.line,
                     style(line_width=theme.trail, default_color=theme.scaffold)))
     end
     if (select & BOUNDARIES) > 0     
@@ -922,14 +922,15 @@ last_feasible_trajectory, last_feasible_history =
 last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections]
 perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ evol1.infections]
 flow_last_feasible           = table_trajectories1(duration, last_feasible_trajectory)
-append!(evol1_2x.LFE, last_feasible_history)
+append!(evol1_2x.LFE, last_feasible_trajectory)
 ```
 
 This next bit badly needs rigorous justification
 and should be put in a function! Examine it in `VScode`.
+OR REPLACE AS PER test.qmd.
 ```{julia}
 LFE_times = append!([0.0], 
-    [z.t for z in evol1_2x.LFE if z isa AbstractInfection], [duration])
+    [z.t for z in last_feasible_history if z isa AbstractInfection], [duration])
 LFE_levels = 
     collect((initial.r + initial.i):
     (initial.r + initial.i + length(LFE_times)-1))

@@ -138,7 +138,7 @@ cremovals  = C[C(2t, t) for t ∈ [1,2]]
 
 iv1 = Innovation(initial.n, infections, removals, cremovals)
 ```
-The `CEvolution` of an epidemic (_conditioned_) is given by:
+The `CEvolution` of an epidemic (when _conditioned_ on observed removals) is given by:
 ```{julia}
 ev1 = CEvolution(initial, iv1)
 ```
@@ -183,7 +183,7 @@ incidents_template = new_figure(curves_template,
     Guide.yticks(ticks=collect(1:(initial.n))),
     Guide.ylabel("Time lines")) ;
 
-figure_zones = draw_regions!(deepcopy(incidents_template), duration, uflow,
+figure_zones = draw_regions!(deepcopy(incidents_template), duration,
     uev1, theme=theme, select=BOUNDARIES | REGIONS)
 depict("test-01-unconditioned", new_figure(
     draw_evolution!(deepcopy(figure_zones), uev1, theme=theme, select=BASIC),
@@ -221,7 +221,8 @@ We introduce a new ("candidate")
 `Innovation` to be used to derive a single step in algorithmic time
 of the entire `CEvolution` trajectory.
 ```{julia}
-infections2c = AI[I(1.2,1,2), I(1.3,3,4), I(1.5,2,3), I(3.2,3,4), I(3.6,4,5), I(3.9,4,5)] 
+infections2c = AI[I(1.5,1,2), I(1.3,3,4), I(1.5,2,3), I(2.5,1,2), I(3.2,3,4), I(3.6,4,5), 
+    I(3.9,4,5), I(4.5,1,3)] 
 removals2c   = R[R(0.5,2), R(2,3), R(2.3,4), R(3.3,1), R(4.5,5), R(4.8,1)]
 cremovals2c  = C[C(2, 2), C(4,5)]
 
@@ -324,7 +325,10 @@ Modifying conditional removal structure
 
 :::
 
-Adding last feasible Epidemic
+{{< pagebreak >}}
+
+
+Adding last feasible epidemic
 -----------------------------
 For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evolution`
 (later this should be cone using a yet-to-be-written function
@@ -335,24 +339,50 @@ last_feasible_trajectory, last_feasible_history =
     EpidemicsCFTP.last_feasible_evolution(duration, ev2_3, iv2c, conditioned=true)
 last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ iv2c.infections]
 perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
-#flow_last_feasible           = table_trajectories1(duration, last_feasible_trajectory)
-ev2_4 = CEvolution(initial, iv2_3)
-append!(ev2_4.LFE, last_feasible_history)
-
-LFE_times = append!([0.0], 
-    [z.t for z in ev2_4.LFE if z isa AbstractInfection], [duration])
-LFE_levels = 
-    collect((initial.r + initial.i):
-    (initial.r + initial.i + length(LFE_times)-1))
-LFE_levels[end] = initial.r + initial.i + length(LFE_times) - 2
-    
-LFE_flow = DataFrame(t=LFE_times, epidemic=LFE_levels)
-
-LFE_xy_flow = table_trajectories2(LFE_flow, theme=theme) ;
-header = [:t, :epidemic]
-Markdown.parse(pretty_table(String, LFE_flow[:,header], 
-  header=header, tf=tf_markdown, alignment=[:l, :c]))
+other_older_infections       = setdiff(ev2_3.infections, 
+                                    AI[z for z in last_feasible_history if z isa AI])
+iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
+                        other_older_infections, ev2_3.removals, ev2_3.cremovals)
+ev2_4 = CEvolution(initial, iv2_4) ; append!(ev2_4.LFE, last_feasible_trajectory) ; ev2_4
 ```
+
+```{julia}
+#| echo: false
+flow_last_feasible    = table_trajectories1(duration, ev2_4.LFE)
+flow_xy_last_feasible = table_trajectories2(flow_last_feasible, forward=false, theme=theme)
+figure_zones2 = push!(deepcopy(figure_zones),
+    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
+        style(line_width=theme.trail, default_color=theme.lastfeasible3)),
+    layer(flow_xy_last_feasible, x=:t, 
+        ymin=:removals, ymax=:epidemic, 
+        Geom.ribbon,
+        style(default_color=theme.lastfeasible2)
+        )
+)
+
+depict("test-05-LFE1", new_figure(
+    draw_innovation!(deepcopy(incidents_template), iv2_4, theme=theme, select=ELEMENTS),
+        title="Innovation with LFE infections")
+) ;
+depict("test-05-LFE2", new_figure(
+    draw_evolution!(deepcopy(figure_zones2), ev2_4, theme=theme, select=BASIC),
+        title="Evolution with LFE infections")
+) ;
+```
+
+
+::: {#fig-test-05-LFE layout-ncol=2}
+
+![Innovation with LFE infections added using `iv2_4`](image/test-05-LFE1.pdf){#fig-test-05-LFE1}
+
+![Resulting conditioned evolution `ev2_4`](image/test-05-LFE2.pdf){#fig-test-05-LFE2}
+
+Last feasible epidemic infections added from `iv2c`, region between last feasible epidemic removal zone is highlighted
+
+:::
+
+
+
 
 {{< pagebreak >}}
 

@@ -603,7 +603,7 @@ Instances should always possess fields as given in the table.
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `start_times` | `Vector{Real}`               | **computed** | list              |
 | `finis_times` | `Vector{Real}`               | **computed** | list              |
-| `LFE `        | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
+| `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
@@ -679,7 +679,7 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
-    LFE         ::Vector{<:AbstractIncident}
+    LFE         ::Vector{SIR}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of initial.state entries
@@ -690,7 +690,7 @@ struct Evolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
         start_times, finis_times = periods(trajectory, history)
-        LFE        = AbstractIncident[]
+        LFE        = SIR[]
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start_times, finis_times, LFE)
     end
@@ -707,7 +707,7 @@ struct Evolution <: AbstractEvolution
 end
 
 """
-    CEvolution(::SIR, ::Innovation)
+    CEvolution(::SIR, ::Innovation; LFE::Vector{SIR}=SIR[])
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -802,9 +802,9 @@ struct CEvolution <: AbstractEvolution
     initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
-    LFE         ::Vector{<:AbstractIncident}
+    LFE         ::Vector{SIR}
     
-    function CEvolution(initial_state::SIR, innovation::Innovation)
+    function CEvolution(initial_state::SIR, innovation::Innovation; LFE=SIR[])
         # Need to check population == sum of `initial_state` entries
         population = innovation.population
         infections = innovation.infections
@@ -813,16 +813,15 @@ struct CEvolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start_times, finis_times = periods(trajectory, history)
-        LFE        = AbstractIncident[]
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start_times, finis_times, LFE)
     end
     
-    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident})
-        innovation = Innovation(initial_state.n,
+    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; LFE=SIR[])
+            innovation = Innovation(initial_state.n,
                         AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                         AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
-                        CRemoval[z for z ∈ chronology if z isa CRemoval],
+                        CRemoval[z for z ∈ chronology if z isa CRemoval]
                         )
         return CEvolution(initial_state, innovation)
     end

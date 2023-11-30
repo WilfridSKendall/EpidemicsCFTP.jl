@@ -235,83 +235,6 @@ depict("introduction-01-key", new_figure(key_template,
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-Plotting utility function
--------------------------
-The following convenience functions return various `Gadfly` figures for an evolution.
-Flow calculations occur _within_ the functions!
-The keyword argument `select` chooses different aspects.
-```{julia}
-TOP        = 0b000000001 ; BOUNDARIES = 0b000000010 ; REGIONS    = 0b000000100 ;  
-INFECTIONS = 0b000001000 ; REMOVALS   = 0b000010000 ; CREMOVALS  = 0b000100000 ;
-ACTIVATED  = 0b001000000 ;
-ELEMENTS   = INFECTIONS | REMOVALS | CREMOVALS ; BASIC = ACTIVATED | ELEMENTS ;
-ALL        = TOP | BOUNDARIES | REGIONS | BASIC
-
-function draw_regions!(template::Plot, ev::Evolution;
-                theme::NamedTuple=theme, select=BOUNDARIES | REGIONS | TOP)
-    SIR_flow = table_trajectories1(duration, ev.trajectory)
-    xy_SIR_flow = table_trajectories2(SIR_flow, theme=theme)
-    if (select & TOP) > 0            
-        push!(template, 
-            layer(SIR_flow, x=:t, y=:population, Geom.line,
-                    style(line_width=theme.trail, default_color=theme.scaffold)))
-    end
-    if (select & BOUNDARIES) > 0     
-        push!(template, 
-            layer(SIR_flow, x=:t, y=:removals, Geom.step,
-                style(line_width=theme.boundary, default_color=theme.colour(R))),
-            layer(SIR_flow, x=:t, y=:epidemic, Geom.step,
-                style(line_width=theme.boundary, default_color=theme.colour(I))))
-    end
-    if (select & REGIONS) > 0        
-        push!(template, 
-            layer(xy_SIR_flow, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
-                alpha=[2theme.opacity], style(default_color=theme.colour(R))),
-            layer(xy_SIR_flow, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
-                alpha=[theme.opacity], style(default_color=theme.colour(I))))
-    end
-    return template
-end ;
-
-#function draw_evolution!(template::Plot, ev::AbstractEvolution;
-#                theme::NamedTuple=theme, select=ELEMENTS | ACTIVATED)
-#    if (select & (BOUNDARIES | REGIONS | TOP)) > 0
-#        figure = draw_regions!(template, ev, theme=theme, select=select)
-#    else
-#        figure = template
-#    end
-#    if (select & ELEMENTS) > 0   
-#        figure = draw_innovation!(figure, ev, theme=theme, select=select & ELEMENTS)
-#    end
-#    if (select & ACTIVATED) > 0      
-#        push!(figure, Guide.annotation(compose(context(), 
-#            draw_activated_elements(ev.initial, ev.history, theme=theme))))
-#    end
-#    return figure
-#end ;
-
-function draw_innovation!(template::Plot, iv::AbstractEnvironment;
-                theme::NamedTuple=theme, select=ELEMENTS)
-    if (select & ELEMENTS == ELEMENTS)
-        push!(template, Guide.annotation(compose(context(), 
-            draw_elements(iv.chronology, theme=theme))))
-    else
-        if (select & INFECTIONS) > 0        
-            push!(template, Guide.annotation(compose(context(), 
-                draw_elements(iv.infections, theme=theme))))
-        end
-        if (select & REMOVALS) > 0        
-            push!(template, Guide.annotation(compose(context(), 
-                draw_elements(iv.removals, theme=theme))))
-        end
-        if (select & CREMOVALS) > 0        
-            push!(template, Guide.annotation(compose(context(), 
-                draw_elements(iv.cremovals, theme=theme))))
-        end
-    end
-    return template
-end ;
-```
 
 {{< pagebreak >}}
 
@@ -427,7 +350,7 @@ an _infectivity zone_, and between the infectivity zone and a _susceptible zone_
 depict("introduction-03-boundary", 
     new_figure(
         draw_regions!(deepcopy(incidents_template), 
-            evol1, theme=theme, select=BOUNDARIES | TOP),
+            duration, evol1, theme=theme, select=BOUNDARIES | TOP),
         title="Boundaries for the coupling construction")
 )
 ```
@@ -455,7 +378,7 @@ Markdown.parse(pretty_table(String, xy_flow[:,header],
 #| label: fig-introduction-04-zones
 #| fig-cap: "Infectivity and removal zones. [`04-zones`]"
 figure_zones = draw_regions!(deepcopy(incidents_template), 
-    evol1, theme=theme, select=BOUNDARIES | REGIONS)
+    duration, evol1, theme=theme, select=BOUNDARIES | REGIONS)
 depict("introduction-04-zones", new_figure(figure_zones,
     title="Zones of infectivity and removal"))
 ```
@@ -1389,7 +1312,7 @@ xy_flow = table_trajectories2(flow, theme=theme) ;
 #|           \"no-fly\" zone and last feasible zone as determined by previous step and  \
 #|           proposed innovation. Note that the infected region has altered to conform  \
 #|           to the new `Innovation` (`innov2`). [`18-one-iteration`]"  
-figure_zones2 = draw_regions!(deepcopy(incidents_template), evol2, 
+figure_zones2 = draw_regions!(deepcopy(incidents_template), duration, evol2, 
                             theme=theme, select=BOUNDARIES | REGIONS)
 
 figure18 = new_figure(

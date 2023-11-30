@@ -878,20 +878,14 @@ on @fig-introduction-12-with-relevant-infections.
 #|           the last feasible epidemic trajectory (coloured in pink) and last feasible \
 #|           new infections (outlined in deep pink). [`13-last-feasible-epidemic`]"
 figure13a = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
-figure13b = new_figure(figure13a,
-    Guide.annotation(compose(context(),
-        draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
-)
-figure13c  = draw_evolution!(figure13b, evol1_2y, duration, select=BASIC | LFET, theme=theme)
-figure13 = new_figure(figure13c,
+figure13 = new_figure(
+    draw_evolution!(figure13a, evol1_2y, duration, select=BASIC | LFET, theme=theme),
     Guide.annotation(compose(context(),
         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
 )
 depict("introduction-13-last-feasible-epidemic", new_figure(figure13,
     title="Last feasible epidemic")
 )
-# 1. Notice argument to `Geom.step` is `direction=:hv` here, to get the right trajectory! 
-# See <http://gadflyjl.org/stable/lib/geometries/#Gadfly.Geom.step-Tuple{}>.
 ```
 
 The next step is to abandon even the activated infections from the previous `Evolution`

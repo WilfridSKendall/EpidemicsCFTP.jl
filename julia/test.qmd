@@ -151,7 +151,7 @@ Tabular and graphical displays of epidemics
 used for the plotting parameter `select`.
 ```{julia}
 import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, INFECTIONS, REMOVALS, CREMOVALS, 
-    ACTIVATED, ELEMENTS, BASIC, ALL 
+    ACTIVATED, ELEMENTS, LFE, BASIC, ALL 
 ```
 
 Table of evolution of epidemic
@@ -186,12 +186,12 @@ incidents_template = new_figure(curves_template,
 figure_zones = draw_regions!(deepcopy(incidents_template), duration,
     uev1, theme=theme, select=BOUNDARIES | REGIONS)
 depict("test-01-unconditioned", new_figure(
-    draw_evolution!(deepcopy(figure_zones), uev1, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), uev1, duration, theme=theme, select=BASIC),
         title="Evolution of unconditioned epidemic")
 ) ;
 
 depict("test-01-conditioned", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev1, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev1, duration, theme=theme, select=BASIC),
         title="Evolution of conditioned epidemic")
 ) ;
 ```
@@ -270,11 +270,11 @@ ev2_2 = CEvolution(initial, iv2_2)
 ```{julia}
 #| echo: false
 depict("test-03-removals1", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_1, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev2_1, duration, theme=theme, select=BASIC),
         title="Old removals removed")
 ) ;
 depict("test-03-removals2", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_2, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev2_2, duration, theme=theme, select=BASIC),
         title="New inactive removals inserted")
 ) ;
 ```
@@ -309,7 +309,7 @@ depict("test-04-cremovals1", new_figure(
         title="Innovation up to new CRemovals")
 ) ;
 depict("test-04-cremovals2", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_3, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev2_3, duration, theme=theme, select=BASIC),
         title="Resulting evolution")
 ) ;
 ```
@@ -343,29 +343,17 @@ other_older_infections       = setdiff(ev2_3.infections,
                                     AI[z for z in last_feasible_history if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4) ; append!(ev2_4.LFE, last_feasible_trajectory) ; ev2_4
+ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_trajectory)
 ```
 
 ```{julia}
 #| echo: false
-flow_last_feasible    = table_trajectories1(duration, ev2_4.LFE)
-flow_xy_last_feasible = table_trajectories2(flow_last_feasible, forward=false, theme=theme)
-figure_zones2 = push!(deepcopy(figure_zones),
-    layer(flow_last_feasible, x=:t, y=:epidemic, Geom.step(direction=:vh), 
-        style(line_width=theme.trail, default_color=theme.lastfeasible3)),
-    layer(flow_xy_last_feasible, x=:t, 
-        ymin=:removals, ymax=:epidemic, 
-        Geom.ribbon,
-        style(default_color=theme.lastfeasible2)
-        )
-)
-
 depict("test-05-LFE1", new_figure(
     draw_innovation!(deepcopy(incidents_template), iv2_4, theme=theme, select=ELEMENTS),
         title="Innovation with LFE infections")
 ) ;
 depict("test-05-LFE2", new_figure(
-    draw_evolution!(deepcopy(figure_zones2), ev2_4, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev2_4, duration, theme=theme, select=BASIC | LFE),
         title="Evolution with LFE infections")
 ) ;
 ```

@@ -273,22 +273,22 @@ function draw_regions!(template::Plot, ev::Evolution;
     return template
 end ;
 
-function draw_evolution!(template::Plot, ev::AbstractEvolution;
-                theme::NamedTuple=theme, select=ELEMENTS | ACTIVATED)
-    if (select & (BOUNDARIES | REGIONS | TOP)) > 0
-        figure = draw_regions!(template, ev, theme=theme, select=select)
-    else
-        figure = template
-    end
-    if (select & ELEMENTS) > 0   
-        figure = draw_innovation!(figure, ev, theme=theme, select=select & ELEMENTS)
-    end
-    if (select & ACTIVATED) > 0      
-        push!(figure, Guide.annotation(compose(context(), 
-            draw_activated_elements(ev.initial, ev.history, theme=theme))))
-    end
-    return figure
-end ;
+#function draw_evolution!(template::Plot, ev::AbstractEvolution;
+#                theme::NamedTuple=theme, select=ELEMENTS | ACTIVATED)
+#    if (select & (BOUNDARIES | REGIONS | TOP)) > 0
+#        figure = draw_regions!(template, ev, theme=theme, select=select)
+#    else
+#        figure = template
+#    end
+#    if (select & ELEMENTS) > 0   
+#        figure = draw_innovation!(figure, ev, theme=theme, select=select & ELEMENTS)
+#    end
+#    if (select & ACTIVATED) > 0      
+#        push!(figure, Guide.annotation(compose(context(), 
+#            draw_activated_elements(ev.initial, ev.history, theme=theme))))
+#    end
+#    return figure
+#end ;
 
 function draw_innovation!(template::Plot, iv::AbstractEnvironment;
                 theme::NamedTuple=theme, select=ELEMENTS)
@@ -477,7 +477,7 @@ but merely illustrates the occurrences of the various incidents..
 #|           whilst the upper boundary of the removal zone is \"removed\".    \
 #|                                             [`05-incidents`]"
 depict("introduction-05-incidents", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1, theme=theme, select=ELEMENTS),
+    draw_evolution!(deepcopy(figure_zones), evol1, duration, theme=theme, select=ELEMENTS),
     title="Incidents driving the epidemic")
 )
 ```
@@ -513,7 +513,7 @@ observed removals).
 #|           those infections reaching from within the infectivity zone to    \
 #|           just above it. [`06-activated`]"
 depict("introduction-06-activated", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1, duration, theme=theme, select=BASIC),
     title="Incidents driving the epidemic, emphasizing activated incidents")
 )
 ```
@@ -654,7 +654,7 @@ therefore yields the same trajectory as `evol1 = Evolution(initial, innov1)`.
 #|           taken away, while retaining conditioned removals, as specified in `innov1_0`. \
 #|           [`07-old-removals-gone`]"
 depict("introduction-07-old-removals-gone", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1_0, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1_0, duration, theme=theme, select=BASIC),
     title="The epidemic as before, deleting all non-activated removals")
 )
 ```
@@ -715,7 +715,7 @@ equivalently `evol1_0` (since no inserted removals will be activated).
 #|           all in the removal zone.                       \
 #|           [`08-inactive-removals`]"
 depict("introduction-08-inactive-removals", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1_1, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1_1, duration, theme=theme, select=BASIC),
     title="Inactive removals added from new innovation")
 )
 ```
@@ -769,7 +769,7 @@ hence do not affect the trajectory.
 #|           changed (from `target=1` to `target=2`).                                         \
 #|           [`09-processed-cremovals`]" 
 depict("introduction-09-processed-cremovals", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1_2, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), evol1_2, duration, theme=theme, select=BASIC),
     title="Marks for conditioned removals changed by accept/reject")
 )
 ```
@@ -826,7 +826,7 @@ evol1_2x  = Evolution(initial, evol1_2.history) ;
 figure10  = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
 
 depict("introduction-10-with-all-new-infections", new_figure(
-    draw_evolution!(figure10, evol1_2x, theme=theme),
+    draw_evolution!(figure10, evol1_2x, duration, theme=theme),
     title="New infections superimposed")
 )
 ```
@@ -850,7 +850,7 @@ We can then distinguish visually between infections occurring before and after r
 differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
 innov1_2b = Innovation(initial.n, differentiated, innov1_2.removals, innov1_2.cremovals) ;
 figure11  = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
-figure11  = draw_evolution!(figure11, evol1_2x, theme=theme)
+figure11  = draw_evolution!(figure11, evol1_2x, duration, theme=theme)
 
 depict("introduction-11-dividing-infections1", new_figure(figure11,
     title="Distinguishing between new infections occurring before and after removal")
@@ -1336,7 +1336,7 @@ evol2  = Evolution(initial, innov2) ;
 #|           which would infect \"no-fly zone\" and illustrating trajectory and zones (by    \
 #|           shading) of the last feasible epidemic. [`17-no-fly-zone`]"  
 figure17 = new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol2, theme=theme, select=ELEMENTS),
+    draw_evolution!(deepcopy(figure_zones), evol2, duration, theme=theme, select=ELEMENTS),
     
     # Draw activated incidents from last feasible epidemic (derived from previous
     # `evolution`!), without inscriptions.
@@ -1394,7 +1394,7 @@ figure_zones2 = draw_regions!(deepcopy(incidents_template), evol2,
 
 figure18 = new_figure(
     # Draw second algorithmic step of epidemic
-    draw_evolution!(deepcopy(figure_zones2), evol2, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones2), evol2, duration, theme=theme, select=BASIC),
 
     # Draw, for each time line, "no fly" boundaries determined by running maximum calculation.
     Guide.annotation(compose(context(),

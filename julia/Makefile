@@ -3,6 +3,9 @@ SHELL          := /usr/bin/bash
 QUARTO         := /usr/local/bin/quarto
 CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 QUARTO_OPTIONS :=  --csl=$(CSL)
+QUARTO_CACHE   :=  --cache-refresh
+#QUARTO_CACHE   :=  --no--cache
+#QUARTO_CACHE   :=  --cache
 
 JULIA          := $(HOME)/.local/bin/julia
 
@@ -58,9 +61,8 @@ introduction.pdf: config/theme.yml
 
 # ====================
 # Automatic conversion of qmd to pdf
-#%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache-refresh
-%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; $(QUARTO) render $< -P source:$< --to pdf $(QUARTO_OPTIONS) --no-cache
-#%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache
+# --cache-refresh seems to be good at loading modules anew.
+%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache-refresh
 
 # ====================
 # NOTE

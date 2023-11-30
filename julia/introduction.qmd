@@ -744,7 +744,7 @@ new epidemic trajectory!
 innov1_2a = Innovation(initial.n, 
     innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
-evol1_2x  = Evolution(initial, evol1_2.history) ;
+evol1_2x  = CEvolution(initial, evol1_2.history) ;
 
 figure10  = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
 

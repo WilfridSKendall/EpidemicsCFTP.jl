@@ -823,7 +823,7 @@ struct CEvolution <: AbstractEvolution
                         AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                         CRemoval[z for z ∈ chronology if z isa CRemoval]
                         )
-        return CEvolution(initial_state, innovation)
+        return CEvolution(initial_state, innovation, LFE=LFE)
     end
 
 end

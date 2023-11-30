@@ -365,7 +365,8 @@ depict("test-05-LFE2", new_figure(
 
 ![Resulting conditioned evolution `ev2_4`](image/test-05-LFE2.pdf){#fig-test-05-LFE2}
 
-Last feasible epidemic infections added from `iv2c`, region between last feasible epidemic removal zone is highlighted
+Last feasible epidemic (LFE) infections added from `iv2c`; the region lying between 
+LFE trajectory and removal boundary is highlighted
 
 :::
 

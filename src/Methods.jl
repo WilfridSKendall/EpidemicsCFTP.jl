@@ -205,8 +205,8 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
 # # Evolve an epidemic
 # # -------------------------------
 """
-    evolution(::SIR, ::Vector{AbstractIncident}; conditioned::Bool=false)          
-        ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+    evolution(::SIR, ::Vector{T}; conditioned::Bool=false)          
+        ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
     evolution(::SIR, ::Innovation; conditioned::Bool=false)          
         ::Tuple{Vector{SIR},Vector{AbstractIncident}}
 
@@ -271,7 +271,7 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
     return evolution(initial_state, innovation.chronology; conditioned=conditioned)
 end
 
-function evolution(initial_state::SIR, chronology::Vector{AbstractIncident}; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+function evolution(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
     trajectory, history = SIR[initial_state], AbstractIncident[]
     chron  = [x for x ∈ chronology if x.t ≥ initial_state.t]
     if ! isempty(chron)

@@ -205,6 +205,8 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
 # # Evolve an epidemic
 # # -------------------------------
 """
+    evolution(::SIR, ::Vector{AbstractIncident}; conditioned::Bool=false)          
+        ::Tuple{Vector{SIR},Vector{AbstractIncident}}
     evolution(::SIR, ::Innovation; conditioned::Bool=false)          
         ::Tuple{Vector{SIR},Vector{AbstractIncident}}
 
@@ -266,10 +268,14 @@ julia> evolution(initial_state, innovation, conditioned=true)
 ```
 """
 function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+    return evolution(initial_state, innovation.chronology; conditioned=conditioned)
+end
+
+function evolution(initial_state::SIR, chronology::Vector{AbstractIncident}; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
     trajectory, history = SIR[initial_state], AbstractIncident[]
-    chronology  = [x for x ∈ innovation.chronology if x.t ≥ initial_state.t]
-    if ! isempty(chronology)
-        for z ∈ chronology
+    chron  = [x for x ∈ chronology if x.t ≥ initial_state.t]
+    if ! isempty(chron)
+        for z ∈ chron
             new_state = update(trajectory[end], z)
             if ! is_same_config(new_state, trajectory[end])
                 if conditioned && z isa Removal
@@ -285,6 +291,7 @@ function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool
     return trajectory, history
 end
 
+    
 # # Compute infectious periods
 # # -------------------------------
 """

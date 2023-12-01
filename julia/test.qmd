@@ -353,7 +353,7 @@ depict("test-05-LFE1", new_figure(
         title="Innovation with LFE infections")
 ) ;
 depict("test-05-LFE2", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_4, duration, theme=theme, select=BASIC | LFE),
+    draw_evolution!(deepcopy(figure_zones), ev2_4, duration, theme=theme, select=BASIC | LFET | LFER),
         title="Evolution with LFE infections")
 ) ;
 ```

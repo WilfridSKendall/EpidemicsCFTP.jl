@@ -335,7 +335,7 @@ For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evoluti
 `EpidemicsCFTP.algorithmic_step`).
 
 ```{julia}
-last_feasible_trajectory, last_feasible_history = 
+last_feasible_history = 
     EpidemicsCFTP.last_feasible_evolution(duration, ev2_3, iv2c, conditioned=true)
 last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ iv2c.infections]
 perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
@@ -343,7 +343,8 @@ other_older_infections       = setdiff(ev2_3.infections,
                                     AI[z for z in last_feasible_history if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_trajectory)
+
+ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
 ```
 
 ```{julia}
@@ -353,7 +354,7 @@ depict("test-05-LFE1", new_figure(
         title="Innovation with LFE infections")
 ) ;
 depict("test-05-LFE2", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_4, duration, theme=theme, select=BASIC | LFET | LFER),
+    draw_evolution!(deepcopy(figure_zones), ev2_4, duration, theme=theme, select=BASIC | LFE),
         title="Evolution with LFE infections")
 ) ;
 ```
@@ -369,9 +370,6 @@ Last feasible epidemic (LFE) infections added from `iv2c`; the region lying betw
 LFE trajectory and removal boundary is highlighted
 
 :::
-
-
-
 
 {{< pagebreak >}}
 

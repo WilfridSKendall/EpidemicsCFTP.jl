@@ -3,9 +3,9 @@ SHELL          := /usr/bin/bash
 QUARTO         := /usr/local/bin/quarto
 CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 QUARTO_OPTIONS :=  --csl=$(CSL)
-#QUARTO_CACHE   :=  --cache-refresh
+QUARTO_CACHE   :=  --cache-refresh
 #QUARTO_CACHE   :=  --no--cache
-QUARTO_CACHE   :=  --cache
+#QUARTO_CACHE   :=  --cache
 
 JULIA          := $(HOME)/.local/bin/julia
 

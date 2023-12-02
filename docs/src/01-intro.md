@@ -25,7 +25,7 @@ Markdown.parse("""
 """)
 ```
 
-Aimed at providing CFTP for a ``\operatorname{S-I-R}`` system
+The aim is to provide CFTP for a ``\operatorname{S-I-R}`` system
 conditioned on all removal times and obeying
 ```math
 \begin{align*}

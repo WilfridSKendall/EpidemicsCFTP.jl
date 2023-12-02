@@ -1,3 +1,6 @@
+import EpidemicsCFTP: date, version
+println("EpidemicsCFTP version $version, compiled on $date")
+
 import InteractiveUtils: subtypes
 using EpidemicsCFTP
 using Test

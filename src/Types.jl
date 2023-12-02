@@ -679,7 +679,7 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
-    LFE         ::Vector{SIR}
+    LFE         ::Vector{AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of initial.state entries
@@ -707,7 +707,7 @@ struct Evolution <: AbstractEvolution
 end
 
 """
-    CEvolution(::SIR, ::Innovation; LFE::Vector{SIR}=SIR[])
+    CEvolution(::SIR, ::Innovation; LFE::Vector{AbstractIncident}=AbstractIncident[])
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -802,9 +802,9 @@ struct CEvolution <: AbstractEvolution
     initial     ::SIR
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
-    LFE         ::Vector{SIR}
+    LFE         ::Vector{AbstractIncident}
     
-    function CEvolution(initial_state::SIR, innovation::Innovation; LFE=SIR[])
+    function CEvolution(initial_state::SIR, innovation::Innovation; LFE=AbstractIncident[])
         # Need to check population == sum of `initial_state` entries
         population = innovation.population
         infections = innovation.infections
@@ -817,7 +817,7 @@ struct CEvolution <: AbstractEvolution
             trajectory, history, initial_state, start_times, finis_times, LFE)
     end
     
-    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; LFE=SIR[])
+    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; LFE=AbstractIncident[])
             innovation = Innovation(initial_state.n,
                         AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                         AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],

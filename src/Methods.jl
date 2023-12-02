@@ -456,14 +456,43 @@ end
 # # ---------------------------------
 """
     last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
-            ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+            ::Vector{AbstractIncident}
 
 Computes the last feasible epidemic trajectory.
 """
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
-    conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}          # <1>
-
+    conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
     chronology = sort(iv.infections ∪ ev.history, lt=isearlier)               # <2>
+    current_state = SIR(duration, 
+        ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
+
+    reverse_history = AbstractIncident[]
+    reverse_chronology  = reverse([x for x ∈ chronology if x.t <= current_state.t])
+
+    if ! isempty(reverse_chronology)
+        for event ∈ reverse_chronology
+            prior_state = EpidemicsCFTP.reverse_update(current_state, event)
+            if ! EpidemicsCFTP.is_same_config(prior_state, current_state)
+                if conditioned && event isa Removal
+                    throw(EmployedRemoval(event))
+                end
+                current_state = prior_state
+                push!(reverse_history, event)
+            elseif conditioned && event isa CRemoval
+                throw(MissedCRemoval(event))
+            end
+        end
+    end
+
+    return Base.reverse(reverse_history)
+end 
+# ## 1. Allow for non-zero starting time?
+# ## 2. Truncate `chronology` to run only up to `duration`?
+
+function last_feasible_evolution2(duration::Real, ev::AbstractEvolution, iv::Innovation;
+    conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+
+    chronology = sort(iv.infections ∪ ev.history, lt=isearlier)
     final_state = SIR(duration, 
         ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
 
@@ -490,8 +519,6 @@ function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Inno
     push!(reverse_trajectory, SIR(0.0, start_state.s, start_state.i, start_state.r))
     return Base.reverse(reverse_trajectory), Base.reverse(reverse_history)
 end 
-# ## 1. Allow for non-zero starting time?
-# ## 2. Truncate `chronology` to run only up to `duration`?
 
 # # Generate an innovation
 # # -------------------------------

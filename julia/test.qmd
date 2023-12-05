@@ -343,7 +343,6 @@ other_older_infections       = setdiff(ev2_3.infections,
                                     AI[z for z in last_feasible_history if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
-
 ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
 ```
 

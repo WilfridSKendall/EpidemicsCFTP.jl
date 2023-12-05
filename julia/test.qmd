@@ -71,13 +71,13 @@ owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
                         "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
-| _Software_                  | _Version_                      | _Branch_                      | _Date of last commit_       |
-|:----------------------------|:-------------------------------|:------------------------------|:----------------------------|
-| Quarto                      |`$(quartoversion)`              | ---                           |                             |
-| Running under `julia`       |`$VERSION`                      | ---                           |                             |
-| Quarto script `$(source)`   |`$(ownversion)`                 |`$(ownbranch)`                 |`$owndate`                   |
-| Module `EpidemicsUtilities` |`$(EpidemicsUtilities.version)` |`$(EpidemicsUtilities.branch)` |`$(EpidemicsUtilities.date)` |
-| Module `EpidemicsCFTP`      |`$(EpidemicsCFTP.version)`      |`$(EpidemicsCFTP.branch)`      |`$(EpidemicsCFTP.date)`      |
+|_Software_                 | _Version_                     | _Branch_                     |_Date of last commit_  |
+|:--------------------------|:------------------------------|:-----------------------------|:----------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                       |
+|Running under `julia`      |`$VERSION`                     | ---                          |                       |
+|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`             |
+|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`|
 """)
 ```
 
@@ -370,29 +370,11 @@ LFE trajectory and removal boundary is highlighted
 
 :::
 
+
+
+
+
 {{< pagebreak >}}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

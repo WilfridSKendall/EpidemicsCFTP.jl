@@ -303,7 +303,7 @@ end
 
 Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
 an [`Innovation`](@ref). Returns
-only the _history_ `Vector{AbstractIncident}` of realized incidents.
+only the _history_ of realized incidents `Vector{AbstractIncident}`.
 **NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
 
 If the keyword argument `conditioned` is set to its non-default value of `true`

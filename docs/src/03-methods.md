@@ -47,6 +47,7 @@ also other helper functions:
 generate_innovation
 evolution
 evolution_history
+EpidemicsCFTP.last_feasible_evolution
 EpidemicsCFTP.periods
 EpidemicsCFTP.inactive_removals
 EpidemicsCFTP.accept_reject
@@ -56,7 +57,6 @@ EpidemicsCFTP.kill_irrelevant_removals
 EpidemicsCFTP.relevant_infections
 EpidemicsCFTP.antecedent
 EpidemicsCFTP.reverse_update
-EpidemicsCFTP.last_feasible_evolution
 ```
 
 The second set of methods is a set of utility methods which are

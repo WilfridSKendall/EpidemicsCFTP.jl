@@ -203,11 +203,13 @@ plot unconditioned and conditioned epidemics.
 
 ::: {#fig-test-01-pair layout-ncol=2}
 
-![Unconditioned epidemic `uev1`](image/test-01-unconditioned.pdf){#fig-test-01-unconditioned}
+![Unconditioned epidemic `uev1`.](image/test-01-unconditioned.pdf){#fig-test-01-unconditioned}
 
-![Conditioned epidemic `ev1`](image/test-01-conditioned.pdf){#fig-test-01-conditioned}
+![Conditioned epidemic `ev1`.](image/test-01-conditioned.pdf){#fig-test-01-conditioned}
 
-Unconditioned and conditioned evolutions of epidemic.
+Unconditioned (`uev1`) and conditioned (`ev1`) evolutions of epidemic.  Note that the only difference is that 
+the two activated removals become `CRemoval`s. (An error would be raised
+if the activated removals for `ev1` were not precisely the `CRemoval`s!)
 
 :::
 
@@ -241,11 +243,12 @@ depict("test-02-candidate", new_figure(
 
 ::: {#fig-test-02-innov layout-ncol=2}
 
-![Candidate innovation `iv2c` for step 1](image/test-02-candidate.pdf){#fig-test-02-candidate}
+![Candidate innovation `iv2c` for step 1.](image/test-02-candidate.pdf){#fig-test-02-candidate}
 
-![Conditioned evolution `ev1` of step 0](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
+![Conditioned evolution `ev1` of step 0.](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
 
-Candidate innovation and previous evolution of epidemic.
+Candidate innovation `iv2c` and previous evolution `ev1` of epidemic. Using `inv2c` directly
+in `CEvolution` will typically fail to respect conditioning on removals, so raising an error.
 
 :::
 
@@ -282,13 +285,15 @@ depict("test-03-removals2", new_figure(
 
 ::: {#fig-test-03-removals layout-ncol=2}
 
-![Conditioned evolution `ev2_1`, step 2a](image/test-03-removals1.pdf){#fig-test-03-removals1}
+![Conditioned evolution `ev2_1`, step 2a.](image/test-03-removals1.pdf){#fig-test-03-removals1}
 
-![Conditioned evolution `ev2_2`, step 2b](image/test-03-removals2.pdf){#fig-test-03-removals2}
+![Conditioned evolution `ev2_2`, step 2b.](image/test-03-removals2.pdf){#fig-test-03-removals2}
 
-Modifying inactivated removal structure
+Modifying inactivated removal structure. Step 2a removes _all_ unconditioned old `Removal`s:
+step 2b inserts precisely new `Removal`s which would _not_ be activated by the old evolution.
 
 :::
+
 
 Modifying conditional removal structure
 ---------------------------------------
@@ -314,25 +319,29 @@ depict("test-04-cremovals2", new_figure(
 ) ;
 ```
 
+Notice that we get the same substitution if we use `ev2_1` or `ev2_2` rather than `ev1`.
+```{julia}
+@assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev2_1, iv2c)
+@assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev2_2, iv2c)
+```
 
 ::: {#fig-test-04-cremovals layout-ncol=2}
 
-![Innovation with modified removals `iv2_3`](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
+![Innovation with modified removals `iv2_3`.](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
 
-![Resulting conditioned evolution `ev2_3`](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
+![Resulting conditioned evolution `ev2_3`.](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
 
-Modifying conditional removal structure
+Modifying conditional removal structure. `CRemoval` marks (but not times) altered only when 
+they still lead to activation of the relevant `CRemoval`.
 
 :::
 
 {{< pagebreak >}}
 
 
-Adding last feasible epidemic
------------------------------
-For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evolution`
-(later this should be cone using a yet-to-be-written function
-`EpidemicsCFTP.algorithmic_step`).
+Adding infections from the \LFE
+-------------------------------
+For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evolution`.
 
 ```{julia}
 last_feasible_history = 
@@ -361,12 +370,15 @@ depict("test-05-LFE2", new_figure(
 
 ::: {#fig-test-05-LFE layout-ncol=2}
 
-![Innovation with LFE infections added using `iv2_4`](image/test-05-LFE1.pdf){#fig-test-05-LFE1}
+![Innovation with LFE infections added (`iv2_4`).](image/test-05-LFE1.pdf){#fig-test-05-LFE1}
 
-![Resulting conditioned evolution `ev2_4`](image/test-05-LFE2.pdf){#fig-test-05-LFE2}
+![Resulting conditioned evolution `ev2_4`.](image/test-05-LFE2.pdf){#fig-test-05-LFE2}
 
-Last feasible epidemic (LFE) infections added from `iv2c`; the region lying between 
-LFE trajectory and removal boundary is highlighted
+\LFE (LFE) infections are calculated using `iv2c` and added, highlighting
+the region lying between the
+LFE trajectory and the removal boundary.
+Note perpetuation of the activated infection from time line 2 to time line 3,
+carried over from `ev2_3`.
 
 :::
 

@@ -30,6 +30,7 @@ also other helper functions:
 |:-------------------------------------------|:-------------------------------------------------------|
 | [`generate_innovation`](@ref)              | Generates random [`Innovation`](@ref)                  |
 | [`evolution`](@ref)                        | Generates trajectory, history for [`Evolution`](@ref)  |
+| [`evolution_history`](@ref)                | Generates history for [`Evolution`](@ref)              |
 |                                            |                                                        |
 | [`EpidemicsCFTP.periods`](@ref)            | Computes start and end times for infectious periods    |
 | [`EpidemicsCFTP.inactive_removals`](@ref)  | Processes list of inactive removals from an epidemic   |
@@ -45,6 +46,7 @@ also other helper functions:
 ```@docs 
 generate_innovation
 evolution
+evolution_history
 EpidemicsCFTP.periods
 EpidemicsCFTP.inactive_removals
 EpidemicsCFTP.accept_reject

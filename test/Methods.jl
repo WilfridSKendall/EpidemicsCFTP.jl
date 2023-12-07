@@ -159,6 +159,23 @@ end
     @test evolution(initial_state5, innov5a) == outcome5a
     @test evolution(initial_state5, innov5b) == outcome5b
 
+    
+    @test evolution_history(initial_state1, innov1a) == outcome1a[2]
+    @test evolution_history(initial_state1, innov1b) == outcome1b[2]
+    
+    @test evolution_history(initial_state2, innov1a) == outcome2[2]
+    @test evolution_history(initial_state2, innov1b) == outcome2[2]
+    
+    @test evolution_history(initial_state3, innov1a) == outcome3a[2]
+    @test evolution_history(initial_state3, innov1b) == outcome3b[2]
+    
+    @test evolution_history(initial_state4, innov4a) == outcome4a[2]
+    @test evolution_history(initial_state4, innov4b) == outcome4b[2]
+    @test evolution_history(initial_state4, innov4c) == outcome4c[2]
+
+    @test evolution_history(initial_state5, innov5a) == outcome5a[2]
+    @test evolution_history(initial_state5, innov5b) == outcome5b[2]
+
 end
 
 

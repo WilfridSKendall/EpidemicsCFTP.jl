@@ -38,7 +38,9 @@ export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
 
-export evolution, generate_innovation
+export evolution, evolution_history
+
+export generate_innovation
 
 export isearlier
 

@@ -263,8 +263,12 @@ ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.5, 1)
 
 julia> initial_state = SIR(0.55, 1, 2, 3) ;
 
-julia> evolution(initial_state, innovation, conditioned=true)
-(SIR[SIR(0.55, 1, 2, 3, 6), SIR(0.6, 0, 3, 3, 6)], AbstractIncident[Infection(0.6, 5, 6)])
+julia> answer = evolution(initial_state, innovation, conditioned=true) ;
+
+julia> answer[1]
+SIR[SIR₀.₅₅(1:2:3),SIR₀.₆₀(0:3:3)]
+julia> answer[2]
+AbstractIncident[ℐ₀.₆₀⁵⁻⁶]
 ```
 """
 function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
@@ -291,6 +295,118 @@ function evolution(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=
     return trajectory, history
 end
 
+"""
+    evolution_history(::SIR, ::Vector{T}; conditioned::Bool=false)          
+        ::Vector{AbstractIncident} where T <: AbstractIncident
+    evolution_history(::SIR, ::Innovation; conditioned::Bool=false)          
+        ::Vector{AbstractIncident}
+
+Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
+an [`Innovation`](@ref). Returns
+only the _history_ `Vector{AbstractIncident}` of realized incidents.
+**NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
+
+If the keyword argument `conditioned` is set to its non-default value of `true`
+then an error is raised when the function attempts to realize a [`Removal`](@ref)
+or fails to realize a [`CRemoval`](@ref).
+
+Note that this method may later be employed in the construction of [`Evolution`](@ref)
+and (with the `conditioned` flag set to `true`) [`CEvolution`](@ref) objects.
+
+## Example
+I: Basic use, unconditioned
+```jldoctest evolution; setup = :(using EpidemicsCFTP)
+julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
+
+julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[Removal(0.5, 4)], CRemoval[]) ;
+
+julia> evolution_history(initial_state, innovation)
+AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+```
+
+II: Basic use, conditioned (A)
+```jldoctest evolution
+julia> evolution_history(initial_state, innovation, conditioned=true)
+ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
+
+julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
+
+julia> evolution_history(initial_state, innovation)
+AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+```
+
+III: Basic use, conditioned (B)
+```jldoctest evolution
+julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
+
+julia> evolution_history(initial_state, innovation, conditioned=true) ;
+ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.5, 1)
+
+julia> initial_state = SIR(0.55, 1, 2, 3) ;
+
+julia> evolution_history(initial_state, innovation, conditioned=true)
+AbstractIncident[ℐ₀.₆₀⁵⁻⁶]
+```
+"""
+function evolution_history(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Vector{AbstractIncident}
+    return evolution_history(initial_state, innovation.chronology; conditioned=conditioned)
+end
+
+function evolution_history(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=false) ::Vector{AbstractIncident} where T <: AbstractIncident
+    
+    current_state, history = initial_state, AbstractIncident[]
+    for z ∈ [x for x ∈ chronology if x.t ≥ initial_state.t]
+        new_state = update(current_state, z)
+        if ! is_same_config(new_state, current_state)
+            if conditioned && z isa Removal
+                throw(EmployedRemoval(z))
+            end
+            current_state = new_state
+            push!(history, z)
+        elseif conditioned && z isa CRemoval
+                throw(MissedCRemoval(z))
+        end
+    end
+    
+    return history
+end
+
+# # Computing the last feasible epidemic trajectory
+# # ---------------------------------
+"""
+    last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
+            ::Vector{AbstractIncident}
+
+Computes the last feasible epidemic trajectory.
+"""
+function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
+    conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
+    chronology = sort(iv.infections ∪ ev.history, lt=isearlier)               # <2>
+    current_state = SIR(duration, 
+        ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
+
+    reverse_history = AbstractIncident[]
+    reverse_chronology  = reverse([x for x ∈ chronology if x.t <= current_state.t])
+
+    if ! isempty(reverse_chronology)
+        for event ∈ reverse_chronology
+            prior_state = EpidemicsCFTP.reverse_update(current_state, event)
+            if ! EpidemicsCFTP.is_same_config(prior_state, current_state)
+                if conditioned && event isa Removal
+                    throw(EmployedRemoval(event))
+                end
+                current_state = prior_state
+                push!(reverse_history, event)
+            elseif conditioned && event isa CRemoval
+                throw(MissedCRemoval(event))
+            end
+        end
+    end
+
+    return Base.reverse(reverse_history)
+end 
+# ## 1. Allow for non-zero starting time?
+# ## 2. Truncate `chronology` to run only up to `duration`?
     
 # # Compute infectious periods
 # # -------------------------------
@@ -452,74 +568,6 @@ function resulting_cremovals(ev::AbstractEvolution, iv::Innovation)::Vector{CRem
         for (oldcr, propcr) ∈ zip(ev.cremovals, iv.cremovals)]
 end
     
-# # Computing the last feasible epidemic trajectory
-# # ---------------------------------
-"""
-    last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
-            ::Vector{AbstractIncident}
-
-Computes the last feasible epidemic trajectory.
-"""
-function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
-    conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
-    chronology = sort(iv.infections ∪ ev.history, lt=isearlier)               # <2>
-    current_state = SIR(duration, 
-        ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
-
-    reverse_history = AbstractIncident[]
-    reverse_chronology  = reverse([x for x ∈ chronology if x.t <= current_state.t])
-
-    if ! isempty(reverse_chronology)
-        for event ∈ reverse_chronology
-            prior_state = EpidemicsCFTP.reverse_update(current_state, event)
-            if ! EpidemicsCFTP.is_same_config(prior_state, current_state)
-                if conditioned && event isa Removal
-                    throw(EmployedRemoval(event))
-                end
-                current_state = prior_state
-                push!(reverse_history, event)
-            elseif conditioned && event isa CRemoval
-                throw(MissedCRemoval(event))
-            end
-        end
-    end
-
-    return Base.reverse(reverse_history)
-end 
-# ## 1. Allow for non-zero starting time?
-# ## 2. Truncate `chronology` to run only up to `duration`?
-
-function last_feasible_evolution2(duration::Real, ev::AbstractEvolution, iv::Innovation;
-    conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
-
-    chronology = sort(iv.infections ∪ ev.history, lt=isearlier)
-    final_state = SIR(duration, 
-        ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
-
-    reverse_trajectory, reverse_history = SIR[final_state], AbstractIncident[]
-    reverse_chronology  = reverse([x for x ∈ chronology if x.t <= final_state.t])
-
-    if ! isempty(reverse_chronology)
-        for event ∈ reverse_chronology
-            current_state = reverse_trajectory[end]
-            prior_state = reverse_update(current_state, event)
-            if ! is_same_config(prior_state, current_state)
-                if conditioned && event isa Removal
-                    throw(EmployedRemoval(event))
-                end
-                push!(reverse_trajectory, prior_state)
-                push!(reverse_history, event)
-            elseif conditioned && event isa CRemoval
-                throw(MissedCRemoval(event))
-            end
-        end
-    end
-    
-    start_state = reverse_trajectory[end]
-    push!(reverse_trajectory, SIR(0.0, start_state.s, start_state.i, start_state.r))
-    return Base.reverse(reverse_trajectory), Base.reverse(reverse_history)
-end 
-
 # # Generate an innovation
 # # -------------------------------
 """

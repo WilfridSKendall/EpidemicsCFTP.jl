@@ -7,6 +7,8 @@ csl: ima-journal-of-applied-mathematics.csl
 ---
 
 ---
+toc: true
+
 date-format: "D MMMM YYYY"
 papersize:  a4
 
@@ -40,6 +42,7 @@ jupyter:    julia-1.9
 source = "introduction.qmd"
 ```
 
+{{< pagebreak >}}
 
 ```{julia}
 #| label: tbl-software

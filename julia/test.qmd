@@ -21,7 +21,7 @@ include-before-body:
     - text: |
         \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
         \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
-        \newcommand{\LFE}{``last feasible epidemic"\xspace}
+        \newcommand{\LFE}{``last feasible evolution"\xspace}
 
 format:
   html:
@@ -319,7 +319,7 @@ depict("test-04-cremovals2", new_figure(
 ) ;
 ```
 
-Notice that we get the same substitution if we use `ev2_1` or `ev2_2` rather than `ev1`.
+Notice that the same `CRemoval`s result if we use `ev2_1` or `ev2_2` rather than `ev1`.
 ```{julia}
 @assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev2_1, iv2c)
 @assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev2_2, iv2c)
@@ -346,10 +346,10 @@ For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evoluti
 ```{julia}
 last_feasible_history = 
     EpidemicsCFTP.last_feasible_evolution(duration, ev2_3, iv2c, conditioned=true)
-last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ iv2c.infections]
-perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
+last_feasible_new_infections = AI[z for z ∈ last_feasible_history ∩ iv2c.infections]
+perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
 other_older_infections       = setdiff(ev2_3.infections, 
-                                    AI[z for z in last_feasible_history if z isa AI])
+                                    AI[z for z ∈ last_feasible_history if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
 ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
@@ -433,15 +433,18 @@ Testing unconditioned and conditioned versions of `AbstractEvolution`
 ---------------------------------------------------------------------
 These tests are intended to check that fields are filled correctly.
 ```{julia}
-begin
-    @testset "EpidemicsCFTP: $(rpad(Evolution, 23))" begin
+begin ;  title = string(Evolution)
+    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
         @test uev1.infections  == sortA(infections)
         @test uev1.removals    == sortA(uremovals)
         @test uev1.chronology  == sortA(infections ∪ uremovals)
         @test uev1.trajectory  == trajectory
         @test uev1.history     == uhistory
     end
-    @testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
+end
+
+begin ; title = string(CEvolution)
+    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
         @test sortA(uremovals) == [R(z) for z ∈ sortA(removals ∪ cremovals)]
         @test ev1.infections   == sortA(infections)
         @test ev1.removals     == sortA(removals)
@@ -496,7 +499,7 @@ begin ; title = "Inserting Removals"
 end ;
 ```
 
-Finally consider the effect of `EpidemicsCFTP.resulting_cremovals`.
+Consider the effect of `EpidemicsCFTP.resulting_cremovals`.
 
 ```{julia}
 iv2_3 = Innovation(initial.n, iv2_2.infections, iv2_2.removals, 
@@ -513,3 +516,25 @@ begin ; title = "Modifying CRemovals"
 end ;
 ```
 
+{{< pagebreak >}}
+
+Testing the \LFE
+----------------
+
+```{julia}
+last_feasible_history =
+    EpidemicsCFTP.last_feasible_evolution(duration, ev2_3, iv2c, conditioned=true)
+last_feasible_new_infections = AI[z for z ∈ last_feasible_history ∩ iv2c.infections]
+perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
+other_older_infections       = setdiff(ev2_3.infections, AI[z for z ∈ last_feasible_history if z isa AI])
+iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪
+                        other_older_infections, ev2_3.removals, ev2_3.cremovals)
+ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
+
+begin ; title = "Last feasible evolution"
+    LFE_target = [I(1.0,1,2), C(2.0,2), I(3.0,2,3), C(4.0,2)]
+    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+        @test ev2_4.LFE == LFE_target
+    end
+end ;
+```

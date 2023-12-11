@@ -7,6 +7,8 @@ csl: ima-journal-of-applied-mathematics.csl
 ---
 
 ---
+toc: true
+
 date-format: "D MMMM YYYY"
 papersize:  a4
 

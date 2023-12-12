@@ -916,10 +916,6 @@ depict("introduction-14-last-feasible-epidemic-bis", new_figure(figure14,
     title="Last feasible epidemic, perpetuating any infections from previous version")
 )
 ```
-::: {.callout-note}
-# TODO
-Invoke remaining code at creation of an instance of `CEvolution`.
-:::
 
 
 Computing the \NOFLYZONE
@@ -928,11 +924,11 @@ We now determine the \NOFLYZONE.
 This is done in stages:
 
 (a) compute the `envelope0` vector giving the times at which each time line becomes free of inactivated removals
-(now done at initialization of `CEvolution` instance) \(\surd\);
+(now **done** at initialization of `CEvolution` instance);
 (b) compute the `envelope` vector, the monotonically increasing envelope of `envelope0`
-(now done at initialization of `CEvolution` instance) \(\surd\);
+(now **done** at initialization of `CEvolution` instance);
 (c) compute `nofly_envelope` using `compute_nofly` function. 
-(Should really be done at creation of an instance of `CEvolution`.)
+(To be carried out as part of a process of transforming one `CEvolution` and one `Innovation` into a new `CEvolution`.)
 The `nofly_envelope` is a vector giving the times at which each time line starts to be available for infection
 without hazard of causing activation of an inactivated removal.
 
@@ -992,15 +988,8 @@ depict("introduction-15-relevant-removals", new_figure(figure15,
 )
 ```
 
-We now need to move on to step (c). We prepare for this by reducing the set of
-`innov_candidate.infections` to the _current infections_,
-with `target` lying in one of the susceptible or infectious zones.
-```{julia}
-current_infections = 
-    sort([z for z ∈ innov_candidate.infections if 
-                z.t < evol1_2.finis_times[z.target]], lt=isearlier)
-```
-Note here that the vectors `evol1_2.start_times` and `evol1_2.finis_times` are 
+We now move on to step (c).
+Note in the following that the vectors `evol1_2.start_times` and `evol1_2.finis_times` are 
 actually the vectors of infection and removal times for the original epidemic trajectory
 (which up to this point is the trajectory generated using all the modified `innov1_x`
 for `x=0..2`).
@@ -1022,6 +1011,9 @@ infections working backwards through time ...
 
 Solely to serve the illustrative purposes of the intermediate graphic
 @fig-introduction-16-prior-relevant-removals,
+we reduce the set of
+`innov_candidate.infections` to the _current infections_,
+with `target` lying in one of the susceptible or infectious zones.
 we further distinguish between `posterior_relevant_infections`, those infections whose `infectee`
 has already been already infected (and hence whose `infectee` will not yet be removed),
 and `prior_relevant_infections`
@@ -1035,6 +1027,9 @@ and `prior_relevant_infections`
 #|           of \"no-fly zone\", highlighting infections from `innov_candidate`         \
 #|           which are not confined within original epidemic. These infections are      \
 #|           described as `prior_relevant_infections`. [`16-prior-relevant-removals`]"  
+current_infections = 
+    sort([z for z ∈ innov_candidate.infections if 
+                z.t < evol1_2.finis_times[z.target]], lt=isearlier)
 posterior_relevant_infections =  [z for z ∈ current_infections if 
                                     z.t ≥ evol1_2.start_times[z.infectee]]
 prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
@@ -1160,6 +1155,9 @@ depict("introduction-18-one-iteration", new_figure(figure18,
     title="Evolution of epidemic after a single step in algorithmic time")
 )
 ```
+
+{{< pagebreak >}}
+
 ::: {.callout-note}
 # TODO
 1. Check calculations underlying @fig-introduction-18-one-iteration.

@@ -374,7 +374,7 @@ depict("test-05-LFE2", new_figure(
 
 ![Resulting conditioned evolution `ev2_4`.](image/test-05-LFE2.pdf){#fig-test-05-LFE2}
 
-\LFE (LFE) infections are calculated using `iv2c` and added, highlighting
+This adds \LFE (LFE) infections, calculated using `iv2c`, also highlighting
 the region lying between the
 LFE trajectory and the removal boundary.
 Note perpetuation of the activated infection from time line 2 to time line 3,
@@ -383,8 +383,21 @@ carried over from `ev2_3`.
 :::
 
 
+Computing the \NOFLYZONE
+------------------------
+```{julia}
+early_inactivated_removals =
+    [z for z ∈ ev2_4.removals if z.t < ev2_4.finis_times[z.target]]
+```
 
-
+```{julia}
+max_removal_time = repeat([0.0], ev2_4.initial.n)
+for z ∈ early_inactivated_removals
+    max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
+end
+nofly_envelope0 = accumulate(max, max_removal_time)
+println(nofly_envelope0)
+```
 
 {{< pagebreak >}}
 
@@ -478,7 +491,7 @@ end ;
 ```
 Now consider `ev2_2`, obtained by using `EpidemicsCFTP.inactive_removals`
 to add in only the inactive removals from the candidate `Innovation` `iv2c` 
-which are not activated by the trajectory of `ev1` equivalently `ev2_1`.
+(not activated by the trajectory of `ev1` equivalently `ev2_1`).
 
 ```{julia}
 infections2 = AI[I(2t-1.5, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
@@ -515,8 +528,6 @@ begin ; title = "Modifying CRemovals"
     end
 end ;
 ```
-
-{{< pagebreak >}}
 
 Testing the \LFE
 ----------------

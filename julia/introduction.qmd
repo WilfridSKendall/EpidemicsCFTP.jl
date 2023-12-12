@@ -671,7 +671,7 @@ as determined by the function `EpidemicsCFTP.resulting_cremovals`.
 innov1_2 = Innovation(initial.n, innov1_1.infections, 
                 innov1_1.removals, 
                 EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
-evol1_2 = Evolution(initial, innov1_2) ;
+evol1_2 = CEvolution(initial, innov1_2) ;
 ```
 ::: {.callout-tip}
 # Explanatory note for `innov1_2`
@@ -680,7 +680,7 @@ by using `EpidemicsCFTP.resulting_cremovals`
 to re-mark the `CRemoval`s.
 
 Again the resulting `Evolution` structure 
-`evol1_2 = Evolution(initial, innov1_2)` 
+`evol1_2 = CEvolution(initial, innov1_2)` 
 actually yields the same trajectory as `evol1`
 equivalently `evol1_0` or `evol1_1`,
 as marks are changed only if they do not de-activate the respective `CRemoval`,
@@ -933,8 +933,10 @@ Computing the \NOFLYZONE
 We now determine the \NOFLYZONE.
 This is done in stages:
 
-(a) compute `max_removal_time`, a vector giving the times at which each time line becomes free of inactivated removals;
-(b) compute `nofly_envelope0`, the monotonically increasing envelope of `nftz1`;
+(a) compute the `envelope0` vector giving the times at which each time line becomes free of inactivated removals
+(now done at initialization of `CEvolution` instance);
+(b) compute the `envelope` vector, the monotonically increasing envelope of `envelope0`
+(now done at initialization of `CEvolution` instance);
 (c) compute `nofly_envelope`, a vector giving the times at which each time line starts to be available for infection
 without hazard of causing activation of an inactivated removal.
 
@@ -958,28 +960,18 @@ early_inactivated_removals =
 @fig-introduction-15-relevant-removals provides a visual check!
 
 We now compute the time of last early inactivated removal for each time line, forming the vector `max_removal_time`.
-```{julia}
-max_removal_time = repeat([0.0], evol1_2.initial.n)
-for z ∈ early_inactivated_removals
-    max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
-end
+```julia
+#max_removal_time = repeat([0.0], evol1_2.initial.n)
+#for z ∈ early_inactivated_removals
+#    max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
+#end
 ```
-
-::: {.callout-warning}
-# Reminder re `max_removal_time`
-Needs to be computed within `compute_nofly` function (below).
-:::
-
 
 Then we take step (b), and compute the monotonic envelope `nofly_envelope0` of `max_removal_time`.
-```{julia}
-nofly_envelope0 = accumulate(max, max_removal_time)
-println(nofly_envelope0)
+```julia
+#nofly_envelope0 = accumulate(max, max_removal_time)
+#println(nofly_envelope0)
 ```
-::: {.callout-warning}
-# Reminder re `nofly_envelope0`
-Needs to be computed within `compute_nofly` function (below).
-:::
 
 
 ```{julia}
@@ -1009,10 +1001,10 @@ figure15 = new_figure(deepcopy(figure14a),
          draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
          
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     )
 depict("introduction-15-relevant-removals", new_figure(figure15,
@@ -1091,10 +1083,10 @@ figure16 = new_figure(deepcopy(figure14a),
     Guide.annotation(compose(context(),
          draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     )
 depict("introduction-16-prior-relevant-removals", new_figure(figure16,
@@ -1102,17 +1094,13 @@ depict("introduction-16-prior-relevant-removals", new_figure(figure16,
 )
 ```
 
-Now we perform a careful computation of the "true" boundary: we
+Now we perform a careful computation of the "true" boundary (`nofly_bound` in the code
+of function `compute_nofly``): we
 work backwards through the `prior_relevant_infections` 
 as explained by the annotations to the code below. 
 ```{julia}
-function compute_nofly(ev, iv, early_inactivated_removals)
-    initial = ev.initial
-	envelope0 = repeat([0.0], initial.n)                                       # <1>
-	for removal ∈ early_inactivated_removals  # ev.removals?                   # <1>
-	    envelope0[removal.target] = max(envelope0[removal.target], removal.t)  # <1>
-	end                                                                        # <1>
-	envelope = accumulate(max, envelope0)                                      # <1>
+function compute_nofly(ev, iv)
+	nofly_bound = deepcopy(ev.envelope)                                        # <1>
 	
 	processed_infections = AbstractInfection[]                                 # <2>
 	 
@@ -1127,28 +1115,28 @@ function compute_nofly(ev, iv, early_inactivated_removals)
 	    # At this stage of the iteration 
 	    # @assert(z.t < ev.finis_times[z.target])
 	    #
-        if (z.t ≥ envelope[z.infectee])                                        # <5>
+        if (z.t ≥ nofly_bound[z.infectee])                                     # <5>
 	        push!(processed_infections, z)                                     # <5>
 	        continue                                                           # <5>
 	    end                                                                    # <5>
 	    
 	    # At this stage of the iteration 
 	    # @assert(z.t < ev.finis_times[z.target])
-	    # @assert(z.t < envelope[z.infectee])
+	    # @assert(z.t < nofly_bound[z.infectee])
 	    #
-        if (z.t < envelope[z.infectee - 1])                                    # <6>
+        if (z.t < nofly_bound[z.infectee - 1])                                 # <6>
 	        push!(processed_infections, z)                                     # <6>
 	        continue                                                           # <6>
 	    end                                                                    # <6>
 	    
 	    # At this stage of the iteration 
-	    # @assert(z.t < envelope[z.infectee])
-	    # @assert(z.t ≥ envelope[z.infectee - 1])
+	    # @assert(z.t < nofly_bound[z.infectee])
+	    # @assert(z.t ≥ nofly_bound[z.infectee - 1])
 	    # @assert(z.t < ev.finis_times[z.target])
 	    #
 	    if (z.t ≥ ev.start_times[z.target])                                    # <7>
             if (z.t < ev.start_times[z.infectee - 1])                          # <8>
-                envelope[z.infectee - 1] = z.t                                 # <8>
+                nofly_bound[z.infectee - 1] = z.t                              # <8>
                 push!(processed_infections, NoFlyInfection(z))                 # <8>
                 # @info "$(NoFlyInfection(z))"
                 continue                                                       # <8>
@@ -1160,27 +1148,24 @@ function compute_nofly(ev, iv, early_inactivated_removals)
 	    end
 	    
 	    # At this stage of the iteration 
-	    # @assert(z.t < envelope[z.infectee])
-	    # @assert(z.t ≥ envelope[z.infectee - 1])
+	    # @assert(z.t < nofly_bound[z.infectee])
+	    # @assert(z.t ≥ nofly_bound[z.infectee - 1])
 	    # @assert(z.t < ev.start_times[z.target])
 	    # 
-	    envelope[z.infectee - 1] = z.t                                         # <9>
+	    nofly_bound[z.infectee - 1] = z.t                                      # <9>
 	    push!(processed_infections, NoFlyInfection(z))                         # <9>
         # @info "$(NoFlyInfection(z))"
 	
 	end
 	
-	flow_nofly = DataFrame(t=envelope, y=(1:initial.n).+1, top=(initial.n)+1)
+	flow_nofly = DataFrame(t=nofly_bound, y=(1:ev.initial.n).+1, top=(ev.initial.n)+1)
 	xy_flow_nofly = table_trajectories2(flow_nofly; theme=theme)
-	deleteat!(xy_flow_nofly, [(2*initial.n)-1])
+	deleteat!(xy_flow_nofly, [(2*ev.initial.n)-1])
 	
 	return processed_infections, flow_nofly, xy_flow_nofly
 end ;
 ```
-1. Here is the initial computation of `envelope`, a **list of times** 
-indexed by time line ("level"), where each time is initially defined as
-the supremum of times of **inactivated** `Removal`s at given level or 
-below. So the envelope increases monotonically with level.
+1. The boundary `nofly_bound` will be updated recursively.
 2. The list `processed_infections` of processed `AbstractInfection`s will
 eventually store (initially in reverse time order) a transformation of
 each infection supplied by the new `Innovation` `innov`.
@@ -1221,15 +1206,19 @@ at level `z.infectee - 1` up to time `z.t`. We also transform `z`
 to a `NoFlyInfection` when we add it to `processed_infections`, to
 signal that it should never become infected.
 
-
-
-
 ```{julia}
 #| echo: false
 header = [:t, :y]
 processed_infections, flow_nofly1, xy_flow_nofly1 = 
-    compute_nofly(evol1_2, innov_candidate, early_inactivated_removals) ;
+    compute_nofly(evol1_2, innov_candidate) ;
+
+#processed_infections = compute_nofly(evol1_2, innov_candidate) ;
+    
+#flow_nofly1 = DataFrame(t=evol1_2.envelope0, y=(1:initial.n).+1, top=(initial.n)+1)
+#xy_flow_nofly1 = table_trajectories2(flow_nofly1; theme=theme)
+#deleteat!(xy_flow_nofly1, [(2*evol1_2.initial.n)-1])
 ```
+
 
 Now compute the new innovation and evolution.
 ```{julia}
@@ -1237,7 +1226,7 @@ innov2 = Innovation(initial.n,
                 sort(processed_infections ∪ perpetuated_infections, lt=isearlier), 
                 early_inactivated_removals, 
                 evol1_2.cremovals) ;
-evol2  = Evolution(initial, innov2) ; 
+evol2  = CEvolution(initial, innov2) ; 
 ```
 
 ```{julia}
@@ -1255,14 +1244,14 @@ figure17 = new_figure(
     Guide.annotation(compose(context(),
        draw_activated_elements(initial, last_feasible_history, theme=theme))),
 
-    # Draw, for each time line, nofly boundaries determined by running maximum calculation.
+    # Draw, for each time line, boundaries determined by early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
-        
-    # Draw, for each time line, nofly boundaries determined by latest `Removal`.
+
+    # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid2))),
     
     # Draw Nofly region and boundary
@@ -1295,16 +1284,16 @@ figure18 = new_figure(
     # Draw second algorithmic step of epidemic
     draw_evolution!(deepcopy(figure18a), evol2, duration, theme=theme, select=BASIC),
 
-    # Draw, for each time line, "no fly" boundaries determined by running maximum calculation.
+    # Draw, for each time line, boundaries determined by early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(max_removal_time) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
-        
-    # Draw, for each time line, "no fly" boundaries determined by latest `Removal`.
-    Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(nofly_envelope0) if z[2]>0]),
-        linewidth(theme.boundary), stroke(theme.forbid2))),
     
+    # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.
+    Guide.annotation(compose(context(),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope) if z[2]>0]),
+        linewidth(theme.boundary), stroke(theme.forbid2))),
+        
     # Draw Nofly region and boundary
     layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:hv),
         style(line_width=theme.trail, default_color=theme.forbid2)),

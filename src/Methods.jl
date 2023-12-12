@@ -567,9 +567,122 @@ function resulting_cremovals(ev::AbstractEvolution, iv::Innovation)::Vector{CRem
     [accept_reject(oldcr, propcr, ev.start_times, ev.finis_times) 
         for (oldcr, propcr) ∈ zip(ev.cremovals, iv.cremovals)]
 end
+
+# # Compute nofly zone
+# # ------------------
+
+"""
+    compute_nofly(CEvolution, Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
     
+Doctests to follow ...
+
+Note the many commented-out assertions and the explanatory notes in the source code!
+"""
+function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
+	nofly_bound = deepcopy(ev.envelope)                                        # <1>
+	
+	processed_infections = AbstractInfection[]                                 # <2>
+	 
+	for z ∈ reverse(sort(iv.infections, lt=isearlier))                         # <3>
+	    
+	    if (z.t ≥ ev.finis_times[z.target])                                    # <4>
+	        push!(processed_infections, KilledInfection(z))                    # <4>
+            # @info "$(KilledInfection(z))"
+	        continue                                                           # <4>
+	    end                                                                    # <4>
+	    
+	    # At this stage of the iteration 
+	    # @assert(z.t < ev.finis_times[z.target])
+	    #
+        if (z.t ≥ nofly_bound[z.infectee])                                     # <5>
+	        push!(processed_infections, z)                                     # <5>
+	        continue                                                           # <5>
+	    end                                                                    # <5>
+	    
+	    # At this stage of the iteration 
+	    # @assert(z.t < ev.finis_times[z.target])
+	    # @assert(z.t < nofly_bound[z.infectee])
+	    #
+        if (z.t < nofly_bound[z.infectee - 1])                                 # <6>
+	        push!(processed_infections, z)                                     # <6>
+	        continue                                                           # <6>
+	    end                                                                    # <6>
+	    
+	    # At this stage of the iteration 
+	    # @assert(z.t < nofly_bound[z.infectee])
+	    # @assert(z.t ≥ nofly_bound[z.infectee - 1])
+	    # @assert(z.t < ev.finis_times[z.target])
+	    #
+	    if (z.t ≥ ev.start_times[z.target])                                    # <7>
+            if (z.t < ev.start_times[z.infectee - 1])                          # <8>
+                nofly_bound[z.infectee - 1] = z.t                              # <8>
+                push!(processed_infections, NoFlyInfection(z))                 # <8>
+                # @info "$(NoFlyInfection(z))"
+                continue                                                       # <8>
+            else                                                               # <8>
+                push!(processed_infections, ExpungedInfection(z))              # <8>
+                # @info "$(ExpungedInfection(z))"
+                continue                                                       # <8>
+            end                                                                # <8>
+	    end
+	    
+	    # At this stage of the iteration 
+	    # @assert(z.t < nofly_bound[z.infectee])
+	    # @assert(z.t ≥ nofly_bound[z.infectee - 1])
+	    # @assert(z.t < ev.start_times[z.target])
+	    # 
+	    nofly_bound[z.infectee - 1] = z.t                                      # <9>
+	    push!(processed_infections, NoFlyInfection(z))                         # <9>
+        # @info "$(NoFlyInfection(z))"
+	
+	end
+	
+	return processed_infections, nofly_bound
+end ;
+# 1. The boundary `nofly_bound` will be updated recursively.
+# 2. The list `processed_infections` of processed `AbstractInfection`s will
+# eventually store (initially in reverse time order) a transformation of
+# each infection supplied by the new `Innovation` `innov`.
+# 3. Iteration: work backwards through `Infection`s supplied by `innov`,
+# determining in each case how to transform the supplied `Infection`
+# when adding it to the list `processed_infections`.
+# 4. If the `Infection` `z` has `target` on the removed portion of a level
+# then it will never be activated, so add `z` as a `KilledInfection`.
+# 5. If the `Infection` `z` potentially infects a level at a _later time_ 
+# than the current `envelope` at that level, then its activation will
+# never break the conditioning (**needs proof!**), so add `z` as-is.
+# (I think the point is: since we are working backwards in time, once
+# `z.t` is considered then `envelope` is frozen from time `t` onwards.)
+# 6. However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
+# infection of the level immediately below `z.infectee` will then not be
+# allowed at this time. So again add `z` as-is.
+# 7. Suppose `z.t ≥ ev.start_times[z.target]`: then an issue would arise
+# if the level at `z.infectee - 1` were to become infected before
+# `z.t`. One of two cases must hold:
+# 8. Case (a): Suppose `z.t < ev.start_times[z.infectee - 1]`.
+# Then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
+# preclude the time line getting infected, and also transform `z` to a
+# `NoFlyInfection` when added to `processed_infections`, to signal
+# that it should never become infected.  
+# Case (b): Suppose `z.t ≥ ev.start_times[z.infectee - 1]`.
+# Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
+# problem, since this level is infected at time `z.t`. Therefore we
+# transform `z` to a `ExpungedInfection` when we add it to 
+# `processed_infections`, so that it is treated as an
+# `InoperativeInfection`.
+# 9. Consider now that potential `Infection`s to be treated later in this
+# iteration must have time mark earlier than `z.t`. If one of these were
+# to infect the level `z.infectee - 1` then it would follow by monotonicity
+# that the `z.target` level would become infected by that time `z.t`; and 
+# thus would create an infection of the `z.infectee` level at time `z.t`. 
+# In order for this to be prevented, we need to extend the `envelope` 
+# at level `z.infectee - 1` up to time `z.t`. We also transform `z`
+# to a `NoFlyInfection` when we add it to `processed_infections`, to
+# signal that it should never become infected.
+
+
 # # Generate an innovation
-# # -------------------------------
+# # ----------------------
 """
     generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
 

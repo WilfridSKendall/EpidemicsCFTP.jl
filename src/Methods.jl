@@ -574,9 +574,14 @@ end
 """
     compute_nofly(CEvolution, Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
     
+Ee perform a careful computation of the "true" boundary (`nofly_bound` in the code
+of function `compute_nofly`): we
+work backwards through the new `Infection`s 
+as explained in annotations of the source-code. 
+
 Doctests to follow ...
 
-Note the many commented-out assertions and the explanatory notes in the source code!
+Note the source-code also contains many commented-out assertions!
 """
 function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
 	nofly_bound = deepcopy(ev.envelope)                                        # <1>

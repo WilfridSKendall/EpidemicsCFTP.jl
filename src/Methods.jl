@@ -458,36 +458,36 @@ end
 # # Kill irrelevant infections and removals
 # # -------------------------------
 """
-    kill_irrelevant_infections(::Evolution, ::Innovation)::Vector{AbstractInfection}
+    kill_irrelevant_infections(::AbstractEvolution, ::Innovation)::Vector{AbstractInfection}
 
 Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and determines which
-are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
+are irrelevant (occurring in removal zone for [`AbstractEvolution`](@ref)). converting these
 to [`KilledRemoval`](@ref)s.
 """
-function kill_irrelevant_infections(ev::Evolution, iv::Innovation)::Vector{AbstractInfection}
+function kill_irrelevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractInfection}
     [ z.t ≤ ev.finis_times[z.target] ? z : KilledInfection(z) for z ∈ iv.infections ]
 end ;
 
 """
-    kill_irrelevant_removals(::Evolution, ::Innovation)::Vector{AbstractRemoval}
+    kill_irrelevant_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
 
 Examines [`AbstractRemoval`](@ref)s from [`Innovation`](@ref) and determines which
 are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
 to [`KilledInfection`](@ref)s.
 """
-function kill_irrelevant_removals(ev::Evolution, iv::Innovation)::Vector{AbstractRemoval}
+function kill_irrelevant_removals(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractRemoval}
     [ z.t ≤ ev.finis_times[z.target] ? z : KilledRemoval(z) for z ∈ iv.removals ]
 end ;
 
 # # Identify relevant infections
 # # -------------------------------
 """
-    relevant_infections(::Evolution, ::Innovation)::Vector{AbstractInfection}
+    relevant_infections(::AbstractEvolution, ::Innovation)::Vector{AbstractInfection}
 
 Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and returns
 those which are relevant to construction of the "last feasible epidemic".
 """
-function relevant_infections(ev::Evolution, iv::Innovation)::Vector{AbstractInfection}
+function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractInfection}
     unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if z isa OperativeInfection]
     relevant_inf = [z for z ∈ ev.history if typeof(z) <: AbstractInfection]
     rsup, running_supremum_list = 0, CRemoval[]

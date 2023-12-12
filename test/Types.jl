@@ -51,12 +51,21 @@ end
 @testset "EpidemicsCFTP: $(rpad(AbstractEvolution, 23))" begin
     initial    = SIR(0.0, 2, 1, 0)
     infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
-    removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)]
+    removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.11, 2)]
     cremovals  = [CRemoval(0.0, 1)]
     for evolutiontype ∈ allconcretesubtypes(AbstractEvolution)
         ev = evolutiontype(initial, infections ∪ removals ∪ cremovals)
         @test ev.initial == ev.trajectory[1]
     end
+end
+
+@testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
+    initial    = SIR(0.0, 2, 1, 0)
+    infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
+    removals   = [Removal(0.1, 1), Removal(0.11, 2), KilledRemoval(0.2, 3)]
+    cremovals  = [CRemoval(0.0, 1)]
+    ev         = CEvolution(initial, infections ∪ removals ∪ cremovals)
+    @test ev.envelope0 == Real[0.0, 0.11, 0.2]
 end
 
 @testset "EpidemicsCFTP: $(rpad(string(Innovation), 23))" begin

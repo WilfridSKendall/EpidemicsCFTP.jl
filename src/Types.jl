@@ -726,6 +726,26 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`EpidemicsCFTP.periods`](@ref) to compute start and finish times
 for infectious periods!
 
+It possesses an extra field `envelope` which is the monotonically increasing envelope
+of times of `Removal`s occurring _before_ the epidemic trajectory as measured
+by `start_times`: so 
+instances should always possess fields as given in the table.
+
+| _Field name_  | _Type_                       |              | _Further remarks_ |
+|:--------------|:-----------------------------|:-------------|:------------------|
+| `initial`     | `SIR`                        |              |                   |
+| `infections`  | `Vector{AbstractInfection}`  |              | time-ordered list |
+| `removals`    | `Vector{AbstractRemoval}`    |              | time-ordered list |
+| `cremovals`   | `Vector{CRemoval}`           |              | time-ordered list |
+| `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
+| `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
+| `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
+| `start_times` | `Vector{Real}`               | **computed** | list              |
+| `finis_times` | `Vector{Real}`               | **computed** | list              |
+| `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
+| `envelope0 `  | `Vector{Real}`               | **computed** | time-ordered list |
+
+
 ## Example
 Three cases: basic use, missing a conditioned removal, employing an (unconditioned) removal.
 Notice that we introduce some non-standard removals and infections in the "basic use" case!
@@ -803,7 +823,7 @@ struct CEvolution <: AbstractEvolution
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
     LFE         ::Vector{AbstractIncident}
-    envelope    ::Vector{Real}
+    envelope0   ::Vector{Real}
     
     function CEvolution(initial_state::SIR, innovation::Innovation; LFE=AbstractIncident[])
         # Need to check population == sum of `initial_state` entries

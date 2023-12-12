@@ -726,9 +726,10 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`EpidemicsCFTP.periods`](@ref) to compute start and finish times
 for infectious periods!
 
-It possesses an extra field `envelope` which is the monotonically increasing envelope
+It possesses extra fields `envelope0` and  `envelope`, which are respectively
+the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
-by `start_times`: so 
+by `start_times`, and the monotonically increasing envelope: so 
 instances should always possess fields as given in the table.
 
 | _Field name_  | _Type_                       |              | _Further remarks_ |
@@ -743,7 +744,8 @@ instances should always possess fields as given in the table.
 | `start_times` | `Vector{Real}`               | **computed** | list              |
 | `finis_times` | `Vector{Real}`               | **computed** | list              |
 | `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
-| `envelope0 `  | `Vector{Real}`               | **computed** | time-ordered list |
+| `envelope0`   | `Vector{Real}`               | **computed** | time-ordered list |
+| `envelope`    | `Vector{Real}`               | **computed** | time-ordered list |
 
 
 ## Example
@@ -824,6 +826,7 @@ struct CEvolution <: AbstractEvolution
     finis_times ::Vector{Real}
     LFE         ::Vector{AbstractIncident}
     envelope0   ::Vector{Real}
+    envelope    ::Vector{Real}
     
     function CEvolution(initial_state::SIR, innovation::Innovation; LFE=AbstractIncident[])
         # Need to check population == sum of `initial_state` entries
@@ -836,14 +839,14 @@ struct CEvolution <: AbstractEvolution
         start_times, finis_times = periods(trajectory, history)
         
         early_inactivated_removals = [z for z ∈ removals if z.t < start_times[z.target]]
-        barrier  = repeat([0.0], initial_state.n)
+        envelope0  = repeat([0.0], initial_state.n)
         for z ∈ early_inactivated_removals
-            barrier[z.target]  = max(barrier[z.target], z.t)
+            envelope0[z.target]  = max(envelope0[z.target], z.t)
         end
-        envelope0  = accumulate(max, barrier)
+        envelope  = accumulate(max, envelope0)
         
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start_times, finis_times, LFE, envelope0)
+            trajectory, history, initial_state, start_times, finis_times, LFE, envelope0, envelope)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; LFE=AbstractIncident[])

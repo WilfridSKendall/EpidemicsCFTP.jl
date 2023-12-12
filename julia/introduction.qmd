@@ -918,30 +918,26 @@ depict("introduction-14-last-feasible-epidemic-bis", new_figure(figure14,
 ```
 ::: {.callout-note}
 # TODO
-Place remaining code in a procedure.
+Invoke remaining code at creation of an instance of `CEvolution`.
 :::
 
 
 Computing the \NOFLYZONE
 ------------------------
-
-::: {.callout-warning}
-# EXPLORATORY FROM NOW ON
-:::
-
-
 We now determine the \NOFLYZONE.
 This is done in stages:
 
 (a) compute the `envelope0` vector giving the times at which each time line becomes free of inactivated removals
-(now done at initialization of `CEvolution` instance);
+(now done at initialization of `CEvolution` instance) \(\surd\);
 (b) compute the `envelope` vector, the monotonically increasing envelope of `envelope0`
-(now done at initialization of `CEvolution` instance);
-(c) compute `nofly_envelope`, a vector giving the times at which each time line starts to be available for infection
+(now done at initialization of `CEvolution` instance) \(\surd\);
+(c) compute `nofly_envelope` using `compute_nofly` function. 
+(Should really be done at creation of an instance of `CEvolution`.)
+The `nofly_envelope` is a vector giving the times at which each time line starts to be available for infection
 without hazard of causing activation of an inactivated removal.
 
-Step (c) involves the use of the `relevant_infections`. 
-It suffices to consider only those `relevant_infections` occurring _before_ the current epidemic,
+Step (c) involves the use of `relevant_infections`. 
+Here `relevant_infections` are those occurring _before_ the current epidemic,
 since perpetuation has the effect of ensuring that `relevant_infections` occurring _after_ the current epidemic
 cannot lead to epidemic trajectories rising above the current epidemic.
 
@@ -952,26 +948,10 @@ cannot lead to epidemic trajectories rising above the current epidemic
 if they occur _after_ the current epidemic.
 :::
 
-We begin with step (a).
-```{julia}
-early_inactivated_removals = 
-    [z for z ∈ evol1_2.removals if z.t < evol1_2.finis_times[z.target]]
-```
+Steps (a) and (b) occur at creation of `CEvolution`.
 @fig-introduction-15-relevant-removals provides a visual check!
 
-We now compute the time of last early inactivated removal for each time line, forming the vector `max_removal_time`.
-```julia
-#max_removal_time = repeat([0.0], evol1_2.initial.n)
-#for z ∈ early_inactivated_removals
-#    max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
-#end
-```
 
-Then we take step (b), and compute the monotonic envelope `nofly_envelope0` of `max_removal_time`.
-```julia
-#nofly_envelope0 = accumulate(max, max_removal_time)
-#println(nofly_envelope0)
-```
 
 
 ```{julia}
@@ -989,7 +969,7 @@ figure15 = new_figure(deepcopy(figure14a),
          draw_feasible_incident(innov_candidate.infections, 1, inscribe=false, theme=theme))),
 
     Guide.annotation(compose(context(),
-        draw_incident(early_inactivated_removals, theme=theme))),
+        draw_incident(evol1_2.removals, theme=theme))),
 
     Guide.annotation(compose(context(),
         draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
@@ -1040,25 +1020,13 @@ It is justified because our basic plan is to renew
 infections working backwards through time ...
 :::
 
-We further reduce to `posterior_relevant_infections`, those infections whose `infectee`
+Solely to serve the illustrative purposes of the intermediate graphic
+@fig-introduction-16-prior-relevant-removals,
+we further distinguish between `posterior_relevant_infections`, those infections whose `infectee`
 has already been already infected (and hence whose `infectee` will not yet be removed),
 and `prior_relevant_infections`
 (those infections whose `infectee` has **not** already been infected).
-```{julia}
-posterior_relevant_infections =  [z for z ∈ current_infections if 
-                                    z.t ≥ evol1_2.start_times[z.infectee]]
-prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
-println("Prior relevant infections:    \n", 
-    sprint(show, MIME("text/plain"), prior_relevant_infections))
-println("Posterior relevant infections:\n", 
-    sprint(show, MIME("text/plain"), posterior_relevant_infections))
-```
-::: {.callout-warning}
-# Reminder re `posterior_relevant_infections`, `prior_relevant_infections`
-Needs to be computed within a function?
-:::
-
-
+(Computations concealed in code for @fig-introduction-16-prior-relevant-removals.)
 @fig-introduction-16-prior-relevant-removals illustrates this emphasis on `prior_relevant_infections`
 ```{julia}
 #| echo: false
@@ -1067,6 +1035,9 @@ Needs to be computed within a function?
 #|           of \"no-fly zone\", highlighting infections from `innov_candidate`         \
 #|           which are not confined within original epidemic. These infections are      \
 #|           described as `prior_relevant_infections`. [`16-prior-relevant-removals`]"  
+posterior_relevant_infections =  [z for z ∈ current_infections if 
+                                    z.t ≥ evol1_2.start_times[z.infectee]]
+prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
 figure16 = new_figure(deepcopy(figure14a),
      Guide.annotation(compose(context(),
          draw_elements(perpetuated_infections, activated=true, theme=theme))),
@@ -1075,7 +1046,7 @@ figure16 = new_figure(deepcopy(figure14a),
     Guide.annotation(compose(context(),
          draw_feasible_incident(posterior_relevant_infections, 1, inscribe=false, theme=theme))),
     Guide.annotation(compose(context(),
-        draw_incident(early_inactivated_removals, theme=theme))),
+        draw_incident(evol1_2.removals, theme=theme))),
     Guide.annotation(compose(context(),
         draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
    Guide.annotation(compose(context(),
@@ -1095,9 +1066,9 @@ depict("introduction-16-prior-relevant-removals", new_figure(figure16,
 ```
 
 Now we perform a careful computation of the "true" boundary (`nofly_bound` in the code
-of function `compute_nofly``): we
-work backwards through the `prior_relevant_infections` 
-as explained by the annotations to the code below. 
+of function `compute_nofly`): we
+work backwards through the new `Infection`s 
+as explained in the annotations to the code below. 
 ```{julia}
 function compute_nofly(ev, iv)
 	nofly_bound = deepcopy(ev.envelope)                                        # <1>
@@ -1158,11 +1129,7 @@ function compute_nofly(ev, iv)
 	
 	end
 	
-	flow_nofly = DataFrame(t=nofly_bound, y=(1:ev.initial.n).+1, top=(ev.initial.n)+1)
-	xy_flow_nofly = table_trajectories2(flow_nofly; theme=theme)
-	deleteat!(xy_flow_nofly, [(2*ev.initial.n)-1])
-	
-	return processed_infections, flow_nofly, xy_flow_nofly
+	return processed_infections, nofly_bound
 end ;
 ```
 1. The boundary `nofly_bound` will be updated recursively.
@@ -1206,26 +1173,18 @@ at level `z.infectee - 1` up to time `z.t`. We also transform `z`
 to a `NoFlyInfection` when we add it to `processed_infections`, to
 signal that it should never become infected.
 
-```{julia}
-#| echo: false
-header = [:t, :y]
-processed_infections, flow_nofly1, xy_flow_nofly1 = 
-    compute_nofly(evol1_2, innov_candidate) ;
-
-#processed_infections = compute_nofly(evol1_2, innov_candidate) ;
-    
-#flow_nofly1 = DataFrame(t=evol1_2.envelope0, y=(1:initial.n).+1, top=(initial.n)+1)
-#xy_flow_nofly1 = table_trajectories2(flow_nofly1; theme=theme)
-#deleteat!(xy_flow_nofly1, [(2*evol1_2.initial.n)-1])
-```
-
-
 Now compute the new innovation and evolution.
 ```{julia}
+#| echo: false
+processed_infections, nofly_bound = compute_nofly(evol1_2, innov_candidate) ;
+    
+flow_nofly1 = DataFrame(t=nofly_bound, y=(1:initial.n).+1, top=(initial.n)+1)
+xy_flow_nofly1 = table_trajectories2(flow_nofly1; theme=theme)
+deleteat!(xy_flow_nofly1, [(2*evol1_2.initial.n)-1])
+
 innov2 = Innovation(initial.n, 
                 sort(processed_infections ∪ perpetuated_infections, lt=isearlier), 
-                early_inactivated_removals, 
-                evol1_2.cremovals) ;
+                evol1_2.removals, evol1_2.cremovals) ;
 evol2  = CEvolution(initial, innov2) ; 
 ```
 

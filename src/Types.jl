@@ -803,7 +803,7 @@ struct CEvolution <: AbstractEvolution
     start_times ::Vector{Real}
     finis_times ::Vector{Real}
     LFE         ::Vector{AbstractIncident}
-    envelope0   ::Vector{Real}
+    envelope    ::Vector{Real}
     
     function CEvolution(initial_state::SIR, innovation::Innovation; LFE=AbstractIncident[])
         # Need to check population == sum of `initial_state` entries
@@ -814,11 +814,14 @@ struct CEvolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start_times, finis_times = periods(trajectory, history)
-        envelope0  = repeat([0.0], initial_state.n)
+        
         early_inactivated_removals = [z for z ∈ removals if z.t < start_times[z.target]]
+        barrier  = repeat([0.0], initial_state.n)
         for z ∈ early_inactivated_removals
-            envelope0[z.target]  = max(envelope0[z.target], z.t)
+            barrier[z.target]  = max(barrier[z.target], z.t)
         end
+        envelope0  = accumulate(max, barrier)
+        
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start_times, finis_times, LFE, envelope0)
     end

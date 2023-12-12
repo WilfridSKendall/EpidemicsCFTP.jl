@@ -65,7 +65,7 @@ end
     removals   = [Removal(0.1, 1), Removal(0.11, 2), KilledRemoval(0.2, 3)]
     cremovals  = [CRemoval(0.0, 1)]
     ev         = CEvolution(initial, infections ∪ removals ∪ cremovals)
-    @test ev.envelope0 == Real[0.0, 0.11, 0.2]
+    @test ev.envelope == Real[0.0, 0.11, 0.2]
 end
 
 @testset "EpidemicsCFTP: $(rpad(string(Innovation), 23))" begin

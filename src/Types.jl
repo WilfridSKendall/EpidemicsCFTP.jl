@@ -828,7 +828,8 @@ struct CEvolution <: AbstractEvolution
     envelope0   ::Vector{Real}
     envelope    ::Vector{Real}
     
-    function CEvolution(initial_state::SIR, innovation::Innovation; LFE=AbstractIncident[])
+    function CEvolution(initial_state::SIR, innovation::Innovation;
+                        LFE=AbstractIncident[], envelope0=Real[], envelope=Real[])
         # Need to check population == sum of `initial_state` entries
         population = innovation.population
         infections = innovation.infections
@@ -838,24 +839,26 @@ struct CEvolution <: AbstractEvolution
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start_times, finis_times = periods(trajectory, history)
         
-        early_inactivated_removals = [z for z ∈ removals if z.t < start_times[z.target]]
-        envelope0  = repeat([0.0], initial_state.n)
-        for z ∈ early_inactivated_removals
-            envelope0[z.target]  = max(envelope0[z.target], z.t)
-        end
-        envelope  = accumulate(max, envelope0)
+        # Move this out!
+        #early_inactivated_removals = [z for z ∈ removals if z.t < start_times[z.target]]
+        #envelope0  = repeat([0.0], initial_state.n)
+        #for z ∈ early_inactivated_removals
+        #    envelope0[z.target]  = max(envelope0[z.target], z.t)
+        #end
+        #envelope  = accumulate(max, envelope0)
         
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start_times, finis_times, LFE, envelope0, envelope)
     end
     
-    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; LFE=AbstractIncident[])
+    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
+                        LFE=AbstractIncident[], envelope0=Real[], envelope=Real[])
             innovation = Innovation(initial_state.n,
                         AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                         AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                         CRemoval[z for z ∈ chronology if z isa CRemoval]
                         )
-        return CEvolution(initial_state, innovation, LFE=LFE)
+        return CEvolution(initial_state, innovation, LFE=LFE, envelope0=envelope0, envelope=envelope)
     end
 
 end

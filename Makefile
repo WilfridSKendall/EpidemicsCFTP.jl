@@ -2,6 +2,8 @@
 
 JULIA := $(HOME)/.julia/julia-current/bin/julia
 
+QUARTO     := /usr/local/bin/quarto
+
 package    := $(notdir $(shell pwd))
 
 src_files  := $(wildcard src/*.jl) 
@@ -32,8 +34,8 @@ online: docs/build/index.md
 doctest:
 	@$(JULIA) --color=yes docs/make_doctests.jl
 
-test: tested.stamp
-	@touch tested.stamp
+test: .test.stamp
+	@touch test.stamp
 
 virgin: ; rm -rf docs/build/*
 
@@ -46,9 +48,20 @@ install:
 	touch src/EpidemicsCFTP.jl
 	$(JULIA) -e 'import EpidemicsCFTP: version ; println(version)'
 
+# ====================
+# List Makefile
+Makefile.pdf: Makefile
+	@echo "# Listing of \`Makefile\` for \`PerfectEpidemics/julia/EpidemicsCFTP\`" > Makefile.qmd
+	@echo "\`\`\`makefile" >> Makefile.qmd
+	@cat Makefile          >> Makefile.qmd
+	@echo "\`\`\`"         >> Makefile.qmd
+	$(QUARTO) render Makefile.qmd --to pdf
+	@rm Makefile.qmd 
+
+	
 # ========================
 
-tested.stamp: $(src_files) $(test_files)
+.test.stamp: $(src_files) $(test_files)
 	@$(JULIA) --color=yes test/runtests.jl
 
 docs/build/index.md: $(src_files) $(doc_files) $(doc_images)

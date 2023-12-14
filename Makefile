@@ -15,7 +15,6 @@ doc_images := docs/src/image/introduction-18-one-iteration.pdf \
 test_files :=$(wildcard test/*.jl)
 
 # ========================
-
 .PHONY: documentation view test doc_images
 
 documentation: test docs/site/index.html

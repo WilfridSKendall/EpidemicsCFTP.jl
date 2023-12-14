@@ -1,5 +1,7 @@
 # Makefile for ~/ms/PerfectEpidemics/julia
 SHELL           := /usr/bin/bash
+LOCATION        := $(shell pwd)
+
 PRODUCTS        := production.pdf introduction.pdf check.pdf test.pdf
 
 QUARTO          := /usr/local/bin/quarto
@@ -59,7 +61,7 @@ image/VERIFY_%.png: image/%.png
 # ====================
 # List Makefile
 Makefile.pdf: Makefile
-	@echo "# Listing of \`Makefile\` for \`PerfectEpidemics/julia\`" > Makefile.qmd
+	@echo "# Listing of \`Makefile\` for \`$(LOCATION)\`" > Makefile.qmd
 	@echo "\`\`\`makefile" >> Makefile.qmd
 	@cat Makefile          >> Makefile.qmd
 	@echo "\`\`\`"         >> Makefile.qmd

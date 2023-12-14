@@ -270,10 +270,10 @@ The first step is to create a new `Innovation` which
 (b) inserts those new `Removal`s which remain inactivated (@fig-test-03-removals2).
 ```{julia}
 iv2_1 = Innovation(initial.n, ev1.infections, R[], ev1.cremovals)
-ev2_1 = CEvolution(initial, iv2_1, envelope0=envelope0, envelope=envelope)
+ev2_1 = CEvolution(initial, iv2_1)
 iv2_2 = Innovation(initial.n, ev2_1.infections, 
     EpidemicsCFTP.inactive_removals(ev1, iv2c), ev2_1.cremovals)
-ev2_2 = CEvolution(initial, iv2_2, envelope0=envelope0, envelope=envelope)
+ev2_2 = CEvolution(initial, iv2_2)
 ```
 
 ```{julia}
@@ -310,7 +310,7 @@ to use the old `Infection`s
 ```{julia}
 iv2_3 = Innovation(initial.n, ev2_2.infections, ev2_2.removals, 
     EpidemicsCFTP.resulting_cremovals(ev1, iv2c))
-ev2_3 = CEvolution(initial, iv2_3, envelope0=envelope0, envelope=envelope)
+ev2_3 = CEvolution(initial, iv2_3)
 ```
 
 ```{julia}
@@ -358,7 +358,7 @@ other_older_infections       = setdiff(ev2_3.infections,
                                     AI[z for z ∈ last_feasible_history if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history, envelope0=envelope0, envelope=envelope)
+ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
 ```
 
 ```{julia}
@@ -450,7 +450,7 @@ for z ∈ early_inactivated_removals
 end
 envelope  = accumulate(max, envelope0)
 
-ev1   = CEvolution(initial, iv1, envelope0=envelope0, envelope=envelope)
+ev1   = CEvolution(initial, iv1)
 ```
 
 {{< pagebreak >}}
@@ -493,7 +493,7 @@ History and trajectory should not change, while the chronology should be obtaine
 subtracting inactive `Removal`s.
 ```{julia}
 iv2_1   = Innovation(initial.n, infections, R[], cremovals)
-ev2_1   = CEvolution(initial, iv2_1, envelope0=envelope0, envelope=envelope)
+ev2_1   = CEvolution(initial, iv2_1)
 begin ; title = "Removing Removals"
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
         @test ev2_1.trajectory == ev1.trajectory

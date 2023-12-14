@@ -64,7 +64,15 @@ end
     infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
     removals   = [Removal(0.1, 1), Removal(0.11, 2), KilledRemoval(0.2, 3)]
     cremovals  = [CRemoval(0.0, 1)]
-    ev         = CEvolution(initial, infections ∪ removals ∪ cremovals)
+    uev        = Evolution(initial, infections ∪ removals ∪ cremovals)
+    early_inactivated_removals = [z for z ∈ removals if z.t < uev.start_times[z.target]]
+    envelope0  = repeat([0.0], initial.n)
+    for z ∈ early_inactivated_removals
+        envelope0[z.target]  = max(envelope0[z.target], z.t)
+    end
+    envelope  = accumulate(max, envelope0)
+    ev         = CEvolution(initial, infections ∪ removals ∪ cremovals,
+                                envelope0=envelope0, envelope=envelope)
     @test ev.envelope0 == Real[0.0, 0.11, 0.2]
 end
 

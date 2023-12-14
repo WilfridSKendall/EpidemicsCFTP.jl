@@ -1,11 +1,12 @@
 # Makefile for `EpidemicCFTP`
+SHELL      := /usr/bin/bash
+LOCATION   := $(shell pwd)
+MODULE     := $(notdir $(LOCATION))
 
 JULIA := $(HOME)/.julia/julia-current/bin/julia
 
 QUARTO     := /usr/local/bin/quarto
 
-location       := $(shell pwd)
-package        := $(notdir $(location))
 
 src_files  := $(wildcard src/*.jl) 
 doc_files  := $(wildcard docs/src/*.md) 
@@ -19,9 +20,9 @@ test_files :=$(wildcard test/*.jl)
 
 documentation: test docs/site/index.html
 
-view-pdf: docs/build/$(package).pdf
+view-pdf: docs/build/$(MODULE).pdf
 	echo "\\setmonofont[Scale = 0.75]{JuliaMono}" > docs/build/custom.sty
-	latexmk -cd -g -xelatex -shell-escape docs/build/$(package).tex
+	latexmk -cd -g -xelatex -shell-escape docs/build/$(MODULE).tex
 	xdg-open $<
 
 view: serve
@@ -41,18 +42,18 @@ test: .test.stamp
 virgin: ; rm -rf docs/build/*
 
 rebuild:
-	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("EpidemicsCFTP"))'
+	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("$(MODULE)"))'
 
 # ====================
 # Installation
 install:
-	touch src/EpidemicsCFTP.jl
-	$(JULIA) -e 'import EpidemicsCFTP: version ; println(version)'
+	touch src/$(MODULE).jl
+	$(JULIA) -e 'import $(MODULE): version ; println(version)'
 
 # ====================
 # List Makefile
 Makefile.pdf: Makefile
-	@echo "# Listing of \`Makefile\` for \`$(location)\`" \
+	@echo "# Listing of \`Makefile\` for \`$(LOCATION)\`" \
 				> Makefile.qmd
 	@echo "\`\`\`makefile" >> Makefile.qmd
 	@cat Makefile          >> Makefile.qmd
@@ -68,12 +69,12 @@ Makefile.pdf: Makefile
 docs/build/index.md: $(src_files) $(doc_files) $(doc_images)
 	@$(JULIA) --color=yes docs/make.jl
 
-docs/build/$(package).tex: $(doc_files) $(src_files) $(doc_images)
+docs/build/$(MODULE).tex: $(doc_files) $(src_files) $(doc_images)
 	@$(JULIA) --color=yes docs/make_latex.jl
 
 # Needs DocumenterLaTeX for julia
 #       pygments for python
-docs/build/$(package).pdf: docs/build/$(package).tex
+docs/build/$(MODULE).pdf: docs/build/$(MODULE).tex
 	cd docs/build ; \
 	latexmk -f -interaction=nonstopmode -view=none -lualatex -shell-escape $(notdir $<)
 

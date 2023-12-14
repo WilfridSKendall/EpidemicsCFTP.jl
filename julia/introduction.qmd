@@ -667,11 +667,20 @@ interval from `periods(evol1_1)`,
 as determined by the function `EpidemicsCFTP.resulting_cremovals`.
 
 @fig-introduction-09-processed-cremovals graphs the resulting evolution `evol1_2`:
+Note we need some envelope calculations (later to be incorporated!).
 ```{julia}
 innov1_2 = Innovation(initial.n, innov1_1.infections, 
                 innov1_1.removals, 
                 EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
-evol1_2 = CEvolution(initial, innov1_2) ;
+early_inactivated_removals = [z for z ∈ innov1_2.removals if z.t < evol1_1.start_times[z.target]]
+# envelope0  = repeat([0.0], initial_state.n)
+envelope0  = repeat([0.0], initial.n)
+for z ∈ early_inactivated_removals
+    envelope0[z.target]  = max(envelope0[z.target], z.t)
+end
+envelope  = accumulate(max, envelope0)
+evol1_2 = CEvolution(initial, innov1_2,
+                    envelope0=envelope0, envelope=envelope) ;
 ```
 ::: {.callout-tip}
 # Explanatory note for `innov1_2`
@@ -680,7 +689,7 @@ by using `EpidemicsCFTP.resulting_cremovals`
 to re-mark the `CRemoval`s.
 
 Again the resulting `Evolution` structure 
-`evol1_2 = CEvolution(initial, innov1_2)` 
+`evol1_2 = CEvolution(initial, innov1_2, envelope0=envelope0, envelope=envelope)` 
 actually yields the same trajectory as `evol1`
 equivalently `evol1_0` or `evol1_1`,
 as marks are changed only if they do not de-activate the respective `CRemoval`,
@@ -748,7 +757,7 @@ new epidemic trajectory!
 innov1_2a = Innovation(initial.n, 
     innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
-evol1_2x  = CEvolution(initial, evol1_2.history) ;
+evol1_2x  = CEvolution(initial, evol1_2.history, envelope0=envelope0, envelope=envelope) ;
 
 figure10  = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
 
@@ -850,7 +859,7 @@ last_feasible_history =
 # Next list comprehension is required to make sure that the list type is correct!
 last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections]
 perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ evol1.infections]
-evol1_2y  = CEvolution(initial, evol1_2.history, LFE=last_feasible_history)
+evol1_2y  = CEvolution(initial, evol1_2.history, LFE=last_feasible_history, envelope0=envelope0, envelope=envelope)
 ```
 
 ::: {.callout-warning}
@@ -944,11 +953,8 @@ cannot lead to epidemic trajectories rising above the current epidemic
 if they occur _after_ the current epidemic.
 :::
 
-Steps (a) and (b) occur at creation of `CEvolution`.
+Steps (a) and (b) do _not_ occur at creation of `CEvolution`, but need somehow to be incorporated.
 @fig-introduction-15-relevant-removals provides a visual check!
-
-
-
 
 ```{julia}
 #| echo: false
@@ -1074,7 +1080,7 @@ deleteat!(xy_flow_nofly1, [(2*evol1_2.initial.n)-1])
 innov2 = Innovation(initial.n, 
                 sort(processed_infections ∪ perpetuated_infections, lt=isearlier), 
                 evol1_2.removals, evol1_2.cremovals) ;
-evol2  = CEvolution(initial, innov2) ; 
+evol2  = CEvolution(initial, innov2, envelope0=envelope0, envelope=envelope) ; 
 ```
 
 ```{julia}

@@ -4,7 +4,8 @@ JULIA := $(HOME)/.julia/julia-current/bin/julia
 
 QUARTO     := /usr/local/bin/quarto
 
-package    := $(notdir $(shell pwd))
+location       := $(shell pwd)
+package        := $(notdir $(location))
 
 src_files  := $(wildcard src/*.jl) 
 doc_files  := $(wildcard docs/src/*.md) 
@@ -51,13 +52,13 @@ install:
 # ====================
 # List Makefile
 Makefile.pdf: Makefile
-	@echo "# Listing of \`Makefile\` for \`PerfectEpidemics/julia/EpidemicsCFTP\`" > Makefile.qmd
+	@echo "# Listing of \`Makefile\` for \`$(location)\`" \
+				> Makefile.qmd
 	@echo "\`\`\`makefile" >> Makefile.qmd
 	@cat Makefile          >> Makefile.qmd
 	@echo "\`\`\`"         >> Makefile.qmd
 	$(QUARTO) render Makefile.qmd --to pdf
 	@rm Makefile.qmd 
-
 	
 # ========================
 

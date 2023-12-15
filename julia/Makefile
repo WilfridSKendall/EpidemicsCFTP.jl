@@ -59,7 +59,21 @@ image/VERIFY_%.png: image/%.png
 	fi
 
 # ====================
-# List Makefile
+# Creating PDFs of listings in `PRINTING` directory
+listings: listings-current listings-EpidemicsCFTP listings-EpidemicsUtilities
+listings-current: Makefile.pdf
+	mv Makefile.pdf PRINTING
+listings-EpidemicsCFTP: 
+	make --directory=EpidemicsCFTP Makefile.pdf EpidemicsCFTP-test.pdf
+	mv EpidemicsCFTP/Makefile.pdf PRINTING/EpidemicsCFTP-Makefile.pdf
+	mv EpidemicsCFTP/EpidemicsCFTP-test.pdf PRINTING
+listings-EpidemicsUtilities: 
+	make --directory=EpidemicsUtilities Makefile.pdf EpidemicsUtilities-test.pdf
+	mv EpidemicsUtilities/Makefile.pdf PRINTING/EpidemicsUtilities-Makefile.pdf
+	mv EpidemicsUtilities/EpidemicsUtilities-test.pdf PRINTING
+
+# --------------------
+## List Makefile
 include $(HOME)/lib/makefiles/listing-makefile.mak
 
 # ====================

@@ -590,7 +590,7 @@ Adding in those removals from the new innovation which remain inactive
 ----------------------------------------------------------------------
 We now insert those of the removals from `innov_candidate` which 
 would _not_ be activated by the old epidemic structure. 
-To do this, we use the `Evolution` attributes `start_times` and `finis_times`,
+To do this, we use the `Evolution` attributes `start_t` and `finis_t`,
 holding "birth" and "death" times of the infection for each time line.
 Note that we assume that _every_ time line dies at time `Inf` if
 it is still alive at the time `duration`,
@@ -672,7 +672,7 @@ Note we need some envelope calculations (later to be incorporated!).
 innov1_2 = Innovation(initial.n, innov1_1.infections, 
                 innov1_1.removals, 
                 EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
-early_inactivated_removals = [z for z ∈ innov1_2.removals if z.t < evol1_1.start_times[z.target]]
+early_inactivated_removals = [z for z ∈ innov1_2.removals if z.t < evol1_1.start_t[z.target]]
 # envelope0  = repeat([0.0], initial_state.n)
 envelope0  = repeat([0.0], initial.n)
 for z ∈ early_inactivated_removals
@@ -995,14 +995,14 @@ depict("introduction-15-relevant-removals", new_figure(figure15,
 ```
 
 We now move on to step (c).
-Note in the following that the vectors `evol1_2.start_times` and `evol1_2.finis_times` are 
+Note in the following that the vectors `evol1_2.start_t` and `evol1_2.finis_t` are 
 actually the vectors of infection and removal times for the original epidemic trajectory
 (which up to this point is the trajectory generated using all the modified `innov1_x`
 for `x=0..2`).
 ```{julia}
 #| echo: false
-print("Infection times : ") ; println(evol1_2.start_times)
-print("Removal times   : ") ; println(evol1_2.finis_times)
+print("Infection times : ") ; println(evol1_2.start_t)
+print("Removal times   : ") ; println(evol1_2.finis_t)
 ```
 Furthermore we must
 focus only on those infections in `current_infections` which extend beyond the original epidemic trajectory.
@@ -1035,9 +1035,9 @@ and `prior_relevant_infections`
 #|           described as `prior_relevant_infections`. [`16-prior-relevant-removals`]"  
 current_infections = 
     sort([z for z ∈ innov_candidate.infections if 
-                z.t < evol1_2.finis_times[z.target]], lt=isearlier)
+                z.t < evol1_2.finis_t[z.target]], lt=isearlier)
 posterior_relevant_infections =  [z for z ∈ current_infections if 
-                                    z.t ≥ evol1_2.start_times[z.infectee]]
+                                    z.t ≥ evol1_2.start_t[z.infectee]]
 prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
 figure16 = new_figure(deepcopy(figure14a),
      Guide.annotation(compose(context(),

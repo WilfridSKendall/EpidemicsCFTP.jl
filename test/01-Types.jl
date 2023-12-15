@@ -67,7 +67,7 @@ end
     removals   = [Removal(0.1, 1), Removal(0.11, 2), KilledRemoval(0.2, 3)]
     cremovals  = [CRemoval(0.0, 1)]
     uev        = Evolution(initial, infections ∪ removals ∪ cremovals)
-    early_inactivated_removals = [z for z ∈ removals if z.t < uev.start_times[z.target]]
+    early_inactivated_removals = [z for z ∈ removals if z.t < uev.start_t[z.target]]
     envelope0  = repeat([0.0], initial.n)
     for z ∈ early_inactivated_removals
         envelope0[z.target]  = max(envelope0[z.target], z.t)

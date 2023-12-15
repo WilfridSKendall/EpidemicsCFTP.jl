@@ -3,7 +3,7 @@ title:  "A Graphical Introduction to Perfect Simulation of Conditioned Epidemics
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
-csl: ima-journal-of-applied-mathematics.csl
+csl:          ima-journal-of-applied-mathematics.csl
 ---
 
 ---

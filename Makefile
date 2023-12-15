@@ -50,13 +50,32 @@ install:
 	$(JULIA) -e 'import $(MODULE): version ; println(version)'
 
 # ====================
-# List Makefile
+# List test source: target is `test.pdf`
+$(MODULE)-test.pdf: $(MODULE)-test.qmd
+	$(QUARTO) render $< --to pdf
+	rm $<
+$(MODULE)-test.qmd: $(test_files)
+	@echo "# Unit tests for module \`$(MODULE)\`"                            > $(MODULE)-test.qmd
+	@echo "\`\`\`{julia}"							>> $(MODULE)-test.qmd
+	@echo "#| echo: false"							>> $(MODULE)-test.qmd
+	@echo "import $(MODULE): date, version" 				>> $(MODULE)-test.qmd
+	@echo "println(\"$(MODULE) version \$$version, compiled on \$$date\")"	>> $(MODULE)-test.qmd
+	@echo "\`\`\`"      							>> $(MODULE)-test.qmd
+	@for f in $(test_files) ; do                           \
+		echo "## File \`$$f\`" >> $(MODULE)-test.qmd ; \
+		echo "\`\`\`julia"     >> $(MODULE)-test.qmd ; \
+		cat $$f                >> $(MODULE)-test.qmd ; \
+		echo "\`\`\`"          >> $(MODULE)-test.qmd ; \
+	done
+
+# ====================
+# List Makefile: target is `Makefile.pdf`
 include $(HOME)/lib/makefiles/listing-makefile.mak
 	
 # ========================
 
 .test.stamp: $(src_files) $(test_files)
-	@$(JULIA) --color=yes test/runtests.jl
+	@$(JULIA) --color=yes test/00-runtests.jl
 
 docs/build/index.md: $(src_files) $(doc_files) $(doc_images)
 	@$(JULIA) --color=yes docs/make.jl

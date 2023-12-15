@@ -3,24 +3,35 @@
 ## Testing `isearlier`
 # =================================
 @testset "EpidemicsCFTP: $(rpad(isearlier, 23))" begin
-    for removaltype1 ∈ allconcretesubtypes(AbstractRemoval)
-        for removaltype2 ∈ allconcretesubtypes(AbstractRemoval)
-            @test   isearlier(removaltype1(0.1, 2),      removaltype2(0.5, 3))
-            @test ! isearlier(removaltype1(0.5, 2),      removaltype2(0.1, 3))
+    for typeR1 ∈ allconcretesubtypes(AbstractRemoval)
+        for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
+            @test   isearlier(typeR1(0.1, 2),      typeR2(0.5, 3))
+            @test ! isearlier(typeR1(0.5, 2),      typeR2(0.1, 3))
         end
-        for infectiontype2 ∈ allconcretesubtypes(AbstractInfection)
-            @test   isearlier(removaltype1(0.1, 2),      infectiontype2(0.5, 1, 3))
-            @test ! isearlier(removaltype1(0.5, 2),      infectiontype2(0.1, 1, 3))
+        for typeI2 ∈ allconcretesubtypes(AbstractInfection)
+            @test   isearlier(typeR1(0.1, 2),      typeI2(0.5, 1, 3))
+            @test ! isearlier(typeR1(0.5, 2),      typeI2(0.1, 1, 3))
         end
     end
-    for infectiontype1 ∈ allconcretesubtypes(AbstractInfection)
-        for infectiontype2 ∈ allconcretesubtypes(AbstractInfection)
-            @test   isearlier(infectiontype1(0.1, 1, 2), infectiontype2(0.5, 1, 3))
-            @test ! isearlier(infectiontype1(0.5, 1, 2), infectiontype2(0.1, 1, 3))
+    for typeI1 ∈ allconcretesubtypes(AbstractInfection)
+        for typeI2 ∈ allconcretesubtypes(AbstractInfection)
+            @test   isearlier(typeI1(0.1, 1, 2), typeI2(0.5, 1, 3))
+            @test ! isearlier(typeI1(0.5, 1, 2), typeI2(0.1, 1, 3))
         end
-        for removaltype2 ∈ allconcretesubtypes(AbstractRemoval)
-            @test   isearlier(infectiontype1(0.1, 1, 2), removaltype2(0.5, 3))
-            @test ! isearlier(infectiontype1(0.5, 1, 2), removaltype2(0.1, 3))
+        for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
+            @test   isearlier(typeI1(0.1, 1, 2), typeR2(0.5, 3))
+            @test ! isearlier(typeI1(0.5, 1, 2), typeR2(0.1, 3))
+        end
+    end
+    for typeI1 ∈ allconcretesubtypes(AbstractInfection)
+        for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
+            @test   isearlier(typeI1(0.1, 1, 2), typeR2(0.1, 3))
+            @test ! isearlier(typeI1(0.5, 1, 2), typeR2(0.1, 3))
+        end
+    end
+    for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
+        if typeR2 != CRemoval
+            @test   (isearlier(CRemoval(0.1, 1), typeR2(0.1, 3)))
         end
     end
 end
@@ -31,8 +42,8 @@ end
 crem = CRemoval(0.15, 1)
 @test alter(crem, 100) == CRemoval(0.15, 100)
 @test_throws ArgumentError   alter(crem, -100)
-@test_throws MethodError     alter(crem,  100.5) # No signature for non-integer second argument!
-@test_throws MethodError     alter(crem, -100.5) # No signature for non-integer second argument!
+@test_throws MethodError     alter(crem,  100.5) # Non-integer second argument!
+@test_throws MethodError     alter(crem, -100.5) # Non-integer second argument!
 end
 
 
@@ -68,35 +79,35 @@ end
         @test ! is_activatable(state, infecttype(0.0, r + 1, r + i)    )
     end
 	
-    for removaltype ∈ allconcretesubtypes(OperativeRemoval)
-        @test ! is_activatable(state, removaltype(0.0, 1)               )
-        @test ! is_activatable(state, removaltype(0.0, r)               )
-        @test   is_activatable(state, removaltype(0.0, r + 1)           )
-        @test   is_activatable(state, removaltype(0.0, r + i)           )
-        @test ! is_activatable(state, removaltype(0.0, r + i + 1)       )
+    for typeR ∈ allconcretesubtypes(OperativeRemoval)
+        @test ! is_activatable(state, typeR(0.0, 1)               )
+        @test ! is_activatable(state, typeR(0.0, r)               )
+        @test   is_activatable(state, typeR(0.0, r + 1)           )
+        @test   is_activatable(state, typeR(0.0, r + i)           )
+        @test ! is_activatable(state, typeR(0.0, r + i + 1)       )
     end
 
-    for removaltype ∈ allconcretesubtypes(NonOperativeRemoval)
-        @test ! is_activatable(state, removaltype(0.0, 1)               )
-        @test ! is_activatable(state, removaltype(0.0, r)               )
-        @test ! is_activatable(state, removaltype(0.0, r + 1)           )
-        @test ! is_activatable(state, removaltype(0.0, r + i)           )
-        @test ! is_activatable(state, removaltype(0.0, r + i + 1)       )
+    for typeR ∈ allconcretesubtypes(NonOperativeRemoval)
+        @test ! is_activatable(state, typeR(0.0, 1)               )
+        @test ! is_activatable(state, typeR(0.0, r)               )
+        @test ! is_activatable(state, typeR(0.0, r + 1)           )
+        @test ! is_activatable(state, typeR(0.0, r + i)           )
+        @test ! is_activatable(state, typeR(0.0, r + i + 1)       )
     end
 
-    for infectiontype ∈ allconcretesubtypes(OperativeInfection)
-        @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,0,3,3)
-        @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 5)) == SIR(0.1,1,2,3)
+    for typeI ∈ allconcretesubtypes(OperativeInfection)
+        @test update(SIR(0.0, 1, 2, 3), typeI(0.1, 4, 6)) == SIR(0.1,0,3,3)
+        @test update(SIR(0.0, 1, 2, 3), typeI(0.1, 4, 5)) == SIR(0.1,1,2,3)
     end
 
-    for infectiontype ∈ allconcretesubtypes(NonOperativeInfection)
-	@test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 6)) == SIR(0.1,1,2,3)
-        @test update(SIR(0.0, 1, 2, 3), infectiontype(0.1, 4, 5)) == SIR(0.1,1,2,3)
+    for typeI ∈ allconcretesubtypes(NonOperativeInfection)
+	@test update(SIR(0.0, 1, 2, 3), typeI(0.1, 4, 6)) == SIR(0.1,1,2,3)
+        @test update(SIR(0.0, 1, 2, 3), typeI(0.1, 4, 5)) == SIR(0.1,1,2,3)
     end
 
-    for removaltype ∈ allconcretesubtypes(NonOperativeRemoval)
-        @test update(SIR(0.0, 1, 2, 3), removaltype(0.1, 4))    == SIR(0.1,1,2,3)
-        @test update(SIR(0.0, 1, 2, 3), removaltype(0.1, 2))    == SIR(0.1,1,2,3)
+    for typeR ∈ allconcretesubtypes(NonOperativeRemoval)
+        @test update(SIR(0.0, 1, 2, 3), typeR(0.1, 4))    == SIR(0.1,1,2,3)
+        @test update(SIR(0.0, 1, 2, 3), typeR(0.1, 2))    == SIR(0.1,1,2,3)
     end
 end
 
@@ -135,12 +146,15 @@ end
                       AI[P(0.4, 4, 6), R(0.5, 4)])
     
     initial_state5 = initial_state1
-    innov5a        = Innovation(population, AIF[I(0.4, 4, 6), I(0.6, 3, 5)], R[R(0.5, 4)])
+    innov5a        = Innovation(population, AIF[I(0.4, 4, 6), I(0.6, 3, 5)], 
+                                R[R(0.5, 4)])
     outcome5a      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4)], 
                       AI[I(0.4, 4, 6), R(0.5, 4)])
     
-    innov5b        = Innovation(population, AIF[I(0.4, 4, 6), I(0.6, 3, 5)], R[R(0.5, 4), R(0.7, 6)])
-    outcome5b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4), SIR(0.7, 0, 1, 5)], 
+    innov5b        = Innovation(population, AIF[I(0.4, 4, 6), I(0.6, 3, 5)], 
+                                R[R(0.5, 4), R(0.7, 6)])
+    outcome5b      = (SIR[SIR(0.0, 1, 2, 3), SIR(0.4, 0, 3, 3), SIR(0.5, 0, 2, 4), 
+                          SIR(0.7, 0, 1, 5)], 
                       AI[I(0.4, 4, 6), R(0.5, 4), R(0.7, 6)])
     
     @test evolution(initial_state1, innov1a) == outcome1a

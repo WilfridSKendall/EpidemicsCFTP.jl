@@ -2,47 +2,47 @@
 
 ## Testing creation of concrete subtypes of `AbstractRemoval`
 @testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (A)" begin
-    for removaltype ∈ allconcretesubtypes(AbstractRemoval)
-        @test_throws DomainError    removaltype(0.05,-2)
-        @test_throws DomainError    removaltype(0.05, 0)
-        @test_throws MethodError    removaltype(0.05, 2.5)
-        @test_throws MethodError    removaltype(0.05,-2.3)
+    for typeR ∈ allconcretesubtypes(AbstractRemoval)
+        @test_throws DomainError    typeR(0.05,-2)
+        @test_throws DomainError    typeR(0.05, 0)
+        @test_throws MethodError    typeR(0.05, 2.5)
+        @test_throws MethodError    typeR(0.05,-2.3)
     end
 end
 
 ## Testing conversion of concrete subtypes of `AbstractRemoval`
 @testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (B)" begin
-    for removaltype1 ∈ allconcretesubtypes(AbstractRemoval)
-        for removaltype2 ∈ allconcretesubtypes(AbstractRemoval)
-            @test removaltype1(removaltype2(0.05, 2)) == removaltype1(0.05, 2)
-            @test removaltype1(removaltype2(0.15, 3)) == removaltype1(0.15, 3)
+    for typeR1 ∈ allconcretesubtypes(AbstractRemoval)
+        for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
+            @test typeR1(typeR2(0.05, 2)) == typeR1(0.05, 2)
+            @test typeR1(typeR2(0.15, 3)) == typeR1(0.15, 3)
         end
     end
 end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
 @testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (A)" begin
-    for infectiontype ∈ allconcretesubtypes(AbstractInfection)
-        @test_throws DomainError  infectiontype(0.10,-1,   2)
-        @test_throws DomainError  infectiontype(0.10, 1,  -2)
-        @test_throws DomainError  infectiontype(0.10,-1,  -2)
-        @test_throws DomainError  infectiontype(0.10, 1,   0)
-        @test_throws DomainError  infectiontype(5.45, 0,   3)
-        @test_throws DomainError  infectiontype(5.45, 0,   0)
-        @test_throws MethodError  infectiontype(0.10, 1.5, 2)
-        @test_throws MethodError  infectiontype(0.10, 1,   2.5)
-        @test_throws MethodError  infectiontype(0.10, 1.5, 2.5)
-        @test_throws MethodError  infectiontype(0.10, 2.5, 1)
-        @test_throws DomainError  infectiontype(5.45, 3,   2)
+    for typeI ∈ allconcretesubtypes(AbstractInfection)
+        @test_throws DomainError  typeI(0.10,-1,   2)
+        @test_throws DomainError  typeI(0.10, 1,  -2)
+        @test_throws DomainError  typeI(0.10,-1,  -2)
+        @test_throws DomainError  typeI(0.10, 1,   0)
+        @test_throws DomainError  typeI(5.45, 0,   3)
+        @test_throws DomainError  typeI(5.45, 0,   0)
+        @test_throws MethodError  typeI(0.10, 1.5, 2)
+        @test_throws MethodError  typeI(0.10, 1,   2.5)
+        @test_throws MethodError  typeI(0.10, 1.5, 2.5)
+        @test_throws MethodError  typeI(0.10, 2.5, 1)
+        @test_throws DomainError  typeI(5.45, 3,   2)
     end
 end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
 @testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (B)" begin
-    for infectiontype1 ∈ allconcretesubtypes(AbstractInfection)
-        for infectiontype2 ∈ allconcretesubtypes(AbstractInfection)
-            @test infectiontype1(infectiontype2(0.05, 2, 3)) == infectiontype1(0.05, 2, 3)
-            @test infectiontype1(infectiontype2(0.15, 1, 4)) == infectiontype1(0.15, 1, 4)
+    for typeI1 ∈ allconcretesubtypes(AbstractInfection)
+        for typeI2 ∈ allconcretesubtypes(AbstractInfection)
+            @test typeI1(typeI2(0.05, 2, 3)) == typeI1(0.05, 2, 3)
+            @test typeI1(typeI2(0.15, 1, 4)) == typeI1(0.15, 1, 4)
         end
     end
 end
@@ -50,7 +50,8 @@ end
 ## Testing creation of concrete subtypes of `AbstractEvolution`
 @testset "EpidemicsCFTP: $(rpad(AbstractEvolution, 23))" begin
     initial    = SIR(0.0, 2, 1, 0)
-    infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
+    infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), 
+                  Infection(0.7,1,2), PInfection(0.5,1,2)]
     removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.11, 2)]
     cremovals  = [CRemoval(0.0, 1)]
     for evolutiontype ∈ allconcretesubtypes(AbstractEvolution)
@@ -61,7 +62,8 @@ end
 
 @testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
     initial    = SIR(0.0, 2, 1, 0)
-    infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
+    infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), 
+                  Infection(0.7,1,2), PInfection(0.5,1,2)]
     removals   = [Removal(0.1, 1), Removal(0.11, 2), KilledRemoval(0.2, 3)]
     cremovals  = [CRemoval(0.0, 1)]
     uev        = Evolution(initial, infections ∪ removals ∪ cremovals)
@@ -101,7 +103,8 @@ end
     @test inn.removals == R[R(0.10, 2), R(0.20, 3)]
 
     # Correct result from `chronology
-    @test inn.chronology == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), P(0.70, 1, 2)]
+    @test inn.chronology == [C(0.00, 1), C(0.05, 1), R(0.10, 2), R(0.20, 3), 
+                             P(0.70, 1, 2)]
 
     # Now with integer times!
     population = 3

@@ -1,9 +1,14 @@
 # # Comparison of incidents by time
 # # -------------------------------
 """
-    isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
+    isearlier(x::AbstractTimedOccurrence, y::AbstractTimedOccurrence)::Bool
 
-Implements comparison of two [`AbstractTimedOccurrence`](@ref) quantities using time-order.
+Implements comparison of two [`AbstractTimedOccurrence`](@ref) quantities using time-order (`t` field):
+[`AbstractTimedOccurrence`](@ref) quantities with the same `t` field are further partially ordered 
+as follows.
+```julia
+    AbstractInfection < CRemoval < Removal
+```
 
 We choose not to overload `isless`, because there isn't a total ordering here!
 
@@ -13,10 +18,20 @@ julia> isearlier(Removal(0.10, 3), CRemoval(0.15, 2))
 true
 julia> isearlier(PInfection(0.15, 2, 7), Removal(0.10, 3))
 false
+julia> isearlier(PInfection(0.10, 2, 7), Removal(0.10, 3))
+true
 ```
 """
-function isearlier(inc1::AbstractTimedOccurrence, inc2::AbstractTimedOccurrence)::Bool
-  inc1.t < inc2.t
+function isearlier(x::AbstractTimedOccurrence, y::AbstractTimedOccurrence)::Bool
+    if x.t < y.t
+        return true
+    elseif x.t > y.t
+        return false
+    elseif x.t == y.t
+        return (x isa AbstractInfection && y isa AbstractRemoval) ||
+            (x isa CRemoval && y isa AbstractRemoval && !(y isa CRemoval))
+    end
+    return false
 end
 
 # # Altering `CRemoval` timeline

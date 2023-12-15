@@ -60,14 +60,7 @@ image/VERIFY_%.png: image/%.png
 
 # ====================
 # List Makefile
-Makefile.pdf: Makefile
-	@echo "# Listing of \`Makefile\` for \`$(LOCATION)\`" > Makefile.qmd
-	@echo "\`\`\`makefile" >> Makefile.qmd
-	@cat Makefile          >> Makefile.qmd
-	@echo "\`\`\`"         >> Makefile.qmd
-	$(QUARTO) render Makefile.qmd --to pdf
-	@rm Makefile.qmd 
-	
+include $(HOME)/lib/makefiles/listing-makefile.mak
 
 # ====================
 # Further dependencies

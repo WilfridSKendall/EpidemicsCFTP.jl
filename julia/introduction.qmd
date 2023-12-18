@@ -1034,8 +1034,7 @@ and `prior_relevant_infections`
 #|           which are not confined within original epidemic. These infections are      \
 #|           described as `prior_relevant_infections`. [`16-prior-relevant-removals`]"  
 current_infections = 
-    sort([z for z ∈ innov_candidate.infections if 
-                z.t < evol1_2.finis_t[z.target]], lt=isearlier)
+    sort([z for z ∈ innov_candidate.infections if z.t < evol1_2.finis_t[z.target]])
 posterior_relevant_infections =  [z for z ∈ current_infections if 
                                     z.t ≥ evol1_2.start_t[z.infectee]]
 prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
@@ -1078,7 +1077,7 @@ xy_flow_nofly1 = table_trajectories2(flow_nofly1; theme=theme)
 deleteat!(xy_flow_nofly1, [(2*evol1_2.initial.n)-1])
 
 innov2 = Innovation(initial.n, 
-                sort(processed_infections ∪ perpetuated_infections, lt=isearlier), 
+                sort(processed_infections ∪ perpetuated_infections),
                 evol1_2.removals, evol1_2.cremovals) ;
 evol2  = CEvolution(initial, innov2, envelope0=envelope0, envelope=envelope) ; 
 ```

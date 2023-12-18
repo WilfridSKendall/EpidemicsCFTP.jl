@@ -467,10 +467,6 @@ We also add some structures used later for defining and testing
 AI = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
 AR = AbstractRemoval;  KR = KilledRemoval;    
 
-function sortA(zl::Vector{T}) where T <: AbstractIncident
-    sort(zl, lt=isearlier)
-end
-
 infections  = AI[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
 uremovals   = R[R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4.9,5)]
 removals    = R[R(1,5), R(3,5), R(4.9,5)]
@@ -501,9 +497,9 @@ These tests are intended to check that fields are filled correctly.
 ```{julia}
 begin ;  title = string(Evolution)
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
-        @test uev1.infections  == sortA(infections)
-        @test uev1.removals    == sortA(uremovals)
-        @test uev1.chronology  == sortA(infections ∪ uremovals)
+        @test uev1.infections  == sort(infections)
+        @test uev1.removals    == sort(uremovals)
+        @test uev1.chronology  == sort(infections ∪ uremovals)
         @test uev1.trajectory  == trajectory
         @test uev1.history     == uhistory
     end
@@ -511,10 +507,10 @@ end
 
 begin ; title = string(CEvolution)
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
-        @test sortA(uremovals) == [R(z) for z ∈ sortA(removals ∪ cremovals)]
-        @test ev1.infections   == sortA(infections)
-        @test ev1.removals     == sortA(removals)
-        @test ev1.chronology   == sortA(infections ∪ removals ∪ cremovals)
+        @test sort(uremovals) == [R(z) for z ∈ sort(removals ∪ cremovals)]
+        @test ev1.infections   == sort(infections)
+        @test ev1.removals     == sort(removals)
+        @test ev1.chronology   == sort(infections ∪ removals ∪ cremovals)
         @test ev1.trajectory   == trajectory
         @test ev1.history      == history
     end ;

@@ -60,21 +60,27 @@ image/VERIFY_%.png: image/%.png
 
 # ====================
 # Creating PDFs of listings in `PRINTING` directory
-listings: listings-current listings-EpidemicsCFTP listings-EpidemicsUtilities
-listings-current: Makefile.pdf
-	mv Makefile.pdf PRINTING
-listings-EpidemicsCFTP: 
-	make --directory=EpidemicsCFTP Makefile.pdf EpidemicsCFTP-test.pdf
-	mv EpidemicsCFTP/Makefile.pdf PRINTING/EpidemicsCFTP-Makefile.pdf
-	mv EpidemicsCFTP/EpidemicsCFTP-test.pdf PRINTING
-listings-EpidemicsUtilities: 
-	make --directory=EpidemicsUtilities Makefile.pdf EpidemicsUtilities-test.pdf
-	mv EpidemicsUtilities/Makefile.pdf PRINTING/EpidemicsUtilities-Makefile.pdf
-	mv EpidemicsUtilities/EpidemicsUtilities-test.pdf PRINTING
+listings: ; make --directory=PRINTING listings
 
 # --------------------
 ## List Makefile
 include $(HOME)/lib/makefiles/listing-makefile.mak
+
+
+# --------------------
+# README.pdf
+README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+
+# --------------------
+## List configurations
+%.pdf: config/%.yml
+	@echo Constructing $@ from $<
+	@echo "# Listing of \`$<\` for \`$(LOCATION)\`" >  $(subst .pdf,.qmd,$@)
+	@echo "\`\`\`yaml"                              >> $(subst .pdf,.qmd,$@)
+	@cat $<                                         >> $(subst .pdf,.qmd,$@)
+	@echo "\`\`\`"                                  >> $(subst .pdf,.qmd,$@)
+	$(QUARTO) render $(subst .pdf,.qmd,$@) --to pdf
+	@rm $(subst .pdf,.qmd,$@)
 
 # ====================
 # Further dependencies

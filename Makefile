@@ -50,7 +50,9 @@ install:
 	$(JULIA) -e 'import $(MODULE): version ; println(version)'
 
 # ====================
-# List test source: target is `test.pdf`
+# List test source: target is `$(MODULE)-test.pdf`
+include $(HOME)/lib/makefiles/listing-makefile.mak
+listings: README.pdf Makefile.pdf $(MODULE)-test.pdf
 $(MODULE)-test.pdf: $(MODULE)-test.qmd
 	$(QUARTO) render $< --to pdf
 	rm $<
@@ -68,10 +70,11 @@ $(MODULE)-test.qmd: $(test_files)
 		echo "\`\`\`"          >> $(MODULE)-test.qmd ; \
 	done
 
-# ====================
-# List Makefile: target is `Makefile.pdf`
-include $(HOME)/lib/makefiles/listing-makefile.mak
-	
+
+# --------------------
+# README.pdf
+README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+
 # ========================
 
 .test.stamp: $(src_files) $(test_files)

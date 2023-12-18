@@ -1,7 +1,5 @@
 # EpidemicsCFTP
 
-[![Build Status](https://github.com/WilfridSKendall/EpidemicsCFTP.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/WilfridSKendall/EpidemicsCFTP.jl/actions/workflows/CI.yml?query=branch%3Amain)
-
 EpidemicsCFTP.jl
 ================
 This is a `julia` package, currently under development, which is intended to implement Coupling from the Past (CFTP) for S-I-R epidemics with observed removals.
@@ -39,7 +37,7 @@ make test
 DocTests
 --------
 Working in `bash`,
-```{bash}
+```bash
 cd ~/.julia/dev/EpidemicsCFTP # this directory
 make doctest
 ```
@@ -47,7 +45,7 @@ make doctest
 Documentation
 -------------
 For `gitbook` format, working in `bash`,
-```{bash}
+```bash
 cd ~/.julia/dev/EpidemicsCFTP # this directory
 make view
 ```
@@ -55,7 +53,7 @@ make view
 PDF documentation
 -----------------
 For `pdf` format, working in `bash`,
-```{bash}
+```bash
 cd ~/.julia/dev/EpidemicsCFTP # this directory
 make view-pdf
 ```

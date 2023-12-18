@@ -3,7 +3,7 @@
 ## Associated methods
 
 ### Comparison method
-A partial order is provided by [`isless`](@ref), based on time `t` of occurrence of 
+A total ordering is provided by [`isless`](@ref), based on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
 [`AbstractIncident`](@ref)s.

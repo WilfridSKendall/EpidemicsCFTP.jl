@@ -1,38 +1,55 @@
 # Tests for `EpidemicsCFTP`
 
-## Testing `isearlier`
+## Testing `isless`
 # =================================
-@testset "EpidemicsCFTP: $(rpad(isearlier, 23))" begin
+@testset "EpidemicsCFTP: $(rpad(isless, 23))" begin
+    import EpidemicsCFTP: Removal_order
     for typeR1 ∈ allconcretesubtypes(AbstractRemoval)
         for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
-            @test   isearlier(typeR1(0.1, 2),      typeR2(0.5, 3))
-            @test ! isearlier(typeR1(0.5, 2),      typeR2(0.1, 3))
+            @test typeR1(0.2, 2) < typeR2(0.5, 3)
+            @test typeR1(0.2, 2) > typeR2(0.1, 3)
+            if Removal_order[typeR1] < Removal_order[typeR2]
+                @test typeR1(0.5, 1) < typeR2(0.5, 1)
+            end
         end
         for typeI2 ∈ allconcretesubtypes(AbstractInfection)
-            @test   isearlier(typeR1(0.1, 2),      typeI2(0.5, 1, 3))
-            @test ! isearlier(typeR1(0.5, 2),      typeI2(0.1, 1, 3))
+            @test typeR1(0.2, 2) < typeI2(0.5, 1, 3)
+            @test typeR1(0.5, 2) > typeI2(0.2, 1, 3)
         end
     end
+    import EpidemicsCFTP: Infection_order
     for typeI1 ∈ allconcretesubtypes(AbstractInfection)
         for typeI2 ∈ allconcretesubtypes(AbstractInfection)
-            @test   isearlier(typeI1(0.1, 1, 2), typeI2(0.5, 1, 3))
-            @test ! isearlier(typeI1(0.5, 1, 2), typeI2(0.1, 1, 3))
+            @test typeI1(0.2, 1, 2) < typeI2(0.5, 1, 3)
+            @test typeI1(0.5, 1, 2) > typeI2(0.2, 1, 3)
+            if Infection_order[typeI1] < Infection_order[typeI2]
+                @test typeI1(0.5, 1, 2) < typeI2(0.5, 1, 2)
+            end
         end
         for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
-            @test   isearlier(typeI1(0.1, 1, 2), typeR2(0.5, 3))
-            @test ! isearlier(typeI1(0.5, 1, 2), typeR2(0.1, 3))
+            @test typeI1(0.2, 1, 2) < typeR2(0.5, 3)
+            @test typeI1(0.5, 1, 2) > typeR2(0.2, 3)
         end
+    end
+    for typeR1 ∈ allconcretesubtypes(AbstractRemoval)
+            @test typeR1(0.2, 2) < typeR1(0.2, 3)
+            @test typeR1(0.2, 2) > typeR1(0.2, 1)
+    end
+    for typeI1 ∈ allconcretesubtypes(AbstractInfection)
+            @test typeI1(0.2, 1, 2) < typeI1(0.2, 1, 3)
+            @test typeI1(0.2, 1, 3) > typeI1(0.2, 1, 2)
+            @test typeI1(0.2, 1, 3) < typeI1(0.2, 2, 3)
+            @test typeI1(0.2, 2, 3) > typeI1(0.2, 1, 3)
     end
     for typeI1 ∈ allconcretesubtypes(AbstractInfection)
         for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
-            @test   isearlier(typeI1(0.1, 1, 2), typeR2(0.1, 3))
-            @test ! isearlier(typeI1(0.5, 1, 2), typeR2(0.1, 3))
+            @test typeI1(0.2, 2, 3) < typeR2(0.2, 3)
+            @test typeR2(0.2, 3)    > typeI1(0.2, 2, 3)
         end
-    end
-    for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
-        if typeR2 != CRemoval
-            @test   (isearlier(CRemoval(0.1, 1), typeR2(0.1, 3)))
-        end
+#         for typeI2 ∈ allconcretesubtypes(AbstractInfection)
+#             @test typeR1(0.2, 2) < typeI2(0.5, 1, 3)
+#             @test typeR1(0.5, 2) > typeI2(0.2, 1, 3)
+#         end
     end
 end
 

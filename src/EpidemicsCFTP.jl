@@ -42,11 +42,14 @@ export evolution, evolution_history
 
 export generate_innovation
 
-export isearlier
+# export isearlier
 
 export alter
 
 export BadIncident, MissedCRemoval, EmployedRemoval
+
+# Note also that `isless` is overloaded in `Methods.jl`!
+import Base: isless
 
 # # Included files
 # # ==============

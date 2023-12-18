@@ -1,41 +1,101 @@
-# # Comparison of incidents by time
-# # -------------------------------
+# Total ordering of incidents
+# ---------------------------
+# To note: this ordering is a refinement of time-ordering!
+
 """
-    isearlier(x::AbstractTimedOccurrence, y::AbstractTimedOccurrence)::Bool
+    isless(x::AbstractIncident,  y::AbstractIncident)::Bool
 
-Implements comparison of two [`AbstractTimedOccurrence`](@ref) quantities using time-order (`t` field):
-[`AbstractTimedOccurrence`](@ref) quantities with the same `t` field are further partially ordered 
-as follows.
+Implements comparison of two [`AbstractIncident`](@ref) quantities using time-order (`t` field):
+[`AbstractIncident`](@ref) quantities with the same `t` field are further partially ordered 
+using [`Infection`](@ref) `infectee`, [`Removal`](@ref) `target` and then by subtype as follows
+(precomputed!),
 ```julia
-    AbstractInfection < CRemoval < Removal
+    PInfection < Infection < NoFlyRemoval < KilledRemoval < ExpungedRemoval <
+        CRemoval < Removal < KilledRemoval
 ```
+and then using [`Infection`](@ref) `infectee`, [`Removal`](@ref) `target`.
 
-We choose not to overload `isless`, because there isn't a total ordering here!
+Notice that `PInfection` and `CRemoval` take priority in, respectively,
+`AbstractInfection`s and `AbstractRemovals`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> isearlier(Removal(0.10, 3), CRemoval(0.15, 2))
+julia> CRemoval(0.10, 2) < Removal(0.10, 2)
 true
-julia> isearlier(PInfection(0.15, 2, 7), Removal(0.10, 3))
+julia> PInfection(0.15, 2, 5) < Infection(0.15, 2, 5)
+true
+julia> PInfection(0.15, 2, 5) < Removal(0.15, 3)
+true
+julia> Infection(0.15, 2, 5) < Removal(0.15, 3)
+true
+julia> Removal(0.10, 3) < CRemoval(0.10, 2)
 false
-julia> isearlier(PInfection(0.10, 2, 7), Removal(0.10, 3))
+julia> Removal(0.10, 3) < CRemoval(0.10, 2)
+false
+julia> PInfection(0.15, 2, 7) < Removal(0.10, 3)
+false
+julia> PInfection(0.10, 2, 7) < Removal(0.10, 3)
 true
 ```
 """
-function isearlier(x::AbstractTimedOccurrence, y::AbstractTimedOccurrence)::Bool
-    if x.t < y.t
-        return true
-    elseif x.t > y.t
-        return false
-    elseif x.t == y.t
-        return (x isa AbstractInfection && y isa AbstractRemoval) ||
-            (x isa CRemoval && y isa AbstractRemoval && !(y isa CRemoval))
+function isless(x::S, y::T) where {S <: AbstractInfection, T <: AbstractRemoval}
+    # Default is based purely on `time` mark.
+    if x.t != y.t
+        return x.t < y.t
+    end
+    return true
+end
+
+function isless(x::S, y::T) where {S <: AbstractRemoval, T <: AbstractInfection}
+    # Default is based purely on `time` mark.
+    if x.t != y.t
+        return x.t < y.t
     end
     return false
 end
 
-# # Altering `CRemoval` timeline
-# # -------------------------------
+# Pre-compute order for `AbstractRemoval` subtypes.
+# Possible efficiency gain: implement as `Tuple`?
+Removal_order = Dict(CRemoval => 1, Removal => 2, 
+                     KilledRemoval => 3)
+
+function isless(x::S, y::T) where {S <: AbstractRemoval, T <: AbstractRemoval}
+    # If both are `AbstractRemoval` then first consider `time` mark.
+    if x.t != y.t
+        return x.t < y.t
+    end
+    # Then consider `target` mark.
+    if x.target != y.target
+        return x.target < y.target
+    end
+    # Finally differentiate according to subtype of `AbstractRemoval`.
+    return Removal_order[typeof(x)] < Removal_order[typeof(y)]
+end
+
+# Pre-compute order for `AbstractInfection` subtypes.
+# Possible efficiency gain: implement as `Tuple`?
+Infection_order = Dict(PInfection => 1, Infection => 2, 
+                       NoFlyInfection => 3, KilledInfection => 4, ExpungedInfection => 5)
+  
+function isless(x::S, y::T) where {S <: AbstractInfection, T <: AbstractInfection}
+    # If both are `AbstractInfection` then first consider `time` mark.
+    if x.t != y.t
+        return x.t < y.t
+    end
+    # Then consider `target` mark.
+    if x.target != y.target
+        return x.target < y.target
+    end
+    # Then consider `infectee` mark.
+    if x.infectee != y.infectee
+        return x.infectee < y.infectee
+    end
+    # Finally differentiate according to subtype of `InfectionRemoval`.
+    return Infection_order[typeof(x)] < Infection_order[typeof(y)]
+end
+
+# Altering `CRemoval` timeline
+# -------------------------------
 """
     alter(crem::CRemoval, timeline::Integer)::CRemoval
 
@@ -63,8 +123,8 @@ function alter(crem::CRemoval, new_timeline::Integer)::CRemoval
     end
 end
 
-# # Check if incident is activatable
-# # -------------------------------
+# Check if incident is activatable
+# -------------------------------
 """
     EpidemicsCFTP.is_activatable(state::SIR, inc::AbstractInfection)::Bool
     EpidemicsCFTP.is_activatable(state::SIR, inc::AbstractRemoval)::Bool
@@ -96,8 +156,8 @@ function is_activatable(state::SIR, z::AbstractRemoval)::Bool
         z.t >= state.t && z.target > state.r && z.target <= state.i + state.r
 end
 
-# # Activate an infection
-# # -------------------------------
+# Activate an infection
+# -------------------------------
 """
     EpidemicsCFTP.infect(t::Real, state::SIR)::SIR
 
@@ -113,8 +173,8 @@ function infect(t::Real, state::SIR)::SIR
     SIR(t, state.s - 1, state.i + 1, state.r)
 end
 
-# # Activate a removal
-# # -------------------------------
+# Activate a removal
+# -------------------------------
 """
     EpidemicsCFTP.remove(t::Real, state::SIR)::SIR
 
@@ -130,8 +190,8 @@ function remove(t::Real, state::SIR)::SIR
     SIR(t, state.s, state.i - 1, state.r + 1)
 end
 
-# # Update using an incident
-# # -------------------------------
+# Update using an incident
+# -------------------------------
 """
     EpidemicsCFTP.update(state::SIR, z::AbstractIncident)::SIR
 
@@ -163,8 +223,8 @@ function update(state::SIR, z::AbstractIncident)::SIR
     end
 end
 
-# # Updating in reverse time
-# # -------------------------------
+# Updating in reverse time
+# -------------------------------
 """
     function antecedent(::SIR, ::AbstractInfection)::SIR
     function antecedent(::SIR, ::AbstractRemoval)::SIR
@@ -199,8 +259,8 @@ function reverse_update(state::SIR, event::AbstractIncident)::SIR
 end
 
 
-# # Test if two configurations agree (except for time!)
-# # -------------------------------
+# Test if two configurations agree (except for time!)
+# -------------------------------
 """
     EpidemicsCFTP.is_same_config(state1::SIR, state2::SIR)::Bool
 
@@ -217,8 +277,8 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
     state1.s == state2.s && state1.i == state2.i && state1.r == state2.r
     end
 
-# # Evolve an epidemic
-# # -------------------------------
+# Evolve an epidemic
+# -------------------------------
 """
     evolution(::SIR, ::Vector{T}; conditioned::Bool=false)          
         ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
@@ -386,8 +446,8 @@ function evolution_history(initial_state::SIR, chronology::Vector{T}; conditione
     return history
 end
 
-# # Computing the last feasible epidemic trajectory
-# # ---------------------------------
+# Computing the last feasible epidemic trajectory
+# ---------------------------------
 """
     last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
             ::Vector{AbstractIncident}
@@ -396,7 +456,8 @@ Computes the last feasible epidemic trajectory.
 """
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
     conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
-    chronology = sort(iv.infections ∪ ev.history, lt=isearlier)               # <2>
+    chronology = sort(iv.infections ∪ ev.history)                             # <2>
+#     chronology = sort(iv.infections ∪ ev.history, lt=isearlier)               # <2>
     current_state = SIR(duration, 
         ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
 
@@ -423,8 +484,8 @@ end
 # ## 1. Allow for non-zero starting time?
 # ## 2. Truncate `chronology` to run only up to `duration`?
     
-# # Compute infectious periods
-# # -------------------------------
+# Compute infectious periods
+# -------------------------------
 """
     EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
         ::Tuple{Vector{Real}, Vector{Real}}
@@ -470,8 +531,8 @@ function periods(trajectory::Vector{SIR},
     return births, deaths
 end
 
-# # Kill irrelevant infections and removals
-# # -------------------------------
+# Kill irrelevant infections and removals
+# -------------------------------
 """
     kill_irrelevant_infections(::AbstractEvolution, ::Innovation)::Vector{AbstractInfection}
 
@@ -494,8 +555,8 @@ function kill_irrelevant_removals(ev::AbstractEvolution, iv::Innovation)::Vector
     [ z.t ≤ ev.finis_t[z.target] ? z : KilledRemoval(z) for z ∈ iv.removals ]
 end ;
 
-# # Identify relevant infections
-# # -------------------------------
+# Identify relevant infections
+# -------------------------------
 """
     relevant_infections(::AbstractEvolution, ::Innovation)::Vector{AbstractInfection}
 
@@ -506,7 +567,8 @@ function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{Abst
     unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if z isa OperativeInfection]
     relevant_inf = [z for z ∈ ev.history if typeof(z) <: AbstractInfection]
     rsup, running_supremum_list = 0, CRemoval[]
-    for z ∈ sort(ev.cremovals ∪ unkilled, lt=isearlier)
+    # for z ∈ sort(ev.cremovals ∪ unkilled, lt=isearlier)
+    for z ∈ sort(ev.cremovals ∪ unkilled)
         if (typeof(z) == CRemoval) && (z.target > rsup)
             push!(running_supremum_list, z)
             rsup = z.target
@@ -516,11 +578,12 @@ function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{Abst
             push!(relevant_inf, z)
         end
     end
-    return sort(relevant_inf, lt=isearlier)
+    #return sort(relevant_inf, lt=isearlier)
+    return sort(relevant_inf)
 end 
     
-# # Extract and classify inactive removals
-# # -------------------------------
+# Extract and classify inactive removals
+# -------------------------------
 """
     inactive_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
     
@@ -552,11 +615,12 @@ AbstractRemoval[𝒦₀.₅₆¹,𝒦₀.₅₇²,ℛ₀.₅₈⁶]
 function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
     not_killed = [z for z ∈ innov.removals if z.t < ev.start_t[z.target]]
     killed     = [KilledRemoval(z) for z ∈ innov.removals if ev.finis_t[z.target] ≤ z.t]
-    return sort(not_killed ∪ killed, lt=isearlier)
+    return sort(not_killed ∪ killed)
+    # return sort(not_killed ∪ killed, lt=isearlier)
 end    
 
-# # Accept/reject procedure
-# # -------------------------------
+# Accept/reject procedure
+# -------------------------------
 
 """
     accept_reject(::CRemoval, ::CRemoval, ::Vector{Real}, ::Vector{Real})::CRemoval
@@ -603,7 +667,8 @@ function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInf
 	
 	processed_infections = AbstractInfection[]                                 # <2>
 	 
-	for z ∈ reverse(sort(iv.infections, lt=isearlier))                         # <3>
+	#for z ∈ reverse(sort(iv.infections, lt=isearlier))                         # <3>
+	for z ∈ reverse(sort(iv.infections))                                       # <3>
 	    
 	    if (z.t ≥ ev.finis_t[z.target])                                    # <4>
 	        push!(processed_infections, KilledInfection(z))                    # <4>

@@ -6,7 +6,7 @@
 A partial order is provided by [`isless`](@ref), based on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
-[`AbstractTimedOccurrence`](@ref)s.
+[`AbstractIncident`](@ref)s.
 ```@docs
 isless
 ```

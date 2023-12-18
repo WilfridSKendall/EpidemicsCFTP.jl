@@ -42,8 +42,6 @@ export evolution, evolution_history
 
 export generate_innovation
 
-# export isearlier
-
 export alter
 
 export BadIncident, MissedCRemoval, EmployedRemoval

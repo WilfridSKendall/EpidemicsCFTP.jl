@@ -457,7 +457,6 @@ Computes the last feasible epidemic trajectory.
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
     conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
     chronology = sort(iv.infections ∪ ev.history)                             # <2>
-#     chronology = sort(iv.infections ∪ ev.history, lt=isearlier)               # <2>
     current_state = SIR(duration, 
         ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
 
@@ -567,7 +566,6 @@ function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{Abst
     unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if z isa OperativeInfection]
     relevant_inf = [z for z ∈ ev.history if typeof(z) <: AbstractInfection]
     rsup, running_supremum_list = 0, CRemoval[]
-    # for z ∈ sort(ev.cremovals ∪ unkilled, lt=isearlier)
     for z ∈ sort(ev.cremovals ∪ unkilled)
         if (typeof(z) == CRemoval) && (z.target > rsup)
             push!(running_supremum_list, z)
@@ -578,7 +576,6 @@ function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{Abst
             push!(relevant_inf, z)
         end
     end
-    #return sort(relevant_inf, lt=isearlier)
     return sort(relevant_inf)
 end 
     
@@ -616,7 +613,6 @@ function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{Abs
     not_killed = [z for z ∈ innov.removals if z.t < ev.start_t[z.target]]
     killed     = [KilledRemoval(z) for z ∈ innov.removals if ev.finis_t[z.target] ≤ z.t]
     return sort(not_killed ∪ killed)
-    # return sort(not_killed ∪ killed, lt=isearlier)
 end    
 
 # Accept/reject procedure
@@ -667,7 +663,6 @@ function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInf
 	
 	processed_infections = AbstractInfection[]                                 # <2>
 	 
-	#for z ∈ reverse(sort(iv.infections, lt=isearlier))                         # <3>
 	for z ∈ reverse(sort(iv.infections))                                       # <3>
 	    
 	    if (z.t ≥ ev.finis_t[z.target])                                    # <4>

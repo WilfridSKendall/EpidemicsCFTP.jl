@@ -8,8 +8,8 @@
 
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
-Concrete sub-types are expected to possess a field `t<:Real` (used by function [`isearlier`](@ref)
-to time-order lists of `AbstractTimedOccurrence` entities).
+Concrete sub-types are expected to possess a field `t<:Real` (used by function [`isless`](@ref)
+to produce a preliminary time-ordering of lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
 
@@ -569,10 +569,10 @@ struct Innovation <: AbstractEnvironment
             throw(ArgumentError("some infection targets too high in \n$noun"))
         else
             chron = Iterators.flatten([infections, removals, cremovals])
-            return new(population, sort(infections, lt=isearlier), 
-                sort(removals,   lt=isearlier), 
-                sort(cremovals,  lt=isearlier),
-                [x::AbstractIncident for x ∈ sort(collect(chron), lt=isearlier)])
+            return new(population, sort(infections), 
+                sort(removals), 
+                sort(cremovals),
+                [x::AbstractIncident for x ∈ sort(collect(chron))])
         end
     end
 

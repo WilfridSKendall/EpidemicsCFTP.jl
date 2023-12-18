@@ -414,13 +414,26 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # 2. Do the "cremoval" lists generate the same times ('t' field)?
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
 
-    # Second, form removals by selecting only those from `iv,removals`
+    # Second, form `removals` by selecting only those from `iv,removals`
     # which will not be activated.
     removals   = [z for z in iv.removals if !(ev.start_t[z.target] < z.t  ≤ ev.finis_t[z.target])]
 
-    # Third ...
-    infections = ev.infections
-    cremovals  = ev.cremovals
+    # Third, form `cremovals` by choosing from `iv.cremovals` if activated,
+    # otherwise staying with `ev.cremovals`.
+    cremovals  = EpidemicsCFTP.resulting_cremovals(ev1, iv)
+
+    # Fourthly: here the hard work begins! It divides into two parts. However
+    # first, in `ev.infections` switch "irrelevant infections" to `KilledInfections`.
+    differentiated_infections = EpidemicsCFTP.kill_irrelevant_infections(ev, iv)
+    #
+    # A. determine which `infections` in `ev.history` need to be perpetuated,
+    # by studying `ev.history` and `late_infections` from `iv.infections`,
+    # by way of computing LFE;
+    relevant_infections = EpidemicsCFTP.relevant_infections(ev, iv)
+    #
+    # B. determine which of the `early_infections` from `iv.infections` need
+    # to be de-activated to avoid activation of `AbstractRemoval`s in `removals`,
+    # by way of computing the nofly zone.
 
     # Return the new `CEvolution`
     iv_new = Innovation(ev.initial.n, infections, removals, cremovals)

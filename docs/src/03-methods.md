@@ -3,12 +3,12 @@
 ## Associated methods
 
 ### Comparison method
-A partial order is provided by [`isearlier`](@ref), based on time `t` of occurrence of 
+A partial order is provided by [`isless`](@ref), based on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
 [`AbstractTimedOccurrence`](@ref)s.
 ```@docs
-isearlier(::AbstractTimedOccurrence, ::AbstractTimedOccurrence)
+isless
 ```
 
 ### Conversion methods

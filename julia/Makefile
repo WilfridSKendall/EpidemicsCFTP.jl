@@ -60,7 +60,8 @@ image/VERIFY_%.png: image/%.png
 
 # ====================
 # Creating PDFs of listings in `PRINTING` directory
-listings: ; make --directory=PRINTING listings
+listings: $(PRODUCTS) ; make --directory=PRINTING listings
+	cp $(PRODUCTS) PRINTING
 
 # --------------------
 ## List Makefile

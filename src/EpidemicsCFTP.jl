@@ -26,11 +26,11 @@ export AbstractIncident, AbstractRemoval, AbstractInfection
 
 export OperativeRemoval, NonOperativeRemoval
 export Removal, CRemoval
-export KilledRemoval
+export KilledRemoval, RemovalMarker
 
 export OperativeInfection, NonOperativeInfection
 export Infection, PInfection
-export KilledInfection, NoFlyInfection, ExpungedInfection
+export KilledInfection, NoFlyInfection, ExpungedInfection, InfectionMarker
 
 export SIR
 

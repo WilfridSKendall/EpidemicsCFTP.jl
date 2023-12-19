@@ -53,7 +53,9 @@ Concrete sub-types are tabulated as follows:
 | `Removal`                   | `OperativeRemoval`   | Remove an infection if `target` infected   | 
 | `CRemoval`                  | `OperativeRemoval`   | As above but **conditioned** to be removed | 
 |                             |                      |                                            |
-| `KilledRemoval`             | `NonOperativeRemoval`| Raises error if activated                  | 
+| `KilledRemoval`             | `NonOperativeRemoval`| Raises error if activated                  |
+|                             |                      |                                            |
+| `RemovalMarker`             | `NonOperativeRemoval`| Signals end of epidemic                    |
 
 #### Two different kinds of [`OperativeRemoval`](@ref)s
 `Removal` and `CRemoval` are specific potential removal incidents: 
@@ -63,10 +65,13 @@ are always conditioned to happen).
 Removal
 CRemoval
 ```
-#### One kind of [`NonOperativeRemoval`](@ref)
+#### Two kinds of [`NonOperativeRemoval`](@ref)
 `KilledRemoval` is a further kind of removal which will _never_ be realized.
+`RemovalMarker` occurs at the end of the epidemic for a time line which is never removed.
+It also is never realized.
 ```@docs
 KilledRemoval
+RemovalMarker
 ```
 
 ### `AbstractInfection`
@@ -90,6 +95,8 @@ Concrete sub-types are tabulated as follows:
 |                               |                         |                                          |
 | `KilledInfection`             | `NonOperativeInfection` | `target` is in removed region            |
 | `ExpungedInfection`           | `NonOperativeInfection` | Infection would infect "no-fly" zone     |
+|                               |                         |                                          |
+| `InfectionMarker`             | `NonOperativeInfection` | Signals start of epidemic                |
 
 #### Three different kinds of `OperativeInfection`s
 `Infection` and `PInfection` are specific potential infection incidents;
@@ -104,14 +111,17 @@ PInfection
 NoFlyInfection
 ```
 
-#### Two different kinds of `NonOperativeInfection`s
+#### Three different kinds of `NonOperativeInfection`s
 `KilledInfection`,
 `ExpungedInfection` are specific non-operative infection incidents as tabulated.
 They are _never_ realized!
+`InfectionMarker` occurs at the start of the epidemic for a time line which is initially infected.
+It also is never realized.
 
 ```@docs
 KilledInfection
 ExpungedInfection
+InfectionMarker
 ```
 
 ## Representing different kinds of environments

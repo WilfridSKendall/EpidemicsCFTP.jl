@@ -27,8 +27,13 @@ end
         @test_throws DomainError  typeI(0.10, 1,  -2)
         @test_throws DomainError  typeI(0.10,-1,  -2)
         @test_throws DomainError  typeI(0.10, 1,   0)
-        @test_throws DomainError  typeI(5.45, 0,   3)
-        @test_throws DomainError  typeI(5.45, 0,   0)
+        if typeI == InfectionMarker
+            @test_throws DomainError  typeI(5.45,-1,   3)
+            @test_throws DomainError  typeI(5.45,-1,   0)
+        else
+            @test_throws DomainError  typeI(5.45, 0,   3)
+            @test_throws DomainError  typeI(5.45, 0,   0)
+        end
         @test_throws MethodError  typeI(0.10, 1.5, 2)
         @test_throws MethodError  typeI(0.10, 1,   2.5)
         @test_throws MethodError  typeI(0.10, 1.5, 2.5)

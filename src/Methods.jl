@@ -10,10 +10,10 @@ Implements comparison of two [`AbstractIncident`](@ref) quantities using time-or
 using [`Infection`](@ref) `infectee`, [`Removal`](@ref) `target` and then by subtype as follows
 (precomputed!),
 ```julia
-    PInfection < Infection < NoFlyRemoval < KilledRemoval < ExpungedRemoval <
-        CRemoval < Removal < KilledRemoval
+    InfectionMarker < PInfection < Infection < NoFlyRemoval < KilledRemoval < ExpungedRemoval <
+        CRemoval < Removal < KilledRemoval < RemovalMarker
 ```
-and then using [`Infection`](@ref) `infectee`, [`Removal`](@ref) `target`.
+and then using [`Infection`](@ref) `target` and `infectee`, [`Removal`](@ref) `target`.
 
 Notice that `PInfection` and `CRemoval` take priority in, respectively,
 `AbstractInfection`s and `AbstractRemovals`.
@@ -57,7 +57,7 @@ end
 # Pre-compute order for `AbstractRemoval` subtypes.
 # Possible efficiency gain: implement as `Tuple`?
 Removal_order = Dict(CRemoval => 1, Removal => 2, 
-                     KilledRemoval => 3)
+                     KilledRemoval => 3, RemovalMarker => 4)
 
 function isless(x::S, y::T) where {S <: AbstractRemoval, T <: AbstractRemoval}
     # If both are `AbstractRemoval` then first consider `time` mark.
@@ -74,7 +74,7 @@ end
 
 # Pre-compute order for `AbstractInfection` subtypes.
 # Possible efficiency gain: implement as `Tuple`?
-Infection_order = Dict(PInfection => 1, Infection => 2, 
+Infection_order = Dict(InfectionMarker => 0, PInfection => 1, Infection => 2, 
                        NoFlyInfection => 3, KilledInfection => 4, ExpungedInfection => 5)
   
 function isless(x::S, y::T) where {S <: AbstractInfection, T <: AbstractInfection}

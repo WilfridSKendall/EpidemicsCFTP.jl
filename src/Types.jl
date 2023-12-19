@@ -221,6 +221,29 @@ struct KilledRemoval <: NonOperativeRemoval
     end
 end
 
+"""
+    RemovalMarker(::Float64, ::Int)
+
+This is a marker normally placed at the end of an epidemic to signal completion of infected time lines.
+
+"""
+struct RemovalMarker <: NonOperativeRemoval
+    kind      ::String
+    t         ::Float64
+    target    ::Int
+    
+    function RemovalMarker(t::T, target::Int) where T <: Union{Float64, Int}
+        noun = "RemovalMarker($t, $target)"
+        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
+                new("ℳ⁺", float(t), target))
+    end
+    
+    function RemovalMarker(z::AbstractRemoval)
+        return RemovalMarker(z.t, z.target)
+    end
+end
+
+
 # Actual infections
 # -------------------------------
 """
@@ -430,6 +453,35 @@ struct ExpungedInfection <: NonOperativeInfection
     
     function ExpungedInfection(z::AbstractInfection)
         return ExpungedInfection(z.t, z.target, z.infectee)
+    end
+end
+
+"""
+    InfectionMarker(::Float64, ::Int, ::Int)
+
+This is a marker normally placed at the start of an epidemic to signal initial infected time lines.
+Differs from (for example) `Infection` in that the `target` mark can be zero.
+
+"""
+struct InfectionMarker <: NonOperativeInfection
+    kind      ::String
+    t         ::Float64
+    target    ::Int
+    infectee  ::Int
+    
+    function InfectionMarker(t::T, target::Int, infectee::Int) where T <: Union{Float64, Int}
+        noun = "InfectionMarker($t, $target, $infectee)"
+        if infectee ≤ target
+            throw(DomainError(noun, "disordered marks"))
+        elseif target < 0
+            throw(DomainError(noun, "negative mark"))
+        else
+            return new("ℳ⁻", float(t), target, infectee)
+        end
+    end
+    
+    function InfectionMarker(z::AbstractInfection)
+        return InfectionMarker(z.t, z.target, z.infectee)
     end
 end
 

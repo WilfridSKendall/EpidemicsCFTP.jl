@@ -601,8 +601,8 @@ Instances should always possess fields as given in the table.
 | `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
-| `start_t`     | `Vector{Real}`               | **computed** | list              |
-| `finis_t`     | `Vector{Real}`               | **computed** | list              |
+| `start_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
+| `finis_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
 | `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
@@ -662,9 +662,9 @@ chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 
-julia> println(ev.start_t)
+julia> println(ev.start_t_deprecated)
 Real[0.0, Inf, Inf]
-julia> println(ev.finis_t)
+julia> println(ev.finis_t_deprecated)
 Real[0.0, Inf, Inf]
 ```
 """
@@ -677,8 +677,8 @@ struct Evolution <: AbstractEvolution
     trajectory  ::Vector{SIR}
     history     ::Vector{AbstractIncident}
     initial     ::SIR
-    start_t ::Vector{Real}
-    finis_t ::Vector{Real}
+    start_t_deprecated ::Vector{Real}
+    finis_t_deprecated ::Vector{Real}
     LFE         ::Vector{AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
@@ -689,10 +689,10 @@ struct Evolution <: AbstractEvolution
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
-        start_t, finis_t = periods(trajectory, history)
+        start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
         LFE        = SIR[]
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start_t, finis_t, LFE)
+            trajectory, history, initial_state, start_t_deprecated, finis_t_deprecated, LFE)
     end
     
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
@@ -729,7 +729,7 @@ for infectious periods!
 It possesses extra fields `envelope0` and  `envelope`, which are respectively
 the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
-by `start_t`, and the monotonically increasing envelope: so 
+by `start_t_deprecated`, and the monotonically increasing envelope: so 
 instances should always possess fields as given in the table.
 
 | _Field name_  | _Type_                       |              | _Further remarks_ |
@@ -741,8 +741,8 @@ instances should always possess fields as given in the table.
 | `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
-| `start_t`     | `Vector{Real}`               | **computed** | list              |
-| `finis_t`     | `Vector{Real}`               | **computed** | list              |
+| `start_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
+| `finis_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
 | `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
 | `envelope0`   | `Vector{Real}`               | **computed** | time-ordered list |
 | `envelope`    | `Vector{Real}`               | **computed** | time-ordered list |
@@ -822,8 +822,8 @@ struct CEvolution <: AbstractEvolution
     trajectory  ::Vector{SIR}
     history     ::Vector{AbstractIncident}
     initial     ::SIR
-    start_t ::Vector{Real}
-    finis_t ::Vector{Real}
+    start_t_deprecated ::Vector{Real}
+    finis_t_deprecated ::Vector{Real}
     LFE         ::Vector{AbstractIncident}
     envelope0   ::Vector{Real}
     envelope    ::Vector{Real}
@@ -837,10 +837,10 @@ struct CEvolution <: AbstractEvolution
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
-        start_t, finis_t = periods(trajectory, history)
+        start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
         
         # Move this out!
-        #early_inactivated_removals = [z for z ∈ removals if z.t < start_t[z.target]]
+        #early_inactivated_removals = [z for z ∈ removals if z.t < start_t_deprecated[z.target]]
         #envelope0  = repeat([0.0], initial_state.n)
         #for z ∈ early_inactivated_removals
         #    envelope0[z.target]  = max(envelope0[z.target], z.t)
@@ -848,7 +848,7 @@ struct CEvolution <: AbstractEvolution
         #envelope  = accumulate(max, envelope0)
         
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start_t, finis_t, LFE, envelope0, envelope)
+            trajectory, history, initial_state, start_t_deprecated, finis_t_deprecated, LFE, envelope0, envelope)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 

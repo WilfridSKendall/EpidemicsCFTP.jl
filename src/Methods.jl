@@ -483,6 +483,55 @@ end
 # ## 1. Allow for non-zero starting time?
 # ## 2. Truncate `chronology` to run only up to `duration`?
     
+# Compute infectious intervals
+# ----------------------------
+"""
+    EpidemicsCFTP.interval(::Vector{SIR}, ::Vector{AbstractIncident})
+        ::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
+    
+Returns `AbstractIncident`s (possibly started with`InfectionMarker`, possibly
+ending with `RemovalMarker`) to mark out infectious intervals of time lines.
+
+Note that this currently presumes epidemic starts and ends as marked
+out by first argument `trajectory`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> trajectory = [SIR(0.0, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4), SIR(1.0, 0,2,4)] ;
+
+julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)] ;
+
+julia> birth, death = EpidemicsCFTP.interval(trajectory, history) ;
+
+julia> birth
+AbstractInfection[ℳ⁻₀.₀₀⁰⁻¹,ℳ⁻₀.₀₀¹⁻²,ℳ⁻₀.₀₀²⁻³,ℳ⁻₀.₀₀³⁻⁴,ℳ⁻₀.₀₀⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶]
+julia> death
+AbstractRemoval[ℳ⁺₀.₀₀¹,ℳ⁺₀.₀₀²,ℳ⁺₀.₀₀³,ℛ₀.₅₀⁴,ℳ⁺₁.₀₀⁵,ℳ⁺₁.₀₀⁶]
+```
+"""
+function interval(trajectory::Vector{SIR},
+                 history::Vector{AbstractIncident})::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
+    start, finis = trajectory[1], trajectory[end]
+    
+    # Compute initial birth and death times
+    birth = AbstractInfection[(k ≥ finis.s) ? InfectionMarker(start.t, k-1, k) : 
+                    InfectionMarker(finis.t, k-1, k) for k in 1:start.n]
+    death = AbstractRemoval[(k ≤ start.r) ? RemovalMarker(start.t, k) : 
+                    RemovalMarker(finis.t, k)        for k in 1:start.n]
+    
+    # Fill in births
+    for x ∈ [z for z ∈ history if z isa OperativeInfection]
+            birth[x.infectee] = x
+    end
+
+    # Fill in deaths
+    for (k, x) ∈ enumerate([z for z ∈ history if z isa OperativeRemoval])
+            death[start.r + k] = x
+    end
+   
+    return birth, death
+end
+    
 # Compute infectious periods
 # -------------------------------
 """

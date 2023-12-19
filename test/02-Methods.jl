@@ -46,10 +46,6 @@
             @test typeI1(0.2, 2, 3) < typeR2(0.2, 3)
             @test typeR2(0.2, 3)    > typeI1(0.2, 2, 3)
         end
-#         for typeI2 ∈ allconcretesubtypes(AbstractInfection)
-#             @test typeR1(0.2, 2) < typeI2(0.5, 1, 3)
-#             @test typeR1(0.5, 2) > typeI2(0.2, 1, 3)
-#         end
     end
 end
 

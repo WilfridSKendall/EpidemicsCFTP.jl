@@ -590,8 +590,8 @@ Adding in those removals from the new innovation which remain inactive
 ----------------------------------------------------------------------
 We now insert those of the removals from `innov_candidate` which 
 would _not_ be activated by the old epidemic structure. 
-To do this, we use the `Evolution` attributes `start_t_deprecated` and `finis_t_deprecated`,
-holding "birth" and "death" times of the infection for each time line.
+To do this, we use the `Evolution` attributes `start` and `finis`,
+holding "birth" and "death" incidents of the epidemic for each time line.
 Note that we assume that _every_ time line dies at time `Inf` if
 it is still alive at the time `duration`,
 and is born at time `0.0` if it has not been infected by time `duration`: 
@@ -605,10 +605,10 @@ It might be more logical to have default time line "birth" occurring at time `-I
 We now employ a function `EpidemicsCFTP.inactive_removals` which
 returns a list composed of:
 
-a) removals occurring before respective time line is infected (before relevant `start_t_deprecatedime`);
+a) removals occurring before respective time line is infected (before relevant `start`);
 
 b) removals occurring on or after respective time line is removed
-(after relevant `finis_t_deprecatedime`): these removals are all converted to `KilledRemoval`s.
+(after relevant `finis`): these removals are all converted to `KilledRemoval`s.
 
 This allows us to add the new inactive removals from `innov_candidate` to `innov1_0`,
 converting those in the removals zone to `KilledRemoval`s, forming
@@ -662,8 +662,8 @@ Markdown.parse("""
 ```
 Replacement is permitted exactly if
 the new conditioned removal is still activated.
-This happens if it lies in the infectivity zone given by the corresponding
-interval from `periods(evol1_1)`,
+This happens if it lies in the infectivity interval (`start[k]`, `finis[k]`)
+using `start`, `finis` computed by `interval(evol1_1)`,
 as determined by the function `EpidemicsCFTP.resulting_cremovals`.
 
 @fig-introduction-09-processed-cremovals graphs the resulting evolution `evol1_2`:
@@ -672,7 +672,7 @@ Note we need some envelope calculations (later to be incorporated!).
 innov1_2 = Innovation(initial.n, innov1_1.infections, 
                 innov1_1.removals, 
                 EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
-early_inactivated_removals = [z for z ∈ innov1_2.removals if z.t < evol1_1.start_t_deprecated[z.target]]
+early_inactivated_removals = [z for z ∈ innov1_2.removals if z < evol1_1.start[z.target]]
 # envelope0  = repeat([0.0], initial_state.n)
 envelope0  = repeat([0.0], initial.n)
 for z ∈ early_inactivated_removals
@@ -995,14 +995,14 @@ depict("introduction-15-relevant-removals", new_figure(figure15,
 ```
 
 We now move on to step (c).
-Note in the following that the vectors `evol1_2.start_t_deprecated` and `evol1_2.finis_t_deprecated` are 
-actually the vectors of infection and removal times for the original epidemic trajectory
+Note in the following that the vectors `evol1_2.start` and `evol1_2.finis` are 
+actually the vectors of infection and removal incidents for the original epidemic trajectory
 (which up to this point is the trajectory generated using all the modified `innov1_x`
 for `x=0..2`).
 ```{julia}
 #| echo: false
-print("Infection times : ") ; println(evol1_2.start_t_deprecated)
-print("Removal times   : ") ; println(evol1_2.finis_t_deprecated)
+print("Infection incidents : ") ; println(evol1_2.start)
+print("Removal incidents   : ") ; println(evol1_2.finis)
 ```
 Furthermore we must
 focus only on those infections in `current_infections` which extend beyond the original epidemic trajectory.
@@ -1034,9 +1034,8 @@ and `prior_relevant_infections`
 #|           which are not confined within original epidemic. These infections are      \
 #|           described as `prior_relevant_infections`. [`16-prior-relevant-removals`]"  
 current_infections = 
-    sort([z for z ∈ innov_candidate.infections if z.t < evol1_2.finis_t_deprecated[z.target]])
-posterior_relevant_infections =  [z for z ∈ current_infections if 
-                                    z.t ≥ evol1_2.start_t_deprecated[z.infectee]]
+    sort([z for z ∈ innov_candidate.infections if z < evol1_2.finis[z.target]])
+posterior_relevant_infections =  [z for z ∈ current_infections if z ≥ evol1_2.start[z.infectee]]
 prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
 figure16 = new_figure(deepcopy(figure14a),
      Guide.annotation(compose(context(),

@@ -140,7 +140,7 @@ iv1 = Innovation(initial.n, infections, removals, cremovals)
 ```
 The `CEvolution` of an epidemic (when _conditioned_ on observed removals) is given by:
 ```{julia}
-early_inactivated_removals = [z for z ∈ iv1.removals if z.t < uev1.start_t_deprecated[z.target]]
+early_inactivated_removals = [z for z ∈ iv1.removals if z < uev1.start[z.target]]
 envelope0  = repeat([0.0], initial.n)
 for z ∈ early_inactivated_removals
     envelope0[z.target]  = max(envelope0[z.target], z.t)
@@ -393,7 +393,7 @@ Computing the \NOFLYZONE
 ------------------------
 ```{julia}
 early_inactivated_removals =
-    [z for z ∈ ev2_4.removals if z.t < ev2_4.finis_t_deprecated[z.target]]
+    [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
 ```
 
 ```{julia}
@@ -416,7 +416,7 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
 
     # Second, form `removals` by selecting only those from `iv,removals`
     # which will not be activated.
-    removals   = [z for z in iv.removals if !(ev.start_t_deprecated[z.target] < z.t  ≤ ev.finis_t_deprecated[z.target])]
+    removals   = [z for z in iv.removals if !(ev.start[z.target] < z ≤ ev.finis[z.target])]
 
     # Third, form `cremovals` by choosing from `iv.cremovals` if activated,
     # otherwise staying with `ev.cremovals`.
@@ -479,7 +479,7 @@ uiv1  = Innovation(initial.n, infections, uremovals)
 uev1  = Evolution(initial, uiv1)
 iv1   = Innovation(initial.n, infections, removals, cremovals)
 
-early_inactivated_removals = [z for z ∈ iv1.removals if z.t < uev1.start_t_deprecated[z.target]]
+early_inactivated_removals = [z for z ∈ iv1.removals if z < uev1.start[z.target]]
 envelope0  = repeat([0.0], initial.n)
 for z ∈ early_inactivated_removals
     envelope0[z.target]  = max(envelope0[z.target], z.t)
@@ -547,7 +547,7 @@ infections2 = AI[I(2t-1.5, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
 removals2   = R[R(0.5,5), R(2.5,5), R(2.6,1), R(3.6,1), R(3.9,5), R(4.6,2)]
 cremovals2  = C[C(2t, 2t) for t ∈ [1,2]] 
 
-early_inactivated_removals = [z for z ∈ removals2 if z.t < uev1.start_t_deprecated[z.target]]
+early_inactivated_removals = [z for z ∈ removals2 if z < uev1.start[z.target]]
 envelope0  = repeat([0.0], initial.n)
 for z ∈ early_inactivated_removals
     envelope0[z.target]  = max(envelope0[z.target], z.t)
@@ -559,8 +559,8 @@ iv2_2 = Innovation(initial.n, iv2_1.infections,
     EpidemicsCFTP.inactive_removals(ev1, iv2c), iv2_1.cremovals)
 ev2_2 = CEvolution(initial, iv2_2, envelope0=envelope0, envelope=envelope)
 begin ; title = "Inserting Removals"
-    early_removals = [z for z ∈ ev2_2.chronology if z isa AR && z.t < ev2_2.start_t_deprecated[z.target]]
-    late_removals  = [z for z ∈ ev2_2.chronology if z isa AR && z.t > ev2_2.finis_t_deprecated[z.target]]
+    early_removals = [z for z ∈ ev2_2.chronology if z isa AR && z < ev2_2.start[z.target]]
+    late_removals  = [z for z ∈ ev2_2.chronology if z isa AR && z > ev2_2.finis[z.target]]
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
         @test ev2_2.trajectory == ev1.trajectory
         @test [z for z ∈ ev2_2.chronology if z isa R]  == early_removals

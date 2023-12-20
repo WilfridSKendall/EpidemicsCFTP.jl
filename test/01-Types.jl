@@ -66,6 +66,8 @@ end
     @test sir.n == sir.s + sir.i + sir.r
     sir = SIR(0,   1, 2, 3)
     @test sir.n == sir.s + sir.i + sir.r
+    sir = SIR(Inf, 1, 2, 3)
+    @test sir.n == sir.s + sir.i + sir.r
 end
 
 ## Testing creation of concrete subtypes of `AbstractEvolution`
@@ -144,9 +146,9 @@ end
     envelope   = accumulate(max, envelope0)
     ev         = CEvolution(initial, infections ∪ removals ∪ cremovals,
                                 envelope0=envelope0, envelope=envelope)
-    @test ev.start     == AIF[IM(0,0,1), I(1,1,2), P(3,2,3)]
+    @test ev.start     == AIF[IM(-Inf,0,1), I(1,1,2), P(3,2,3)]
     @test ev.envelope0 == Real[0, 0.5, 0.25]
     @test ev.envelope  == Real[0, 0.5, 0.5]
-    @test ev.finis     == AIR[C(2,1), C(4,2), RM(4,3)]
+    @test ev.finis     == AIR[C(2,1), C(4,2), RM(Inf,3)]
 end
 

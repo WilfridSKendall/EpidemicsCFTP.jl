@@ -483,8 +483,8 @@ end
 # ## 1. Allow for non-zero starting time?
 # ## 2. Truncate `chronology` to run only up to `duration`?
     
-# Compute infectious intervals
-# ----------------------------
+# Compute infectious interval for each time line
+# ----------------------------------------------
 """
     EpidemicsCFTP.interval(::Vector{SIR}, ::Vector{AbstractIncident})
         ::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
@@ -497,34 +497,37 @@ out by first argument `trajectory`.
 
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> trajectory = [SIR(0.0, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4), SIR(1.0, 0,2,4)] ;
+julia> trajectory = [SIR(0.0, 2,2,3), SIR(0.5, 2,1,4), SIR(0.6, 1,2,4), SIR(1.0, 1,2,4)] ;
 
 julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)] ;
 
 julia> start, finis = EpidemicsCFTP.interval(trajectory, history) ;
 
 julia> start
-AbstractInfection[ℳ⁻₀.₀₀⁰⁻¹,ℳ⁻₀.₀₀¹⁻²,ℳ⁻₀.₀₀²⁻³,ℳ⁻₀.₀₀³⁻⁴,ℳ⁻₀.₀₀⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶]
+AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[-∞]¹⁻²,ℳ⁻[-∞]²⁻³,ℳ⁻[-∞]³⁻⁴,ℳ⁻[-∞]⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶,
+    ℳ⁻[∞]⁶⁻⁷]
+
 julia> finis
-AbstractRemoval[ℳ⁺₀.₀₀¹,ℳ⁺₀.₀₀²,ℳ⁺₀.₀₀³,ℛ₀.₅₀⁴,ℳ⁺₁.₀₀⁵,ℳ⁺₁.₀₀⁶]
+AbstractRemoval[ℳ⁺[-∞]¹,ℳ⁺[-∞]²,ℳ⁺[-∞]³,ℛ₀.₅₀⁴,ℳ⁺[∞]⁵,ℳ⁺[∞]⁶,ℳ⁺[∞]⁷]
 ```
 """
 function interval(trajectory::Vector{SIR},
                  history::Vector{AbstractIncident})::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
     z0, z1 = trajectory[1], trajectory[end]
+    z0, z1 = SIR(-Inf, z0.s, z0.i, z0.r), SIR(+Inf, z1.s, z1.i, z1.r)
     
-    # Compute initial birth and death times
+    # Compute initial infection and removal incidents
     start = AbstractInfection[(k ≥ z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
                     InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
     finis = AbstractRemoval[(k ≤ z0.r) ? RemovalMarker(z0.t, k) : 
                     RemovalMarker(z1.t, k)        for k in 1:z0.n]
     
-    # Fill in births
+    # Fill in infection incidents
     for x ∈ [z for z ∈ history if z isa OperativeInfection]
             start[x.infectee] = x
     end
 
-    # Fill in deaths
+    # Fill in removal incidents
     for (k, x) ∈ enumerate([z for z ∈ history if z isa OperativeRemoval])
             finis[z0.r + k] = x
     end

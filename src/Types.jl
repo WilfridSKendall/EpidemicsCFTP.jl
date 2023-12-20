@@ -490,7 +490,7 @@ end
 
 # ### An `SIR` state for an $\SIR$ epidemic
 """
-    SIR(::Float64, ::Int, ::Int, ::Int)
+    SIR(::Real, ::Int, ::Int, ::Int)
 
 This represents a state of a `S-I-R` epidemic (`s`, `i`, `r`)
 (all non-negative integers adding up to a positive integer `n`
@@ -691,9 +691,9 @@ trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 
 julia> println(ev.start)
-AbstractInfection[InfectionMarker(0.0, 0, 1), InfectionMarker(0.0, 1, 2), InfectionMarker(0.0, 2, 3)]
+AbstractInfection[InfectionMarker(Inf, 0, 1), InfectionMarker(Inf, 1, 2), InfectionMarker(Inf, 2, 3)]
 julia> println(ev.finis)
-AbstractRemoval[CRemoval(0.0, 1), RemovalMarker(0.0, 2), RemovalMarker(0.0, 3)]
+AbstractRemoval[CRemoval(0.0, 1), RemovalMarker(Inf, 2), RemovalMarker(Inf, 3)]
 ```
 """
 struct Evolution <: AbstractEvolution

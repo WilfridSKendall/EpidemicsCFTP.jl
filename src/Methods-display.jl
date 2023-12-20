@@ -18,7 +18,13 @@ end
 fspec = FormatSpec(".2f")
 
 function timespec(t::Float64)::String
-    lowers(fmt(fspec, t))
+    if t == -Inf
+        "[-∞]"
+    elseif t == Inf
+        "[∞]"
+    else
+        lowers(fmt(fspec, t))
+    end
 end
 
 # # Actual display functions
@@ -171,6 +177,8 @@ Implementation of `show` for [`SIR`](@ref) using subscript and 2 decimal places 
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> SIR(0.4, 1, 2, 3)
 SIR₀.₄₀(1:2:3)
+julia> SIR(-Inf, 1, 2, 3)
+SIR[-∞](1:2:3)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::SIR)

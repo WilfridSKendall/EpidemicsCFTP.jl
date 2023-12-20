@@ -41,11 +41,7 @@ Further generic sub-types are
 potential removal incidents
 that will, respectively will not, be allowed to form part of 
 an epidemic trajectory.
-```@docs
-AbstractRemoval
-OperativeRemoval
-NonOperativeRemoval
-```
+
 Concrete sub-types are tabulated as follows:
 
 | _Type of `AbstractRemoval`_ | _Sub-type of ..._    | _Explanation_                              |
@@ -56,6 +52,12 @@ Concrete sub-types are tabulated as follows:
 | `KilledRemoval`             | `NonOperativeRemoval`| Raises error if activated                  |
 |                             |                      |                                            |
 | `RemovalMarker`             | `NonOperativeRemoval`| Signals end of epidemic                    |
+
+```@docs
+AbstractRemoval
+OperativeRemoval
+NonOperativeRemoval
+```
 
 #### Two different kinds of [`OperativeRemoval`](@ref)s
 `Removal` and `CRemoval` are specific potential removal incidents: 
@@ -80,11 +82,7 @@ RemovalMarker
 potential infection incidents
 that will, respectively will not, be allowed to form part of 
 an epidemic trajectory.
-```@docs
-AbstractInfection
-OperativeInfection
-NonOperativeInfection
-```
+
 Concrete sub-types are tabulated as follows:
 
 | _Type of `AbstractInfection`_ | _Sub-type of ..._       | _Explanation_                            |
@@ -97,6 +95,12 @@ Concrete sub-types are tabulated as follows:
 | `ExpungedInfection`           | `NonOperativeInfection` | Infection would infect "no-fly" zone     |
 |                               |                         |                                          |
 | `InfectionMarker`             | `NonOperativeInfection` | Signals start of epidemic                |
+
+```@docs
+AbstractInfection
+OperativeInfection
+NonOperativeInfection
+```
 
 #### Three different kinds of `OperativeInfection`s
 `Infection` and `PInfection` are specific potential infection incidents;
@@ -127,6 +131,16 @@ InfectionMarker
 ## Representing different kinds of environments
 `AbstractEnvironment` is a generic type for a collection of lists of `infections`,
 `removals` and `cremovals` (conditioned removals).
+
+Instances should always possess fields as given in the table. 
+
+| _Field name_ | _Type_                      |              | _Further remarks_                 |
+|:-------------|:----------------------------|:-------------|:----------------------------------|
+| `infections` | `Vector{AbstractInfection}` |              | ordered list                      |
+| `removals`   | `Vector{AbstractRemoval}`   |              | ordered list                      |
+| `cremovals`  | `Vector{CRemoval}`          |              | ordered list if nonempty          |
+| `chronology` | `Vector{AbstractIncident}`  | **computed** | ordered union of previous 3 lists |
+
 ```@docs
 AbstractEnvironment
 AbstractEvolution
@@ -146,6 +160,25 @@ based on an `Innovation`.
 in the way it treats`AbstractRemoval`s.
 (This distinctive behaviour is implemented in the [`evolution`](@ref) function
 when keyword `conditioned` keyword is `true`.)
+
+
+Instances should always possess fields as given in the table.
+
+| _Field name_  | _Type_                       |              | Specific to       | _Further remarks_ |
+|:--------------|:-----------------------------|:-------------|:------------------+:------------------|
+| `initial`     | `SIR`                        |              |                   |                   |
+| `infections`  | `Vector{AbstractInfection}`  |              |                   | ordered list      |
+| `removals`    | `Vector{AbstractRemoval}`    |              |                   | ordered list      |
+| `cremovals`   | `Vector{CRemoval}`           |              |                   | ordered list      |
+| `chronology`  | `Vector{AbstractIncident}`   | **computed** |                   | ordered list      |
+| `trajectory`  | `Vector{SIR}`                | **computed** |                   | ordered list      |
+| `history`     | `Vector{AbstractIncident}`   | **computed** |                   | ordered list      |
+| `start`       | `Vector{AbstractInfection}`  | **computed** |                   | list              |
+| `finis`       | `Vector{AbstractRemoval}`    | **computed** |                   | list              |
+| `LFE `        | `Vector{SIR}`                | **computed** |                   | ordered list      |
+| `envelope0`   | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
+| `envelope`    | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
+
 ```@docs
 Evolution
 CEvolution

@@ -531,53 +531,7 @@ function interval(trajectory::Vector{SIR},
    
     return birth, death
 end
-    
-# # Compute infectious periods
-# # -------------------------------
-# """
-#     EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
-#         ::Tuple{Vector{Real}, Vector{Real}}
-#     
-# Returns starts and ends of infectious periods.
-# 
-# **NOTE:** _maybe later introduce start end and time options!_
-# 
-# ## Example
-# ```jldoctest; setup = :(using EpidemicsCFTP)
-# julia> trajectory = [SIR(0.01, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4)]
-# SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
-# julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)]
-# AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
-# 
-# julia> births, deaths = EpidemicsCFTP.periods(trajectory, history)
-# (Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6], Real[0.0, 0.0, 0.0, 0.5, Inf, Inf])
-# julia> println(births)
-# Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6]
-# julia> println(deaths)
-# Real[0.0, 0.0, 0.0, 0.5, Inf, Inf]
-# ```
-# """
-# function periods(trajectory::Vector{SIR},
-#                  history::Vector{AbstractIncident})::Tuple{Vector{Real}, Vector{Real}}
-#     start, finis = trajectory[1], trajectory[end]
-#     
-#     # Compute birth times
-#     births = sort([z.t for z ∈ history if z isa OperativeInfection])
-#     prepend!(births, repeat([0.0], start.i + start.r))
-#     append!(births, repeat([Inf], finis.s)) # Or replace `Inf` by `duration`
-#     
-#     # Compute death times
-#     deaths = sort([z.t for z ∈ history if z isa OperativeRemoval])
-#     prepend!(deaths, repeat([0.0], start.r))
-#     append!(deaths, repeat([Inf], finis.i + finis.s)) # Or replace `Inf` by `duration`
-#     
-#     # Check same number of births as deaths
-#     if length(births) != length(deaths)
-#         error("birth and death numbers ($(length(births)), $(length(deaths))) disagree")
-#     end
-# 
-#     return births, deaths
-# end
+
 
 # Kill irrelevant infections and removals
 # -------------------------------
@@ -698,9 +652,9 @@ end
 """
     compute_nofly(CEvolution, Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
     
-Ee perform a careful computation of the "true" boundary (`nofly_bound` in the code
-of function `compute_nofly`): we
-work backwards through the new `Infection`s 
+Performs a careful computation of the "true" boundary (`nofly_bound` in the code
+of function `compute_nofly`):
+works backwards through the new `Infection`s 
 as explained in annotations of the source-code. 
 
 Doctests to follow ...

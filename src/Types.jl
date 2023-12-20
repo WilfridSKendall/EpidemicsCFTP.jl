@@ -556,15 +556,6 @@ end
 
 Represents variants of an entire innovation of environment 
 for a single step of algorithmic time.
-
-Instances should always possess fields as given in the table. 
-
-| _Field name_ | _Type_                      |              | _Further remarks_                      |
-|:-------------|:----------------------------|:-------------|:---------------------------------------|
-| `infections` | `Vector{AbstractInfection}` |              | time-ordered list                      |
-| `removals`   | `Vector{AbstractRemoval}`   |              | time-ordered list                      |
-| `cremovals`  | `Vector{CRemoval}`          |              | time-ordered list if nonempty          |
-| `chronology` | `Vector{AbstractIncident}`  | **computed** | time-ordered union of previous 3 lists |
 """
 abstract type AbstractEnvironment end
 
@@ -641,21 +632,6 @@ end
 
 This represents variants of evolution of an `S-I-R` epidemic.
 It is a generic sub-type of [`AbstractEnvironment`](@ref)
-
-Instances should always possess fields as given in the table.
-
-| _Field name_  | _Type_                       |              | _Further remarks_ |
-|:--------------|:-----------------------------|:-------------|:------------------|
-| `initial`     | `SIR`                        |              |                   |
-| `infections`  | `Vector{AbstractInfection}`  |              | time-ordered list |
-| `removals`    | `Vector{AbstractRemoval}`    |              | time-ordered list |
-| `cremovals`   | `Vector{CRemoval}`           |              | time-ordered list |
-| `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
-| `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
-| `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
-| `start`       | `Vector{AbstractInfection}`  | **computed** | list              |
-| `finis`       | `Vector{AbstractRemoval}`    | **computed** | list              |
-| `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
@@ -781,24 +757,7 @@ for infectious intervals.
 It possesses extra fields `envelope0` and  `envelope`, which are respectively
 the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
-by `start`, and the monotonically increasing envelope: so 
-instances should always possess fields as given in the table.
-
-| _Field name_  | _Type_                       |              | _Further remarks_ |
-|:--------------|:-----------------------------|:-------------|:------------------|
-| `initial`     | `SIR`                        |              |                   |
-| `infections`  | `Vector{AbstractInfection}`  |              | time-ordered list |
-| `removals`    | `Vector{AbstractRemoval}`    |              | time-ordered list |
-| `cremovals`   | `Vector{CRemoval}`           |              | time-ordered list |
-| `chronology`  | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
-| `trajectory`  | `Vector{SIR}`                | **computed** | time-ordered list |
-| `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
-| `start`       | `Vector{AbstractInfection}`  | **computed** | list              |
-| `finis`       | `Vector{AbstractRemoval}`    | **computed** | list              |
-| `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
-| `envelope0`   | `Vector{Real}`               | **computed** | time-ordered list |
-| `envelope`    | `Vector{Real}`               | **computed** | time-ordered list |
-
+by `start`, and the monotonically increasing envelope.
 
 ## Example
 Three cases: basic use, missing a conditioned removal, employing an (unconditioned) removal.

@@ -240,7 +240,7 @@ end
     innov4         = Innovation(n, I[I(2,1,2)], R[], C[C(2,2), C(3,2)])
     evol4          = CEvolution(initial, innov4)
     @test evol4.history == AbstractIncident[I(2.0,1,2), C(2.0,2), C(3.0,2)]
-    @test evol4.start   == AIF[IM(0,0,1), I(2,1,2), IM(0,2,3)] 
+    @test evol4.start   == AIF[IM(0,0,1), I(2,1,2), IM(3,2,3)] 
     @test evol4.finis   == AIR[C(2,2), C(3,2), RM(3,3)]
 end
 

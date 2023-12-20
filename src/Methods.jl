@@ -492,7 +492,7 @@ end
 Returns `AbstractIncident`s (possibly started with`InfectionMarker`, possibly
 ending with `RemovalMarker`) to mark out infectious intervals of time lines.
 
-Note that this currently presumes epidemic starts and ends as marked
+Note that this currently presumes epidemic start and end incidents are marked
 out by first argument `trajectory`.
 
 ## Example
@@ -501,35 +501,35 @@ julia> trajectory = [SIR(0.0, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4), SIR(1.0,
 
 julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)] ;
 
-julia> birth, death = EpidemicsCFTP.interval(trajectory, history) ;
+julia> start, finis = EpidemicsCFTP.interval(trajectory, history) ;
 
-julia> birth
+julia> start
 AbstractInfection[ℳ⁻₀.₀₀⁰⁻¹,ℳ⁻₀.₀₀¹⁻²,ℳ⁻₀.₀₀²⁻³,ℳ⁻₀.₀₀³⁻⁴,ℳ⁻₀.₀₀⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶]
-julia> death
+julia> finis
 AbstractRemoval[ℳ⁺₀.₀₀¹,ℳ⁺₀.₀₀²,ℳ⁺₀.₀₀³,ℛ₀.₅₀⁴,ℳ⁺₁.₀₀⁵,ℳ⁺₁.₀₀⁶]
 ```
 """
 function interval(trajectory::Vector{SIR},
                  history::Vector{AbstractIncident})::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
-    start, finis = trajectory[1], trajectory[end]
+    z0, z1 = trajectory[1], trajectory[end]
     
     # Compute initial birth and death times
-    birth = AbstractInfection[(k ≥ finis.s) ? InfectionMarker(start.t, k-1, k) : 
-                    InfectionMarker(finis.t, k-1, k) for k in 1:start.n]
-    death = AbstractRemoval[(k ≤ start.r) ? RemovalMarker(start.t, k) : 
-                    RemovalMarker(finis.t, k)        for k in 1:start.n]
+    start = AbstractInfection[(k ≥ z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
+                    InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
+    finis = AbstractRemoval[(k ≤ z0.r) ? RemovalMarker(z0.t, k) : 
+                    RemovalMarker(z1.t, k)        for k in 1:z0.n]
     
     # Fill in births
     for x ∈ [z for z ∈ history if z isa OperativeInfection]
-            birth[x.infectee] = x
+            start[x.infectee] = x
     end
 
     # Fill in deaths
     for (k, x) ∈ enumerate([z for z ∈ history if z isa OperativeRemoval])
-            death[start.r + k] = x
+            finis[z0.r + k] = x
     end
    
-    return birth, death
+    return start, finis
 end
 
 

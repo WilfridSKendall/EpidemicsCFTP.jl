@@ -655,8 +655,6 @@ Instances should always possess fields as given in the table.
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `start`       | `Vector{AbstractInfection}`  | **computed** | list              |
 | `finis`       | `Vector{AbstractRemoval}`    | **computed** | list              |
-| `start_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
-| `finis_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
 | `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
@@ -677,11 +675,9 @@ initial state `initial`,
 and also computed fields `chronology`, `trajectory` and `history`.
 
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
-to compute the `trajectory` and `history` fields
-and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish times
-for infectious intervals
-_and the implicit use of [`EpidemicsCFTP.periods`](@ref) to compute start and finish times
-for infectious periods!_
+to compute the `trajectory` and `history` fields,
+and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
+for infectious intervals.
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> initial    = SIR(0.0, 2, 1, 0)
@@ -752,11 +748,12 @@ struct Evolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
         start, finis    = interval(trajectory, history)
-        start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
+        #start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
         LFE        = SIR[]
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis, 
-            start_t_deprecated, finis_t_deprecated, LFE)
+            trajectory, history, initial_state, start, finis, LFE)
+#             trajectory, history, initial_state, start, finis, 
+#             start_t_deprecated, finis_t_deprecated, LFE)
     end
     
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
@@ -787,8 +784,8 @@ initial state `initial`,
 and also computed fields `chronology`, `trajectory` and `history`.
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
 to compute the `trajectory` and `history` fields,
-and the implicit use of [`EpidemicsCFTP.periods`](@ref) to compute start and finish times
-for infectious periods!
+and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
+for infectious intervals.
 
 It possesses extra fields `envelope0` and  `envelope`, which are respectively
 the maxima _per_ time line
@@ -807,8 +804,6 @@ instances should always possess fields as given in the table.
 | `history`     | `Vector{AbstractIncident}`   | **computed** | time-ordered list |
 | `start`       | `Vector{AbstractInfection}`  | **computed** | list              |
 | `finis`       | `Vector{AbstractRemoval}`    | **computed** | list              |
-| `start_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
-| `finis_t_deprecated`     | `Vector{Real}`               | **computed** | list              |
 | `LFE `        | `Vector{SIR}`                | **computed** | time-ordered list |
 | `envelope0`   | `Vector{Real}`               | **computed** | time-ordered list |
 | `envelope`    | `Vector{Real}`               | **computed** | time-ordered list |
@@ -890,8 +885,6 @@ struct CEvolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
-    start_t_deprecated ::Vector{Real}
-    finis_t_deprecated ::Vector{Real}
     LFE         ::Vector{AbstractIncident}
     envelope0   ::Vector{Real}
     envelope    ::Vector{Real}
@@ -906,7 +899,7 @@ struct CEvolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start, finis    = interval(trajectory, history)
-        start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
+#         start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
         
         # Move this out!
         #early_inactivated_removals = [z for z ∈ removals if z.t < start_t_deprecated[z.target]]
@@ -917,8 +910,9 @@ struct CEvolution <: AbstractEvolution
         #envelope  = accumulate(max, envelope0)
         
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis,
-            start_t_deprecated, finis_t_deprecated, LFE, envelope0, envelope)
+            trajectory, history, initial_state, start, finis, LFE, envelope0, envelope)
+#             trajectory, history, initial_state, start, finis,
+#             start_t_deprecated, finis_t_deprecated, LFE, envelope0, envelope)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 

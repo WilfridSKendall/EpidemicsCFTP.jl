@@ -532,52 +532,52 @@ function interval(trajectory::Vector{SIR},
     return birth, death
 end
     
-# Compute infectious periods
-# -------------------------------
-"""
-    EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
-        ::Tuple{Vector{Real}, Vector{Real}}
-    
-Returns starts and ends of infectious periods.
-
-**NOTE:** _maybe later introduce start end and time options!_
-
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> trajectory = [SIR(0.01, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4)]
-SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
-julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)]
-AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
-
-julia> births, deaths = EpidemicsCFTP.periods(trajectory, history)
-(Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6], Real[0.0, 0.0, 0.0, 0.5, Inf, Inf])
-julia> println(births)
-Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6]
-julia> println(deaths)
-Real[0.0, 0.0, 0.0, 0.5, Inf, Inf]
-```
-"""
-function periods(trajectory::Vector{SIR},
-                 history::Vector{AbstractIncident})::Tuple{Vector{Real}, Vector{Real}}
-    start, finis = trajectory[1], trajectory[end]
-    
-    # Compute birth times
-    births = sort([z.t for z ∈ history if z isa OperativeInfection])
-    prepend!(births, repeat([0.0], start.i + start.r))
-    append!(births, repeat([Inf], finis.s)) # Or replace `Inf` by `duration`
-    
-    # Compute death times
-    deaths = sort([z.t for z ∈ history if z isa OperativeRemoval])
-    prepend!(deaths, repeat([0.0], start.r))
-    append!(deaths, repeat([Inf], finis.i + finis.s)) # Or replace `Inf` by `duration`
-    
-    # Check same number of births as deaths
-    if length(births) != length(deaths)
-        error("birth and death numbers ($(length(births)), $(length(deaths))) disagree")
-    end
-
-    return births, deaths
-end
+# # Compute infectious periods
+# # -------------------------------
+# """
+#     EpidemicsCFTP.periods(::Vector{SIR}, ::Vector{AbstractIncident})
+#         ::Tuple{Vector{Real}, Vector{Real}}
+#     
+# Returns starts and ends of infectious periods.
+# 
+# **NOTE:** _maybe later introduce start end and time options!_
+# 
+# ## Example
+# ```jldoctest; setup = :(using EpidemicsCFTP)
+# julia> trajectory = [SIR(0.01, 1,2,3), SIR(0.5, 1,1,4), SIR(0.6, 0,2,4)]
+# SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
+# julia> history = AbstractIncident[Removal(0.5, 4), Infection(0.6, 5, 6)]
+# AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+# 
+# julia> births, deaths = EpidemicsCFTP.periods(trajectory, history)
+# (Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6], Real[0.0, 0.0, 0.0, 0.5, Inf, Inf])
+# julia> println(births)
+# Real[0.0, 0.0, 0.0, 0.0, 0.0, 0.6]
+# julia> println(deaths)
+# Real[0.0, 0.0, 0.0, 0.5, Inf, Inf]
+# ```
+# """
+# function periods(trajectory::Vector{SIR},
+#                  history::Vector{AbstractIncident})::Tuple{Vector{Real}, Vector{Real}}
+#     start, finis = trajectory[1], trajectory[end]
+#     
+#     # Compute birth times
+#     births = sort([z.t for z ∈ history if z isa OperativeInfection])
+#     prepend!(births, repeat([0.0], start.i + start.r))
+#     append!(births, repeat([Inf], finis.s)) # Or replace `Inf` by `duration`
+#     
+#     # Compute death times
+#     deaths = sort([z.t for z ∈ history if z isa OperativeRemoval])
+#     prepend!(deaths, repeat([0.0], start.r))
+#     append!(deaths, repeat([Inf], finis.i + finis.s)) # Or replace `Inf` by `duration`
+#     
+#     # Check same number of births as deaths
+#     if length(births) != length(deaths)
+#         error("birth and death numbers ($(length(births)), $(length(deaths))) disagree")
+#     end
+# 
+#     return births, deaths
+# end
 
 # Kill irrelevant infections and removals
 # -------------------------------
@@ -589,7 +589,7 @@ are irrelevant (occurring in removal zone for [`AbstractEvolution`](@ref)). conv
 to [`KilledRemoval`](@ref)s.
 """
 function kill_irrelevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractInfection}
-    [ z.t ≤ ev.finis_t_deprecated[z.target] ? z : KilledInfection(z) for z ∈ iv.infections ]
+    [ z ≤ ev.finis[z.target] ? z : KilledInfection(z) for z ∈ iv.infections ]
 end ;
 
 """
@@ -600,7 +600,7 @@ are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting t
 to [`KilledInfection`](@ref)s.
 """
 function kill_irrelevant_removals(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractRemoval}
-    [ z.t ≤ ev.finis_t_deprecated[z.target] ? z : KilledRemoval(z) for z ∈ iv.removals ]
+    [ z ≤ ev.finis[z.target] ? z : KilledRemoval(z) for z ∈ iv.removals ]
 end ;
 
 # Identify relevant infections
@@ -620,7 +620,7 @@ function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{Abst
             push!(running_supremum_list, z)
             rsup = z.target
         elseif typeof(z) <: AbstractInfection &&
-                ev.start_t_deprecated[z.target] ≤ z.t < ev.finis_t_deprecated[z.target] && 
+                ev.start[z.target] ≤ z < ev.finis[z.target] && 
                 z.infectee > rsup
             push!(relevant_inf, z)
         end
@@ -659,8 +659,8 @@ AbstractRemoval[𝒦₀.₅₆¹,𝒦₀.₅₇²,ℛ₀.₅₈⁶]
 ```
 """
 function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
-    not_killed = [z for z ∈ innov.removals if z.t < ev.start_t_deprecated[z.target]]
-    killed     = [KilledRemoval(z) for z ∈ innov.removals if ev.finis_t_deprecated[z.target] ≤ z.t]
+    not_killed = [z for z ∈ innov.removals if z < ev.start[z.target]]
+    killed     = [KilledRemoval(z) for z ∈ innov.removals if ev.finis[z.target] ≤ z]
     return sort(not_killed ∪ killed)
 end    
 
@@ -671,24 +671,24 @@ end
     accept_reject(::CRemoval, ::CRemoval, ::Vector{Real}, ::Vector{Real})::CRemoval
 
 Performs an accept/reject procedure: accept the [`CRemoval`](@ref) `proposed_cremoval` only if it would actually
-be activated based on period `start_t_deprecated`s and `finis_t_deprecated`s
-generated by [`EpidemicsCFTP.periods`](@ref): otherwise retain the [`CRemoval`](@ref) `old_cremoval`.
+be activated based on period `start`s and `finis`s
+generated by [`EpidemicsCFTP.interval`](@ref): otherwise retain the [`CRemoval`](@ref) `old_cremoval`.
 """
 function accept_reject(old_cremoval::CRemoval, proposed_cremoval::CRemoval,
-                       start_t_deprecated::Vector{Real}, finis_t_deprecated::Vector{Real})::CRemoval
-    t, k = proposed_cremoval.t, proposed_cremoval.target
-    return start_t_deprecated[k] ≤ t ≤ finis_t_deprecated[k] ? proposed_cremoval : old_cremoval
+                       start::Vector{AbstractInfection}, finis::Vector{AbstractRemoval})::CRemoval
+    k = proposed_cremoval.target
+    return start[k] ≤ proposed_cremoval ≤ finis[k] ? proposed_cremoval : old_cremoval
 end
 
 """
     resulting_cremovals(::AbstractEvolution, ::Innovation)::Vector{CRemoval}
 
 Uses [`EpidemicsCFTP.accept_reject`](@ref) to determine re-sampled set of [`CRemoval`](@ref)s
-based on period `start_t_deprecated` and `finis_t_deprecated`
-generated by [`EpidemicsCFTP.periods`](@ref).
+based on period `start` and `finis`
+generated by [`EpidemicsCFTP.interval`](@ref).
 """
 function resulting_cremovals(ev::AbstractEvolution, iv::Innovation)::Vector{CRemoval}
-    [accept_reject(oldcr, propcr, ev.start_t_deprecated, ev.finis_t_deprecated) 
+    [accept_reject(oldcr, propcr, ev.start, ev.finis) 
         for (oldcr, propcr) ∈ zip(ev.cremovals, iv.cremovals)]
 end
 
@@ -714,14 +714,14 @@ function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInf
 	 
 	for z ∈ reverse(sort(iv.infections))                                       # <3>
 	    
-	    if (z.t ≥ ev.finis_t_deprecated[z.target])                                    # <4>
+	    if (z ≥ ev.finis[z.target])                                            # <4>
 	        push!(processed_infections, KilledInfection(z))                    # <4>
             # @info "$(KilledInfection(z))"
 	        continue                                                           # <4>
 	    end                                                                    # <4>
 	    
 	    # At this stage of the iteration 
-	    # @assert(z.t < ev.finis_t_deprecated[z.target])
+	    # @assert(z   < ev.finis[z.target])
 	    #
         if (z.t ≥ nofly_bound[z.infectee])                                     # <5>
 	        push!(processed_infections, z)                                     # <5>
@@ -729,7 +729,7 @@ function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInf
 	    end                                                                    # <5>
 	    
 	    # At this stage of the iteration 
-	    # @assert(z.t < ev.finis_t_deprecated[z.target])
+	    # @assert(z   < ev.finis[z.target])
 	    # @assert(z.t < nofly_bound[z.infectee])
 	    #
         if (z.t < nofly_bound[z.infectee - 1])                                 # <6>
@@ -740,10 +740,10 @@ function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInf
 	    # At this stage of the iteration 
 	    # @assert(z.t < nofly_bound[z.infectee])
 	    # @assert(z.t ≥ nofly_bound[z.infectee - 1])
-	    # @assert(z.t < ev.finis_t_deprecated[z.target])
+	    # @assert(z   < ev.finis[z.target])
 	    #
-	    if (z.t ≥ ev.start_t_deprecated[z.target])                                    # <7>
-            if (z.t < ev.start_t_deprecated[z.infectee - 1])                          # <8>
+	    if (z ≥ ev.start[z.target])                                            # <7>
+            if (z < ev.start[z.infectee - 1])                                  # <8>
                 nofly_bound[z.infectee - 1] = z.t                              # <8>
                 push!(processed_infections, NoFlyInfection(z))                 # <8>
                 # @info "$(NoFlyInfection(z))"
@@ -758,7 +758,7 @@ function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInf
 	    # At this stage of the iteration 
 	    # @assert(z.t < nofly_bound[z.infectee])
 	    # @assert(z.t ≥ nofly_bound[z.infectee - 1])
-	    # @assert(z.t < ev.start_t_deprecated[z.target])
+	    # @assert(z   < ev.start[z.target])
 	    # 
 	    nofly_bound[z.infectee - 1] = z.t                                      # <9>
 	    push!(processed_infections, NoFlyInfection(z))                         # <9>
@@ -785,15 +785,15 @@ end ;
 # 6. However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
 # infection of the level immediately below `z.infectee` will then not be
 # allowed at this time. So again add `z` as-is.
-# 7. Suppose `z.t ≥ ev.start_t_deprecated[z.target]`: then an issue would arise
+# 7. Suppose `z ≥ ev.start[z.target]`: then an issue would arise
 # if the level at `z.infectee - 1` were to become infected before
 # `z.t`. One of two cases must hold:
-# 8. Case (a): Suppose `z.t < ev.start_t_deprecated[z.infectee - 1]`.
+# 8. Case (a): Suppose `z < ev.start[z.infectee - 1]`.
 # Then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
 # preclude the time line getting infected, and also transform `z` to a
 # `NoFlyInfection` when added to `processed_infections`, to signal
 # that it should never become infected.  
-# Case (b): Suppose `z.t ≥ ev.start_t_deprecated[z.infectee - 1]`.
+# Case (b): Suppose `z ≥ ev.start[z.infectee - 1]`.
 # Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
 # problem, since this level is infected at time `z.t`. Therefore we
 # transform `z` to a `ExpungedInfection` when we add it to 

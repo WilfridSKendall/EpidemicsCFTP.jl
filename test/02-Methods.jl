@@ -213,36 +213,36 @@ end
 @testset "EpidemicsCFTP: $(rpad(string(EpidemicsCFTP.interval), 23))" begin
     I, P, R, C, IM, RM = PInfection, Infection, Removal, CRemoval, 
                             InfectionMarker, RemovalMarker
-    AIF, AIR           = AbstractInfection, AbstractRemoval
+    AI, AIF, AIR       = AbstractIncident, AbstractInfection, AbstractRemoval
     initial        = SIR(0.0, 2, 1, 0)
     n              = initial.n
     innov1         = Innovation(n, I[I(1,1,2), I(2,2,3)], R[], C[C(3,2)])
     evol1          = CEvolution(initial, innov1)
-    @test evol1.history == AbstractIncident[I(1,1,2), I(2,2,3), C(3,2)]
+    @test evol1.history == AI[I(1,1,2),   I(2,2,3), C(3,2)]
     @test evol1.start   == AIF[IM(0,0,1), I(1,1,2), I(2,2,3)]
-    @test evol1.finis   == AIR[C(3,2), RM(3,2), RM(3,3)]
+    @test evol1.finis   == AIR[C(3,2),    RM(3,2),  RM(3,3)]
     
     # Testing maximally fast `CEvolution`
     innov2         = Innovation(n, I[I(0,1,2), I(0,2,3)], R[], C[C(3,2)])
     evol2          = CEvolution(initial, innov2)
-    @test evol2.history == AbstractIncident[I(0,1,2), I(0,2,3), C(3,2)]
+    @test evol2.history == AI[I(0,1,2),   I(0,2,3), C(3,2)]
     @test evol2.start   == AIF[IM(0,0,1), I(0,1,2), I(0,2,3)]
-    @test evol2.finis   == AIR[C(3,2), RM(3,2), RM(3,3)]
+    @test evol2.finis   == AIR[C(3,2),    RM(3,2),  RM(3,3)]
     
     # Testing maximally slow `CEvolution`
     innov3         = Innovation(n, I[I(2,1,2), I(3,2,3)], R[], C[C(2,2), C(3,3)])
     evol3          = CEvolution(initial, innov3)
-    @test evol3.history == AbstractIncident[I(2,1,2), C(2,2), I(3,2,3), C(3,3)]
+    @test evol3.history == AI[I(2,1,2),   C(2,2),   I(3,2,3), C(3,3)]
     @test evol3.start   == AIF[IM(0,0,1), I(2,1,2), I(3,2,3)]
-    @test evol3.finis   == AIR[C(2,2), C(3,3), RM(3,3)]
+    @test evol3.finis   == AIR[C(2,2),    C(3,3),   RM(3,3)]
     
     # Notice here that `3` time line never starts!
     innov4         = Innovation(n, I[I(2,1,2)], R[], C[C(2,2), C(3,2)])
     evol4          = CEvolution(initial, innov4)
-    @test evol4.history == AbstractIncident[I(2.0,1,2), C(2.0,2), C(3.0,2)]
+    @test evol4.history == AI[I(2.0,1,2), C(2.0,2), C(3.0,2)]
     @test evol4.start   == AIF[IM(0,0,1), I(2,1,2), IM(3,2,3)] 
-    @test evol4.finis   == AIR[C(2,2), C(3,2), RM(3,3)]
-end
+    @test evol4.finis   == AIR[C(2,2),    C(3,2),   RM(3,3)]
+end 
 
 
 ## `FakeIncident` is an `AbstractIncident but without fields`

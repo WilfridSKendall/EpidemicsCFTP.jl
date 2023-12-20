@@ -52,6 +52,22 @@ end
     end
 end
 
+## Testing creation of `SIR`, state of epidemic
+@testset "EpidemicsCFTP: $(rpad(string(SIR), 23))" begin
+    @test_throws DomainError SIR(0.0,-1, 2, 3)
+    @test_throws DomainError SIR(0.0, 1, 2,-3)
+    @test_throws DomainError SIR(0.0, 0, 0, 0)
+    @test_throws DomainError SIR(0.0, 1,-2, 3, 2)
+    @test_throws DomainError SIR(0.0, 1, 2,-3, 0)
+    @test_throws DomainError SIR(0.0, 0, 0, 0, 0)
+    @test_throws DomainError SIR(0.0, 1, 1, 1, 2)
+    @test_throws DomainError SIR(0.0, 1, 1, 1, 1)
+    sir = SIR(0.0, 1, 2, 3)
+    @test sir.n == sir.s + sir.i + sir.r
+    sir = SIR(0,   1, 2, 3)
+    @test sir.n == sir.s + sir.i + sir.r
+end
+
 ## Testing creation of concrete subtypes of `AbstractEvolution`
 @testset "EpidemicsCFTP: $(rpad(AbstractEvolution, 23))" begin
     initial    = SIR(0.0, 2, 1, 0)
@@ -65,24 +81,7 @@ end
     end
 end
 
-@testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
-    initial    = SIR(0.0, 2, 1, 0)
-    infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), 
-                  Infection(0.7,1,2), PInfection(0.5,1,2)]
-    removals   = [Removal(0.1, 1), Removal(0.11, 2), KilledRemoval(0.2, 3)]
-    cremovals  = [CRemoval(0.0, 1)]
-    uev        = Evolution(initial, infections ∪ removals ∪ cremovals)
-    early_inactivated_removals = [z for z ∈ removals if z.t < uev.start_t_deprecated[z.target]]
-    envelope0  = repeat([0.0], initial.n)
-    for z ∈ early_inactivated_removals
-        envelope0[z.target]  = max(envelope0[z.target], z.t)
-    end
-    envelope  = accumulate(max, envelope0)
-    ev         = CEvolution(initial, infections ∪ removals ∪ cremovals,
-                                envelope0=envelope0, envelope=envelope)
-    @test ev.envelope0 == Real[0.0, 0.11, 0.2]
-end
-
+## Testing construction of `Innovation`
 @testset "EpidemicsCFTP: $(rpad(string(Innovation), 23))" begin
     P, I, R, C = PInfection, Infection, Removal, CRemoval
     AI = AbstractIncident
@@ -126,19 +125,28 @@ end
 
 end
 
-
-## Testing creation of `SIR`, state of epidemic
-@testset "EpidemicsCFTP: $(rpad(string(SIR), 23))" begin
-    @test_throws DomainError SIR(0.0,-1, 2, 3)
-    @test_throws DomainError SIR(0.0, 1, 2,-3)
-    @test_throws DomainError SIR(0.0, 0, 0, 0)
-    @test_throws DomainError SIR(0.0, 1,-2, 3, 2)
-    @test_throws DomainError SIR(0.0, 1, 2,-3, 0)
-    @test_throws DomainError SIR(0.0, 0, 0, 0, 0)
-    @test_throws DomainError SIR(0.0, 1, 1, 1, 2)
-    @test_throws DomainError SIR(0.0, 1, 1, 1, 1)
-    sir = SIR(0.0, 1, 2, 3)
-    @test sir.n == sir.s + sir.i + sir.r
-    sir = SIR(0,   1, 2, 3)
-    @test sir.n == sir.s + sir.i + sir.r
+## Testing construction of `CEvolution`
+@testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
+    I, P, R, C         = PInfection, Infection, Removal, CRemoval
+    IM, RM             = InfectionMarker, RemovalMarker
+    NFI, EI, KR        = NoFlyInfection, ExpungedInfection, KilledRemoval
+    AIF, AIR           = AbstractInfection, AbstractRemoval
+    initial    = SIR(0.0, 2, 1, 0)
+    infections = [NFI(0.5,2,3), EI(1.5,2,3), I(1,1,2), P(3,2,3)]
+    removals   = [R(0.5,2), R(0.25,3), KR(0.5,1)]
+    cremovals  = [C(2,1), C(4,2)]
+    uev        = Evolution(initial, infections ∪ removals ∪ cremovals)
+    early_inactivated_removals = [z for z ∈ removals if z < uev.start[z.target]]
+    envelope0  = repeat([0.0], initial.n)
+    for z ∈ early_inactivated_removals
+        envelope0[z.target]  = max(envelope0[z.target], z.t)
+    end
+    envelope   = accumulate(max, envelope0)
+    ev         = CEvolution(initial, infections ∪ removals ∪ cremovals,
+                                envelope0=envelope0, envelope=envelope)
+    @test ev.start     == AIF[IM(0,0,1), I(1,1,2), P(3,2,3)]
+    @test ev.envelope0 == Real[0, 0.5, 0.25]
+    @test ev.envelope  == Real[0, 0.5, 0.5]
+    @test ev.finis     == AIR[C(2,1), C(4,2), RM(4,3)]
 end
+

@@ -718,10 +718,6 @@ julia> println(ev.start)
 AbstractInfection[InfectionMarker(0.0, 0, 1), InfectionMarker(0.0, 1, 2), InfectionMarker(0.0, 2, 3)]
 julia> println(ev.finis)
 AbstractRemoval[CRemoval(0.0, 1), RemovalMarker(0.0, 2), RemovalMarker(0.0, 3)]
-julia> println(ev.start_t_deprecated)
-Real[0.0, Inf, Inf]
-julia> println(ev.finis_t_deprecated)
-Real[0.0, Inf, Inf]
 ```
 """
 struct Evolution <: AbstractEvolution
@@ -735,8 +731,6 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
-    start_t_deprecated ::Vector{Real}
-    finis_t_deprecated ::Vector{Real}
     LFE         ::Vector{AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
@@ -748,12 +742,9 @@ struct Evolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
         start, finis    = interval(trajectory, history)
-        #start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
         LFE        = SIR[]
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start, finis, LFE)
-#             trajectory, history, initial_state, start, finis, 
-#             start_t_deprecated, finis_t_deprecated, LFE)
     end
     
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
@@ -899,10 +890,9 @@ struct CEvolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
         start, finis    = interval(trajectory, history)
-#         start_t_deprecated, finis_t_deprecated = periods(trajectory, history)
         
         # Move this out!
-        #early_inactivated_removals = [z for z ∈ removals if z.t < start_t_deprecated[z.target]]
+        #early_inactivated_removals = [z for z ∈ removals if z < start[z.target]]
         #envelope0  = repeat([0.0], initial_state.n)
         #for z ∈ early_inactivated_removals
         #    envelope0[z.target]  = max(envelope0[z.target], z.t)
@@ -911,8 +901,6 @@ struct CEvolution <: AbstractEvolution
         
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start, finis, LFE, envelope0, envelope)
-#             trajectory, history, initial_state, start, finis,
-#             start_t_deprecated, finis_t_deprecated, LFE, envelope0, envelope)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 

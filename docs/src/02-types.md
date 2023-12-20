@@ -164,8 +164,8 @@ when keyword `conditioned` keyword is `true`.)
 
 Instances should always possess fields as given in the table.
 
-| _Field name_  | _Type_                       |              | Specific to       | _Further remarks_ |
-|:--------------|:-----------------------------|:-------------|:------------------+:------------------|
+| _Field name_  | _Type_                       |              | _Specific to_     | _Further remarks_ |
+|:--------------|:-----------------------------|:-------------|:------------------|:------------------|
 | `initial`     | `SIR`                        |              |                   |                   |
 | `infections`  | `Vector{AbstractInfection}`  |              |                   | ordered list      |
 | `removals`    | `Vector{AbstractRemoval}`    |              |                   | ordered list      |

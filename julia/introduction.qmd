@@ -725,7 +725,8 @@ c) Now work through new infections occurring _earlier_ than the previous epidemi
 (working in reverse time again)
 but rejecting those which would lead to activation of a previously unactivated removal.
 
-### The \LFE curve
+The \LFE curve
+--------------
 Compare the active and inactive infections derived from the original `Evolution` structure
 with those proposed by the new `Innovation` structure:
 ```{julia}

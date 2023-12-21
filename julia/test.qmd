@@ -391,6 +391,8 @@ carried over from `ev2_3`.
 
 Computing the \NOFLYZONE
 ------------------------
+We build up a function `one_step` which creates a decorated `CEvolution`, namely `ev2`,
+from `ev1` and `iv2c`.
 ```{julia}
 early_inactivated_removals =
     [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
@@ -414,13 +416,13 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # 2. Do the "cremoval" lists generate the same times ('t' field)?
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
 
-    # Second, form `removals` by selecting only those from `iv,removals`
-    # which will not be activated.
+    # Second, form `removals` by selecting only those from `iv.removals`
+    # which will not be activated. (Should also change type appropriately!)
     removals   = [z for z in iv.removals if !(ev.start[z.target] < z ≤ ev.finis[z.target])]
 
     # Third, form `cremovals` by choosing from `iv.cremovals` if activated,
     # otherwise staying with `ev.cremovals`.
-    cremovals  = EpidemicsCFTP.resulting_cremovals(ev1, iv)
+    cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv)
 
     # Fourthly: here the hard work begins! It divides into two parts. However
     # first, in `ev.infections` switch "irrelevant infections" to `KilledInfections`.
@@ -434,13 +436,26 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # B. determine which of the `early_infections` from `iv.infections` need
     # to be de-activated to avoid activation of `AbstractRemoval`s in `removals`,
     # by way of computing the nofly zone.
+    
+    # *** NEED MORE HERE ***
 
     # Return the new `CEvolution`
     iv_new = Innovation(ev.initial.n, infections, removals, cremovals)
     return CEvolution(ev.initial, iv_new)
 end
 
-one_step(ev1, iv2c)
+ev2_final = one_step(ev1, iv2c)
+
+@assert iv2c.removals  == ev2_final.removals
+
+@assert ev2_3.cremovals == ev2_final.cremovals
+
+@assert ev2_4.cremovals == ev2_final.cremovals
+
+for x in [:ev1, :uev1, :iv2c, :ev2_1, :ev2_2, :ev2_3, :ev2_4, :ev2_final]
+    environ = eval(x)
+    println(lpad(x,15),".removals = ", sprint(show, MIME("text/plain"), environ.removals))
+end
 ```
 
 

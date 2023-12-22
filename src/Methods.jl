@@ -649,6 +649,7 @@ function resulting_cremovals(ev::AbstractEvolution, iv::Innovation)::Vector{CRem
         for (oldcr, propcr) ∈ zip(ev.cremovals, iv.cremovals)]
 end
 
+
 # # Compute nofly zone
 # # ------------------
 

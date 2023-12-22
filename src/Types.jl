@@ -707,7 +707,7 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
-    LFE         ::Vector{AbstractIncident}
+    #LFE         ::Vector{AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of initial.state entries
@@ -718,9 +718,9 @@ struct Evolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
         start, finis    = interval(trajectory, history)
-        LFE        = SIR[]
+        #LFE        = SIR[]
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis, LFE)
+            trajectory, history, initial_state, start, finis)
     end
     
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
@@ -754,8 +754,8 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 
-It possesses extra fields `envelope0` and  `envelope`, which are respectively
-the maxima _per_ time line
+It possesses extra fields `LFE`, `envelope0` and  `envelope`, which are respectively
+(incidents involved in) the last feasible epidemic, the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, and the monotonically increasing envelope.
 
@@ -835,6 +835,7 @@ struct CEvolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
+    # Remaining (computed) fields are special to `CEvolution`
     LFE         ::Vector{AbstractIncident}
     envelope0   ::Vector{Real}
     envelope    ::Vector{Real}

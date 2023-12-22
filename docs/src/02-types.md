@@ -175,7 +175,7 @@ Instances should always possess fields as given in the table.
 | `history`     | `Vector{AbstractIncident}`   | **computed** |                   | ordered list      |
 | `start`       | `Vector{AbstractInfection}`  | **computed** |                   | list              |
 | `finis`       | `Vector{AbstractRemoval}`    | **computed** |                   | list              |
-| `LFE `        | `Vector{SIR}`                | **computed** |                   | ordered list      |
+| `LFE `        | `Vector{SIR}`                | **computed** | `CEvolution`      | ordered list      |
 | `envelope0`   | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 | `envelope`    | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 

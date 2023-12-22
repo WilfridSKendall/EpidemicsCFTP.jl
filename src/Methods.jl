@@ -456,8 +456,8 @@ Computes the last feasible epidemic trajectory.
 """
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
     conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
-    chronology = sort(iv.infections ∪ 
-                        setdiff(ev.history, ev.cremovals) ∪ iv.cremovals)     # <2>
+    chronology = sort(iv.infections ∪ setdiff(ev.history, ev.cremovals) ∪ 
+                               EpidemicsCFTP.resulting_cremovals(ev, iv))     # <2>
     current_state = SIR(duration, 
         ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
 

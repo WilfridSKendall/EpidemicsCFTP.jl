@@ -352,6 +352,9 @@ For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evoluti
 ```{julia}
 last_feasible_history = 
     EpidemicsCFTP.last_feasible_evolution(duration, ev2_3, iv2c, conditioned=true)
+```
+
+```{julia}
 last_feasible_new_infections = AI[z for z ∈ last_feasible_history ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
 other_older_infections       = setdiff(ev2_3.infections, 
@@ -394,21 +397,6 @@ Computing the \NOFLYZONE
 We build up a function `one_step` which creates a decorated `CEvolution`, namely `ev2`,
 from `ev1` and `iv2c`.
 ```{julia}
-early_inactivated_removals =
-    [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
-```
-
-```{julia}
-max_removal_time = repeat([0.0], ev2_4.initial.n)
-for z ∈ early_inactivated_removals
-    max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
-end
-nofly_envelope0 = accumulate(max, max_removal_time)
-println(nofly_envelope0)
-```
-
-
-```{julia}
 function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # First, check compatibility.
     # 1. Do the "cremoval" lists have the same length?
@@ -418,20 +406,38 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
 
     # Second, form `removals` by selecting only those from `iv.removals`
     # which will not be activated. (Should also change type appropriately!)
-    removals   = [z for z in iv.removals if !(ev.start[z.target] < z ≤ ev.finis[z.target])]
+    removals = EpidemicsCFTP.inactive_removals(ev, iv)
+    
+    # We will need envelopes!
+    early_inactivated_removals = [z for z ∈ removals if z < ev.finis[z.target]]
+    envelope0 = repeat([-Inf], ev2_4.initial.n)
+    for z ∈ early_inactivated_removals
+        envelope0[z.target] = max(envelope0[z.target], z.t)
+    end
+    envelope = accumulate(max, envelope0)
+
 
     # Third, form `cremovals` by choosing from `iv.cremovals` if activated,
     # otherwise staying with `ev.cremovals`.
     cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv)
+    
+    # Now record the modified `Innovation`.
+    iv_mod = Innovation(iv.population, infections, removals, cremovals)
+    
+    # Fourth, compute LFE. Note internally some duplication
+    # (`resulting_cremovals` applied again within `last_feasible_evolution`)
+    duration = maximum(z.t for z in cremovals)
+    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv_mod)
+    
 
-    # Fourthly: here the hard work begins! It divides into two parts. However
-    # first, in `ev.infections` switch "irrelevant infections" to `KilledInfections`.
+    # Fifthly: here the hard work begins! It divides into two parts. However
+    # first, in `ev.infections` we switch "irrelevant infections" to `KilledInfections`.
     differentiated_infections = EpidemicsCFTP.kill_irrelevant_infections(ev, iv)
     #
     # A. determine which `infections` in `ev.history` need to be perpetuated,
     # by studying `ev.history` and `late_infections` from `iv.infections`,
     # by way of computing LFE;
-    relevant_infections = EpidemicsCFTP.relevant_infections(ev, iv)
+    relevant_infections = EpidemicsCFTP.relevant_infections(ev, iv_mod)
     #
     # B. determine which of the `early_infections` from `iv.infections` need
     # to be de-activated to avoid activation of `AbstractRemoval`s in `removals`,
@@ -439,25 +445,44 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     
     # *** NEED MORE HERE ***
 
+    # *** BEGINNING NFZ COMPUTATIONS
+    early_inactivated_removals = [z for z ∈ ev.removals if z < ev.finis[z.target]]
+    max_removal_time = repeat([-Inf], ev2_4.initial.n)
+    for z ∈ early_inactivated_removals
+        max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
+    end
+    nofly_envelope0 = accumulate(max, max_removal_time)
+    
     # Return the new `CEvolution`
-    iv_new = Innovation(ev.initial.n, infections, removals, cremovals)
-    return CEvolution(ev.initial, iv_new)
+    return CEvolution(ev.initial, iv_mod, LFE=LFE, envelope0=envelope0, envelope=envelope)
 end
 
 ev2_final = one_step(ev1, iv2c)
-
-@assert iv2c.removals  == ev2_final.removals
-
-@assert ev2_3.cremovals == ev2_final.cremovals
-
-@assert ev2_4.cremovals == ev2_final.cremovals
-
-for x in [:ev1, :uev1, :iv2c, :ev2_1, :ev2_2, :ev2_3, :ev2_4, :ev2_final]
-    environ = eval(x)
-    println(lpad(x,15),".removals = ", sprint(show, MIME("text/plain"), environ.removals))
-end
 ```
 
+```{julia}
+max_removal_time = repeat([-Inf], ev2_4.initial.n)
+for z ∈ [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
+    max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
+end
+nofly_envelope = accumulate(max, max_removal_time)
+@assert nofly_envelope == ev2_final.envelope
+```
+
+
+```{julia}
+
+@assert ev2_2.removals  == ev2_final.removals
+@assert ev2_3.cremovals == ev2_4.cremovals == ev2_final.cremovals
+```
+
+Useful to activate the following for testing!
+```julia
+for x in [:ev1, :ev2_1, :ev2_2, :ev2_3, :ev2_4, :ev2_final]
+    environ = eval(x)
+    println(lpad(x,15),".LFE = ", sprint(show, MIME("text/plain"), environ.LFE))
+end
+```
 
 
 {{< pagebreak >}}

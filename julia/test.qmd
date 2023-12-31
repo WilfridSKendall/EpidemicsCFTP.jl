@@ -394,31 +394,34 @@ carried over from `ev2_3`.
 
 Computing the \NOFLYZONE
 ------------------------
-We build up a function `one_step` which creates a decorated `CEvolution`, namely `ev2`,
-from `ev1` and `iv2c`.
+We build up a function `one_step`, which creates a `CEvolution`, namely `ev2`,
+from an `Evolution` `ev` and an `Innovation` `iv`.
 ```{julia}
 function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # First, check compatibility.
-    # 1. Do the "cremoval" lists have the same length?
+    # 1. Check that the "cremoval" lists have the same length?
     @assert length(ev.cremovals) == length(iv.cremovals)
-    # 2. Do the "cremoval" lists generate the same times ('t' field)?
+    # 2. Check that the "cremoval" lists generate the same times ('t' field)?
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
 
-    # Second, form `removals` by selecting only those from `iv.removals`
-    # which will not be activated. (Should also change type appropriately!)
+    # Second, form the new `removals` list by selecting only those `AbstractRemoval`s
+    # from `iv.removals` which will not be activated. Type is changed to
+    # `KilledRemoval` for an `AbstractRemoval` occurring after removal time for the 
+    # corresponding time line.
     removals = EpidemicsCFTP.inactive_removals(ev, iv)
     
-    # We will need envelopes!
-    early_inactivated_removals = [z for z ∈ removals if z < ev.finis[z.target]]
+    # Select out those `AbstractRemoval`s not occurring after removal
+    # time, and take maximum per time line (`envelope0`) and generate
+    # the monotonically non-decreasing envelope (`envelope`).
     envelope0 = repeat([-Inf], ev2_4.initial.n)
-    for z ∈ early_inactivated_removals
+    for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
         envelope0[z.target] = max(envelope0[z.target], z.t)
     end
     envelope = accumulate(max, envelope0)
 
 
-    # Third, form `cremovals` by choosing from `iv.cremovals` if activated,
-    # otherwise staying with `ev.cremovals`.
+    # Third, form the new `cremovals` list by choosing from `iv.cremovals` if
+    # activated, otherwise staying with `ev.cremovals`.
     cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv)
     
     # Now record the modified `Innovation`.
@@ -427,7 +430,7 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # Fourth, compute LFE. Note internally some duplication
     # (`resulting_cremovals` applied again within `last_feasible_evolution`)
     duration = maximum(z.t for z in cremovals)
-    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv_mod)
+    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv.infections, iv.cremovals)
     
 
     # Fifthly: here the hard work begins! It divides into two parts. However
@@ -437,7 +440,8 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # A. determine which `infections` in `ev.history` need to be perpetuated,
     # by studying `ev.history` and `late_infections` from `iv.infections`,
     # by way of computing LFE;
-    relevant_infections = EpidemicsCFTP.relevant_infections(ev, iv_mod)
+    relevant_infections    = EpidemicsCFTP.relevant_infections(ev, iv_mod)
+    perpetuated_infections = [PInfection(z) for z in LFE ∩ ev.infections]
     #
     # B. determine which of the `early_infections` from `iv.infections` need
     # to be de-activated to avoid activation of `AbstractRemoval`s in `removals`,

@@ -451,16 +451,23 @@ end
 """
     last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
             ::Vector{AbstractIncident}
+    last_feasible_evolution(::Real, ::AbstractEvolution, 
+            ::Vector{AbstractInfection}, ::Vector{CRemoval};
+            ::Bool=false) ::Vector{AbstractIncident}
 
 Computes the last feasible epidemic trajectory.
 """
-#function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
-#    conditioned::Bool=false) ::Vector{AbstractIncident}
-#end
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
-    conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
-    chronology = sort(iv.infections ∪ setdiff(ev.history, ev.cremovals) ∪ 
-                               EpidemicsCFTP.resulting_cremovals(ev, iv))     # <2>
+    conditioned::Bool=false) ::Vector{AbstractIncident}
+    last_feasible_evolution(duration, ev, iv.infections, 
+            resulting_cremovals(ev.cremovals, iv.cremovals);
+            conditioned=conditioned)
+end
+function last_feasible_evolution(duration::Real, ev::AbstractEvolution,
+            infections::Vector{AbstractInfection}, cremovals::Vector{CRemoval};
+            conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
+    chronology = sort(infections ∪ setdiff(ev.history, ev.cremovals) ∪ 
+                               EpidemicsCFTP.resulting_cremovals(ev, cremovals))      # <2>
     current_state = SIR(duration, 
         ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
 

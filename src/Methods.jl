@@ -460,8 +460,7 @@ Computes the last feasible epidemic trajectory.
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
     conditioned::Bool=false) ::Vector{AbstractIncident}
     last_feasible_evolution(duration, ev, iv.infections, 
-            resulting_cremovals(ev.cremovals, iv.cremovals);
-            conditioned=conditioned)
+            resulting_cremovals(ev, iv.cremovals); conditioned=conditioned)
 end
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution,
             infections::Vector{AbstractInfection}, cremovals::Vector{CRemoval};

@@ -580,16 +580,14 @@ those which are relevant to construction of the "last feasible epidemic".
 """
 function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractInfection}
     unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if z isa OperativeInfection]
-    relevant_inf = [z for z ∈ ev.history if typeof(z) <: AbstractInfection]
-    rsup, running_supremum_list = 0, CRemoval[]
+    relevant_infections = [z for z ∈ ev.history if typeof(z) <: AbstractInfection]
+    rsup = 0
     for z ∈ sort(ev.cremovals ∪ unkilled)
         if (typeof(z) == CRemoval) && (z.target > rsup)
-            push!(running_supremum_list, z)
             rsup = z.target
         elseif typeof(z) <: AbstractInfection &&
-                ev.start[z.target] ≤ z < ev.finis[z.target] && 
-                z.infectee > rsup
-            push!(relevant_inf, z)
+                ev.start[z.target] ≤ z < ev.finis[z.target] && z.infectee > rsup
+            push!(relevant_infections, z)
         end
     end
     return sort(relevant_inf)

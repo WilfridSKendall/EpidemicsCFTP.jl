@@ -564,7 +564,7 @@ end ;
 
 Examines [`AbstractRemoval`](@ref)s from [`Innovation`](@ref) and determines which
 are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
-to [`KilledInfection`](@ref)s.
+to [`KilledInfection`](@ref)s.`relevant_infections`
 """
 function kill_irrelevant_removals(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractRemoval}
     [ z ≤ ev.finis[z.target] ? z : KilledRemoval(z) for z ∈ iv.removals ]
@@ -576,7 +576,10 @@ end ;
     relevant_infections(::AbstractEvolution, ::Innovation)::Vector{AbstractInfection}
 
 Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and returns
-those which are relevant to construction of the "last feasible epidemic".
+those which are relevant to construction of the "last feasible epidemic",
+to wit, old infections in `ev.infections` used in `ev.history` plus new
+infections in `iv.infections` which are not irrelevant (see [`kill_irrelevant_infections`](@ref))
+and whose `target` is infected and whose `infectee` is susceptible.
 """
 function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractInfection}
     unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if z isa OperativeInfection]
@@ -590,7 +593,7 @@ function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{Abst
             push!(relevant_infections, z)
         end
     end
-    return sort(relevant_inf)
+    return sort(relevant_infections)
 end 
     
 # Extract and classify inactive removals

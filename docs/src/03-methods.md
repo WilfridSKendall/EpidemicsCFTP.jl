@@ -32,6 +32,7 @@ also other helper functions:
 | [`evolution`](@ref)                        | Generates trajectory, history for [`Evolution`](@ref)  |
 | [`evolution_history`](@ref)                | Generates history for [`Evolution`](@ref)              |
 |                                            |                                                        |
+| [`EpidemicsCFTP.last_feasible_evolution0`](@ref)   | Computes last feasible evolution (LFE)         |
 | [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)         |
 | [`EpidemicsCFTP.compute_nofly`](@ref)      | Computes adapted [`Infection`](@ref)s and nofly zone   |
 | [`EpidemicsCFTP.interval`](@ref)           | Computes `start` and `finis` for infectious intervals  |
@@ -48,6 +49,7 @@ also other helper functions:
 generate_innovation
 evolution
 evolution_history
+EpidemicsCFTP.last_feasible_evolution0
 EpidemicsCFTP.last_feasible_evolution
 EpidemicsCFTP.compute_nofly
 EpidemicsCFTP.interval

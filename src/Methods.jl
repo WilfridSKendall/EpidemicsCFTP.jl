@@ -448,20 +448,28 @@ end
 
 # Computing the last feasible epidemic trajectory
 # ---------------------------------
-"""
-    last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
-            ::Vector{AbstractIncident}
-    last_feasible_evolution(::Real, ::AbstractEvolution, 
-            ::Vector{AbstractInfection}, ::Vector{CRemoval};
-            ::Bool=false) ::Vector{AbstractIncident}
 
-Computes the last feasible epidemic trajectory.
 """
-function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation;
+    last_feasible_evolution0(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
+            ::Vector{AbstractIncident}
+
+Computes the last feasible epidemic trajectory, re-computing `cremovals`
+using `resulting_cremovals`.
+"""
+function last_feasible_evolution0(duration::Real, ev::AbstractEvolution, iv::Innovation;
     conditioned::Bool=false) ::Vector{AbstractIncident}
     last_feasible_evolution(duration, ev, iv.infections, 
             resulting_cremovals(ev, iv.cremovals); conditioned=conditioned)
 end
+
+"""
+    last_feasible_evolution(::Real, ::AbstractEvolution,
+            ::Vector{AbstractInfection}, ::Vector{CRemoval};
+            ::Bool=false) ::Vector{AbstractIncident}
+
+Computes the last feasible epidemic trajectory, **assuming** `cremovals`
+has been re-computed.
+"""
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution,
             infections::Vector{AbstractInfection}, cremovals::Vector{CRemoval};
             conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>

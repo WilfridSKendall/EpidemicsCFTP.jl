@@ -400,7 +400,7 @@ from an `Evolution` `ev` and an `Innovation` `iv`.
 
 ```{julia}
 #function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
-function one_step(ev::AbstractEvolution, iv::Innovation)::Innovation
+function one_step(ev::AbstractEvolution, iv::Innovation)::Tuple{Innovation, Vector{AbstractIncident}, Vector{Real}, Vector{Real}}
     # 1. Check compatibility of `ev` and `iv`.
     # * **Check** the "cremoval" lists have the same length.
     @assert length(ev.cremovals) == length(iv.cremovals)
@@ -462,12 +462,15 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::Innovation
     
     # Return the new `CEvolution` and NOTE need proper `iv_mod`!
     #return CEvolution(ev.initial, iv_mod, LFE=LFE, envelope0=envelope0, envelope=envelope)
-    return Innovation(ev.initial.n, infections, removals, cremovals)
+    return Innovation(ev.initial.n, infections, removals, cremovals), LFE, TLR, envelope
 end
 
-ev_new = one_step(ev1, iv2c)
-@assert ev_new.removals  == AR[R(0.5,2), R(2,3), R(2.3,4), KR(3.3,1), R(4.5,5), KR(4.8,1)]
-@assert ev_new.cremovals == C[C(2,2), C(4,2)]
+ev_new, L_F_E, T_L_R, envelope = one_step(ev1, iv2c)
+@assert ev_new.removals  == [R(0.5,2), R(2,3), R(2.3,4), KR(3.3,1), R(4.5,5), KR(4.8,1)]
+@assert ev_new.cremovals == [C(2,2), C(4,2)]
+@assert L_F_E            == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
+@assert T_L_R            == [-Inf, 0.5, 2.0, 2.3, 4.5]
+@assert envelope         == [-Inf, 0.5, 2.0, 2.3, 4.5]
 ```
 
 Useful to activate the following for testing!

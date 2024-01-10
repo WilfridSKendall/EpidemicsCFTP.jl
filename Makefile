@@ -46,8 +46,8 @@ rebuild:
 # ====================
 # Installation
 install:
-	touch src/$(MODULE).jl
-	$(JULIA) -e 'import $(MODULE): version ; println(version)'
+	@touch src/$(MODULE).jl
+	@$(JULIA) -e 'import $(MODULE); println($(MODULE).summary)'
 
 # ====================
 # List test source: target is `$(MODULE)-test.pdf`

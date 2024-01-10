@@ -8,7 +8,7 @@ version = "$(read(Cmd(`git describe --tags`, dir=loc), String)[1:end-1])"
 branch  = "$(read(Cmd(`git branch --show-current`, dir=loc), String)[1:end-1])"
 date    = replace(split(read(Cmd(`git log -1`, dir=loc), String), "\n")[3], 
                   "Date:   " => "", " +0000" => "")
-summary = "Version $version checked in on $date"
+summary = "EpidemicsCFTP version $version, checked in on $date"
 
 # # Imports
 # # -------
@@ -22,6 +22,7 @@ import DataFrames
 # # =======
 # # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
 
+# # Defined in `Types.jl`
 export AbstractTimedOccurrence
 export AbstractIncident, AbstractRemoval, AbstractInfection
 
@@ -39,6 +40,7 @@ export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
 
+# # Defined in `Mathods.jl`
 export evolution, evolution_history
 
 export generate_innovation
@@ -47,15 +49,15 @@ export alter
 
 export BadIncident, MissedCRemoval, EmployedRemoval
 
-# Note also that `isless` is overloaded in `Methods.jl`!
+# # Note also that `isless` is overloaded in `Methods.jl`!
 import Base: isless
 
 # # Included files
 # # ==============
 # # Include types defined in this package.
 include("Types.jl")
-
-# # Include methods defined in this package.
+ 
+# # Include general methods defined in this package.
 include("Methods.jl")
 
 # # Include subsidiary display methods extended in this package.

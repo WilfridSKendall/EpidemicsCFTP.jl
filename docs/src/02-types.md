@@ -1,4 +1,4 @@
-# Types of infection, removal, etc
+# Types
 ## Abstract timed occurrences
 Most entities of `EpidemicsCFTP` are based on the generic type `AbstractTimedOccurrence`.
 The only requirement on objects of this type is that they should possess
@@ -14,13 +14,13 @@ incident at a particular moment of time).
 
 [`AbstractTimedOccurrence`](@ref)
 
-## The state of an epidemic
+### The state of an epidemic
 `SIR` is a type for recording the state of an $\text{S-I-R}$ epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
 ```@docs
 SIR
 ```
 
-## Abstract incidents
+### Abstract incidents
 `AbstractIncident` is a generic type for incidents taking place in time, based on [`AbstractTimedOccurrence`](@ref).
 ```@docs
 AbstractIncident
@@ -28,13 +28,13 @@ AbstractIncident
 
 It has sub-types
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref), generic incidents corresponding
-to potential removals and potential incidents respectively. See above for an illustration
-providing a visual key to the various concrete sub-types of 
+to potential removals and potential incidents respectively. The illustration
+provides a visual key to the various concrete sub-types of 
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref):
 
-![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.pdf)
+![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.png)
 
-### `AbstractRemoval`
+#### `AbstractRemoval`
 `AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref)
 Further generic sub-types are
 [`OperativeRemoval`](@ref) and [`NonOperativeRemoval`](@ref), used to distinguish between

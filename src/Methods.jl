@@ -21,7 +21,7 @@ Notice that `PInfection` and `CRemoval` take priority in, respectively,
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> CRemoval(0.10, 2) < Removal(0.10, 2)
-true
+false
 julia> PInfection(0.15, 2, 5) < Infection(0.15, 2, 5)
 true
 julia> PInfection(0.15, 2, 5) < Removal(0.15, 3)

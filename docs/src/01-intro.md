@@ -1,15 +1,8 @@
-# Introduction
+# Initial Documentation
 
-## Prelude
+## Information concerning `EpidemicsCFTP`  
 
-The package `EpidemicsCFTP` forms a crucial part of the code
-for perfect simulation of epidemics conditioned on their removals.
-
-![Screen shot of a resulting simulation.](image/introduction-18-one-iteration.pdf)
-
-## Brief description of `EpidemicsCFTP`  
-
-Here follows a brief description of the module (under development):
+Here is the documentation string for the module (under development):
 ```@docs
 EpidemicsCFTP
 ```
@@ -25,18 +18,8 @@ Markdown.parse("""
 """)
 ```
 
-The aim is to provide CFTP for a ``\operatorname{S-I-R}`` system
-conditioned on all removal times and obeying
-```math
-\begin{align*}
-S \to S-1\,, \quad I \to I+1 \qquad & \text{ at rate } \alpha \; S I \,,
-\cr
-I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I    \,.
-\end{align*}
-```
 
-
-## Installation and documentation  
+## Information concerning installation
 General advice on developing a `julia` package is given at 
 [`julialang.org/contribute/developing_package`](https://julialang.org/contribute/developing_package/).
 Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
@@ -58,7 +41,7 @@ Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
 An alternative way to test the package is to run `make test` in the directory `EpidemicsCFTP`.
 One should run `make doctest` to perform doctests.
 
-Produce this documentation as follows: in directory `EpidemicsCFTP`, 
+Documentation is produced as follows: in directory `EpidemicsCFTP`, 
 
 * run `make view` (for `gitbook` documentation)
 * or `make view-pdf` (for `pdf` documentation).

@@ -139,16 +139,16 @@ end
     cremovals  = [C(2,1), C(4,2)]
     uev        = Evolution(initial, infections ∪ removals ∪ cremovals)
     early_inactivated_removals = [z for z ∈ removals if z < uev.start[z.target]]
-    envelope0  = repeat([0.0], initial.n)
+    TLR        = repeat([0.0], initial.n)
     for z ∈ early_inactivated_removals
-        envelope0[z.target]  = max(envelope0[z.target], z.t)
+        TLR[z.target]  = max(TLR[z.target], z.t)
     end
-    envelope   = accumulate(max, envelope0)
+    envelope   = accumulate(max, TLR)
     ev         = CEvolution(initial, infections ∪ removals ∪ cremovals,
-                                envelope0=envelope0, envelope=envelope)
-    @test ev.start     == AIF[IM(-Inf,0,1), I(1,1,2), P(3,2,3)]
-    @test ev.envelope0 == Real[0, 0.5, 0.25]
-    @test ev.envelope  == Real[0, 0.5, 0.5]
-    @test ev.finis     == AIR[C(2,1), C(4,2), RM(Inf,3)]
+                                TLR=TLR, envelope=envelope)
+    @test ev.start    == AIF[IM(-Inf,0,1), I(1,1,2), P(3,2,3)]
+    @test ev.TLR      == Real[0, 0.5, 0.25]
+    @test ev.envelope == Real[0, 0.5, 0.5]
+    @test ev.finis    == AIR[C(2,1), C(4,2), RM(Inf,3)]
 end
 

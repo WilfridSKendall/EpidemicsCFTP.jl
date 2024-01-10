@@ -1,23 +1,22 @@
-# Methods
+# Methods for computation
 
-## Associated methods
-
-### Comparison method
-A total ordering is provided by [`isless`](@ref), based on time `t` of occurrence of 
+## Comparison method
+A total ordering is provided by [`Base.isless`](@ref)
+(with signature `isless(::AbstractIncident,::AbstractIncident)`), based on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
 [`AbstractIncident`](@ref)s.
 ```@docs
-isless
+isless(::S, ::T) where {S <: AbstractInfection, T <: AbstractRemoval}
 ```
 
-### Conversion methods
+## Conversion methods
 A method concerning conversion of one incident into another.
 ```@docs
 alter
 ```
 
-### Methods relating to epidemic dynamics
+## Methods relating to epidemic dynamics
 Various methods relating to updating a trajectory (some of these are private to `EpidemicsCFTP`!).
 The first set of methods concerns the generation of a random [`Innovation`](@ref)
 ([`generate_innovation`](@ref))

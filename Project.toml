@@ -8,6 +8,7 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Formatting = "59287772-0a20-5a39-b81b-1366585eb4c0"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 PrettyPrint = "8162dcfd-2161-5ef2-ae6c-7681170c5f98"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 

@@ -754,8 +754,8 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 
-It possesses extra fields `LFE`, `envelope0` and  `envelope`, which are respectively
-(incidents involved in) the last feasible epidemic, the maxima _per_ time line
+It possesses extra fields `LFE`, `TLR` and  `envelope`, which are respectively
+the incidents involved in the last feasible epidemic, the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, and the monotonically increasing envelope.
 
@@ -825,23 +825,23 @@ ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.1, 1)
 
 """
 struct CEvolution <: AbstractEvolution
-    population  ::Int
-    infections  ::Vector{<:AbstractInfection}
-    removals    ::Vector{<:AbstractRemoval}
-    cremovals   ::Vector{CRemoval}
-    chronology  ::Vector{<:AbstractIncident}
-    trajectory  ::Vector{SIR}
-    history     ::Vector{AbstractIncident}
-    initial     ::SIR
-    start       ::Vector{AbstractInfection}
-    finis       ::Vector{AbstractRemoval}
+    population ::Int
+    infections ::Vector{<:AbstractInfection}
+    removals   ::Vector{<:AbstractRemoval}
+    cremovals  ::Vector{CRemoval}
+    chronology ::Vector{<:AbstractIncident}
+    trajectory ::Vector{SIR}
+    history    ::Vector{AbstractIncident}
+    initial    ::SIR
+    start      ::Vector{AbstractInfection}
+    finis      ::Vector{AbstractRemoval}
     # Remaining (computed) fields are special to `CEvolution`
-    LFE         ::Vector{AbstractIncident}
-    envelope0   ::Vector{Real}
-    envelope    ::Vector{Real}
+    LFE        ::Vector{AbstractIncident}
+    TLR        ::Vector{Real}
+    envelope   ::Vector{Real}
     
     function CEvolution(initial_state::SIR, innovation::Innovation;
-                        LFE=AbstractIncident[], envelope0=Real[], envelope=Real[])
+                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[])
         # Need to check population == sum of `initial_state` entries
         population = innovation.population
         infections = innovation.infections
@@ -853,24 +853,24 @@ struct CEvolution <: AbstractEvolution
         
         # Move this out!
         #early_inactivated_removals = [z for z ∈ removals if z < start[z.target]]
-        #envelope0  = repeat([0.0], initial_state.n)
+        #TLR  = repeat([0.0], initial_state.n)
         #for z ∈ early_inactivated_removals
-        #    envelope0[z.target]  = max(envelope0[z.target], z.t)
+        #    TLR[z.target]  = max(TLR[z.target], z.t)
         #end
-        #envelope  = accumulate(max, envelope0)
+        #envelope  = accumulate(max, TLR)
         
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis, LFE, envelope0, envelope)
+            trajectory, history, initial_state, start, finis, LFE, TLR, envelope)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
-                        LFE=AbstractIncident[], envelope0=Real[], envelope=Real[])
+                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[])
             innovation = Innovation(initial_state.n,
                         AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                         AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                         CRemoval[z for z ∈ chronology if z isa CRemoval]
                         )
-        return CEvolution(initial_state, innovation, LFE=LFE, envelope0=envelope0, envelope=envelope)
+        return CEvolution(initial_state, innovation, LFE=LFE, TLR=TLR, envelope=envelope)
     end
 
 end

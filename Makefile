@@ -41,7 +41,8 @@ test: .test.stamp
 virgin: ; rm -rf docs/build/*
 
 rebuild:
-	$(HOME)/.local/bin/julia -e 'Base.compilecache(Base.identify_package("$(MODULE)"))'
+	@$(JULIA) -e 'Base.compilecache(Base.identify_package("$(MODULE)"))'
+	@$(JULIA) -e 'import $(MODULE); println($(MODULE).summary)'
 
 # ====================
 # Installation

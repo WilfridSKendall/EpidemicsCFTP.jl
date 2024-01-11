@@ -1,9 +1,6 @@
 using Documenter, EpidemicsCFTP
 
-# using DocumenterMarkdown
-
 makedocs(;
-#     modules=[EpidemicsCFTP],
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",
     repo="https://github.com/WilfridSKendall/EpidemicsCFTP.jl",
     sitename="EpidemicsCFTP.jl",
@@ -13,12 +10,9 @@ makedocs(;
           canonical="github.com/WilfridSKendall/EpidemicsCFTP.jl",
           assets=String[],
           ),
-#    format=Markdown(),
+##
     pages=[
-        "Introduction"            => [
-            "Abstract"                => "index.md",
-            "Documentation"           => "01-intro.md",
-                ],
+        "Introduction"            => "index.md",
         "Types"                   => "02-types.md",
         "Methods for computation" => "03-methods.md",
         "Methods for display"     => "04-methods-show.md",

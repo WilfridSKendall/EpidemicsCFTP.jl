@@ -20,9 +20,10 @@ test_files :=$(wildcard test/*.jl)
 documentation: test docs/site/index.html
 
 view-pdf: docs/build/$(MODULE).pdf
-	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"  > docs/build/custom.sty
-	echo "\\renewcommand*{\\afterpartskip}{}"     >> docs/build/custom.sty
-	echo "\\chapterstyle{verville}"               >> docs/build/custom.sty
+	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
+	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
+	echo "\\renewcommand{\\afterpartskip}{\\vfil}"      >> docs/build/custom.sty
+	echo "\\renewcommand\\thepart{\\Alph{part}}"        >> docs/build/custom.sty
 	latexmk -cd -g -xelatex -shell-escape docs/build/$(MODULE).tex
 	xdg-open $<
 

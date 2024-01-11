@@ -1,8 +1,4 @@
-using EpidemicsCFTP
-
-using Documenter
-
-using DocumenterLaTeX
+using Documenter, DocumenterLaTeX, EpidemicsCFTP
 
 makedocs(;
 #    modules=[EpidemicsCFTP],

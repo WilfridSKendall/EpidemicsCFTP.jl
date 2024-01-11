@@ -10,8 +10,8 @@ Implements comparison of two [`AbstractIncident`](@ref) quantities using time-or
 using [`Infection`](@ref) `infectee`, [`Removal`](@ref) `target` and then by subtype as follows
 (precomputed!),
 ```julia
-    InfectionMarker < PInfection < Infection < NoFlyRemoval < KilledRemoval < ExpungedRemoval <
-        CRemoval < Removal < KilledRemoval < RemovalMarker
+    InfectionMarker < PInfection < Infection < NoFlyRemoval < KilledRemoval < 
+        ExpungedRemoval < CRemoval < Removal < KilledRemoval < RemovalMarker
 ```
 and then using [`Infection`](@ref) `target` and `infectee`, [`Removal`](@ref) `target`.
 

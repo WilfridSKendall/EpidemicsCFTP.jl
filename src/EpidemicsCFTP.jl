@@ -1,5 +1,5 @@
 """
-Implements a CFTP algorithm for epidemic S-I-R trajectories conditional on all removal times.
+Implements a CFTP algorithm for epidemic `S-I-R` trajectories conditional on all removal times.
 """
 module EpidemicsCFTP
 

@@ -5,23 +5,31 @@ using Documenter
 using DocumenterLaTeX
 
 makedocs(;
-    modules=[EpidemicsCFTP],
-    format=DocumenterLaTeX.LaTeX(platform="none"),
+#    modules=[EpidemicsCFTP],
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",
-#    repo="github.com/WilfridSKendall/EpidemicsCFTP.jl",
+    repo="github.com/WilfridSKendall/EpidemicsCFTP.jl",
     sitename="EpidemicsCFTP",
+##
+    format=DocumenterLaTeX.LaTeX(platform="none"),
+##
+#     pages=[
+#         "Introduction"            => "index.md",
+#         "Types"                   => "02-types.md",
+#         "Methods for computation" => "03-methods.md",
+#         "Methods for display"     => "04-methods-show.md",
+#         "Exceptions"              => "05-exceptions.md",
+#         "Index"                   => "06-index.md",
+#     ],
     pages=[
         "index.md",
-        "01-intro.md",
-        "Types"           => "02-types.md",
-        "Methods"          => [
-            "03-methods.md",
-            "04-methods-show.md"
-                ],
-        "Exceptions"       => "05-exceptions.md",
-        "Index"            => "06-index.md"
+        "02-types.md",
+        "03-methods.md",
+        "04-methods-show.md",
+        "05-exceptions.md",
+        "06-index.md",
     ],
-    )
+)
+
 
 
 # deploydocs(;

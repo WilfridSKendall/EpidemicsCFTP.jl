@@ -1,6 +1,6 @@
 # Types
 ## Abstract timed occurrences
-Most entities of `EpidemicsCFTP` are based on the generic type `AbstractTimedOccurrence`.
+Most entities of `EpidemicsCFTP` are based on the generic type [`AbstractTimedOccurrence`](@ref).
 The only requirement on objects of this type is that they should possess
 a real-valued attribute `t` corresponding to a (process) time.
 ```@docs
@@ -9,13 +9,11 @@ AbstractTimedOccurrence
 This has sub-types `AbstractIncident` 
 (whose sub-types correspond to various kinds of _possible_ infections and removals)
 and `SIR` 
-(representing the state of the ``\operatorname{S-I-R}`` 
+(representing the state of the `S-I-R` 
 incident at a particular moment of time). 
 
-[`AbstractTimedOccurrence`](@ref)
-
 ### The state of an epidemic
-`SIR` is a type for recording the state of an $\text{S-I-R}$ epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
+`SIR` is a type for recording the state of a `S-I-R` epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
 ```@docs
 SIR
 ```
@@ -44,14 +42,14 @@ an epidemic trajectory.
 
 Concrete sub-types are tabulated as follows:
 
-| _Type of `AbstractRemoval`_ | _Sub-type of ..._    | _Explanation_                              |
-|:----------------------------|:---------------------|:-------------------------------------------|
-| `Removal`                   | `OperativeRemoval`   | Remove an infection if `target` infected   | 
-| `CRemoval`                  | `OperativeRemoval`   | As above but **conditioned** to be removed | 
-|                             |                      |                                            |
-| `KilledRemoval`             | `NonOperativeRemoval`| Raises error if activated                  |
-|                             |                      |                                            |
-| `RemovalMarker`             | `NonOperativeRemoval`| Signals end of epidemic                    |
+| _Type of `AbstractRemoval`_ | _Sub-type of ..._             | _Explanation_                              |
+|:----------------------------|:------------------------------|:-------------------------------------------|
+| [`Removal`](@ref)           | [`OperativeRemoval`](@ref)    | Remove an infection if `target` infected   | 
+| [`CRemoval`](@ref)          | [`OperativeRemoval`](@ref)    | As above but **conditioned** to be removed | 
+|                             |                               |                                            |
+| [`KilledRemoval`](@ref)     | [`NonOperativeRemoval`](@ref) | Raises error if activated                  |
+|                             |                               |                                            |
+| [`RemovalMarker`](@ref)     | [`NonOperativeRemoval`](@ref) | Signals end of epidemic                    |
 
 ```@docs
 AbstractRemoval
@@ -85,16 +83,16 @@ an epidemic trajectory.
 
 Concrete sub-types are tabulated as follows:
 
-| _Type of `AbstractInfection`_ | _Sub-type of ..._       | _Explanation_                            |
-|:------------------------------|:------------------------|:-----------------------------------------|
-| `Infection`                   | `OperativeInfection`    | Supplied by new `Innovation`             |
-| `PInfection`                  | `OperativeInfection`    | Held over from previous `Innovation`     |
-| `NoFlyInfection`              | `OperativeInfection`    | `infectee` leads to "no-fly" zone        |
-|                               |                         |                                          |
-| `KilledInfection`             | `NonOperativeInfection` | `target` is in removed region            |
-| `ExpungedInfection`           | `NonOperativeInfection` | Infection would infect "no-fly" zone     |
-|                               |                         |                                          |
-| `InfectionMarker`             | `NonOperativeInfection` | Signals start of epidemic                |
+| _Type of `AbstractInfection`_ | _Sub-type of ..._             | _Explanation_                               |
+|:------------------------------|:------------------------------|:--------------------------------------------|
+| [`Infection`](@ref)           |[`OperativeInfection`](@ref)   | Supplied by new [`Innovation`](@ref)        |
+| [`PInfection`](@ref)          |[`OperativeInfection`](@ref)   | Held over from previous [`Innovation`](@ref)|
+| [`NoFlyInfection`](@ref)      |[`OperativeInfection`](@ref)   | `infectee` leads to "no-fly" zone           |
+|                               |                               |                                             |
+| [`KilledInfection`](@ref)     |[`NonOperativeInfection`](@ref)| `target` is in removed region               |
+| [`ExpungedInfection`](@ref)   |[`NonOperativeInfection`](@ref)| Infection would infect "no-fly" zone        |
+|                               |                               |                                             |
+| [`InfectionMarker`](@ref)     |[`NonOperativeInfection`](@ref)| Signals start of epidemic                   |
 
 ```@docs
 AbstractInfection

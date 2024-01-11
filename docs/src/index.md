@@ -4,13 +4,8 @@ DocTestSetup = quote
  using EpidemicsCFTP
 end
 ```
+
 # Introduction
-
-
-```@contents
-```
-
--------------------------------
 
 ## Abstract
 The package 
@@ -23,7 +18,7 @@ to perform perfect simulation of epidemics conditioned on observed (_active_) re
 
 The aim is to provide 
 Coupling from the Past
-(_CFTP_) for a ``\operatorname{S-I-R}`` epidemic
+(_CFTP_) for a `S-I-R` epidemic
 conditioned on all (observed) removal times and 
 making transitions according to the following rates:
 ```math

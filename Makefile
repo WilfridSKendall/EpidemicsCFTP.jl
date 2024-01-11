@@ -20,7 +20,9 @@ test_files :=$(wildcard test/*.jl)
 documentation: test docs/site/index.html
 
 view-pdf: docs/build/$(MODULE).pdf
-	echo "\\setmonofont[Scale = 0.75]{JuliaMono}" > docs/build/custom.sty
+	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"  > docs/build/custom.sty
+	echo "\\renewcommand*{\\afterpartskip}{}"     >> docs/build/custom.sty
+	echo "\\chapterstyle{verville}"               >> docs/build/custom.sty
 	latexmk -cd -g -xelatex -shell-escape docs/build/$(MODULE).tex
 	xdg-open $<
 
@@ -40,15 +42,22 @@ test: .test.stamp
 
 virgin: ; rm -rf docs/build/*
 
-rebuild:
-	@$(JULIA) -e 'Base.compilecache(Base.identify_package("$(MODULE)"))'
-	@$(JULIA) -e 'import $(MODULE); println($(MODULE).summary)'
-
 # ====================
 # Installation
 install:
 	@touch src/$(MODULE).jl
+	@$(JULIA) -e 'Base.compilecache(Base.identify_package("$(MODULE)"))'
 	@$(JULIA) -e 'import $(MODULE); println($(MODULE).summary)'
+
+# ====================
+# Arrangements
+docs/src/image/%.pdf: ../image/%.pdf 
+	cp $< docs/src/image 
+
+serve: SHELL:=/bin/bash 
+docs/site/index.html: docs/build/index.md
+
+
 
 # ====================
 # List test source: target is `$(MODULE)-test.pdf`
@@ -71,8 +80,7 @@ $(MODULE)-test.qmd: $(test_files)
 		echo "\`\`\`"          >> $(MODULE)-test.qmd ; \
 	done
 
-
-# --------------------
+# ========================
 # README.pdf
 README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
@@ -92,11 +100,3 @@ docs/build/$(MODULE).tex: $(doc_files) $(src_files) $(doc_images)
 docs/build/$(MODULE).pdf: docs/build/$(MODULE).tex
 	cd docs/build ; \
 	latexmk -f -interaction=nonstopmode -view=none -lualatex -shell-escape $(notdir $<)
-
-docs/src/image/%.pdf: ../image/%.pdf 
-	cp $< docs/src/image 
-
-serve: SHELL:=/bin/bash 
-docs/site/index.html: docs/build/index.md
-
-

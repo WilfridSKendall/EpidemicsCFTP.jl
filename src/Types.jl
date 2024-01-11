@@ -20,8 +20,9 @@ abstract type AbstractTimedOccurrence end
 
 Sub-type of [`AbstractTimedOccurrence`](@ref).
 
-Expects field `kind<:String` (used by function `show`
-to represent the particular kind of incident).
+Expects a field `kind` which is a `String`. This field is
+used by function `show`
+to represent the particular kind of incident.
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
@@ -31,7 +32,7 @@ abstract type AbstractIncident <: AbstractTimedOccurrence end
     AbstractRemoval
 
 This represents an abstract removal using a sub-type of [`AbstractIncident`](@ref).  
-Inherits expectation of field `t<:Real` from `AbstractIncident`).  
+Inherits requirement for a field `t<:Real` from `AbstractTimedOccurrence`).  
 Also expects field `target<:Int`.
 
 If the potential removal is to become realized 
@@ -43,7 +44,7 @@ abstract type AbstractRemoval <: AbstractIncident end
     OperativeRemoval
 
 This represents an _operative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
-It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
+It inherits from `AbstractTimedOccurrence` an expectation of field `t<:Real`. 
 Also expects a field `target<:Int`.
 
 The `target` field labels the timeline being considered as host for the removal incident:
@@ -59,7 +60,7 @@ abstract type OperativeRemoval <: AbstractRemoval end
     NonOperativeRemoval
 
 This represents a _nonoperative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
-It inherits from `AbstractIncident` an expectation of field `t<:Real`. 
+It inherits from `AbstractTimedOccurrence` an expectation of field `t<:Real`. 
 Also expects a field `target<:Int`.
 
 The `target` field labels the timeline being considered as host for the removal incident:
@@ -75,7 +76,7 @@ abstract type NonOperativeRemoval <: AbstractRemoval end
     AbstractInfection
 
 This represents an abstract infection using a sub-type of [`AbstractIncident`](@ref).
-Inherits expectation of field `t<:Real` from `AbstractIncident`).  
+Inherits expectation of field `t<:Real` from `AbstractTimedOccurrence`).  
 Also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
@@ -92,7 +93,7 @@ abstract type AbstractInfection <: AbstractIncident end
     OperativeInfection
 
 This represents an _operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
-It inherits from [`AbstractIncident`](@ref) an expectation of field `t<:Real`. 
+It inherits from [`AbstractTimedOccurrence`](@ref) an expectation of field `t<:Real`. 
 Also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
@@ -111,7 +112,7 @@ abstract type OperativeInfection <: AbstractInfection end
     NonOperativeInfection
 
 This represents a _non-operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
-It inherits from [`AbstractIncident`](@ref) an expectation of field `t<:Real`.  
+It inherits from [`AbstractTimedOccurrence`](@ref) an expectation of field `t<:Real`.  
 Also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
@@ -485,17 +486,18 @@ struct InfectionMarker <: NonOperativeInfection
     end
 end
 
-# Structures for $\text{S-I-R}$ epidemics
+# Structures for `S-I-R` epidemics
 # -------------------------------
 
 # ### An `SIR` state for an $\SIR$ epidemic
 """
     SIR(::Real, ::Int, ::Int, ::Int)
 
-This represents a state of a `S-I-R` epidemic (`s`, `i`, `r`)
-(all non-negative integers adding up to a positive integer `n`
-which is the population size, given by the computed field `population`)
-at a specified time `t` (a real number). Note that `n` is computed
+This represents a state `sir` of a `S-I-R` epidemic
+(with fields `s`, `i`, `r` being non-negative integers adding up to the
+the population size `n`)
+at a specified time `t` (a real number). Note that `n` is 
+a computed field, calculated
 at initialization of the state structure and accessed as `sir.n`.
 
 ## Example

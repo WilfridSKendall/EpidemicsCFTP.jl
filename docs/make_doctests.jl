@@ -1,4 +1,4 @@
-using Documenter, EpidemicsCFTP
+using Test, Documenter, EpidemicsCFTP
 
 
 doctest(EpidemicsCFTP)

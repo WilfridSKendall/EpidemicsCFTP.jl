@@ -40,7 +40,7 @@ export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
 
-# # Defined in `Mathods.jl`
+# # Defined in `Methods.jl`
 export evolution, evolution_history
 
 export generate_innovation
@@ -55,13 +55,13 @@ import Base: isless
 # # Included files
 # # ==============
 # # Include types defined in this package.
-include("Types.jl")
+include("01-Types.jl")
  
 # # Include general methods defined in this package.
-include("Methods.jl")
+include("02-Methods.jl")
 
 # # Include subsidiary display methods extended in this package.
-include("Methods-display.jl")
+include("03-Methods-display.jl")
 
 end
 

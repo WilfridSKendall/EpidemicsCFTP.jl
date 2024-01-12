@@ -3,7 +3,7 @@ using Documenter, DocumenterLaTeX, EpidemicsCFTP
 makedocs(;
 #    modules=[EpidemicsCFTP],
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",
-    repo="github.com/WilfridSKendall/EpidemicsCFTP.jl",
+    repo="../../src",
     sitename="EpidemicsCFTP",
 ##
     format=DocumenterLaTeX.LaTeX(platform="none"),

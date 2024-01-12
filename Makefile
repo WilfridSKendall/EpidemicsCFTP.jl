@@ -47,8 +47,8 @@ virgin: ; rm -rf docs/build/*
 # Installation
 install:
 	@touch src/$(MODULE).jl
-	@$(JULIA) -e 'Base.compilecache(Base.identify_package("$(MODULE)"))'
-	@$(JULIA) -e 'import $(MODULE); println($(MODULE).summary)'
+	@$(JULIA) -e 'Base.compilecache(Base.identify_package("$(MODULE)")) ; \
+		import $(MODULE); println($(MODULE).summary)'
 
 # ====================
 # Arrangements

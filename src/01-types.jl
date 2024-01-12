@@ -650,7 +650,7 @@ It represents an entire simulation corresponding to a single step of _algorithmi
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals),
 initial state `initial`,
-and also computed fields `chronology`, `trajectory` and `history`.
+and also **computed** fields `chronology`, `trajectory` and `history`.
 
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
 to compute the `trajectory` and `history` fields,
@@ -719,7 +719,6 @@ struct Evolution <: AbstractEvolution
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
         start, finis    = interval(trajectory, history)
-        #LFE        = SIR[]
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start, finis)
     end
@@ -750,7 +749,7 @@ It represents an entire simulation corresponding to a single step of _algorithmi
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals),
 initial state `initial`,
-and also computed fields `chronology`, `trajectory` and `history`.
+and also **computed** fields `chronology`, `trajectory` and `history`.
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
 to compute the `trajectory` and `history` fields,
 and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
@@ -794,7 +793,7 @@ chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 
-julia> ev = CEvolution(initial, infections ∪ removals ∪ cremovals)
+julia> ev = CEvolution(initial, infections ∪ removals ∪ cremovals, TLR=[0.5])
 CEvolution(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
@@ -802,6 +801,9 @@ cremovals:  CRemoval[𝒞₀.₀₀¹]
 chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
+
+julia> ev.TLR == Real[0.5]
+true
 ```
 
 II: Missing a conditioned removal

@@ -232,7 +232,7 @@ of the entire `CEvolution` trajectory.
 ```{julia}
 infections2c = AI[I(1.5,1,2), I(1.3,3,4), I(1.5,2,3), I(2.5,1,2), I(3.2,3,4), I(3.6,4,5), 
     I(3.9,4,5), I(4.5,1,3)] 
-removals2c   = R[R(0.5,2), R(2,3), R(2.3,4), R(3.3,1), R(4.5,5), R(4.8,1)]
+removals2c   = R[R(0.5,2), R(2,3), R(1.9,4), R(3.3,1), R(4.5,5), R(4.8,1)]
 cremovals2c  = C[C(2, 2), C(4,5)]
 
 iv2c = Innovation(initial.n, infections2c, removals2c, cremovals2c)
@@ -349,20 +349,17 @@ they still lead to activation of the relevant `CRemoval`.
 Adding infections from the \LFE
 -------------------------------
 For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evolution0`.
-
 ```{julia}
-last_feasible_history = 
-    EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c, conditioned=true)
-```
-
-```{julia}
+last_feasible_history        = EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c,
+                                        conditioned=true)
 last_feasible_new_infections = AI[z for z ∈ last_feasible_history ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
 other_older_infections       = setdiff(ev2_3.infections, 
                                     AI[z for z ∈ last_feasible_history if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
+ev2_4 = CEvolution(initial, iv2_4, 
+    LFE=EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c, conditioned=true))
 ```
 
 ```{julia}
@@ -396,85 +393,186 @@ Computing the \NOFLYZONE
 ------------------------
 We build up a function `one_step`, which creates a `CEvolution`, namely `ev2`,
 from an `Evolution` `ev` and an `Innovation` `iv`.
+The procedure is as follows:
 
-
+1. `✔` Test for compatibility between `ev` and `iv`:  
+    * Check the `cremoval` lists have the same length.
+    * Check the `cremoval` lists generate the same times ('t' field).
+2. `✔` Use `EpidemicsCFTP.inactive_removals`
+to form the new `removals` list by selecting only those `AbstractRemoval`s
+from `iv.removals` which will not be activated. Type is changed to
+`KilledRemoval` for an `AbstractRemoval` occurring after removal time for the 
+corresponding time line. Note that the function discards `Removal`s
+(as opposed to `CRemoval`s) which _would_ be activated. 
+3. `✔` Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`),
+by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
+4. `✔` Compute LFE. Note `cremovals` has already been computed in step 3.
+5. `✔` Compute time of last removal per time line (`TLR`) and monotonically non-decreasing envelope (`envelope`):  
+    * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
+    * compute `TLR`;
+    * and generate `envelope`.
+    
+Note that in development there is no need to specify output type.
 ```{julia}
-#function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
-function one_step(ev::AbstractEvolution, iv::Innovation)::Tuple{Innovation, Vector{AbstractIncident}, Vector{Real}, Vector{Real}}
-    # 1. Check compatibility of `ev` and `iv`.
-    # * **Check** the "cremoval" lists have the same length.
+function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
+    # Step 1.
     @assert length(ev.cremovals) == length(iv.cremovals)
-    # * **Check** the "cremoval" lists generate the same times ('t' field).
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
-
-    # 2. Form the new `removals` list by selecting only those `AbstractRemoval`s
-    # from `iv.removals` which will not be activated. Type is changed to
-    # `KilledRemoval` for an `AbstractRemoval` occurring after removal time for the 
-    # corresponding time line.
+    
+    # Step 2.
     removals = EpidemicsCFTP.inactive_removals(ev, iv)
     
-    # 3. Form the new `cremovals` list by choosing from `iv.cremovals` if
-    # activated, otherwise staying with `ev.cremovals`.
+    # Step 3.
     cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals)
     
-    # 4. Compute LFE. Note that `cremovals` has been recomputed above using `EpidemcisCFTP.resulting_cremovals`)
+    # Step 4.
     duration = maximum(z.t for z in cremovals)
-    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv.infections, cremovals, conditioned=true)
+    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv.infections, cremovals, 
+                conditioned=true)
     
-    # 5. Compute time of last removal per time line (`TLR`) and 
-    # monotonically non-decreasing envelope (`envelope`):
-    
-    # * select out those `AbstractRemoval`s occurring before actual removal time
-    # on each time line;
-    # * compute `TLR`;
-    # * and generate envelope`.
+    # Step 5.
+    # * Initial computation of `envelope`, a **list of times** 
+    # indexed by time line ("level"), where each time is initially defined as
+    # the supremum of times of **inactivated** `Removal`s at given level or 
+    # below. So the envelope increases monotonically with level.
     TLR = repeat([-Inf], ev2_4.initial.n)
     for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
         TLR[z.target] = max(TLR[z.target], z.t)
     end
     envelope = accumulate(max, TLR)
  
-    # 5. The hard work begins! 
-    
-    # * re-classify "irrelevant infections" (`target` time line is
-    # removed at time `t`) in `ev.infections` as `KilledInfections`.
-    differentiated_infections = EpidemicsCFTP.kill_irrelevant_infections(ev, iv)
-    
-    # * determine `relevant_infections` (`infectee` not yet removed) 
-    # and which `infections` in `ev.history` need to be perpetuated
-    # (using intersection of `LFE` and old `ev.infections`;
-    relevant_infections    = EpidemicsCFTP.relevant_infections(ev, iv)
-    perpetuated_infections = [PInfection(z) for z in LFE ∩ ev.infections]
-    #
-    # B. determine which of the `early_infections` from `iv.infections` need
-    # to be de-activated to avoid activation of `AbstractRemoval`s in `removals`,
-    # by way of computing the nofly zone.
-    
-    # *** NEED MORE HERE ***
+    # The hard work begins! We generate the NFZ.
+    # * The list `processed_infections` of processed `AbstractInfection`s will
+    # eventually store (initially in reverse time order) an adjusted version of
+    # each infection supplied by the new `Innovation` `iv`.
+	processed_infections = AbstractInfection[]
+	NFZ = deepcopy(envelope)
+	
+	# * Iteration: work backwards through `Infection`s supplied by `iv`,
+    # determining in each case how to transform the supplied `Infection`
+    # when adding it to the list `processed_infections`.
+	for z ∈ reverse(sort(iv.infections))
+	    
+	    # * If the `Infection` `z` has `target` on the removed portion of a level
+        # then it will never be activated, so add `z` as a `KilledInfection`.
+	    if (z ≥ ev.finis[z.target])
+	        push!(processed_infections, KilledInfection(z))
+	        continue
+	    end
+	    
+	    # * If the `Infection` `z` potentially infects a level at a _later time_ 
+        # than the current `envelope` at that level, then its activation will
+        # never break the conditioning (**needs proof!**), so add `z` as-is.
+        # (I think the point is: since we are working backwards in time, once
+        # `z.t` is considered then `envelope` is frozen from time `t` onwards.)
+	    #
+	    # At this stage of the iteration 
+	    @assert(z < ev.finis[z.target])
+	    #
+        if (z.t ≥ NFZ[z.infectee])
+	        push!(processed_infections, z)
+	        continue
+	    end
+	    
+	    # * However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
+        # infection of the level immediately below `z.infectee` will then not be
+        # allowed at this time. So again add `z` as-is.
+        #
+	    # At this stage of the iteration 
+	    @assert(z < ev.finis[z.target])
+	    @assert(z.t < NFZ[z.infectee])
+	    #
+        if (z.t < NFZ[z.infectee - 1])
+	        push!(processed_infections, z)
+	        continue
+	    end
+	    
+	    # * Suppose `z ≥ ev.start[z.target]`: then an issue would arise
+        # if the level at `z.infectee - 1` were to become infected before `z.t`. 
+        #
+	    # At this stage of the iteration 
+	    @assert(z.t < NFZ[z.infectee])
+	    @assert(z.t ≥ NFZ[z.infectee - 1])
+	    @assert(z < ev.finis[z.target])
+	    #
+	    # One of two cases must hold:
+	    #
+	    # * Case (a): Suppose `z < ev.start[z.infectee - 1]`.
+        # Then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
+        # preclude the time line getting infected, and also transform `z` to a
+        # `NoFlyInfection` when added to `processed_infections`, to signal
+        # that it should never become infected.  
+        # Case (b): Alternatively, suppose `z ≥ ev.start[z.infectee - 1]`.
+        # Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
+        # problem, since this level is infected at time `z.t`. Therefore we
+        # transform `z` to a `ExpungedInfection` when we add it to 
+        # `processed_infections`, so that it is treated as an
+        # `InoperativeInfection`.
+	    if (z ≥ ev.start[z.target])
+            if (z < ev.start[z.infectee - 1])
+                NFZ[z.infectee - 1] = z.t
+                push!(processed_infections, NoFlyInfection(z))
+                # @info "$(NoFlyInfection(z))"
+                continue
+            else 
+                push!(processed_infections, ExpungedInfection(z))
+                # @info "$(ExpungedInfection(z))"
+                continue 
+            end 
+	    end
+	    
+	    # At this stage of the iteration 
+	    @assert(z.t < NFZ[z.infectee])
+	    @assert(z.t ≥ NFZ[z.infectee - 1])
+	    @assert(z < ev.start[z.target])
+	    # 
+	    # * Consider now that potential `Infection`s to be treated later in this
+        # iteration must have time mark earlier than `z.t`. If one of these were
+        # to infect the level `z.infectee - 1` then it would follow by monotonicity
+        # that the `z.target` level would become infected by that time `z.t`; and 
+        # thus would create an infection of the `z.infectee` level at time `z.t`. 
+        # In order for this to be prevented, we need to extend the `envelope` 
+        # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
+        # to a `NoFlyInfection` when we add it to `processed_infections`, to
+        # signal that it should never become infected.
+	    NFZ[z.infectee - 1] = z.t 
+	    push!(processed_infections, NoFlyInfection(z))
+        # @info "$(NoFlyInfection(z))"
+	
+	end
 
-    # *** BEGINNING NFZ COMPUTATIONS
-    early_inactivated_removals = [z for z ∈ ev.removals if z < ev.finis[z.target]]
-    max_removal_time = repeat([-Inf], ev2_4.initial.n)
-    for z ∈ early_inactivated_removals
-        max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
-    end
-    nofly_envelope0 = accumulate(max, max_removal_time)
+    println(sprint(show, MIME("text/plain"), NFZ))
     
-    # Return the new `CEvolution` and NOTE need proper `iv_mod`!
-    #return CEvolution(ev.initial, iv_mod, LFE=LFE, envelope0=envelope0, envelope=envelope)
-    return Innovation(ev.initial.n, infections, removals, cremovals), LFE, TLR, envelope
+    
+    # Return the new `CEvolution`: NOTE it must be build using a new `Innovation` `iv_mod`!
+    iv_mod = Innovation(ev.initial.n, processed_infections, removals, cremovals)
+    return CEvolution(ev.initial, iv_mod, LFE=LFE, TLR=TLR, envelope=envelope, NFZ=NFZ)
 end
 
-ev_new, L_F_E, T_L_R, envelope = one_step(ev1, iv2c)
-@assert ev_new.removals  == [R(0.5,2), R(2,3), R(2.3,4), KR(3.3,1), R(4.5,5), KR(4.8,1)]
-@assert ev_new.cremovals == [C(2,2), C(4,2)]
-@assert L_F_E            == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
-@assert T_L_R            == [-Inf, 0.5, 2.0, 2.3, 4.5]
-@assert envelope         == [-Inf, 0.5, 2.0, 2.3, 4.5]
+ev2_final  = one_step(ev1, iv2c)
 ```
 
-Useful to activate the following for testing!
+Field names of `ev2_final` follow from
 ```julia
+DataFrame(name=[fieldnames(typeof(ev2_final))...], type=[fieldtypes(typeof(ev2_final))...])
+```
+and a verbose list of contents is given by
+```julia
+dump(ev2_final)
+```
+
+```{julia}
+@assert ev2_final.removals  == [R(0.5,2), R(1.9,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
+@assert ev2_final.cremovals == [C(2,2), C(4,2)]
+@assert ev2_final.LFE       == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
+@assert ev2_final.TLR       == [-Inf, 0.5, 2.0, 1.9, 4.5]
+@assert ev2_final.envelope  == [-Inf, 0.5, 2.0, 2.0, 4.5]
+@assert ev2_final.NFZ       == [-Inf, 0.5, 2.0, 3.9, 4.5]
+```
+
+
+Finally, some tests.
+```{julia}
 max_removal_time = repeat([-Inf], ev2_4.initial.n)
 for z ∈ [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
     max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
@@ -483,15 +581,12 @@ nofly_envelope = accumulate(max, max_removal_time)
 @assert nofly_envelope == ev2_final.envelope
 ```
 
-
-Useful to activate the following for testing!
-```julia
+```{julia}
 @assert ev2_2.removals  == ev2_final.removals
 @assert ev2_3.cremovals == ev2_4.cremovals == ev2_final.cremovals
 ```
 
-Useful to activate the following for testing!
-```julia
+```{julia}
 for x in [:ev1, :ev2_1, :ev2_2, :ev2_3, :ev2_4, :ev2_final]
     environ = eval(x)
     println(lpad(x,15),".LFE = ", sprint(show, MIME("text/plain"), environ.LFE))
@@ -532,14 +627,6 @@ history     = [I(1,1,2), C(2,1), I(3,2,3), C(4,2)]
 uiv1  = Innovation(initial.n, infections, uremovals)
 uev1  = Evolution(initial, uiv1)
 iv1   = Innovation(initial.n, infections, removals, cremovals)
-
-early_inactivated_removals = [z for z ∈ iv1.removals if z < uev1.start[z.target]]
-envelope0  = repeat([0.0], initial.n)
-for z ∈ early_inactivated_removals
-    envelope0[z.target]  = max(envelope0[z.target], z.t)
-end
-envelope  = accumulate(max, envelope0)
-
 ev1   = CEvolution(initial, iv1)
 ```
 
@@ -547,7 +634,7 @@ ev1   = CEvolution(initial, iv1)
 
 Testing unconditioned and conditioned versions of `AbstractEvolution`
 ---------------------------------------------------------------------
-These tests are intended to check that fields are filled correctly.
+These tests are intended to check that fields are correctly filled.
 ```{julia}
 begin ;  title = string(Evolution)
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
@@ -601,17 +688,18 @@ infections2 = AI[I(2t-1.5, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
 removals2   = R[R(0.5,5), R(2.5,5), R(2.6,1), R(3.6,1), R(3.9,5), R(4.6,2)]
 cremovals2  = C[C(2t, 2t) for t ∈ [1,2]] 
 
-early_inactivated_removals = [z for z ∈ removals2 if z < uev1.start[z.target]]
-envelope0  = repeat([0.0], initial.n)
-for z ∈ early_inactivated_removals
-    envelope0[z.target]  = max(envelope0[z.target], z.t)
-end
-envelope  = accumulate(max, envelope0)
+#early_inactivated_removals = [z for z ∈ removals2 if z < uev1.start[z.target]]
+#envelope0  = repeat([0.0], initial.n)
+#for z ∈ early_inactivated_removals
+#    envelope0[z.target]  = max(envelope0[z.target], z.t)
+#end
+#envelope  = accumulate(max, envelope0)
 
 iv2c  = Innovation(initial.n, infections2, removals2, cremovals2)
 iv2_2 = Innovation(initial.n, iv2_1.infections, 
     EpidemicsCFTP.inactive_removals(ev1, iv2c), iv2_1.cremovals)
-ev2_2 = CEvolution(initial, iv2_2, envelope0=envelope0, envelope=envelope)
+#ev2_2 = CEvolution(initial, iv2_2, envelope0=envelope0, envelope=envelope)
+ev2_2 = CEvolution(initial, iv2_2)
 begin ; title = "Inserting Removals"
     early_removals = [z for z ∈ ev2_2.chronology if z isa AR && z < ev2_2.start[z.target]]
     late_removals  = [z for z ∈ ev2_2.chronology if z isa AR && z > ev2_2.finis[z.target]]
@@ -628,7 +716,8 @@ Consider the effect of `EpidemicsCFTP.resulting_cremovals`.
 ```{julia}
 iv2_3 = Innovation(initial.n, iv2_2.infections, iv2_2.removals, 
     EpidemicsCFTP.resulting_cremovals(ev2_2, iv2c))
-ev2_3 = CEvolution(initial, iv2_3, envelope0=envelope0, envelope=envelope)
+#ev2_3 = CEvolution(initial, iv2_3, envelope0=envelope0, envelope=envelope)
+ev2_3 = CEvolution(initial, iv2_3)
 begin ; title = "Modifying CRemovals"
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
         @test ev2_3.trajectory == ev1.trajectory
@@ -651,7 +740,8 @@ perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history �
 other_older_infections       = setdiff(ev2_3.infections, AI[z for z ∈ last_feasible_history if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history, envelope0=envelope0, envelope=envelope)
+#ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history, envelope0=envelope0, envelope=envelope)
+ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
 
 begin ; title = "Last feasible evolution"
     LFE_target = [I(1.0,1,2), C(2.0,2), I(3.0,2,3), C(4.0,2)]

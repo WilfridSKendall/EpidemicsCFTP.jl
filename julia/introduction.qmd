@@ -673,14 +673,13 @@ innov1_2 = Innovation(initial.n, innov1_1.infections,
                 innov1_1.removals, 
                 EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
 early_inactivated_removals = [z for z ∈ innov1_2.removals if z < evol1_1.start[z.target]]
-# envelope0  = repeat([0.0], initial_state.n)
-envelope0  = repeat([0.0], initial.n)
+TLR  = repeat([0.0], initial.n)
 for z ∈ early_inactivated_removals
-    envelope0[z.target]  = max(envelope0[z.target], z.t)
+    TLR[z.target]  = max(TLR[z.target], z.t)
 end
-envelope  = accumulate(max, envelope0)
+envelope  = accumulate(max, TLR)
 evol1_2 = CEvolution(initial, innov1_2,
-                    envelope0=envelope0, envelope=envelope) ;
+                    TLR=TLR, envelope=envelope) ;
 ```
 ::: {.callout-tip}
 # Explanatory note for `innov1_2`
@@ -689,7 +688,7 @@ by using `EpidemicsCFTP.resulting_cremovals`
 to re-mark the `CRemoval`s.
 
 Again the resulting `Evolution` structure 
-`evol1_2 = CEvolution(initial, innov1_2, envelope0=envelope0, envelope=envelope)` 
+`evol1_2 = CEvolution(initial, innov1_2, TLR=TLR, envelope=envelope)` 
 actually yields the same trajectory as `evol1`
 equivalently `evol1_0` or `evol1_1`,
 as marks are changed only if they do not de-activate the respective `CRemoval`,
@@ -758,7 +757,7 @@ new epidemic trajectory!
 innov1_2a = Innovation(initial.n, 
     innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
 evol1_2a  = Evolution(initial, innov1_2a) ;
-evol1_2x  = CEvolution(initial, evol1_2.history, envelope0=envelope0, envelope=envelope) ;
+evol1_2x  = CEvolution(initial, evol1_2.history, TLR=TLR, envelope=envelope) ;
 
 figure10  = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
 
@@ -860,7 +859,7 @@ last_feasible_history =
 # Next list comprehension is required to make sure that the list type is correct!
 last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections]
 perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ evol1.infections]
-evol1_2y  = CEvolution(initial, evol1_2.history, LFE=last_feasible_history, envelope0=envelope0, envelope=envelope)
+evol1_2y  = CEvolution(initial, evol1_2.history, LFE=last_feasible_history, TLR=TLR, envelope=envelope)
 ```
 
 ::: {.callout-warning}
@@ -933,9 +932,9 @@ Computing the \NOFLYZONE
 We now determine the \NOFLYZONE.
 This is done in stages:
 
-(a) compute the `envelope0` vector giving the times at which each time line becomes free of inactivated removals
+(a) compute the `TLR` vector giving the times at which each time line becomes free of inactivated removals
 (now **done** at initialization of `CEvolution` instance);
-(b) compute the `envelope` vector, the monotonically increasing envelope of `envelope0`
+(b) compute the `envelope` vector, the monotonically increasing envelope of `TLR`
 (now **done** at initialization of `CEvolution` instance);
 (c) compute `nofly_envelope` using `compute_nofly` function. 
 (To be carried out as part of a process of transforming one `CEvolution` and one `Innovation` into a new `CEvolution`.)
@@ -984,7 +983,7 @@ figure15 = new_figure(deepcopy(figure14a),
          draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
          
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.TLR) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope) if z[2]>0]),
@@ -1054,7 +1053,7 @@ figure16 = new_figure(deepcopy(figure14a),
     Guide.annotation(compose(context(),
          draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.TLR) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope) if z[2]>0]),
@@ -1079,7 +1078,7 @@ deleteat!(xy_flow_nofly1, [(2*evol1_2.initial.n)-1])
 innov2 = Innovation(initial.n, 
                 sort(processed_infections ∪ perpetuated_infections),
                 evol1_2.removals, evol1_2.cremovals) ;
-evol2  = CEvolution(initial, innov2, envelope0=envelope0, envelope=envelope) ; 
+evol2  = CEvolution(initial, innov2, TLR=TLR, envelope=envelope) ; 
 ```
 
 ```{julia}
@@ -1099,7 +1098,7 @@ figure17 = new_figure(
 
     # Draw, for each time line, boundaries determined by early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.TLR) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
 
     # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.
@@ -1140,7 +1139,7 @@ figure18 = new_figure(
 
     # Draw, for each time line, boundaries determined by early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.envelope0) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.TLR) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.forbid1))),
     
     # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.

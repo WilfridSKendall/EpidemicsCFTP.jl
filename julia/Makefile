@@ -36,9 +36,6 @@ install:
 	@make -C EpidemicsCFTP install
 	@echo ----------
 	@make -C EpidemicsUtilities install
-	@echo ----------
-	$(JULIA) -e 'import EpidemicsCFTP: version      ; println(version)'
-	$(JULIA) -e 'import EpidemicsUtilities: version ; println(version)'
 
 # ====================
 # Verification

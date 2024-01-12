@@ -709,7 +709,6 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
-    #LFE         ::Vector{AbstractIncident}
     
     function Evolution(initial_state::SIR, innovation::Innovation)
         # Need to check population == sum of initial.state entries
@@ -737,7 +736,8 @@ struct Evolution <: AbstractEvolution
 end
 
 """
-    CEvolution(::SIR, ::Innovation; LFE::Vector{AbstractIncident}=AbstractIncident[])
+    CEvolution(::SIR, ::Innovation; LFE::Vector{AbstractIncident}=AbstractIncident[],
+        TLR=Real[], envelope=Real[], NFZ=Real[])
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -756,10 +756,11 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 
-It possesses extra fields `LFE`, `TLR` and  `envelope`, which are respectively
+It possesses extra fields `LFE`, `TLR`,  `envelope`, and `NFZ` which are respectively
 the incidents involved in the last feasible epidemic, the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
-by `start`, and the monotonically increasing envelope.
+by `start`, the monotonically increasing envelope of `TLR`, and the region which must
+not be infected if we are not to violate conditioning on removals.
 
 ## Example
 Three cases: basic use, missing a conditioned removal, employing an (unconditioned) removal.
@@ -837,42 +838,35 @@ struct CEvolution <: AbstractEvolution
     initial    ::SIR
     start      ::Vector{AbstractInfection}
     finis      ::Vector{AbstractRemoval}
-    # Remaining (computed) fields are special to `CEvolution`
+    # Remaining fields are special to `CEvolution`
     LFE        ::Vector{AbstractIncident}
     TLR        ::Vector{Real}
     envelope   ::Vector{Real}
+    NFZ        ::Vector{Real}
     
     function CEvolution(initial_state::SIR, innovation::Innovation;
-                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[])
+                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[], NFZ=Real[])
         # Need to check population == sum of `initial_state` entries
-        population = innovation.population
-        infections = innovation.infections
-        removals   = innovation.removals
-        cremovals  = innovation.cremovals   
-        chronology = innovation.chronology
+        population          = innovation.population
+        infections          = innovation.infections
+        removals            = innovation.removals
+        cremovals           = innovation.cremovals   
+        chronology          = innovation.chronology
         trajectory, history = evolution(initial_state, innovation, conditioned=true)
-        start, finis    = interval(trajectory, history)
-        
-        # Move this out!
-        #early_inactivated_removals = [z for z ∈ removals if z < start[z.target]]
-        #TLR  = repeat([0.0], initial_state.n)
-        #for z ∈ early_inactivated_removals
-        #    TLR[z.target]  = max(TLR[z.target], z.t)
-        #end
-        #envelope  = accumulate(max, TLR)
+        start, finis        = interval(trajectory, history)
         
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start, finis, LFE, TLR, envelope)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
-                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[])
+                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[], NFZ=Real[])
             innovation = Innovation(initial_state.n,
                         AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                         AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                         CRemoval[z for z ∈ chronology if z isa CRemoval]
                         )
-        return CEvolution(initial_state, innovation, LFE=LFE, TLR=TLR, envelope=envelope)
+        return CEvolution(initial_state, innovation, LFE=LFE, TLR=TLR, envelope=envelope, NFZ=NFZ)
     end
 
 end

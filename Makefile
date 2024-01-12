@@ -15,17 +15,9 @@ doc_images := docs/src/image/introduction-18-one-iteration.pdf \
 test_files :=$(wildcard test/*.jl)
 
 # ========================
-.PHONY: documentation view test doc_images
+.PHONY: documentation html-documentation pdf-documentation view test doc_images
 
-documentation: test docs/site/index.html
-
-pdf-documentation: docs/build/$(MODULE).pdf
-	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
-	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
-	echo "\\renewcommand{\\afterpartskip}{\\vfil}"      >> docs/build/custom.sty
-	echo "\\renewcommand\\thepart{\\Alph{part}}"        >> docs/build/custom.sty
-	latexmk -cd -g -xelatex -shell-escape docs/build/$(MODULE).tex
-	xdg-open $<
+documentation: html-documentation pdf-documentation
 
 view: serve
 	xdg-open http://127.0.0.1:8000	
@@ -42,6 +34,19 @@ test: .test.stamp
 	@touch test.stamp
 
 virgin: ; rm -rf docs/build/*
+
+
+# ====================
+# Documentation
+html-documentation: test docs/site/index.html
+
+pdf-documentation: docs/build/$(MODULE).pdf
+	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
+	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
+	echo "\\renewcommand{\\afterpartskip}{\\vfil}"      >> docs/build/custom.sty
+	echo "\\renewcommand\\thepart{\\Alph{part}}"        >> docs/build/custom.sty
+	latexmk -cd -g -xelatex -shell-escape docs/build/$(MODULE).tex
+	xdg-open $<
 
 # ====================
 # Installation

@@ -630,9 +630,6 @@ AbstractRemoval[𝒦₀.₅₆¹,𝒦₀.₅₇²,ℛ₀.₅₈⁶]
 ```
 """
 function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
-    #not_killed = [z for z ∈ innov.removals if z < ev.start[z.target]]
-    #killed     = [KilledRemoval(z) for z ∈ innov.removals if ev.finis[z.target] ≤ z]
-    #return sort(not_killed ∪ killed)
     return [ev.finis[z.target] ≤ z ? KilledRemoval(z) : z for z ∈ innov.removals if 
             ! (ev.start[z.target] < z < ev.finis[z.target])]
 end    

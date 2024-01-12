@@ -3,12 +3,11 @@ SHELL      := /usr/bin/bash
 LOCATION   := $(shell pwd)
 MODULE     := $(notdir $(LOCATION))
 
-GIT   := /usr/bin/git
-JULIA := $(HOME)/.julia/julia-current/bin/julia
+GIT        := /usr/bin/git
+JULIA      := $(HOME)/.julia/julia-current/bin/julia
 
 QUARTO     := /usr/local/bin/quarto
-
-
+CSL        := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 src_files  := $(wildcard src/*.jl) 
 doc_files  := $(wildcard docs/src/*.md) 
 doc_images := docs/src/image/introduction-18-one-iteration.pdf \
@@ -20,7 +19,7 @@ test_files :=$(wildcard test/*.jl)
 
 documentation: test docs/site/index.html
 
-view-pdf: docs/build/$(MODULE).pdf
+pdf-documentation: docs/build/$(MODULE).pdf
 	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
 	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
 	echo "\\renewcommand{\\afterpartskip}{\\vfil}"      >> docs/build/custom.sty

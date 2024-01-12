@@ -411,8 +411,7 @@ by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremova
     * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
     * compute `TLR`;
     * and generate `envelope`.
-    
-Note that in development there is no need to specify output type.
+
 ```{julia}
 function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # Step 1.
@@ -562,6 +561,7 @@ dump(ev2_final)
 ```
 
 ```{julia}
+println(sprint(show, MIME("text/plain"), ev2_final.infections))
 @assert ev2_final.removals  == [R(0.5,2), R(1.9,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
 @assert ev2_final.cremovals == [C(2,2), C(4,2)]
 @assert ev2_final.LFE       == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]

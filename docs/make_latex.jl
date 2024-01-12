@@ -1,9 +1,8 @@
 using Documenter, DocumenterLaTeX, EpidemicsCFTP
 
 makedocs(;
-#    modules=[EpidemicsCFTP],
+    modules=[EpidemicsCFTP],
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",
-    repo="../../src",
     sitename="EpidemicsCFTP",
 ##
     format=DocumenterLaTeX.LaTeX(platform="none"),
@@ -18,11 +17,11 @@ makedocs(;
 #     ],
     pages=[
         "index.md",
-        "02-types.md",
-        "03-methods.md",
-        "04-methods-show.md",
-        "05-exceptions.md",
-        "06-index.md",
+        "01-types.md",
+        "02-methods.md",
+        "03-methods-show.md",
+        "04-exceptions.md",
+        "05-index.md",
     ],
 )
 

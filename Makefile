@@ -3,6 +3,7 @@ SHELL      := /usr/bin/bash
 LOCATION   := $(shell pwd)
 MODULE     := $(notdir $(LOCATION))
 
+GIT   := /usr/bin/git
 JULIA := $(HOME)/.julia/julia-current/bin/julia
 
 QUARTO     := /usr/local/bin/quarto
@@ -49,7 +50,11 @@ install:
 	@touch src/$(MODULE).jl
 	@$(JULIA) -e 'Base.compilecache(Base.identify_package("$(MODULE)")) ; \
 		import $(MODULE); println($(MODULE).summary)'
-
+commit:
+	$(GIT) commit -a
+	$(GIT) push
+		
+		
 # ====================
 # Arrangements
 docs/src/image/%.pdf: ../image/%.pdf 

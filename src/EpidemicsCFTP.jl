@@ -22,7 +22,7 @@ import DataFrames
 # # =======
 # # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
 
-# # Defined in `Types.jl`
+# # Defined in `01-types.jl`
 export AbstractTimedOccurrence
 export AbstractIncident, AbstractRemoval, AbstractInfection
 
@@ -40,12 +40,13 @@ export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
 
-# # Defined in `Methods.jl`
+# # Defined in `02-methods.jl`
 export evolution, evolution_history
 
 export generate_innovation
 
 export alter
+# # Defined in `04-exceptions.jl`
 
 export BadIncident, MissedCRemoval, EmployedRemoval
 
@@ -55,13 +56,16 @@ import Base: isless
 # # Included files
 # # ==============
 # # Include types defined in this package.
-include("01-Types.jl")
+include("01-types.jl")
  
 # # Include general methods defined in this package.
-include("02-Methods.jl")
+include("02-methods.jl")
 
 # # Include subsidiary display methods extended in this package.
-include("03-Methods-display.jl")
+include("03-methods-show.jl")
+
+# # Include exceptions defined in this package.
+include("04-exceptions.jl")
 
 end
 

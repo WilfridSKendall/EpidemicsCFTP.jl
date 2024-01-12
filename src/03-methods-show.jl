@@ -287,17 +287,3 @@ function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab
         #end
     end
 end
-
-"""
-    Base.show(io::IO, e::BadIncident)
-    
-Printing a `BadIncident` exception.
-Sub-types of this exception are:
-[`EmployedRemoval`](@ref) and [`MissedCRemoval`](@ref), raised respectively when a 
-conditioned evolution uses a [`Removal`](@ref) which _is_ _not_ conditioned to appear in the trajectory,
-or doesn't use a [`CRemoval`](@ref) which _is_ conditioned to appear in the trajectory.
-See these types for doctests.
-"""
-function Base.show(io::IO, e::BadIncident)
-    print(io, "[$(typeof(e))] The (conditioned) evolution misused $(e.incident)")
-end

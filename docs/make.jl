@@ -1,6 +1,7 @@
 using Documenter, EpidemicsCFTP
 
 makedocs(;
+    modules=[EpidemicsCFTP],
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",
     sitename="EpidemicsCFTP.jl",
 ##
@@ -12,11 +13,11 @@ makedocs(;
 ##
     pages=[
         "Introduction"            => "index.md",
-        "Types"                   => "02-types.md",
-        "Methods for computation" => "03-methods.md",
-        "Methods for display"     => "04-methods-show.md",
-        "Exceptions"              => "05-exceptions.md",
-        "Index"                   => "06-index.md",
+        "Types"                   => "01-types.md",
+        "Methods for computation" => "02-methods.md",
+        "Methods for display"     => "03-methods-show.md",
+        "Exceptions"              => "04-exceptions.md",
+        "Index"                   => "05-index.md",
     ],
 )
 

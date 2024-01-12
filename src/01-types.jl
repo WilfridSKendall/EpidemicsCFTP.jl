@@ -858,7 +858,7 @@ struct CEvolution <: AbstractEvolution
         start, finis        = interval(trajectory, history)
         
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis, LFE, TLR, envelope)
+            trajectory, history, initial_state, start, finis, LFE, TLR, envelope, NFZ)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 

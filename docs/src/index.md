@@ -79,11 +79,13 @@ Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
 ```julia
 (v1.0) pkg> test EpidemicsCFTP
 ```
+(An alternative way to test the package is to run `make test` in the directory `EpidemicsCFTP`.
+Run `make doctest` to perform doctests.)
 
-An alternative way to test the package is to run `make test` in the directory `EpidemicsCFTP`.
-Run `make doctest` to perform doctests.
+* Commit and push to `github` with `make commit`.
 
-Documentation is produced as follows: in directory `EpidemicsCFTP`, 
+* Documentation is produced as follows: in directory `EpidemicsCFTP`, 
 
-    - run `make view` (for `gitbook` documentation)
-    - or `make view-pdf` (for `pdf` documentation).
+    - run `make documentation
+    - run `make html-documentation` (for `gitbook` documentation)
+    - or `make pdf-documentation` (for `pdf` documentation).

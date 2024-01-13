@@ -1,14 +1,20 @@
-SHELL          := /usr/bin/bash
+# Makefile for ~/ms/PerfectEpidemics/julia
+SHELL           := /usr/bin/bash
+LOCATION        := $(shell pwd)
 
-QUARTO         := /usr/local/bin/quarto
-CSL            := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
-QUARTO_OPTIONS :=  --csl=$(CSL)
+PRODUCTS        := production.pdf introduction.pdf check.pdf test.pdf
 
-JULIA          := $(HOME)/.local/bin/julia
+CSL             := $(HOME)/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 
-MONTAGE        := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
+QUARTO          := /usr/local/bin/quarto
+#QUARTO_CACHE   :=  --cache-refresh
+QUARTO_CACHE    :=  --no-cache
+#QUARTO_CACHE   :=  --cache
+QUARTO_OPTIONS  :=  --csl=$(CSL) $(QUARTO_CACHE)
+JULIA           := $(HOME)/.local/bin/julia
 
-PRODUCTS       := production.pdf introduction.pdf check.pdf
+MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
+
 # ====================
 # Main targets
 main: $(PRODUCTS)
@@ -30,15 +36,12 @@ install:
 	@make -C EpidemicsCFTP install
 	@echo ----------
 	@make -C EpidemicsUtilities install
-	@echo ----------
-	$(JULIA) -e 'import EpidemicsCFTP: version      ; println(version)'
-	$(JULIA) -e 'import EpidemicsUtilities: version ; println(version)'
 
 # ====================
 # Verification
 set-up-verify: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 
-reset-verify: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
+reset-verify:  ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 
 image/VERIFY_%.png: image/%.png
 	@if /usr/bin/cmp -s $@ $<  ;                                       \
@@ -53,14 +56,39 @@ image/VERIFY_%.png: image/%.png
 	fi
 
 # ====================
+# Creating PDFs of listings in `PRINTING` directory
+listings: $(PRODUCTS) ; make --directory=PRINTING listings
+	cp $(PRODUCTS) PRINTING
+
+# --------------------
+## List Makefile
+include $(HOME)/lib/makefiles/listing-makefile.mak
+
+
+# --------------------
+# README.pdf
+README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+
+# --------------------
+## List configurations
+%.pdf: config/%.yml
+	@echo Constructing $@ from $<
+	@echo "# Listing of \`$<\` for \`$(LOCATION)\`" >  $(subst .pdf,.qmd,$@)
+	@echo "\`\`\`yaml"                              >> $(subst .pdf,.qmd,$@)
+	@cat $<                                         >> $(subst .pdf,.qmd,$@)
+	@echo "\`\`\`"                                  >> $(subst .pdf,.qmd,$@)
+	$(QUARTO) render $(subst .pdf,.qmd,$@) --to pdf
+	@rm $(subst .pdf,.qmd,$@)
+
+# ====================
 # Further dependencies
 introduction.pdf: config/theme.yml
 
 # ====================
 # Automatic conversion of qmd to pdf
-#%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache-refresh
-%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< -P source:$< --to pdf $(QUARTO_OPTIONS) --no-cache
-#%.pdf: %.qmd $(UTILITIES) ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS) --cache
+# --cache-refresh seems to be good at loading modules anew.
+%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; \
+	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
 # ====================
 # NOTE

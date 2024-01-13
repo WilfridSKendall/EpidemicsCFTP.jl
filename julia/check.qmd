@@ -1,5 +1,5 @@
 ---
-title:  "Checking Simulation of Innovations for Epidemics"
+title:  "Tests of Innovations for Epidemics"
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
@@ -210,9 +210,9 @@ function display_simulation_results(df)
     pretty_table(String, df[:, headers], header=headers, tf=tf_markdown, 
       alignment=[:c, :r, :r, :l, :r, :r, :l],
       formatters = ((v, i, j)->(isnan(v) ? "---" : v),
-        (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<0.015 ? "** **$(round(v, digits=2))**" : v),
-        (v, i, j)->(isa(v, Real) && j ∈ [4, 7] && v<0.055 ? "* *$(round(v, digits=2))*" : v),
-        (v, i, j)->(isa(v, Real) && j ∈ [4, 7]            ? "$(round(v, digits=2))" : v),
+        (v, i, j)->(v isa Real && j ∈ [4, 7] && v<0.015 ? "** **$(round(v, digits=2))**" : v),
+        (v, i, j)->(v isa Real && j ∈ [4, 7] && v<0.055 ? "* *$(round(v, digits=2))*" : v),
+        (v, i, j)->(v isa Real && j ∈ [4, 7]            ? "$(round(v, digits=2))" : v),
         ft_printf("%4.2f", [4,7])),
   ))
 end ;

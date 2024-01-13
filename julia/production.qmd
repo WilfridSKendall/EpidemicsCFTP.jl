@@ -7,6 +7,8 @@ csl: ima-journal-of-applied-mathematics.csl
 ---
 
 ---
+toc: true
+
 date-format: "D MMMM YYYY"
 papersize:  a4
 
@@ -128,7 +130,7 @@ The incidents for the resulting epidemic evolution are illustrated in @fig-nodes
 #| echo: false 
 ev1 = Evolution(initial, innov_figure1)
 
-flow1 = table_trajectories1(duration, initial, ev1.trajectory)
+flow1 = table_trajectories1(duration, ev1.trajectory)
 ```
 
 
@@ -265,7 +267,7 @@ and zones are illustrated in @fig-production-draftfigure3-0.
 evolution3 = Evolution(initial, innov_figure3)
 
 
-flow3 = table_trajectories1(duration, initial, evolution3.trajectory) ;
+flow3 = table_trajectories1(duration, evolution3.trajectory) ;
 
 
 lx2 = layer(flow3, x=:t, y=:removals, Geom.step,

@@ -76,8 +76,8 @@ Markdown.parse("""
 |Quarto                     |`$(quartoversion)`             | ---                          |                       |
 |Running under `julia`      |`$VERSION`                     | ---                          |                       |
 |Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`             |
-|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
 |Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`|
+|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
 """)
 ```
 

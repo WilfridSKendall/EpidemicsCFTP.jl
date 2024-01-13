@@ -262,8 +262,8 @@ depict("test-02-candidate", new_figure(
 
 ![Conditioned evolution `ev1` of step 0.](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
 
-Candidate innovation `iv2c` and previous evolution `ev1` of epidemic. Using `iv2c` directly
-to generate a `CEvolution` typically fails to respect conditioning on removals, so raising an error.
+Candidate innovation `iv2c` and previous evolution `ev1` of epidemic.
+Direct generation of a `CEvolution` from `iv2c` typically fails to respect removal-conditioning, so raising an error.
 
 :::
 
@@ -431,7 +431,7 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, cremovals)
     return CEvolution(ev.initial, iv_mod, LFE=LFE, TLR=TLR, envelope=envelope, NFZ=NFZ)
-end
+end ;
 ```
 
 

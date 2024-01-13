@@ -221,9 +221,8 @@ plot unconditioned and conditioned epidemics.
 ![Conditioned epidemic `ev1`.](image/test-01-conditioned.pdf){#fig-test-01-conditioned}
 
 Unconditioned (`uev1`) and conditioned (`ev1`) evolutions of epidemic.  Note that the only difference is that 
-the two activated removals become `CRemoval`s. (An error would be raised
-in the creation of the `CEvolution` `ev1`
-if the activated removals for `ev1` were not precisely the `CRemoval`s!)
+the two activated removals become `CRemoval`s. (Creation of the `CEvolution` `ev1` raises an error
+if the activated removals for `ev1` are not precisely the `CRemoval`s!)
 
 :::
 
@@ -264,7 +263,7 @@ depict("test-02-candidate", new_figure(
 ![Conditioned evolution `ev1` of step 0.](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
 
 Candidate innovation `iv2c` and previous evolution `ev1` of epidemic. Using `iv2c` directly
-to generate a `CEvolution` will typically fail to respect conditioning on removals, so raising an error.
+to generate a `CEvolution` typically fails to respect conditioning on removals, so raising an error.
 
 :::
 
@@ -397,11 +396,13 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
             if (z < ev.start[z.infectee - 1])
                 NFZ[z.infectee - 1] = z.t
                 push!(processed_infections, NoFlyInfection(z))
-                @info "Conversion of infection into $(NoFlyInfection(z))"
+                # Uncomment for tracking information
+                # @info "Conversion of infection into $(NoFlyInfection(z))"
                 continue
             else 
                 push!(processed_infections, ExpungedInfection(z))
-                @info "Conversion of infection into $(ExpungedInfection(z))"
+                # Uncomment for tracking information
+                # @info "Conversion of infection into $(ExpungedInfection(z))"
                 continue 
             end 
 	    end
@@ -422,7 +423,8 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
         # signal that it should never become infected.
 	    NFZ[z.infectee - 1] = z.t 
 	    push!(processed_infections, NoFlyInfection(z))
-        @info "Conversion of infection into $(NoFlyInfection(z))"
+        # Uncomment for tracking information
+        # @info "Conversion of infection into $(NoFlyInfection(z))"
 	
 	end
     
@@ -430,13 +432,13 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, cremovals)
     return CEvolution(ev.initial, iv_mod, LFE=LFE, TLR=TLR, envelope=envelope, NFZ=NFZ)
 end
-
-ev2_final  = one_step(ev1, iv2c)
 ```
 
 
-
-{{< pagebreak >}}
+Here is step `1` of the evolution of the conditioned epidemic in algorithmic time.
+```{julia}
+ev2_final  = one_step(ev1, iv2c)
+```
 
 
 Substitution of appropriate inactivated removals

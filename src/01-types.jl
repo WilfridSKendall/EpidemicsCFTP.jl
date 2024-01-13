@@ -326,24 +326,31 @@ end
 """
     NoFlyInfection(::Float64, ::Int, ::Int)
 
-Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
-which is otherwise identical to `Infection` but with a different name.
-Intended to identify an `Infection` whose time line is not infected
-and whose activation would lead to activation of an otherwise inactive
-`Removal`.
+Represent an infection using a sub-type of [`OperativeInfection`](@ref)
+which is structurally identical to `Infection` but with a different name.
+Used to identify an [`AbstractInfection`](@ref)
+for which the `target` time line is infected and
+at which the `infectee` time line is in the no fly zone (`NFT`), moreover
+such that the time line immediately below
+is not yet in the `NFT` and is not yet infected. 
+The `NFT` for the time line immediately below 
+is accordingly increased to `z.t` and
+the infection is converted into a 
+`NoFlyInfection` to signal this change.
 
-It is however operative: if it is activated in the course of the evolution
-of a conditioned epidemic then it will lead to an error
-when subsequently a `Removal` becomes activated.
+Were such an incident actually activated then it would in due course lead
+to an error being raised when some
+[`Removal`](@ref) 
+(as opposed to a [`CRemoval`](@ref)) is activated.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> NoFlyInfection(0.2, 1, 2)
+julia> y = NoFlyInfection(0.2, 1, 2)
 𝒩₀.₂₀¹⁻²
 julia> z = Infection(0.2, 1, 2) ;
 
-julia> NoFlyInfection(z)
-𝒩₀.₂₀¹⁻²
+julia> NoFlyInfection(z) == y
+true
 ```
 """
 struct NoFlyInfection <: OperativeInfection
@@ -373,8 +380,9 @@ end
 
 Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
-Intended to identify an `Infection` which cannot be activated because
-its time line is not infected.
+Intended to identify an `Infection` which 
+will never be activated because
+its `target` time line is not infected.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -414,24 +422,33 @@ end
 """
     ExpungedInfection(::Float64, ::Int, ::Int)
 
-Represent an infection using a sub-type of [`OperativeInfection`](@ref)
+Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
-Intended to identify an `Infection` which can in principle be made active,
-but if so then it would lead to activation of an otherwise inactive
-`Removal`.
+Intended to identify an [`AbstractInfection`](@ref)
+for which the `target` time line is infected and
+at which the `infectee` time line is in the no fly zone (`NFT`), moreover
+such that the time line immediately below is infected (and hence cannot be in
+the `NFT`).  
 
-If such an incident is activated then it will in due course lead
-to an error being raised when a [`Removal`](@ref) 
+Were such an incident to be present then it would immediately be activated, would then
+infect the `NFT` and would thus lead to raising
+of
+an error being raised when a [`Removal`](@ref) 
 (as opposed to a [`CRemoval`](@ref)) is activated.
+It is therefore converted into 
+an [`ExpungedInfection`](@ref),
+which (being a [`NonOperativeInfection`](@ref))
+will never be activated.
+
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> ExpungedInfection(0.2, 1, 2)
+julia> y = ExpungedInfection(0.2, 1, 2)
 𝒳₀.₂₀¹⁻²
 julia> z = Infection(0.2, 1, 2) ;
 
-julia> ExpungedInfection(z)
-𝒳₀.₂₀¹⁻²
+julia> ExpungedInfection(z) == y
+true
 ```
 """
 struct ExpungedInfection <: NonOperativeInfection

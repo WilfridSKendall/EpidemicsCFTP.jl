@@ -638,7 +638,7 @@ depict("test-06-evolve22", new_figure(
 
 ![Initial innovation `iv1`.](image/test-06-evolve11.pdf){#fig-test-06-evolve11}
 
-![Initial evolution `ev1`.](image/test-01-conditioned.pdf){#fig-test-06-evolve12}
+![Initial (conditioned) evolution `ev1`.](image/test-01-conditioned.pdf){#fig-test-06-evolve12}
 
 ![Next (candidate) innovation `iv2c`.](image/test-02-candidate.pdf){#fig-test-06-evolve21}
 

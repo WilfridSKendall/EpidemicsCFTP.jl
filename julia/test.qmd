@@ -7,8 +7,6 @@ date:   today
 ---
 toc: true
 
-bibliography: references.bib
-csl: ima-journal-of-applied-mathematics.csl
 
 date-format: "D MMMM YYYY"
 papersize:  a4
@@ -164,7 +162,7 @@ Tabular and graphical displays of epidemics
 used for the plotting parameter `select`.
 ```{julia}
 import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, INFECTIONS, REMOVALS, CREMOVALS, 
-    ACTIVATED, ELEMENTS, LFE, BASIC, ALL 
+    ACTIVATED, ELEMENTS, LFE, BASIC, ALL, MOST
 ```
 
 Table of evolution of epidemic
@@ -179,32 +177,30 @@ Markdown.parse(pretty_table(String, uflow[:,header],
 
 ```{julia}
 #| echo: false
-curves_template = plot(uflow, yintercept=1:initial.n,
+axes_plot = plot(uflow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
     Guide.xlabel("Process time", orientation=:horizontal),
     style(default_color=theme.background),
     gadfly_theme) ;
 
-push!(curves_template, layer(uflow, x=:t, y=:empty, Geom.line,
+push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
     style(line_width=2theme.trail, default_color=theme.scaffold))) ;
 
-incidents_template = new_figure(curves_template,
+lines_plot = new_figure(axes_plot,
     Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
         i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
         i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
     Guide.yticks(ticks=collect(1:(initial.n))),
     Guide.ylabel("Time lines")) ;
 
-figure_zones0 = draw_regions!(deepcopy(incidents_template), duration,
-    uev1, theme=theme, select=BOUNDARIES | REGIONS)
 depict("test-01-unconditioned", new_figure(
-    draw_evolution!(deepcopy(figure_zones0), uev1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, select=MOST),
         title="Evolution of unconditioned epidemic")
 ) ;
 
 depict("test-01-conditioned", new_figure(
-    draw_evolution!(deepcopy(figure_zones0), ev1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev1, duration, theme=theme, select=MOST),
         title="Evolution of conditioned epidemic")
 ) ;
 ```
@@ -250,7 +246,7 @@ iv2c = Innovation(initial.n, infections2c, removals2c, cremovals2c)
 ```{julia}
 #| echo: false
 depict("test-02-candidate", new_figure(
-    draw_innovation!(deepcopy(incidents_template), iv2c, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv2c, theme=theme, select=ELEMENTS),
         title="Candidate innovation")
 ) ;
 ```
@@ -462,11 +458,11 @@ ev2_2 = CEvolution(initial, iv2_2)
 ```{julia}
 #| echo: false
 depict("test-03-removals1", new_figure(
-    draw_evolution!(deepcopy(figure_zones0), ev2_1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev2_1, duration, theme=theme, select=MOST),
         title="Old removals removed")
 ) ;
 depict("test-03-removals2", new_figure(
-    draw_evolution!(deepcopy(figure_zones0), ev2_2, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev2_2, duration, theme=theme, select=MOST),
         title="New inactive removals inserted")
 ) ;
 ```
@@ -499,11 +495,11 @@ ev2_3 = CEvolution(initial, iv2_3)
 ```{julia}
 #| echo: false
 depict("test-04-cremovals1", new_figure(
-    draw_innovation!(deepcopy(incidents_template), iv2_3, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv2_3, theme=theme, select=ELEMENTS),
         title="Innovation up to new CRemovals")
 ) ;
 depict("test-04-cremovals2", new_figure(
-    draw_evolution!(deepcopy(figure_zones0), ev2_3, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev2_3, duration, theme=theme, select=MOST),
         title="Resulting evolution")
 ) ;
 ```
@@ -547,11 +543,11 @@ ev2_4 = CEvolution(initial, iv2_4,
 ```{julia}
 #| echo: false
 depict("test-05-LFE1", new_figure(
-    draw_innovation!(deepcopy(incidents_template), iv2_4, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv2_4, theme=theme, select=ELEMENTS),
         title="Innovation with LFE infections")
 ) ;
 depict("test-05-LFE2", new_figure(
-    draw_evolution!(deepcopy(figure_zones0), ev2_4, duration, theme=theme, select=BASIC | LFE),
+    draw_evolution!(deepcopy(lines_plot), ev2_4, duration, theme=theme, select=MOST | LFE),
         title="Evolution with LFE infections")
 ) ;
 ```
@@ -620,15 +616,11 @@ end
 ```{julia}
 #| echo: false
 depict("test-06-evolve11", new_figure(
-    draw_innovation!(deepcopy(incidents_template), iv1, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv1, theme=theme, select=ELEMENTS),
         title="Initial innovation")
 ) ;
-
-figure_zones1 = draw_regions!(deepcopy(incidents_template), duration,
-    ev2_final, theme=theme, select=BOUNDARIES | REGIONS)
-    
 depict("test-06-evolve22", new_figure(
-    draw_evolution!(deepcopy(figure_zones1), ev2_final, duration, theme=theme, select=ALL | LFE),
+    draw_evolution!(deepcopy(lines_plot), ev2_final, duration, theme=theme, select=MOST | LFE),
         title="Conditioned Evolution, step 2")
 ) ;
 ```

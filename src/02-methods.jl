@@ -464,15 +464,15 @@ end
 
 """
     last_feasible_evolution(::Real, ::AbstractEvolution,
-            ::Vector{AbstractInfection}, ::Vector{CRemoval};
-            ::Bool=false) ::Vector{AbstractIncident}
+            ::Vector{S}, ::Vector{CRemoval};
+            ::Bool=false) ::Vector{AbstractIncident} where {S <: AbstractInfection}
 
 Computes the last feasible epidemic trajectory, **assuming** `cremovals`
 has been re-computed.
 """
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution,
-            infections::Vector{AbstractInfection}, cremovals::Vector{CRemoval};
-            conditioned::Bool=false) ::Vector{AbstractIncident}                       # <1>
+            infections::Vector{S}, cremovals::Vector{CRemoval};
+            conditioned::Bool=false) ::Vector{AbstractIncident} where {S <: AbstractInfection}  # <1>
     chronology = sort(infections ∪ setdiff(ev.history, ev.cremovals) ∪ 
                                EpidemicsCFTP.resulting_cremovals(ev, cremovals))      # <2>
     current_state = SIR(duration, 

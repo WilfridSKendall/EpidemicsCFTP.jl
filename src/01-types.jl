@@ -601,11 +601,11 @@ julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
 Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
 julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
 CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-julia> Innovation(population, infections, removals, cremovals)
+julia> iv = Innovation(population, infections, removals, cremovals)
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])  
 ```
 """
 struct Innovation <: AbstractEnvironment
@@ -642,7 +642,7 @@ struct Innovation <: AbstractEnvironment
                         removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
         return Innovation(population, infections, removals, CRemoval[])
     end
-    
+
 end
 
 # ### Abstract evolution for an $\SIR$ epidemic
@@ -782,22 +782,72 @@ by `start`, the monotonically increasing envelope of `NFZ1`, and the region whic
 not be infected if we are not to violate conditioning on removals.
 
 ## Example
-Three cases: basic use, missing a conditioned removal, employing an (unconditioned) removal.
-Notice that we introduce some non-standard removals and infections in the "basic use" case!
+Four cases:
 
-I: Basic use
+* updating an `AbstractEvolution` using a candidate `Innovation` (preferred),
+* using an `Innovation`, 
+* using a `chronology` of incidents,
+* what happens on missing a conditioned removal, 
+* what happens on employing an (unconditioned) removal.
+
+In the first case, the procedure is as follows:
+
+1. Test for compatibility between `ev` and `iv`:  
+    * Check the `cremoval` lists have the same length;
+    * Check the `cremoval` lists generate the same times ('t' field).
+2. Use `EpidemicsCFTP.inactive_removals`
+to form the new `removals` list by selecting only those `AbstractRemoval`s
+from `iv.removals` which will not be activated. Type is changed to
+`KilledRemoval` for an `AbstractRemoval` occurring after removal time for the 
+corresponding time line. Note that the function discards `Removal`s
+(as opposed to `CRemoval`s) which _would_ be activated. 
+3. Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`,
+by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
+4. Compute `LFE`. Note `cremovals` has already been computed in step 3.
+Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
+5. Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
+    * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
+    * compute `NFZ1`;
+    * and generate `NFZ2`.
+6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists,
+the new `processed_infections` list, and associated lists
+`LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
+
+We begin with setup of the various incidents.
 ```jldoctest CEvolution; setup = :(using EpidemicsCFTP)
-julia> initial    = SIR(0.0, 2, 1, 0)
-SIR₀.₀₀(2:1:0)
-julia> population = initial.n
-3
-julia> infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
-AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)]
-AbstractRemoval[ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²]
-julia> cremovals  = [CRemoval(0.0, 1)]
-CRemoval[𝒞₀.₀₀¹]
+julia> initial    = SIR(0.0, 2, 1, 0) ;
 
+julia> population = initial.n ;
+
+julia> infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)] ;
+
+julia> removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)] ;
+
+julia> cremovals  = [CRemoval(0.0, 1)] ;
+
+julia> chronology = infections ∪ removals ∪ cremovals ;
+
+```
+
+I: Updating an `AbstractEvolution` using a candidate `Innovation`:
+```jldoctest CEvolution
+ev = CEvolution(initial, chronology) ;
+candidate = Innovation(population, Infection[], Removal[], cremovals) ;
+CEvolution(ev, candidate)
+
+# output
+
+CEvolution(3,
+infections: AbstractInfection[]
+removals:   AbstractRemoval[]
+cremovals:  CRemoval[𝒞₀.₀₀¹]
+chronology: CRemoval[𝒞₀.₀₀¹]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹])
+```
+
+II: Using an `Innovation`:
+```jldoctest CEvolution
 julia> innov      = Innovation(population, infections, removals, cremovals) 
 Innovation(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
@@ -812,8 +862,11 @@ cremovals:  CRemoval[𝒞₀.₀₀¹]
 chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
+```
 
-julia> ev = CEvolution(initial, infections ∪ removals ∪ cremovals, NFZ1=[0.5])
+III: Using a `chronology` of incidents:
+```jldoctest CEvolution
+julia> ev = CEvolution(initial, chronology, NFZ1=[0.5])
 CEvolution(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
@@ -826,25 +879,26 @@ julia> ev.NFZ1 == Real[0.5]
 true
 ```
 
-II: Missing a conditioned removal
+IV: What happens on missing a conditioned removal:
 ```jldoctest CEvolution
-julia> cremovals  = [CRemoval(0.0, 2)]
-CRemoval[𝒞₀.₀₀²]
-julia> innov      = Innovation(population, infections, removals, cremovals) ;
+cremovals1 = sort(cremovals ∪ [CRemoval(0.0, 2)]) ;
+innov = Innovation(population, Infection[], Removal[], cremovals1) ;
+CEvolution(initial, innov)
 
-julia> CEvolution(initial, innov)
+# output
+
 ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.0, 2)
 ```
 
-III: employing an (unconditioned) removal
+V: What happens on employing an (unconditioned) removal:
 ```jldoctest CEvolution
-julia> removals   = [Removal(0.1, 1), Removal(0.1, 2)] ;
+removals   = [Removal(0.1, 1), Removal(0.1, 2)] ;
+cremovals  = [CRemoval(0.2, 1)] ;
+innov      = Innovation(population, infections, removals, cremovals) ;
+CEvolution(initial, innov)
 
-julia> cremovals  = [CRemoval(0.2, 1)] ;
+# output
 
-julia> innov      = Innovation(population, infections, removals, cremovals) ;
-
-julia> CEvolution(initial, innov)
 ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.1, 1)
 ```
 

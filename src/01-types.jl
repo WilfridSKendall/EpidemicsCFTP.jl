@@ -795,23 +795,14 @@ In the first case, the procedure is as follows:
 1. Test for compatibility between `ev` and `iv`:  
     * Check the `cremoval` lists have the same length;
     * Check the `cremoval` lists generate the same times ('t' field).
-2. Use `EpidemicsCFTP.inactive_removals`
-to form the new `removals` list by selecting only those `AbstractRemoval`s
-from `iv.removals` which will not be activated. Type is changed to
-`KilledRemoval` for an `AbstractRemoval` occurring after removal time for the 
-corresponding time line. Note that the function discards `Removal`s
-(as opposed to `CRemoval`s) which _would_ be activated. 
-3. Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`,
-by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
-4. Compute `LFE`. Note `cremovals` has already been computed in step 3.
-Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
+2. Use `EpidemicsCFTP.inactive_removals` to form the new `removals` list by selecting only those `AbstractRemoval`s from `iv.removals` which will not be activated. Type is changed to KilledRemoval` for an `AbstractRemoval` occurring after removal time for the corresponding time line. Note that the function discards `Removal`s (as opposed to `CRemoval`s) which _would_ be activated. 
+3. Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`, by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
+4. Compute `LFE`. Note `cremovals` has already been computed in step 3. Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
 5. Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
     * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
     * compute `NFZ1`;
     * and generate `NFZ2`.
-6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists,
-the new `processed_infections` list, and associated lists
-`LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
+6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
 
 We begin with setup of the various incidents.
 ```jldoctest CEvolution; setup = :(using EpidemicsCFTP)

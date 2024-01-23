@@ -30,6 +30,8 @@ clean:
 	$(JULIA) -e 'Base.compilecache(Base.identify_package("EpidemicsCFTP"))'
 	$(JULIA) -e 'import EpidemicsUtilities'
 	$(JULIA) -e 'Base.compilecache(Base.identify_package("EpidemicsUtilities"))'
+	$(JULIA) -e 'import EpidemicsCFTP, EpidemicsUtilities ; \
+			println(EpidemicsCFTP.summary) ; println(EpidemicsUtilities.summary)'
 
 # ====================
 # Installation

@@ -14,8 +14,9 @@ colour:
 colour_x:
     blank:                     "white"    
     scaffold:                  "white"
-    forbid1:                   "white" 
-    forbid2:                   "white"
+    NFZ1:                      "white" 
+    NFZ2:                      "white" 
+    NFZ3:                      "white" 
     lastfeasible1:             "black"
     lastfeasible2:             "black"
     lastfeasible3:             "black"

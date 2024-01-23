@@ -753,7 +753,7 @@ end
 
 """
     CEvolution(::SIR, ::Innovation; LFE::Vector{AbstractIncident}=AbstractIncident[],
-        TLR=Real[], envelope=Real[], NFZ=Real[])
+        NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -772,10 +772,10 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 
-It possesses extra fields `LFE`, `TLR`,  `envelope`, and `NFZ` which are respectively
+It possesses extra fields `LFE`, `NFZ1`,  `NFZ2`, and `NFZ3` which are respectively
 the incidents involved in the last feasible epidemic, the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
-by `start`, the monotonically increasing envelope of `TLR`, and the region which must
+by `start`, the monotonically increasing envelope of `NFZ1`, and the region which must
 not be infected if we are not to violate conditioning on removals.
 
 ## Example
@@ -810,7 +810,7 @@ chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 
-julia> ev = CEvolution(initial, infections ∪ removals ∪ cremovals, TLR=[0.5])
+julia> ev = CEvolution(initial, infections ∪ removals ∪ cremovals, NFZ1=[0.5])
 CEvolution(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
@@ -819,7 +819,7 @@ chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 
-julia> ev.TLR == Real[0.5]
+julia> ev.NFZ1 == Real[0.5]
 true
 ```
 
@@ -859,12 +859,12 @@ struct CEvolution <: AbstractEvolution
     finis      ::Vector{AbstractRemoval}
     # Remaining fields are special to `CEvolution`
     LFE        ::Vector{AbstractIncident}
-    TLR        ::Vector{Real}
-    envelope   ::Vector{Real}
-    NFZ        ::Vector{Real}
+    NFZ1       ::Vector{Real}
+    NFZ2       ::Vector{Real}
+    NFZ3       ::Vector{Real}
     
     function CEvolution(initial_state::SIR, innovation::Innovation;
-                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[], NFZ=Real[])
+                        LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
         # Need to check population == sum of `initial_state` entries
         population          = innovation.population
         infections          = innovation.infections
@@ -875,17 +875,17 @@ struct CEvolution <: AbstractEvolution
         start, finis        = interval(trajectory, history)
         
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis, LFE, TLR, envelope, NFZ)
+            trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ3)
     end
     
     function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
-                        LFE=AbstractIncident[], TLR=Real[], envelope=Real[], NFZ=Real[])
+                        LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
             innovation = Innovation(initial_state.n,
                         AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                         AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                         CRemoval[z for z ∈ chronology if z isa CRemoval]
                         )
-        return CEvolution(initial_state, innovation, LFE=LFE, TLR=TLR, envelope=envelope, NFZ=NFZ)
+        return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
     end
 
 end

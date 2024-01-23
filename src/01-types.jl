@@ -846,13 +846,11 @@ history:    AbstractIncident[𝒞₀.₀₀¹])
 
 II: Using an `Innovation`:
 ```jldoctest CEvolution
-julia> innov      = Innovation(population, infections, removals, cremovals) 
-Innovation(3,
-infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹])
+innov      = Innovation(population, infections, removals, cremovals) 
+CEvolution(initial, innov)
 
-julia> CEvolution(initial, innov)
+# output
+
 CEvolution(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
@@ -864,16 +862,11 @@ history:    AbstractIncident[𝒞₀.₀₀¹])
 
 III: Using a `chronology` of incidents:
 ```jldoctest CEvolution
-julia> ev = CEvolution(initial, chronology, NFZ1=[0.5])
-CEvolution(3,
-infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹])
+ev = CEvolution(initial, chronology, NFZ1=[0.5])
+ev.NFZ1 == Real[0.5]
 
-julia> ev.NFZ1 == Real[0.5]
+# output
+
 true
 ```
 

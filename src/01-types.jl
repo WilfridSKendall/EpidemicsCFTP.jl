@@ -815,18 +815,16 @@ the new `processed_infections` list, and associated lists
 
 We begin with setup of the various incidents.
 ```jldoctest CEvolution; setup = :(using EpidemicsCFTP)
-julia> initial    = SIR(0.0, 2, 1, 0) ;
+initial    = SIR(0.0, 2, 1, 0)
+population = initial.n
+infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
+removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)]
+cremovals  = [CRemoval(0.0, 1)]
+chronology = infections ∪ removals ∪ cremovals
 
-julia> population = initial.n ;
+# output
 
-julia> infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-
-julia> removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)] ;
-
-julia> cremovals  = [CRemoval(0.0, 1)] ;
-
-julia> chronology = infections ∪ removals ∪ cremovals ;
-
+AbstractIncident[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²,𝒞₀.₀₀¹]
 ```
 
 I: Updating an `AbstractEvolution` using a candidate `Innovation`:

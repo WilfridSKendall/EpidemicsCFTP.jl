@@ -104,7 +104,7 @@ Construction of epidemics
 Parameters: initial state and duration
 --------------------------------------
 We shall only use artificial examples,
-so we do not need to define the rate parameters.
+so the rate parameters need not be defined.
 ```{julia}
 const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
 ```
@@ -113,15 +113,15 @@ Construction of unconditioned epidemic
 --------------------------------------
 Here is an `Innovation` to generate the `Evolution` of the unconditioned epidemic:
 ```{julia}
-AI = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
-AR = AbstractRemoval;   KI = KilledInfection;          KR = KilledRemoval;
-NF  = NoFlyInfection;   X  = ExpungedInfection ;
+AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
+AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
+
 infections = I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
 uremovals  = R[R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)]
 
 uiv1 = Innovation(initial.n, infections, uremovals)
 ```
-The `Evolution` of an epidemic (_unconditioned_) is given by:
+The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follows:
 ```{julia}
 uev1 = Evolution(initial, uiv1)
 ```
@@ -137,21 +137,16 @@ cremovals  = C[C(2t, t) for t ∈ [1,2]]
 
 iv1 = Innovation(initial.n, infections, removals, cremovals)
 ```
-The `CEvolution` of an epidemic (when _conditioned_ on observed removals) is given by:
+The `CEvolution` of an epidemic (_conditioned_ on observed removals) is given as follows:
 ```{julia}
-early_inactivated_removals = [z for z ∈ iv1.removals if z < uev1.start[z.target]]
-envelope0  = repeat([0.0], initial.n)
-for z ∈ early_inactivated_removals
-    envelope0[z.target]  = max(envelope0[z.target], z.t)
-end
-envelope  = accumulate(max, envelope0)
 ev1 = CEvolution(initial, iv1)
 ```
-Notice that this `CEvolution` actually omits crucial information 
-(fields `LFE`, `NFZ1`, `NFZ2`, `NFZ3` are left as empty lists
-as they would generally be filled using information from the `AbstractEvolution`
-immediately preceding in the sense of algorithmic time).
-It amounts to the state of the epidemic at step `0` of algorithmic time.
+Notice that this `CEvolution` omits crucial information 
+(fields `LFE`, `NFZ1`, `NFZ2`, `NFZ3` are empty lists here:
+they would generally be filled using information from the `AbstractEvolution`
+immediately preceding the `CEvolution` in the sense of algorithmic time).
+This particular `CEvolution` then corresponds to the state of the epidemic at step `0` of algorithmic time,
+so there is no predecessor evolution in the sense of algorithmic time.
 
 {{< pagebreak >}}
 
@@ -226,11 +221,11 @@ if the activated removals for `ev1` are not precisely the `CRemoval`s!)
 
 
 
-Single step in algorithmic time
-===============================
+Taking a single step in algorithmic time
+========================================
 
 We introduce a new ("candidate")
-`Innovation` to be used to derive a single step in algorithmic time
+`Innovation`, which will be used (indirectly) to derive a single step in algorithmic time
 of the entire `CEvolution` trajectory.
 ```{julia} 
 infections2c = AI[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
@@ -241,7 +236,9 @@ cremovals2c  = C[C(2, 2), C(4,5)]
 iv2c = Innovation(initial.n, infections2c, removals2c, cremovals2c)
 ```
 @fig-test-02-candidate and @fig-test-02-conditioned respectively plot the candidate innovation for step \(1\)
-(@fig-test-02-candidate) and the conditional epidemic evolution at step \(0\) (@fig-test-02-conditioned).
+(@fig-test-02-candidate) and a repeat 
+from @fig-test-01-conditioned
+of the conditional epidemic evolution at step \(0\) (@fig-test-02-conditioned).
 ```{julia}
 #| echo: false
 depict("test-02-candidate", new_figure(
@@ -258,7 +255,12 @@ depict("test-02-candidate", new_figure(
 ![Conditioned evolution `ev1` of step 0.](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
 
 Candidate innovation `iv2c` and previous evolution `ev1` of epidemic.
-Direct generation of a `CEvolution` from `iv2c` typically fails to respect removal-conditioning, so raising an error.
+@fig-test-02-conditioned repeats @fig-test-01-conditioned, to aid comparison between the candidate innovation
+`iv2c`
+and the conditioned evolution 
+`ev1`
+of one step previous in algorithmic time.
+Direct generation of a `CEvolution` from a candidate innovation such as `iv2c` will typically fail to respect removal-conditioning, so raising an error.
 
 :::
 
@@ -270,28 +272,29 @@ Construction of the next algorithmic step
 -----------------------------------------
 Here is a function `one_step` which creates a `CEvolution`, namely `ev2_final`,
 from an `Evolution` `ev` and an `Innovation` `iv`.
+**The code belongs in `EpidemicsCFTP`**!
 The procedure is as follows:
 
-1. `✔` Test for compatibility between `ev` and `iv`:  
-    * Check the `cremoval` lists have the same length.
+1. Test for compatibility between `ev` and `iv`:  
+    * Check the `cremoval` lists have the same length;
     * Check the `cremoval` lists generate the same times ('t' field).
-2. `✔` Use `EpidemicsCFTP.inactive_removals`
+2. Use `EpidemicsCFTP.inactive_removals`
 to form the new `removals` list by selecting only those `AbstractRemoval`s
 from `iv.removals` which will not be activated. Type is changed to
 `KilledRemoval` for an `AbstractRemoval` occurring after removal time for the 
 corresponding time line. Note that the function discards `Removal`s
 (as opposed to `CRemoval`s) which _would_ be activated. 
-3. `✔` Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`),
+3. Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`,
 by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
-4. `✔` Compute LFE. Note `cremovals` has already been computed in step 3.
+4. Compute `LFE`. Note `cremovals` has already been computed in step 3.
 Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
-5. `✔` Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
+5. Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
     * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
     * compute `NFZ1`;
     * and generate `NFZ2`.
-6. `✔` Then generate the next `CEvolution` using the new `removals` and `cremovals` lists,
-the new `processed_infections` list, and associated
-`LFE`, `NFZ1`, `NFZ2` and `NFZ3` lists.
+6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists,
+the new `processed_infections` list, and associated lists
+`LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
 
 ```{julia}
 function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
@@ -572,8 +575,8 @@ We have already created `ev2_final` to hold the `CEvolution` of the next algorit
 
 ```{julia}
 println(sprint(show, MIME("text/plain"), ev2_final.infections))
-@assert ev2_final.infections == [I(0.75,1,2), I(0.8,3,4), I(1.5,1,2), X(1.5,2,3), KI(2.5,1,2), 
-                                    P(3.0,2,3), X(3.3,3,4), I(3.6,4,5), NF(3.9,4,5), 
+@assert ev2_final.infections == [I(0.75,1,2), I(0.8,3,4), I(1.5,1,2), XI(1.5,2,3), KI(2.5,1,2), 
+                                    P(3.0,2,3), XI(3.3,3,4), I(3.6,4,5), NF(3.9,4,5), 
                                     I(4.4,3,4), KI(4.5,1,3)]
 @assert ev2_final.removals   == [R(0.5,2), R(1.2,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
 @assert ev2_final.cremovals  == [C(2,2), C(4,2)]

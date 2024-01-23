@@ -3,7 +3,7 @@ title:  "Producing figures for Perfect Epidemics"
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
-csl: ima-journal-of-applied-mathematics.csl
+csl: /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 ---
 
 ---

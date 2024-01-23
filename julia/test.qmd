@@ -7,9 +7,6 @@ date:   today
 ---
 toc: true
 
-bibliography: references.bib
-csl: ima-journal-of-applied-mathematics.csl
-
 date-format: "D MMMM YYYY"
 papersize:  a4
 
@@ -21,7 +18,7 @@ include-before-body:
     - text: |
         \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
         \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
-        \newcommand{\LFE}{``last feasible evolution"\xspace}
+        \newcommand{\LFE}{``last feasible epidemic"\xspace}
 
 format:
   html:
@@ -107,7 +104,7 @@ Construction of epidemics
 Parameters: initial state and duration
 --------------------------------------
 We shall only use artificial examples,
-so we do not need to define the rate parameters.
+so the rate parameters need not be defined.
 ```{julia}
 const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
 ```
@@ -116,15 +113,15 @@ Construction of unconditioned epidemic
 --------------------------------------
 Here is an `Innovation` to generate the `Evolution` of the unconditioned epidemic:
 ```{julia}
-AI = AbstractInfection; I = Infection; P = PInfection; R = Removal; C = CRemoval;
-AR = AbstractRemoval;   KI = KilledInfection;          KR = KilledRemoval;
-NF  = NoFlyInfection;   X  = ExpungedInfection ;
+AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
+AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
+
 infections = I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
 uremovals  = R[R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)]
 
 uiv1 = Innovation(initial.n, infections, uremovals)
 ```
-The `Evolution` of an epidemic (_unconditioned_) is given by:
+The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follows:
 ```{julia}
 uev1 = Evolution(initial, uiv1)
 ```
@@ -140,21 +137,16 @@ cremovals  = C[C(2t, t) for t ∈ [1,2]]
 
 iv1 = Innovation(initial.n, infections, removals, cremovals)
 ```
-The `CEvolution` of an epidemic (when _conditioned_ on observed removals) is given by:
+The `CEvolution` of an epidemic (_conditioned_ on observed removals) is given as follows:
 ```{julia}
-early_inactivated_removals = [z for z ∈ iv1.removals if z < uev1.start[z.target]]
-envelope0  = repeat([0.0], initial.n)
-for z ∈ early_inactivated_removals
-    envelope0[z.target]  = max(envelope0[z.target], z.t)
-end
-envelope  = accumulate(max, envelope0)
 ev1 = CEvolution(initial, iv1)
 ```
-Notice that this `CEvolution` actually omits crucial information 
-(fields `LFE`, `TLR`, `envelope`, `NFZ` are left as empty lists
-as they would generally be filled using information from the `AbstractEvolution`
-immediately preceding in the sense of algorithmic time).
-It amounts to the state of the epidemic at step `0` of algorithmic time.
+Notice that this `CEvolution` omits crucial information 
+(fields `LFE`, `NFZ1`, `NFZ2`, `NFZ3` are empty lists here:
+they would generally be filled using information from the `AbstractEvolution`
+immediately preceding the `CEvolution` in the sense of algorithmic time).
+This particular `CEvolution` then corresponds to the state of the epidemic at step `0` of algorithmic time,
+so there is no predecessor evolution in the sense of algorithmic time.
 
 {{< pagebreak >}}
 
@@ -164,7 +156,7 @@ Tabular and graphical displays of epidemics
 used for the plotting parameter `select`.
 ```{julia}
 import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, INFECTIONS, REMOVALS, CREMOVALS, 
-    ACTIVATED, ELEMENTS, LFE, BASIC, ALL 
+    ACTIVATED, ELEMENTS, LFE, BASIC, ALL, MOST, NFZ
 ```
 
 Table of evolution of epidemic
@@ -179,32 +171,30 @@ Markdown.parse(pretty_table(String, uflow[:,header],
 
 ```{julia}
 #| echo: false
-curves_template = plot(uflow, yintercept=1:initial.n,
+axes_plot = plot(uflow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
     Guide.xlabel("Process time", orientation=:horizontal),
     style(default_color=theme.background),
     gadfly_theme) ;
 
-push!(curves_template, layer(uflow, x=:t, y=:empty, Geom.line,
+push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
     style(line_width=2theme.trail, default_color=theme.scaffold))) ;
 
-incidents_template = new_figure(curves_template,
+lines_plot = new_figure(axes_plot,
     Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
         i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
         i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
     Guide.yticks(ticks=collect(1:(initial.n))),
     Guide.ylabel("Time lines")) ;
 
-figure_zones = draw_regions!(deepcopy(incidents_template), duration,
-    uev1, theme=theme, select=BOUNDARIES | REGIONS)
 depict("test-01-unconditioned", new_figure(
-    draw_evolution!(deepcopy(figure_zones), uev1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, select=MOST),
         title="Evolution of unconditioned epidemic")
 ) ;
 
 depict("test-01-conditioned", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev1, duration, theme=theme, select=MOST),
         title="Evolution of conditioned epidemic")
 ) ;
 ```
@@ -231,26 +221,28 @@ if the activated removals for `ev1` are not precisely the `CRemoval`s!)
 
 
 
-Single step in algorithmic time
-===============================
+Taking a single step in algorithmic time
+========================================
 
 We introduce a new ("candidate")
-`Innovation` to be used to derive a single step in algorithmic time
+`Innovation`, which will be used (indirectly) to derive a single step in algorithmic time
 of the entire `CEvolution` trajectory.
-```{julia}
-infections2c = AI[I(1.5,1,2), I(1.3,3,4), I(1.5,2,3), I(2.5,1,2), I(3.2,3,4), I(3.6,4,5), 
-    I(3.9,4,5), I(4.5,1,3)] 
-removals2c   = R[R(0.5,2), R(2,3), R(1.9,4), R(3.3,1), R(4.5,5), R(4.8,1)]
+```{julia} 
+infections2c = AI[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
+    I(3.6,4,5), I(3.9,4,5), I(4.5,1,3), I(4.4,3,4)] 
+removals2c   = R[R(0.5,2), R(2,3), R(1.2,4), R(3.3,1), R(4.5,5), R(4.8,1)]
 cremovals2c  = C[C(2, 2), C(4,5)]
 
 iv2c = Innovation(initial.n, infections2c, removals2c, cremovals2c)
 ```
 @fig-test-02-candidate and @fig-test-02-conditioned respectively plot the candidate innovation for step \(1\)
-(@fig-test-02-candidate) and the conditional epidemic evolution at step \(0\) (@fig-test-02-conditioned).
+(@fig-test-02-candidate) and a repeat 
+from @fig-test-01-conditioned
+of the conditional epidemic evolution at step \(0\) (@fig-test-02-conditioned).
 ```{julia}
 #| echo: false
 depict("test-02-candidate", new_figure(
-    draw_innovation!(deepcopy(incidents_template), iv2c, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv2c, theme=theme, select=ELEMENTS),
         title="Candidate innovation")
 ) ;
 ```
@@ -262,8 +254,15 @@ depict("test-02-candidate", new_figure(
 
 ![Conditioned evolution `ev1` of step 0.](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
 
-Candidate innovation `iv2c` and previous evolution `ev1` of epidemic. Using `iv2c` directly
-to generate a `CEvolution` typically fails to respect conditioning on removals, so raising an error.
+
+Candidate innovation `iv2c` and previous evolution `ev1` of epidemic.
+@fig-test-02-conditioned repeats @fig-test-01-conditioned, to aid comparison between the candidate innovation
+`iv2c`
+and the conditioned evolution 
+`ev1`
+of one step previous in algorithmic time.
+Direct generation of a `CEvolution` from a candidate innovation such as `iv2c` will typically fail to respect removal-conditioning, so raising an error.
+
 
 :::
 
@@ -273,171 +272,11 @@ to generate a `CEvolution` typically fails to respect conditioning on removals, 
 
 Construction of the next algorithmic step
 -----------------------------------------
-Here is a function `one_step` which creates a `CEvolution`, namely `ev2_final`,
-from an `Evolution` `ev` and an `Innovation` `iv`.
-The procedure is as follows:
-
-1. `✔` Test for compatibility between `ev` and `iv`:  
-    * Check the `cremoval` lists have the same length.
-    * Check the `cremoval` lists generate the same times ('t' field).
-2. `✔` Use `EpidemicsCFTP.inactive_removals`
-to form the new `removals` list by selecting only those `AbstractRemoval`s
-from `iv.removals` which will not be activated. Type is changed to
-`KilledRemoval` for an `AbstractRemoval` occurring after removal time for the 
-corresponding time line. Note that the function discards `Removal`s
-(as opposed to `CRemoval`s) which _would_ be activated. 
-3. `✔` Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`),
-by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
-4. `✔` Compute LFE. Note `cremovals` has already been computed in step 3.
-5. `✔` Compute time of last removal per time line (`TLR`) and monotonically non-decreasing envelope (`envelope`):  
-    * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
-    * compute `TLR`;
-    * and generate `envelope`.
-6. `✔` Then generate the next `CEvolution` using the new `removals` and `cremovals` lists,
-the new `processed_infections` list, and associated
-`LFE`, `TLR`, `envelope` and `NFZ` lists.
-
+Here is step `1` of the evolution of the conditioned epidemic in algorithmic time, using
+the candidate `Innovation`
+`iv2c` to generate the new conditioned evolution (`CEvolution`) `ev2_final`.
 ```{julia}
-function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
-    # Step 1.
-    @assert length(ev.cremovals) == length(iv.cremovals)
-    @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
-    
-    # Step 2.
-    removals = EpidemicsCFTP.inactive_removals(ev, iv)
-    
-    # Step 3.
-    cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals)
-    
-    # Step 4.
-    duration = maximum(z.t for z in cremovals)
-    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv.infections, cremovals, 
-                conditioned=true)
-    
-    # Step 5.
-    # * Initial computation of `envelope`, a **list of times** 
-    # indexed by time line ("level"), where each time is initially defined as
-    # the supremum of times of **inactivated** `Removal`s at given level or 
-    # below. So the envelope increases monotonically with level.
-    TLR = repeat([-Inf], ev.initial.n)
-    for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
-        TLR[z.target] = max(TLR[z.target], z.t)
-    end
-    envelope = accumulate(max, TLR)
- 
-    # The hard work begins! We generate the NFZ.
-    # * The list `processed_infections` of processed `AbstractInfection`s will
-    # eventually store (initially in reverse time order) an adjusted version of
-    # each infection supplied by the new `Innovation` `iv`.
-	processed_infections = AbstractInfection[]
-	NFZ = deepcopy(envelope)
-	
-	# * Iteration: work backwards through `Infection`s supplied by `iv`,
-    # determining in each case how to transform the supplied `Infection`
-    # when adding it to the list `processed_infections`.
-	for z ∈ reverse(sort(iv.infections))
-	    
-	    # * If the `Infection` `z` has `target` on the removed portion of a level
-        # then it will never be activated, so add `z` as a `KilledInfection`.
-	    if (z ≥ ev.finis[z.target])
-	        push!(processed_infections, KilledInfection(z))
-	        continue
-	    end
-	    
-	    # * If the `Infection` `z` potentially infects a level at a _later time_ 
-        # than the current `envelope` at that level, then its activation will
-        # never break the conditioning (**needs proof!**), so add `z` as-is.
-        # (I think the point is: since we are working backwards in time, once
-        # `z.t` is considered then `envelope` is frozen from time `t` onwards.)
-	    #
-	    # At this stage of the iteration 
-	    @assert(z < ev.finis[z.target])
-	    #
-        if (z.t ≥ NFZ[z.infectee])
-	        push!(processed_infections, z)
-	        continue
-	    end
-	    
-	    # * However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
-        # infection of the level immediately below `z.infectee` will then not be
-        # allowed at this time. So again add `z` as-is.
-        #
-	    # At this stage of the iteration 
-	    @assert(z < ev.finis[z.target])
-	    @assert(z.t < NFZ[z.infectee])
-	    #
-        if (z.t < NFZ[z.infectee - 1])
-	        push!(processed_infections, z)
-	        continue
-	    end
-	    
-	    # * Suppose `z ≥ ev.start[z.target]`: then an issue would arise
-        # if the level at `z.infectee - 1` were to become infected before `z.t`. 
-        #
-	    # At this stage of the iteration 
-	    @assert(z.t < NFZ[z.infectee])
-	    @assert(z.t ≥ NFZ[z.infectee - 1])
-	    @assert(z < ev.finis[z.target])
-	    #
-	    # One of two cases must hold:
-	    #
-	    # * Case (a): Suppose `z < ev.start[z.infectee - 1]`.
-        # Then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
-        # preclude the time line getting infected, and also transform `z` to a
-        # `NoFlyInfection` when added to `processed_infections`, to signal
-        # that it should never become infected.  
-        # Case (b): Alternatively, suppose `z ≥ ev.start[z.infectee - 1]`.
-        # Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
-        # problem, since this level is infected at time `z.t`. Therefore we
-        # transform `z` to a `ExpungedInfection` when we add it to 
-        # `processed_infections`, so that it is treated as an
-        # `InoperativeInfection`.
-	    if (z ≥ ev.start[z.target])
-            if (z < ev.start[z.infectee - 1])
-                NFZ[z.infectee - 1] = z.t
-                push!(processed_infections, NoFlyInfection(z))
-                # Uncomment for tracking information
-                # @info "Conversion of infection into $(NoFlyInfection(z))"
-                continue
-            else 
-                push!(processed_infections, ExpungedInfection(z))
-                # Uncomment for tracking information
-                # @info "Conversion of infection into $(ExpungedInfection(z))"
-                continue 
-            end 
-	    end
-	    
-	    # At this stage of the iteration 
-	    @assert(z.t < NFZ[z.infectee])
-	    @assert(z.t ≥ NFZ[z.infectee - 1])
-	    @assert(z < ev.start[z.target])
-	    # 
-	    # * Consider now that potential `Infection`s to be treated later in this
-        # iteration must have time mark earlier than `z.t`. If one of these were
-        # to infect the level `z.infectee - 1` then it would follow by monotonicity
-        # that the `z.target` level would become infected by that time `z.t`; and 
-        # thus would create an infection of the `z.infectee` level at time `z.t`. 
-        # In order for this to be prevented, we need to extend the `envelope` 
-        # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
-        # to a `NoFlyInfection` when we add it to `processed_infections`, to
-        # signal that it should never become infected.
-	    NFZ[z.infectee - 1] = z.t 
-	    push!(processed_infections, NoFlyInfection(z))
-        # Uncomment for tracking information
-        # @info "Conversion of infection into $(NoFlyInfection(z))"
-	
-	end
-    
-    # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
-    iv_mod = Innovation(ev.initial.n, processed_infections, removals, cremovals)
-    return CEvolution(ev.initial, iv_mod, LFE=LFE, TLR=TLR, envelope=envelope, NFZ=NFZ)
-end
-```
-
-
-Here is step `1` of the evolution of the conditioned epidemic in algorithmic time.
-```{julia}
-ev2_final  = one_step(ev1, iv2c)
+ev2_final  = CEvolution(ev1, iv2c)
 ```
 
 
@@ -459,11 +298,11 @@ ev2_2 = CEvolution(initial, iv2_2)
 ```{julia}
 #| echo: false
 depict("test-03-removals1", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev2_1, duration, theme=theme, select=MOST),
         title="Old removals removed")
 ) ;
 depict("test-03-removals2", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_2, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev2_2, duration, theme=theme, select=MOST),
         title="New inactive removals inserted")
 ) ;
 ```
@@ -496,11 +335,11 @@ ev2_3 = CEvolution(initial, iv2_3)
 ```{julia}
 #| echo: false
 depict("test-04-cremovals1", new_figure(
-    draw_innovation!(deepcopy(incidents_template), iv2_3, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv2_3, theme=theme, select=ELEMENTS),
         title="Innovation up to new CRemovals")
 ) ;
 depict("test-04-cremovals2", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_3, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(lines_plot), ev2_3, duration, theme=theme, select=MOST),
         title="Resulting evolution")
 ) ;
 ```
@@ -527,28 +366,29 @@ they still lead to activation of the relevant `CRemoval`.
 
 Adding infections from the \LFE
 -------------------------------
-For the present, we compute explicitly with `EpidemicsCFTP.last_feasible_evolution0`.
+In order to obtain a partial advance in algorithmic time, 
+we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev2_3`.
+However this is the same as `ev2_final.LFE`!
 ```{julia}
-last_feasible_history        = EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c,
+@assert ev2_final.LFE == EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c,
                                         conditioned=true)
-last_feasible_new_infections = AI[z for z ∈ last_feasible_history ∩ iv2c.infections]
-perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
-other_older_infections       = setdiff(ev2_3.infections, 
-                                    AI[z for z ∈ last_feasible_history if z isa AI])
+last_feasible_new_infections = AI[z for z ∈ ev2_final.LFE ∩ iv2c.infections]
+perpetuated_infections       = P[PInfection(z) for z ∈ ev2_final.LFE ∩ ev2_3.infections]
+other_older_infections       = setdiff(ev2_3.infections, AI[z for z ∈ ev2_final.LFE if z isa AI])
 iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4, 
-    LFE=EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c, conditioned=true))
+ev2_4 = CEvolution(initial, iv2_4, LFE=ev2_final.LFE)
 ```
+
 
 ```{julia}
 #| echo: false
 depict("test-05-LFE1", new_figure(
-    draw_innovation!(deepcopy(incidents_template), iv2_4, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv2_4, theme=theme, select=ELEMENTS),
         title="Innovation with LFE infections")
 ) ;
 depict("test-05-LFE2", new_figure(
-    draw_evolution!(deepcopy(figure_zones), ev2_4, duration, theme=theme, select=BASIC | LFE),
+    draw_evolution!(deepcopy(lines_plot), ev2_4, duration, theme=theme, select=MOST | LFE),
         title="Evolution with LFE infections")
 ) ;
 ```
@@ -568,20 +408,53 @@ carried over from `ev2_3`.
 
 :::
 
+```{julia}
+#| echo: false
+depict("test-06-evolve11", new_figure(
+    draw_innovation!(deepcopy(lines_plot), iv1, theme=theme, select=ELEMENTS),
+        title="Initial innovation")
+) ;
+depict("test-06-evolve22", new_figure(
+    draw_evolution!(deepcopy(lines_plot), ev2_final, duration, theme=theme, select=MOST | LFE | NFZ),
+        title="Conditioned Evolution, step 2")
+) ;
+```
+
+
+
+::: {#fig-test-06-evolve layout-nrow=2 layout-ncol=2}
+
+![Initial innovation `iv1`.](image/test-06-evolve11.pdf){#fig-test-06-evolve11}
+
+![Initial (conditioned) evolution `ev1`.](image/test-01-conditioned.pdf){#fig-test-06-evolve12}
+
+![Next (candidate) innovation `iv2c`.](image/test-02-candidate.pdf){#fig-test-06-evolve21}
+
+![Next conditioned evolution `ev2_final`.](image/test-06-evolve22.pdf){#fig-test-06-evolve22}
+
+Old and new candidate innovations and conditioned evolutions.
+
+:::
+
 Computing the \NOFLYZONE
 ------------------------
-We have already created `ev2_final` to hold the `CEvolution` of the next algorithmic step.
 
+@fig-test-06-evolve22 illustrates the `CEvolution` at the next step in algorithmic time.
+
+
+Here are some checks.
 ```{julia}
-println(sprint(show, MIME("text/plain"), ev2_final.infections))
-@assert ev2_final.infections == [I(1.3,3,4), I(1.5,1,2), X(1.5,2,3), KI(2.5,1,2), X(3.2,3,4),
-                                    I(3.6,4,5), NF(3.9,4,5), KI(4.5,1,3)]
-@assert ev2_final.removals   == [R(0.5,2), R(1.9,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
+#println(sprint(show, MIME("text/plain"), ev2_final.infections))
+@assert ev2_final.infections == [I(0.75,1,2), I(0.8,3,4), I(1.5,1,2), XI(1.5,2,3), KI(2.5,1,2), 
+                                    P(3.0,2,3), XI(3.3,3,4), I(3.6,4,5), NF(3.9,4,5), 
+                                    I(4.4,3,4), KI(4.5,1,3)]
+@assert ev2_final.removals   == [R(0.5,2), R(1.2,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
 @assert ev2_final.cremovals  == [C(2,2), C(4,2)]
 @assert ev2_final.LFE        == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
-@assert ev2_final.TLR        == [-Inf, 0.5, 2.0, 1.9, 4.5]
-@assert ev2_final.envelope   == [-Inf, 0.5, 2.0, 2.0, 4.5]
-@assert ev2_final.NFZ        == [-Inf, 0.5, 2.0, 3.9, 4.5]
+@assert ev2_final.NFZ1       == [-Inf, 0.5, 2.0, 1.2, 4.5]
+@assert ev2_final.NFZ2       == [-Inf, 0.5, 2.0, 2.0, 4.5]
+@assert ev2_final.NFZ3       == [-Inf, 0.5, 2.0, 3.9, 4.5]
+ev2_final.infections
 ```
 
 Field names of `ev2_final` and a verbose list of contents can be displayed using
@@ -597,7 +470,7 @@ for z ∈ [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
     max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
 end
 nofly_envelope = accumulate(max, max_removal_time)
-@assert nofly_envelope == ev2_final.envelope
+@assert nofly_envelope == ev2_final.NFZ2
 ```
 
 ```{julia}
@@ -612,6 +485,11 @@ for x in [:ev1, :ev2_1, :ev2_2, :ev2_3, :ev2_4, :ev2_final]
 end
 ```
 
+
+```{julia}
+println(sprint(show, MIME("text/plain"), ev2_final.infections))
+println(sprint(show, MIME("text/plain"), ev2_final.LFE))
+```
 
 {{< pagebreak >}}
 

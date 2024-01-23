@@ -148,7 +148,7 @@ envelope  = accumulate(max, envelope0)
 ev1 = CEvolution(initial, iv1)
 ```
 Notice that this `CEvolution` actually omits crucial information 
-(fields `LFE`, `TLR`, `envelope`, `NFZ` are left as empty lists
+(fields `LFE`, `NFZ1`, `NFZ2`, `NFZ3` are left as empty lists
 as they would generally be filled using information from the `AbstractEvolution`
 immediately preceding in the sense of algorithmic time).
 It amounts to the state of the epidemic at step `0` of algorithmic time.
@@ -285,13 +285,13 @@ corresponding time line. Note that the function discards `Removal`s
 by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
 4. `✔` Compute LFE. Note `cremovals` has already been computed in step 3.
 Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
-5. `✔` Compute time of last removal per time line (`TLR`) and monotonically non-decreasing envelope (`envelope`):  
+5. `✔` Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
     * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
-    * compute `TLR`;
-    * and generate `envelope`.
+    * compute `NFZ1`;
+    * and generate `NFZ2`.
 6. `✔` Then generate the next `CEvolution` using the new `removals` and `cremovals` lists,
 the new `processed_infections` list, and associated
-`LFE`, `TLR`, `envelope` and `NFZ` lists.
+`LFE`, `NFZ1`, `NFZ2` and `NFZ3` lists.
 
 ```{julia}
 function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
@@ -312,22 +312,22 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     perpetuated_infections = P[P(z) for z ∈ LFE ∩ ev.infections] 
     
     # Step 5.
-    # * Initial computation of `envelope`, a **list of times** 
+    # * Initial computation of `NFZ2`, a **list of times** 
     # indexed by time line ("level"), where each time is initially defined as
     # the supremum of times of **inactivated** `Removal`s at given level or 
     # below. So the envelope increases monotonically with level.
-    TLR = repeat([-Inf], ev.initial.n)
+    NFZ1 = repeat([-Inf], ev.initial.n)
     for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
-        TLR[z.target] = max(TLR[z.target], z.t)
+        NFZ1[z.target] = max(NFZ1[z.target], z.t)
     end
-    envelope = accumulate(max, TLR)
+    NFZ2 = accumulate(max, NFZ1)
  
-    # The hard work begins! We generate the NFZ.
+    # The hard work begins! We generate the NFZ3.
     # * The list `processed_infections` of processed `AbstractInfection`s will
     # eventually store (initially in reverse time order) an adjusted version of
     # each infection supplied by the new `Innovation` `iv`.
 	processed_infections = AbstractInfection[]
-	NFZ = deepcopy(envelope)
+	NFZ3 = deepcopy(NFZ2)
 	
 	# * Iteration: work backwards through `Infection`s supplied by `iv`
 	# together with perpetuated infections,
@@ -343,28 +343,28 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
 	    end
 	    
 	    # * If the `Infection` `z` potentially infects a level at a _later time_ 
-        # than the current `envelope` at that level, then its activation will
+        # than the current `NFZ2` at that level, then its activation will
         # never break the conditioning (**needs proof!**), so add `z` as-is.
         # (I think the point is: since we are working backwards in time, once
-        # `z.t` is considered then `envelope` is frozen from time `t` onwards.)
+        # `z.t` is considered then `NFZ2` is frozen from time `t` onwards.)
 	    #
 	    # At this stage of the iteration 
 	    @assert(z < ev.finis[z.target])
 	    #
-        if (z.t ≥ NFZ[z.infectee])
+        if (z.t ≥ NFZ3[z.infectee])
 	        push!(processed_infections, z)
 	        continue
 	    end
 	    
-	    # * However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
+	    # * However if `z.t < NFZ2[z.infectee - 1]` then no issue can arise, as 
         # infection of the level immediately below `z.infectee` will then not be
         # allowed at this time. So again add `z` as-is.
         #
 	    # At this stage of the iteration 
 	    @assert(z < ev.finis[z.target])
-	    @assert(z.t < NFZ[z.infectee])
+	    @assert(z.t < NFZ3[z.infectee])
 	    #
-        if (z.t < NFZ[z.infectee - 1])
+        if (z.t < NFZ3[z.infectee - 1])
 	        push!(processed_infections, z)
 	        continue
 	    end
@@ -373,26 +373,26 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
         # if the level at `z.infectee - 1` were to become infected before `z.t`. 
         #
 	    # At this stage of the iteration 
-	    @assert(z.t < NFZ[z.infectee])
-	    @assert(z.t ≥ NFZ[z.infectee - 1])
+	    @assert(z.t < NFZ3[z.infectee])
+	    @assert(z.t ≥ NFZ3[z.infectee - 1])
 	    @assert(z < ev.finis[z.target])
 	    #
 	    # One of two cases must hold:
 	    #
 	    # * Case (a): Suppose `z < ev.start[z.infectee - 1]`.
-        # Then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
+        # Then **increase** `NFZ2[z.infectee - 1]` to `z.t` in order to
         # preclude the time line getting infected, and also transform `z` to a
         # `NoFlyInfection` when added to `processed_infections`, to signal
         # that it should never become infected.  
         # Case (b): Alternatively, suppose `z ≥ ev.start[z.infectee - 1]`.
-        # Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
+        # Then increasing `NFZ2[z.infectee - 1]` to `z.t` would lead to a
         # problem, since this level is infected at time `z.t`. Therefore we
         # transform `z` to a `ExpungedInfection` when we add it to 
         # `processed_infections`, so that it is treated as an
         # `InoperativeInfection`.
 	    if (z ≥ ev.start[z.target])
             if (z < ev.start[z.infectee - 1])
-                NFZ[z.infectee - 1] = z.t
+                NFZ3[z.infectee - 1] = z.t
                 push!(processed_infections, NoFlyInfection(z))
                 # Uncomment for tracking information
                 # @info "Conversion of infection into $(NoFlyInfection(z))"
@@ -406,8 +406,8 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
 	    end
 	    
 	    # At this stage of the iteration 
-	    @assert(z.t < NFZ[z.infectee])
-	    @assert(z.t ≥ NFZ[z.infectee - 1])
+	    @assert(z.t < NFZ3[z.infectee])
+	    @assert(z.t ≥ NFZ3[z.infectee - 1])
 	    @assert(z < ev.start[z.target])
 	    # 
 	    # * Consider now that potential `Infection`s to be treated later in this
@@ -415,11 +415,11 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
         # to infect the level `z.infectee - 1` then it would follow by monotonicity
         # that the `z.target` level would become infected by that time `z.t`; and 
         # thus would create an infection of the `z.infectee` level at time `z.t`. 
-        # In order for this to be prevented, we need to extend the `envelope` 
+        # In order for this to be prevented, we need to extend the `NFZ2` 
         # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
         # to a `NoFlyInfection` when we add it to `processed_infections`, to
         # signal that it should never become infected.
-	    NFZ[z.infectee - 1] = z.t 
+	    NFZ3[z.infectee - 1] = z.t 
 	    push!(processed_infections, NoFlyInfection(z))
         # Uncomment for tracking information
         # @info "Conversion of infection into $(NoFlyInfection(z))"
@@ -428,7 +428,7 @@ function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, cremovals)
-    return CEvolution(ev.initial, iv_mod, LFE=LFE, TLR=TLR, envelope=envelope, NFZ=NFZ)
+    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
 end ;
 ```
 
@@ -578,9 +578,9 @@ println(sprint(show, MIME("text/plain"), ev2_final.infections))
 @assert ev2_final.removals   == [R(0.5,2), R(1.2,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
 @assert ev2_final.cremovals  == [C(2,2), C(4,2)]
 @assert ev2_final.LFE        == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
-@assert ev2_final.TLR        == [-Inf, 0.5, 2.0, 1.2, 4.5]
-@assert ev2_final.envelope   == [-Inf, 0.5, 2.0, 2.0, 4.5]
-@assert ev2_final.NFZ        == [-Inf, 0.5, 2.0, 3.9, 4.5]
+@assert ev2_final.NFZ1       == [-Inf, 0.5, 2.0, 1.2, 4.5]
+@assert ev2_final.NFZ2       == [-Inf, 0.5, 2.0, 2.0, 4.5]
+@assert ev2_final.NFZ3       == [-Inf, 0.5, 2.0, 3.9, 4.5]
 ```
 
 Field names of `ev2_final` and a verbose list of contents can be displayed using
@@ -596,7 +596,7 @@ for z ∈ [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
     max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
 end
 nofly_envelope = accumulate(max, max_removal_time)
-@assert nofly_envelope == ev2_final.envelope
+@assert nofly_envelope == ev2_final.NFZ2
 ```
 
 ```{julia}
@@ -626,9 +626,9 @@ beginning = 0.0
 population = ev2_final.initial.n
 nfz_df = DataFrame(
     time_line=1:population, 
-    TLR=      [max(beginning, t) for t in ev2_final.TLR], 
-    envelope= [max(beginning, t) for t in ev2_final.envelope],
-    NFZ=      [max(beginning, t) for t in ev2_final.NFZ])
+    NFZ1= [max(beginning, t) for t in ev2_final.NFZ1], 
+    NFZ2= [max(beginning, t) for t in ev2_final.NFZ2],
+    NFZ3= [max(beginning, t) for t in ev2_final.NFZ3])
 nfz_df[:, :start] .= 0.0
 nfz_df[:, :high_line] = nfz_df[:, :time_line]
 nfz_df[1:(end-1), :high_line] = (nfz_df[1:(end-1), :time_line] .+1)
@@ -636,16 +636,16 @@ nfz_df[1:(end-1), :high_line] = (nfz_df[1:(end-1), :time_line] .+1)
 
 depict("test-06-evolve22", new_figure(
     draw_evolution!(deepcopy(lines_plot), ev2_final, duration, theme=theme, select=MOST | LFE),
-        layer(nfz_df, x=:start, y=:time_line, xend=:TLR, yend=:time_line, Geom.segment,
-            style(line_width=theme.broad, default_color=theme.forbid1)),
-        layer(nfz_df, x=:TLR, y=:time_line, xend=:envelope, yend=:time_line, Geom.segment,
-            style(line_width=theme.trail, default_color=theme.scaffold)),
-        layer(nfz_df, x=:envelope, y=:time_line, xend=:NFZ, yend=:time_line, Geom.segment,
-            style(line_width=theme.dormant, default_color=theme.forbid1)),
-        layer(nfz_df, x=:NFZ, y=:time_line, xend=:NFZ, yend=:high_line, Geom.segment,
-            style(line_width=theme.dormant, default_color=theme.forbid1)),
-        layer(nfz_df, xmin=:start, ymin=:time_line, xmax=:NFZ, ymax=:high_line, Geom.rect,
-            style(line_width=theme.dormant, default_color=theme.forbid2)),
+        layer(nfz_df, x=:start, y=:time_line, xend=:NFZ1, yend=:time_line, Geom.segment,
+            style(line_width=theme.broad, default_color=theme.NFZ1)),
+        layer(nfz_df, x=:NFZ1, y=:time_line, xend=:NFZ2, yend=:time_line, Geom.segment,
+            style(line_width=theme.broad, default_color=theme.NFZ2)),
+        layer(nfz_df, x=:NFZ2, y=:time_line, xend=:NFZ3, yend=:time_line, Geom.segment,
+            style(line_width=theme.trail, default_color=theme.NFZ1)),
+        layer(nfz_df, x=:NFZ3, y=:time_line, xend=:NFZ3, yend=:high_line, Geom.segment,
+            style(line_width=theme.trail, default_color=theme.NFZ1)),
+        layer(nfz_df, xmin=:start, ymin=:time_line, xmax=:NFZ3, ymax=:high_line, Geom.rect,
+            style(line_width=theme.trail, default_color=theme.NFZ3)),
         title="Conditioned Evolution, step 2")
 ) ;
 ```

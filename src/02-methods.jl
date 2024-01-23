@@ -687,7 +687,7 @@ Doctests to follow ...
 Note the source-code also contains many commented-out assertions!
 """
 function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
-	nofly_bound = deepcopy(ev.envelope)                                        # <1>
+	nofly_bound = deepcopy(ev.NFZ2)                                        # <1>
 	
 	processed_infections = AbstractInfection[]                                 # <2>
 	 
@@ -757,23 +757,23 @@ end ;
 # 4. If the `Infection` `z` has `target` on the removed portion of a level
 # then it will never be activated, so add `z` as a `KilledInfection`.
 # 5. If the `Infection` `z` potentially infects a level at a _later time_ 
-# than the current `envelope` at that level, then its activation will
+# than the current `NFZ2` at that level, then its activation will
 # never break the conditioning (**needs proof!**), so add `z` as-is.
 # (I think the point is: since we are working backwards in time, once
-# `z.t` is considered then `envelope` is frozen from time `t` onwards.)
-# 6. However if `z.t < envelope[z.infectee - 1]` then no issue can arise, as 
+# `z.t` is considered then `NFZ2` is frozen from time `t` onwards.)
+# 6. However if `z.t < NFZ2[z.infectee - 1]` then no issue can arise, as 
 # infection of the level immediately below `z.infectee` will then not be
 # allowed at this time. So again add `z` as-is.
 # 7. Suppose `z ≥ ev.start[z.target]`: then an issue would arise
 # if the level at `z.infectee - 1` were to become infected before
 # `z.t`. One of two cases must hold:
 # 8. Case (a): Suppose `z < ev.start[z.infectee - 1]`.
-# Then **increase** `envelope[z.infectee - 1]` to `z.t` in order to
+# Then **increase** `NFZ2[z.infectee - 1]` to `z.t` in order to
 # preclude the time line getting infected, and also transform `z` to a
 # `NoFlyInfection` when added to `processed_infections`, to signal
 # that it should never become infected.  
 # Case (b): Suppose `z ≥ ev.start[z.infectee - 1]`.
-# Then increasing `envelope[z.infectee - 1]` to `z.t` would lead to a
+# Then increasing `NFZ2[z.infectee - 1]` to `z.t` would lead to a
 # problem, since this level is infected at time `z.t`. Therefore we
 # transform `z` to a `ExpungedInfection` when we add it to 
 # `processed_infections`, so that it is treated as an
@@ -783,7 +783,7 @@ end ;
 # to infect the level `z.infectee - 1` then it would follow by monotonicity
 # that the `z.target` level would become infected by that time `z.t`; and 
 # thus would create an infection of the `z.infectee` level at time `z.t`. 
-# In order for this to be prevented, we need to extend the `envelope` 
+# In order for this to be prevented, we need to extend the `NFZ2` 
 # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
 # to a `NoFlyInfection` when we add it to `processed_infections`, to
 # signal that it should never become infected.

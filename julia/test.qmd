@@ -102,10 +102,32 @@ const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
 
 Construction of unconditioned epidemic
 --------------------------------------
-Here is an `Innovation` to generate the `Evolution` of the unconditioned epidemic:
+We work with an `Innovation`, used to generate an `Evolution` for an unconditioned epidemic.
+The fields of `Innovation` and `Evolution` are respectively
+```{julia}
+#| echo: false
+pretty_table(DataFrame(name=[fieldnames(Innovation)...], type=[fieldtypes(Innovation)...]),
+    header=["Field", "Type"])
+```
+```{julia}
+#| echo: false
+pretty_table(DataFrame(name=[fieldnames(Evolution)...], type=[fieldtypes(Evolution)...]),
+    header=["Field", "Type"])
+```
+and in each case in the standard invocation
+only the first four fields are specified on creation: the remaining fields
+are computed
+from the input data.
+
+When constructing `Innovation` or an `Evolution` (or even a `CEvolution` as is given later)
+it is useful to use some abbreviations for various `AbstractIncidents`.
 ```{julia}
 AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
 AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
+```
+
+Thus we can construct an `Innovation` and a corresponding `Evolution` as follows.
+```{julia}
 uiv1 = Innovation(initial.n, 
     I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)], 
     [R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)])
@@ -119,6 +141,19 @@ uev1 = Evolution(initial, uiv1)
 
 Construction of conditioned epidemic
 ------------------------------------
+A `CEvolution` is a variant of `Evolution` with conditioned removals (`CRemoval`s)
+and some computed fields used in transitioning from a previous `AbstractEvolution`
+using a candidate `Innvation`.
+Field names of `CEvolution` are
+```{julia}
+#| echo: false
+pretty_table(DataFrame(name=[fieldnames(CEvolution)...], type=[fieldtypes(CEvolution)...]),
+    header=["Field", "Type"])
+```
+and again in the standard invocation
+only the first four fields are specified on creation: other fields are computed
+from the input data.
+
 Here is an `Innovation` to generate the `CEvolution` of the corresponding conditioned epidemic:
 ```{julia}
 iv1 = Innovation(initial.n, uiv1.infections, 
@@ -128,6 +163,14 @@ The `CEvolution` of an epidemic (_conditioned_ on observed removals) is given as
 ```{julia}
 ev1 = CEvolution(initial, iv1)
 ```
+
+```{julia}
+@assert length(ev1.LFE)  == 0
+@assert length(ev1.NFZ1) == 0
+@assert length(ev1.NFZ2) == 0
+@assert length(ev1.NFZ3) == 0
+```
+
 Notice that this `CEvolution` omits information 
 (fields `LFE`, `NFZ1`, `NFZ2`, `NFZ3` are empty lists here:
 which would generally be filled using information from the `AbstractEvolution`
@@ -448,41 +491,24 @@ Here are some checks.
 @assert ev2.NFZ1       == [-Inf, 0.5, 2.0, 1.2, 4.5]
 @assert ev2.NFZ2       == [-Inf, 0.5, 2.0, 2.0, 4.5]
 @assert ev2.NFZ3       == [-Inf, 0.5, 2.0, 3.9, 4.5]
-```
 
-Field names of `ev2` and a verbose list of contents can be displayed using
-```julia
-DataFrame(name=[fieldnames(typeof(ev2))...], type=[fieldtypes(typeof(ev2))...])
-dump(ev2)
-```
-
-Finally, some tests.
-```{julia}
 max_removal_time = repeat([-Inf], ev1_4.initial.n)
 for z ∈ [z for z ∈ ev1_4.removals if z < ev1_4.finis[z.target]]
     max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
 end
 nofly_envelope = accumulate(max, max_removal_time)
 @assert nofly_envelope == ev2.NFZ2
-```
 
-```{julia}
 @assert ev1_2.removals  == ev2.removals
 @assert ev1_3.cremovals == ev1_4.cremovals == ev2.cremovals
+@assert ev1.LFE   == AbstractIncident[]
+@assert ev1_1.LFE == AbstractIncident[]
+@assert ev1_2.LFE == AbstractIncident[]
+@assert ev1_3.LFE == AbstractIncident[]
+@assert ev1_4.LFE == AbstractIncident[I(1.5,1,2), C(2.0,2), I(3.0,2,3), C(4.0,2)]
+@assert ev2.LFE   == AbstractIncident[I(1.5,1,2), C(2.0,2), I(3.0,2,3), C(4.0,2)]
 ```
 
-```{julia}
-for x in [:ev1, :ev1_1, :ev1_2, :ev1_3, :ev1_4, :ev2]
-    environ = eval(x)
-    println(lpad(x,15),".LFE = ", sprint(show, MIME("text/plain"), environ.LFE))
-end
-```
-
-
-```{julia}
-println(sprint(show, MIME("text/plain"), ev2.infections))
-println(sprint(show, MIME("text/plain"), ev2.LFE))
-```
 
 {{< pagebreak >}}
 

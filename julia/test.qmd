@@ -17,7 +17,7 @@ from: markdown+tex_math_single_backslash
 include-before-body:
     - text: |
         \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
-        \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
+        \newcommand{\NFZ}{``no-fly zone"\xspace}
         \newcommand{\LFE}{``last feasible epidemic"\xspace}
 
 format:
@@ -44,15 +44,16 @@ source = "test.qmd"
 using EpidemicsCFTP, EpidemicsUtilities
 
 using Gadfly, Compose
-# `Gadfly` documentation <http://gadflyjl.org/stable/>
+# `Gadfly` documentation is to be found at <http://gadflyjl.org/stable/>
 using DataFrames
-# `DataFrames` documentation <https://dataframes.juliadata.org/stable/>
+# `DataFrames` documentation is to be found at <https://dataframes.juliadata.org/stable/>
 using PrettyTables
-# `PrettyTables` documentation at <https://ronisbr.github.io/PrettyTables.jl/stable/>
+# `PrettyTables` documentation is to be found at <https://ronisbr.github.io/PrettyTables.jl/stable/>
 
 import Random
 
 using Test
+# `Test` is only required for testsets at end of document!
 ```
 
 Here is a table of software used in the following computations:
@@ -68,7 +69,7 @@ owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
                         "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
-|_Software_                 | _Version_                     | _Branch_                     |_Date of last commit_       |
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
 |:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
 |Quarto                     |`$(quartoversion)`             | ---                          |                            |
 |Running under `julia`      |`$VERSION`                     | ---                          |                            |
@@ -83,16 +84,6 @@ Markdown.parse("""
 Random.seed!(2)
 
 theme = create_theme(load_theme("config/test-theme.yml"))
-
-gadfly_theme = Theme(
-    panel_fill=theme.blank,
-    default_color=theme.default,
-    background_color=theme.background,
-    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
-    minor_label_color=theme.legend, major_label_color=theme.legend,
-    major_label_font_size=8pt,     minor_label_font_size=6pt,
-    grid_line_width=0mm,
-)
 
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
@@ -115,11 +106,9 @@ Here is an `Innovation` to generate the `Evolution` of the unconditioned epidemi
 ```{julia}
 AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
 AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
-
-infections = I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
-uremovals  = R[R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)]
-
-uiv1 = Innovation(initial.n, infections, uremovals)
+uiv1 = Innovation(initial.n, 
+    I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)], 
+    [R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)])
 ```
 The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follows:
 ```{julia}
@@ -132,31 +121,28 @@ Construction of conditioned epidemic
 ------------------------------------
 Here is an `Innovation` to generate the `CEvolution` of the corresponding conditioned epidemic:
 ```{julia}
-removals   = R[R(1,5), R(3,5), R(4,5)]
-cremovals  = C[C(2t, t) for t ∈ [1,2]] 
-
-iv1 = Innovation(initial.n, infections, removals, cremovals)
+iv1 = Innovation(initial.n, uiv1.infections, 
+        R[R(1,5), R(3,5), R(4,5)], C[C(2t, t) for t ∈ [1,2]])
 ```
 The `CEvolution` of an epidemic (_conditioned_ on observed removals) is given as follows:
 ```{julia}
 ev1 = CEvolution(initial, iv1)
 ```
-Notice that this `CEvolution` omits crucial information 
+Notice that this `CEvolution` omits information 
 (fields `LFE`, `NFZ1`, `NFZ2`, `NFZ3` are empty lists here:
-they would generally be filled using information from the `AbstractEvolution`
+which would generally be filled using information from the `AbstractEvolution`
 immediately preceding the `CEvolution` in the sense of algorithmic time).
 This particular `CEvolution` then corresponds to the state of the epidemic at step `0` of algorithmic time,
-so there is no predecessor evolution in the sense of algorithmic time.
+so there is no `AbstractEvolution` acting as predecessor in the sense of algorithmic time.
 
 {{< pagebreak >}}
 
 Tabular and graphical displays of epidemics
 ===========================================
 `EpidemicsUtilities` supplies some constants 
-used for the plotting parameter `select`.
+used for the plotting parameter `select`, namely
 ```{julia}
-import EpidemicsUtilities: TOP, BOUNDARIES, REGIONS, INFECTIONS, REMOVALS, CREMOVALS, 
-    ACTIVATED, ELEMENTS, LFE, BASIC, ALL, MOST, NFZ
+import EpidemicsUtilities: ACTIVATED, ELEMENTS, LFE, MOST, NFZ
 ```
 
 Table of evolution of epidemic
@@ -176,7 +162,15 @@ axes_plot = plot(uflow, yintercept=1:initial.n,
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
     Guide.xlabel("Process time", orientation=:horizontal),
     style(default_color=theme.background),
-    gadfly_theme) ;
+    Theme(
+        panel_fill=theme.blank,
+        default_color=theme.default,
+        background_color=theme.background,
+        major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+        minor_label_color=theme.legend, major_label_color=theme.legend,
+        major_label_font_size=8pt,     minor_label_font_size=6pt,
+        grid_line_width=0mm,
+)) ;
 
 push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
     style(line_width=2theme.trail, default_color=theme.scaffold))) ;
@@ -211,8 +205,8 @@ plot unconditioned and conditioned epidemics.
 ![Conditioned epidemic `ev1`.](image/test-01-conditioned.pdf){#fig-test-01-conditioned}
 
 Unconditioned (`uev1`) and conditioned (`ev1`) evolutions of epidemic.  Note that the only difference is that 
-the two activated removals become `CRemoval`s. (Creation of the `CEvolution` `ev1` raises an error
-if the activated removals for `ev1` are not precisely the `CRemoval`s!)
+the two activated removals become `CRemoval`s. (Creation of a `CEvolution` `ev1` raises an error
+if activated removals for `ev1` are not precisely the `CRemoval`s!)
 
 :::
 
@@ -228,17 +222,16 @@ We introduce a new ("candidate")
 `Innovation`, which will be used (indirectly) to derive a single step in algorithmic time
 of the entire `CEvolution` trajectory.
 ```{julia} 
-infections2c = AI[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
-    I(3.6,4,5), I(3.9,4,5), I(4.5,1,3), I(4.4,3,4)] 
-removals2c   = R[R(0.5,2), R(2,3), R(1.2,4), R(3.3,1), R(4.5,5), R(4.8,1)]
-cremovals2c  = C[C(2, 2), C(4,5)]
-
-iv2c = Innovation(initial.n, infections2c, removals2c, cremovals2c)
+iv2c = Innovation(initial.n, 
+    AI[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
+        I(3.6,4,5), I(3.9,4,5), I(4.5,1,3), I(4.4,3,4)], 
+    R[R(0.5,2), R(2,3), R(1.2,4), R(3.3,1), R(4.5,5), R(4.8,1)], 
+    C[C(2, 2), C(4,5)])
 ```
-@fig-test-02-candidate and @fig-test-02-conditioned respectively plot the candidate innovation for step \(1\)
+@fig-test-02-candidate and @fig-test-02-conditioned respectively plot the candidate innovation for step \(2\)
 (@fig-test-02-candidate) and a repeat 
 from @fig-test-01-conditioned
-of the conditional epidemic evolution at step \(0\) (@fig-test-02-conditioned).
+of the conditional epidemic evolution at step \(1\) (@fig-test-02-conditioned).
 ```{julia}
 #| echo: false
 depict("test-02-candidate", new_figure(
@@ -250,9 +243,9 @@ depict("test-02-candidate", new_figure(
 
 ::: {#fig-test-02-innov layout-ncol=2}
 
-![Candidate innovation `iv2c` for step 1.](image/test-02-candidate.pdf){#fig-test-02-candidate}
+![Candidate innovation `iv2c` for step 2.](image/test-02-candidate.pdf){#fig-test-02-candidate}
 
-![Conditioned evolution `ev1` of step 0.](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
+![Conditioned evolution `ev1` of step 1.](image/test-01-conditioned.pdf){#fig-test-02-conditioned}
 
 
 Candidate innovation `iv2c` and previous evolution `ev1` of epidemic.
@@ -261,7 +254,7 @@ Candidate innovation `iv2c` and previous evolution `ev1` of epidemic.
 and the conditioned evolution 
 `ev1`
 of one step previous in algorithmic time.
-Direct generation of a `CEvolution` from a candidate innovation such as `iv2c` will typically fail to respect removal-conditioning, so raising an error.
+Dcirect generation of a `CEvolution` from a candidate innovation typically fails to respect removal-conditioning, so raising an error.
 
 
 :::
@@ -272,7 +265,7 @@ Direct generation of a `CEvolution` from a candidate innovation such as `iv2c` w
 
 Construction of the next algorithmic step
 -----------------------------------------
-Here is step `1` of the evolution of the conditioned epidemic in algorithmic time, using
+We compute step `2` of the evolution of the conditioned epidemic in algorithmic time, using
 the candidate `Innovation`
 `iv2c` to generate the new conditioned evolution (`CEvolution`) `ev2_final`.
 ```{julia}
@@ -436,7 +429,7 @@ Old and new candidate innovations and conditioned evolutions.
 
 :::
 
-Computing the \NOFLYZONE
+Computing the \NFZ
 ------------------------
 
 @fig-test-06-evolve22 illustrates the `CEvolution` at the next step in algorithmic time.

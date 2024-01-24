@@ -267,35 +267,35 @@ Construction of the next algorithmic step
 -----------------------------------------
 We compute step `2` of the evolution of the conditioned epidemic in algorithmic time, using
 the candidate `Innovation`
-`iv2c` to generate the new conditioned evolution (`CEvolution`) `ev2_final`.
+`iv2c` to generate the new conditioned evolution (`CEvolution`) `ev2`.
 ```{julia}
-ev2_final  = CEvolution(ev1, iv2c)
+ev2  = CEvolution(ev1, iv2c)
 ```
 
 
 Substitution of appropriate inactivated removals
 ------------------------------------------------
-The first step is to create a new `Innovation` which 
+The first step is to create `iv1_2`, an intermediate `Innovation` which 
 
 (a) removes _all_ old unconditioned
-`Removal`s (@fig-test-03-removals1) and 
+`Removal`s (@fig-test-03-removals1) (generating `iv1_1`) and 
 (b) inserts those new `Removal`s which remain inactivated (@fig-test-03-removals2).
 ```{julia}
-iv2_1 = Innovation(initial.n, ev1.infections, R[], ev1.cremovals)
-ev2_1 = CEvolution(initial, iv2_1)
-iv2_2 = Innovation(initial.n, ev2_1.infections, 
-    EpidemicsCFTP.inactive_removals(ev1, iv2c), ev2_1.cremovals)
-ev2_2 = CEvolution(initial, iv2_2)
+iv1_1 = Innovation(initial.n, ev1.infections, R[], ev1.cremovals)
+ev1_1 = CEvolution(initial, iv1_1)
+iv1_2 = Innovation(initial.n, ev1.infections, 
+    EpidemicsCFTP.inactive_removals(ev1, iv2c), ev1.cremovals)
+ev1_2 = CEvolution(initial, iv1_2)
 ```
 
 ```{julia}
 #| echo: false
 depict("test-03-removals1", new_figure(
-    draw_evolution!(deepcopy(lines_plot), ev2_1, duration, theme=theme, select=MOST),
+    draw_evolution!(deepcopy(lines_plot), ev1_1, duration, theme=theme, select=MOST),
         title="Old removals removed")
 ) ;
 depict("test-03-removals2", new_figure(
-    draw_evolution!(deepcopy(lines_plot), ev2_2, duration, theme=theme, select=MOST),
+    draw_evolution!(deepcopy(lines_plot), ev1_2, duration, theme=theme, select=MOST),
         title="New inactive removals inserted")
 ) ;
 ```
@@ -303,12 +303,13 @@ depict("test-03-removals2", new_figure(
 
 ::: {#fig-test-03-removals layout-ncol=2}
 
-![Conditioned evolution `ev2_1`, step 2a.](image/test-03-removals1.pdf){#fig-test-03-removals1}
+![Conditioned evolution `ev1_1`.](image/test-03-removals1.pdf){#fig-test-03-removals1}
 
-![Conditioned evolution `ev2_2`, step 2b.](image/test-03-removals2.pdf){#fig-test-03-removals2}
+![Conditioned evolution `ev1_2`.](image/test-03-removals2.pdf){#fig-test-03-removals2}
 
-Modifying inactivated removal structure. Step 2a removes _all_ unconditioned old `Removal`s:
-step 2b inserts precisely new `Removal`s which would _not_ be activated by the old evolution.
+Modifying inactivated removal structure.
+_All_ unconditioned old `Removal`s are removed in @fig-test-03-removals1:
+@fig-test-03-removals2 inserts only those new `Removal`s _not_ activated by the old evolution.
 
 :::
 
@@ -316,38 +317,39 @@ step 2b inserts precisely new `Removal`s which would _not_ be activated by the o
 Modifying conditional removal structure
 ---------------------------------------
 
-The next step is to substitute only those `CRemoval`s which remain activated, while continuing
+The next step is to substitute only (the marks of) those `CRemoval`s which then remain activated, while continuing
 to use the old `Infection`s
-(@fig-test-04-cremovals1 shows relevant `Innovation`, @fig-test-04-cremovals2 shows `CEvolution`).
+(@fig-test-04-cremovals1, @fig-test-04-cremovals2  depict resulting `Innovation`, `CEvolution`).
 ```{julia}
-iv2_3 = Innovation(initial.n, ev2_2.infections, ev2_2.removals, 
+iv1_3 = Innovation(initial.n, ev1.infections, ev1_2.removals, 
     EpidemicsCFTP.resulting_cremovals(ev1, iv2c))
-ev2_3 = CEvolution(initial, iv2_3)
+ev1_3 = CEvolution(initial, iv1_3)
 ```
 
 ```{julia}
 #| echo: false
 depict("test-04-cremovals1", new_figure(
-    draw_innovation!(deepcopy(lines_plot), iv2_3, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv1_3, theme=theme, select=ELEMENTS),
         title="Innovation up to new CRemovals")
 ) ;
 depict("test-04-cremovals2", new_figure(
-    draw_evolution!(deepcopy(lines_plot), ev2_3, duration, theme=theme, select=MOST),
+    draw_evolution!(deepcopy(lines_plot), ev1_3, duration, theme=theme, select=MOST),
         title="Resulting evolution")
 ) ;
 ```
 
-Notice that the same `CRemoval`s result if we use `ev2_1` or `ev2_2` rather than `ev1`.
+Notice that use of `ev1_1` or `ev1_2` rather than `ev1` still yields
+the same `CRemoval`s.
 ```{julia}
-@assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev2_1, iv2c)
-@assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev2_2, iv2c)
+@assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev1_1, iv2c)
+@assert EpidemicsCFTP.resulting_cremovals(ev1, iv2c) == EpidemicsCFTP.resulting_cremovals(ev1_2, iv2c)
 ```
 
 ::: {#fig-test-04-cremovals layout-ncol=2}
 
-![Innovation with modified removals `iv2_3`.](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
+![Innovation with modified removals `iv1_3`.](image/test-04-cremovals1.pdf){#fig-test-04-cremovals1}
 
-![Resulting conditioned evolution `ev2_3`.](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
+![Resulting conditioned evolution `ev1_3`.](image/test-04-cremovals2.pdf){#fig-test-04-cremovals2}
 
 Modifying conditional removal structure. `CRemoval` marks (but not times) altered only when 
 they still lead to activation of the relevant `CRemoval`.
@@ -360,28 +362,28 @@ they still lead to activation of the relevant `CRemoval`.
 Adding infections from the \LFE
 -------------------------------
 In order to obtain a partial advance in algorithmic time, 
-we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev2_3`.
-However this is the same as `ev2_final.LFE`!
+we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`.
+However this is the same as `ev2.LFE`!
 ```{julia}
-@assert ev2_final.LFE == EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c,
+@assert ev2.LFE == EpidemicsCFTP.last_feasible_evolution0(duration, ev1_3, iv2c,
                                         conditioned=true)
-last_feasible_new_infections = AI[z for z ∈ ev2_final.LFE ∩ iv2c.infections]
-perpetuated_infections       = P[PInfection(z) for z ∈ ev2_final.LFE ∩ ev2_3.infections]
-other_older_infections       = setdiff(ev2_3.infections, AI[z for z ∈ ev2_final.LFE if z isa AI])
-iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
-                        other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4, LFE=ev2_final.LFE)
+last_feasible_new_infections = AI[z for z ∈ ev2.LFE ∩ iv2c.infections]
+perpetuated_infections       = P[PInfection(z) for z ∈ ev2.LFE ∩ ev1_3.infections]
+other_older_infections       = setdiff(ev1_3.infections, AI[z for z ∈ ev2.LFE if z isa AI])
+iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
+                        other_older_infections, ev1_3.removals, ev1_3.cremovals)
+ev1_4 = CEvolution(initial, iv1_4, LFE=ev2.LFE)
 ```
 
 
 ```{julia}
 #| echo: false
 depict("test-05-LFE1", new_figure(
-    draw_innovation!(deepcopy(lines_plot), iv2_4, theme=theme, select=ELEMENTS),
+    draw_innovation!(deepcopy(lines_plot), iv1_4, theme=theme, select=ELEMENTS),
         title="Innovation with LFE infections")
 ) ;
 depict("test-05-LFE2", new_figure(
-    draw_evolution!(deepcopy(lines_plot), ev2_4, duration, theme=theme, select=MOST | LFE),
+    draw_evolution!(deepcopy(lines_plot), ev1_4, duration, theme=theme, select=MOST | LFE),
         title="Evolution with LFE infections")
 ) ;
 ```
@@ -389,15 +391,15 @@ depict("test-05-LFE2", new_figure(
 
 ::: {#fig-test-05-LFE layout-ncol=2}
 
-![Innovation with LFE infections added (`iv2_4`).](image/test-05-LFE1.pdf){#fig-test-05-LFE1}
+![Innovation with LFE infections added (`iv1_4`).](image/test-05-LFE1.pdf){#fig-test-05-LFE1}
 
-![Resulting conditioned evolution `ev2_4`.](image/test-05-LFE2.pdf){#fig-test-05-LFE2}
+![Resulting conditioned evolution `ev1_4`.](image/test-05-LFE2.pdf){#fig-test-05-LFE2}
 
 This adds \LFE (LFE) infections, calculated using `iv2c`, also highlighting
 the region lying between the
 LFE trajectory and the removal boundary.
 Note perpetuation of the activated infection from time line 2 to time line 3,
-carried over from `ev2_3`.
+carried over from `ev1_3`.
 
 :::
 
@@ -408,7 +410,7 @@ depict("test-06-evolve11", new_figure(
         title="Initial innovation")
 ) ;
 depict("test-06-evolve22", new_figure(
-    draw_evolution!(deepcopy(lines_plot), ev2_final, duration, theme=theme, select=MOST | LFE | NFZ),
+    draw_evolution!(deepcopy(lines_plot), ev2, duration, theme=theme, select=MOST | LFE | NFZ),
         title="Conditioned Evolution, step 2")
 ) ;
 ```
@@ -423,7 +425,7 @@ depict("test-06-evolve22", new_figure(
 
 ![Next (candidate) innovation `iv2c`.](image/test-02-candidate.pdf){#fig-test-06-evolve21}
 
-![Next conditioned evolution `ev2_final`.](image/test-06-evolve22.pdf){#fig-test-06-evolve22}
+![Next conditioned evolution `ev2`.](image/test-06-evolve22.pdf){#fig-test-06-evolve22}
 
 Old and new candidate innovations and conditioned evolutions.
 
@@ -437,42 +439,42 @@ Computing the \NFZ
 
 Here are some checks.
 ```{julia}
-#println(sprint(show, MIME("text/plain"), ev2_final.infections))
-@assert ev2_final.infections == [I(0.75,1,2), I(0.8,3,4), I(1.5,1,2), XI(1.5,2,3), KI(2.5,1,2), 
+#println(sprint(show, MIME("text/plain"), ev2.infections))
+@assert ev2.infections == [I(0.75,1,2), I(0.8,3,4), I(1.5,1,2), XI(1.5,2,3), KI(2.5,1,2), 
                                     P(3.0,2,3), XI(3.3,3,4), I(3.6,4,5), NF(3.9,4,5), 
                                     I(4.4,3,4), KI(4.5,1,3)]
-@assert ev2_final.removals   == [R(0.5,2), R(1.2,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
-@assert ev2_final.cremovals  == [C(2,2), C(4,2)]
-@assert ev2_final.LFE        == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
-@assert ev2_final.NFZ1       == [-Inf, 0.5, 2.0, 1.2, 4.5]
-@assert ev2_final.NFZ2       == [-Inf, 0.5, 2.0, 2.0, 4.5]
-@assert ev2_final.NFZ3       == [-Inf, 0.5, 2.0, 3.9, 4.5]
-ev2_final.infections
+@assert ev2.removals   == [R(0.5,2), R(1.2,4), R(2,3), KR(3.3,1), R(4.5,5), KR(4.8,1)]
+@assert ev2.cremovals  == [C(2,2), C(4,2)]
+@assert ev2.LFE        == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
+@assert ev2.NFZ1       == [-Inf, 0.5, 2.0, 1.2, 4.5]
+@assert ev2.NFZ2       == [-Inf, 0.5, 2.0, 2.0, 4.5]
+@assert ev2.NFZ3       == [-Inf, 0.5, 2.0, 3.9, 4.5]
+ev2.infections
 ```
 
-Field names of `ev2_final` and a verbose list of contents can be displayed using
+Field names of `ev2` and a verbose list of contents can be displayed using
 ```julia
-DataFrame(name=[fieldnames(typeof(ev2_final))...], type=[fieldtypes(typeof(ev2_final))...])
-dump(ev2_final)
+DataFrame(name=[fieldnames(typeof(ev2))...], type=[fieldtypes(typeof(ev2))...])
+dump(ev2)
 ```
 
 Finally, some tests.
 ```{julia}
-max_removal_time = repeat([-Inf], ev2_4.initial.n)
-for z ∈ [z for z ∈ ev2_4.removals if z < ev2_4.finis[z.target]]
+max_removal_time = repeat([-Inf], ev1_4.initial.n)
+for z ∈ [z for z ∈ ev1_4.removals if z < ev1_4.finis[z.target]]
     max_removal_time[z.target] = max(max_removal_time[z.target], z.t)
 end
 nofly_envelope = accumulate(max, max_removal_time)
-@assert nofly_envelope == ev2_final.NFZ2
+@assert nofly_envelope == ev2.NFZ2
 ```
 
 ```{julia}
-@assert ev2_2.removals  == ev2_final.removals
-@assert ev2_3.cremovals == ev2_4.cremovals == ev2_final.cremovals
+@assert ev1_2.removals  == ev2.removals
+@assert ev1_3.cremovals == ev1_4.cremovals == ev2.cremovals
 ```
 
 ```{julia}
-for x in [:ev1, :ev2_1, :ev2_2, :ev2_3, :ev2_4, :ev2_final]
+for x in [:ev1, :ev1_1, :ev1_2, :ev1_3, :ev1_4, :ev2]
     environ = eval(x)
     println(lpad(x,15),".LFE = ", sprint(show, MIME("text/plain"), environ.LFE))
 end
@@ -480,8 +482,8 @@ end
 
 
 ```{julia}
-println(sprint(show, MIME("text/plain"), ev2_final.infections))
-println(sprint(show, MIME("text/plain"), ev2_final.LFE))
+println(sprint(show, MIME("text/plain"), ev2.infections))
+println(sprint(show, MIME("text/plain"), ev2.LFE))
 ```
 
 {{< pagebreak >}}
@@ -555,23 +557,23 @@ Substitution of various removals
 The current task is to check removal of all inactive `Removal`s and application of
 functions `inactive_removals` and `resulting_cremovals` from `EpidemicsCFTP`.
 
-The first test set considers `ev2_1`, obtained by removing all inactivated `Removal`s.
+The first test set considers `ev1_1`, obtained by removing all inactivated `Removal`s.
 History and trajectory should not change, while the chronology should be obtained by 
 subtracting inactive `Removal`s.
 ```{julia}
-iv2_1   = Innovation(initial.n, infections, R[], cremovals)
-ev2_1   = CEvolution(initial, iv2_1)
+iv1_1   = Innovation(initial.n, infections, R[], cremovals)
+ev1_1   = CEvolution(initial, iv1_1)
 begin ; title = "Removing Removals"
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
-        @test ev2_1.trajectory == ev1.trajectory
-        @test ev2_1.history    == ev1.history
-        @test ev2_1.chronology == setdiff(ev1.chronology, ev1.removals)
+        @test ev1_1.trajectory == ev1.trajectory
+        @test ev1_1.history    == ev1.history
+        @test ev1_1.chronology == setdiff(ev1.chronology, ev1.removals)
     end
 end ;
 ```
-Now consider `ev2_2`, obtained by using `EpidemicsCFTP.inactive_removals`
+Now consider `ev1_2`, obtained by using `EpidemicsCFTP.inactive_removals`
 to add in only the inactive removals from the candidate `Innovation` `iv2c` 
-(not activated by the trajectory of `ev1` equivalently `ev2_1`).
+(not activated by the trajectory of `ev1` equivalently `ev1_1`).
 
 ```{julia}
 infections2 = AI[I(2t-1.5, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
@@ -586,17 +588,17 @@ cremovals2  = C[C(2t, 2t) for t ∈ [1,2]]
 #envelope  = accumulate(max, envelope0)
 
 iv2c  = Innovation(initial.n, infections2, removals2, cremovals2)
-iv2_2 = Innovation(initial.n, iv2_1.infections, 
-    EpidemicsCFTP.inactive_removals(ev1, iv2c), iv2_1.cremovals)
-#ev2_2 = CEvolution(initial, iv2_2, envelope0=envelope0, envelope=envelope)
-ev2_2 = CEvolution(initial, iv2_2)
+iv1_2 = Innovation(initial.n, iv1_1.infections, 
+    EpidemicsCFTP.inactive_removals(ev1, iv2c), iv1_1.cremovals)
+#ev1_2 = CEvolution(initial, iv1_2, envelope0=envelope0, envelope=envelope)
+ev1_2 = CEvolution(initial, iv1_2)
 begin ; title = "Inserting Removals"
-    early_removals = [z for z ∈ ev2_2.chronology if z isa AR && z < ev2_2.start[z.target]]
-    late_removals  = [z for z ∈ ev2_2.chronology if z isa AR && z > ev2_2.finis[z.target]]
+    early_removals = [z for z ∈ ev1_2.chronology if z isa AR && z < ev1_2.start[z.target]]
+    late_removals  = [z for z ∈ ev1_2.chronology if z isa AR && z > ev1_2.finis[z.target]]
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
-        @test ev2_2.trajectory == ev1.trajectory
-        @test [z for z ∈ ev2_2.chronology if z isa R]  == early_removals
-        @test [z for z ∈ ev2_2.chronology if z isa KR] == late_removals
+        @test ev1_2.trajectory == ev1.trajectory
+        @test [z for z ∈ ev1_2.chronology if z isa R]  == early_removals
+        @test [z for z ∈ ev1_2.chronology if z isa KR] == late_removals
     end
 end ;
 ```
@@ -604,17 +606,17 @@ end ;
 Consider the effect of `EpidemicsCFTP.resulting_cremovals`.
 
 ```{julia}
-iv2_3 = Innovation(initial.n, iv2_2.infections, iv2_2.removals, 
-    EpidemicsCFTP.resulting_cremovals(ev2_2, iv2c))
-#ev2_3 = CEvolution(initial, iv2_3, envelope0=envelope0, envelope=envelope)
-ev2_3 = CEvolution(initial, iv2_3)
+iv1_3 = Innovation(initial.n, iv1_2.infections, iv1_2.removals, 
+    EpidemicsCFTP.resulting_cremovals(ev1_2, iv2c))
+#ev1_3 = CEvolution(initial, iv1_3, envelope0=envelope0, envelope=envelope)
+ev1_3 = CEvolution(initial, iv1_3)
 begin ; title = "Modifying CRemovals"
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
-        @test ev2_3.trajectory == ev1.trajectory
-        @test ev2_3.infections == ev1.infections
-        @test [z for z ∈ ev2_3.chronology if z isa R]  == early_removals
-        @test [z for z ∈ ev2_3.chronology if z isa KR] == late_removals
-        @test ev2_3.cremovals  == C[C(2,2), C(4,2)] 
+        @test ev1_3.trajectory == ev1.trajectory
+        @test ev1_3.infections == ev1.infections
+        @test [z for z ∈ ev1_3.chronology if z isa R]  == early_removals
+        @test [z for z ∈ ev1_3.chronology if z isa KR] == late_removals
+        @test ev1_3.cremovals  == C[C(2,2), C(4,2)] 
     end
 end ;
 ```
@@ -624,18 +626,18 @@ Testing the \LFE
 
 ```{julia}
 last_feasible_history =
-    EpidemicsCFTP.last_feasible_evolution0(duration, ev2_3, iv2c, conditioned=true)
+    EpidemicsCFTP.last_feasible_evolution0(duration, ev1_3, iv2c, conditioned=true)
 last_feasible_new_infections = AI[z for z ∈ last_feasible_history ∩ iv2c.infections]
-perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev2_3.infections]
-other_older_infections       = setdiff(ev2_3.infections, AI[z for z ∈ last_feasible_history if z isa AI])
-iv2_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪
-                        other_older_infections, ev2_3.removals, ev2_3.cremovals)
-ev2_4 = CEvolution(initial, iv2_4, LFE=last_feasible_history)
+perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev1_3.infections]
+other_older_infections       = setdiff(ev1_3.infections, AI[z for z ∈ last_feasible_history if z isa AI])
+iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪
+                        other_older_infections, ev1_3.removals, ev1_3.cremovals)
+ev1_4 = CEvolution(initial, iv1_4, LFE=last_feasible_history)
 
 begin ; title = "Last feasible evolution"
     LFE_target = [I(1.0,1,2), C(2.0,2), I(3.0,2,3), C(4.0,2)]
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
-        @test ev2_4.LFE == LFE_target
+        @test ev1_4.LFE == LFE_target
     end
 end ;
 ```

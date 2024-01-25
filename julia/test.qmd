@@ -446,7 +446,7 @@ Computing the \NFZ
 ```{julia}
 #| echo: false
 depict("test-06-evolve22", new_figure(
-    draw_evolution!(deepcopy(lines_plot), ev2, duration, theme=theme, select=BOUNDARIES | REGIONS | LFET | NFZ),
+    draw_evolution!(deepcopy(lines_plot), ev2, duration, theme=theme, select=BOUNDARIES | LFET | NFZ),
         title="Conditioned Evolution, step 2")
 ) ;
 ```

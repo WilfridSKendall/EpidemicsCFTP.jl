@@ -184,7 +184,7 @@ Tabular and graphical displays of epidemics
 `EpidemicsUtilities` supplies some constants 
 used for the plotting parameter `select`, namely
 ```{julia}
-import EpidemicsUtilities: ACTIVATED, ELEMENTS, LFE, MOST, NFZ
+import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, MOST, NFZ
 ```
 
 Table of evolution of epidemic
@@ -296,7 +296,7 @@ Candidate innovation `iv2c` and previous evolution `ev1` of epidemic.
 and the conditioned evolution 
 `ev1`
 of one step previous in algorithmic time.
-Dcirect generation of a `CEvolution` from a candidate innovation typically fails to respect removal-conditioning, so raising an error.
+Direct generation of a `CEvolution` from a candidate innovation typically fails to respect removal-conditioning, so raising an error.
 
 
 :::
@@ -436,33 +436,6 @@ carried over from `ev1_3`.
 
 :::
 
-```{julia}
-#| echo: false
-depict("test-06-evolve11", new_figure(
-    draw_innovation!(deepcopy(lines_plot), iv1, theme=theme, select=ELEMENTS),
-        title="Initial innovation")
-) ;
-depict("test-06-evolve22", new_figure(
-    draw_evolution!(deepcopy(lines_plot), ev2, duration, theme=theme, select=MOST | LFE | NFZ),
-        title="Conditioned Evolution, step 2")
-) ;
-```
-
-
-
-::: {#fig-test-06-evolve layout-nrow=2 layout-ncol=2}
-
-![Initial innovation `iv1`.](image/test-06-evolve11.pdf){#fig-test-06-evolve11}
-
-![Initial (conditioned) evolution `ev1`.](image/test-01-conditioned.pdf){#fig-test-06-evolve12}
-
-![Next (candidate) innovation `iv2c`.](image/test-02-candidate.pdf){#fig-test-06-evolve21}
-
-![Next conditioned evolution `ev2`.](image/test-06-evolve22.pdf){#fig-test-06-evolve22}
-
-Old and new candidate innovations and conditioned evolutions.
-
-:::
 
 Computing the \NFZ
 ------------------------
@@ -470,4 +443,53 @@ Computing the \NFZ
 @fig-test-06-evolve22 depicts `ev2`, the `CEvolution` at the next step in algorithmic time.
 
 
+```{julia}
+#| echo: false
+depict("test-06-evolve22", new_figure(
+    draw_evolution!(deepcopy(lines_plot), ev2, duration, theme=theme, select=BOUNDARIES | REGIONS | LFET | NFZ),
+        title="Conditioned Evolution, step 2")
+) ;
+```
 
+
+::: {#fig-test-06-evolve layout-ncol=2}
+
+![Next (candidate) innovation `iv2c`.](image/test-02-candidate.pdf){#fig-test-06-evolve21}
+
+![Next conditioned evolution `ev2`.](image/test-06-evolve22.pdf){#fig-test-06-evolve22}
+
+New candidate innovation and conditioned evolution (trajectories only).
+
+:::
+
+
+```{julia}                   
+#| echo: false                       
+depict("test-07-evolve11", new_figure(                                                  
+   draw_innovation!(deepcopy(lines_plot), iv1, theme=theme, select=ELEMENTS),                                                          
+         title="Initial innovation")                                                     
+) ; 
+
+depict("test-07-evolve22", new_figure(
+    draw_evolution!(deepcopy(lines_plot), ev2, duration, theme=theme, select=MOST | LFE | NFZ),
+        title="Conditioned Evolution, step 2")
+) ;
+```
+
+
+
+::: {#fig-test-07-evolve layout-nrow=2 layout-ncol=2}
+
+![Initial innovation `iv1`.](image/test-07-evolve11.pdf){#fig-test-07-evolve11}
+
+![Initial (conditioned) evolution `ev1`.](image/test-01-conditioned.pdf){#fig-test-07-evolve12}
+
+![Next (candidate) innovation `iv2c`.](image/test-02-candidate.pdf){#fig-test-07-evolve21}
+
+![Next conditioned evolution `ev2`.](image/test-07-evolve22.pdf){#fig-test-07-evolve22}
+
+Old and new candidate innovations and conditioned evolutions, illustrated together
+for purposes of comparison. The new evolution
+exhibits the \NFZ as a region.
+
+:::

@@ -442,9 +442,12 @@ carried over from `ev1_3`.
 Computing the \NFZ
 ------------------------
 
-@fig-test-06-evolve22 depicts `ev2`, the
+@fig-test-06-evolve depicts `ev2`, the
 trajectory of the `CEvolution` at the next step in algorithmic time.
-
+Display options for the new evolution are chosen to give only the epidemic trajectory boundary,
+the removals trajectory boundary, and the 
+\LFE (`LFE`) and 
+\NFZ (`NFZ`) boundaries.
 
 ```{julia}
 #| echo: false
@@ -465,11 +468,11 @@ New candidate innovation and conditioned evolution (trajectories only).
 :::
 
 
-On the next page there are plots of old and new candidate innovations and conditioned evolutions, illustrated together
-for purposes of comparison. Display options for the new evolution are chosen to give only the epidemic trajectory boundary,
-the removals trajectory boundary, and the 
-\LFE (`LFE`) and 
-\NFZ (`NFZ`) boundaries.
+On the next page 
+@fig-test-07-evolve
+plots old and new candidate innovations and conditioned evolutions, placed together
+for purposes of comparison. 
+Display options are set to fill in the various regions.
 
 ```{julia}                   
 #| echo: false                       
@@ -496,8 +499,8 @@ depict("test-07-evolve22", new_figure(
 
 ![Next conditioned evolution `ev2`.](image/test-07-evolve22.pdf){#fig-test-07-evolve22}
 
-Old and new candidate innovations and conditioned evolutions, illustrated together
+Old and new candidate innovations and conditioned evolutions, placed together
 for purposes of comparison. The new evolution
-exhibits the \NFZ as a region.
+exhibits the \NFZ and \LFE as regions.
 
 :::

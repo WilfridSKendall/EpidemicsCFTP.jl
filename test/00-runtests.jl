@@ -18,4 +18,5 @@ end
     
 include("01-Types.jl")
 include("02-Methods.jl")
+include("03-Various.jl")
 

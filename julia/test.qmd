@@ -100,25 +100,6 @@ so the rate parameters need not be defined.
 const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
 ```
 
-Construction of unconditioned epidemic
---------------------------------------
-We work with an `Innovation`, used to generate an `Evolution` for an unconditioned epidemic.
-The fields of `Innovation` and `Evolution` are respectively
-```{julia}
-#| echo: false
-pretty_table(DataFrame(name=[fieldnames(Innovation)...], type=[fieldtypes(Innovation)...]),
-    header=["Field", "Type"])
-```
-```{julia}
-#| echo: false
-pretty_table(DataFrame(name=[fieldnames(Evolution)...], type=[fieldtypes(Evolution)...]),
-    header=["Field", "Type"])
-```
-and in each case in the standard invocation
-only the first four fields are specified on creation: the remaining fields
-are computed
-from the input data.
-
 When constructing `Innovation` or an `Evolution` (or even a `CEvolution` as is given later)
 it is useful to use some abbreviations for various `AbstractIncidents`.
 ```{julia}
@@ -126,7 +107,36 @@ AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI 
 AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
 ```
 
-Thus we can construct an `Innovation` and a corresponding `Evolution` as follows.
+
+Construction of unconditioned epidemic
+--------------------------------------
+We work with an `Innovation`, used to generate an `Evolution` for an unconditioned epidemic.
+Here are tables of the fields of `Innovation` and `Evolution`
+(in each case only the first four fields are specified on creation: remaining fields
+are computed
+from input data):
+
+::: {layout-ncol=2}
+
+
+```{julia}
+#| echo: false
+pretty_table(DataFrame(name=[fieldnames(Innovation)...], type=[fieldtypes(Innovation)...]),
+    header=(["Innovation", ""], ["field", "Type"]), alignment=[:l, :r])
+```
+
+
+```{julia}
+#| echo: false
+pretty_table(DataFrame(name=[fieldnames(Evolution)...], type=[fieldtypes(Evolution)...]),
+    header=(["Evolution", ""], ["field", "Type"]), alignment=[:l, :r])
+```
+
+:::
+
+
+
+We construct an `Innovation` and a corresponding `Evolution` as follows.
 ```{julia}
 uiv1 = Innovation(initial.n, 
     I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)], 
@@ -137,18 +147,15 @@ The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follo
 uev1 = Evolution(initial, uiv1)
 ```
 
-{{< pagebreak >}}
-
 Construction of conditioned epidemic
 ------------------------------------
 A `CEvolution` is a variant of `Evolution` with conditioned removals (`CRemoval`s)
-and some computed fields used in transitioning from a previous `AbstractEvolution`
-using a candidate `Innvation`.
-Field names of `CEvolution` are
+and some computed fields used if generated using previous `AbstractEvolution`
+using a candidate `Innovation`.
 ```{julia}
 #| echo: false
 pretty_table(DataFrame(name=[fieldnames(CEvolution)...], type=[fieldtypes(CEvolution)...]),
-    header=["Field", "Type"])
+    header=(["CEvolution", ""], ["field", "Type"]), alignment=[:l, :r])
 ```
 and again in the standard invocation
 only the first four fields are specified on creation: other fields are computed
@@ -156,10 +163,11 @@ from the input data.
 
 Here is an `Innovation` to generate the `CEvolution` of the corresponding conditioned epidemic:
 ```{julia}
-iv1 = Innovation(initial.n, uiv1.infections, 
-        R[R(1,5), R(3,5), R(4,5)], C[C(2t, t) for t ∈ [1,2]])
+iv1 = Innovation(initial.n, uev1.infections, 
+        R[z for z in setdiff(uev1.removals, uev1.history)], 
+        C[C(z) for z in uev1.removals ∩ uev1.history])
 ```
-The `CEvolution` of an epidemic (_conditioned_ on observed removals) is given as follows:
+Here is the resulting `CEvolution` of an epidemic (_conditioned_ on observed removals) is:
 ```{julia}
 ev1 = CEvolution(initial, iv1)
 ```

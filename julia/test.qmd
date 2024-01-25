@@ -187,8 +187,8 @@ used for the plotting parameter `select`, namely
 import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, MOST, NFZ
 ```
 
-Table of evolution of epidemic
-------------------------------
+Here is a table of the evolution of the epidemic
+
 ```{julia}
 #| echo: false 
 uflow = table_trajectories1(duration, uev1.trajectory) ;
@@ -235,10 +235,8 @@ depict("test-01-conditioned", new_figure(
 ) ;
 ```
 
-Plots of epidemic evolution
----------------------------
 @fig-test-01-unconditioned and @fig-test-01-conditioned respectively 
-plot unconditioned and conditioned epidemics.
+plot incidents and evolutions of the unconditioned and conditioned epidemics.
 
 ::: {#fig-test-01-pair layout-ncol=2}
 
@@ -314,6 +312,8 @@ the candidate `Innovation`
 ev2  = CEvolution(ev1, iv2c)
 ```
 
+
+{{< pagebreak >}}
 
 Substitution of appropriate inactivated removals
 ------------------------------------------------
@@ -437,11 +437,13 @@ carried over from `ev1_3`.
 :::
 
 
+{{< pagebreak >}}
+
 Computing the \NFZ
 ------------------------
 
 @fig-test-06-evolve22 depicts `ev2`, the
-trajectoru of the `CEvolution` at the next step in algorithmic time.
+trajectory of the `CEvolution` at the next step in algorithmic time.
 
 
 ```{julia}
@@ -462,6 +464,12 @@ New candidate innovation and conditioned evolution (trajectories only).
 
 :::
 
+
+On the next page there are plots of old and new candidate innovations and conditioned evolutions, illustrated together
+for purposes of comparison. Display options for the new evolution are chosen to give only the epidemic trajectory boundary,
+the removals trajectory boundary, and the 
+\LFE (`LFE`) and 
+\NFZ (`NFZ`) boundaries.
 
 ```{julia}                   
 #| echo: false                       

@@ -7,11 +7,13 @@ PRODUCTS        := production.pdf introduction.pdf check.pdf test.pdf
 CSL             := $(HOME)/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 
 QUARTO          := /usr/local/bin/quarto
-#QUARTO_CACHE   :=  --cache-refresh
-QUARTO_CACHE    :=  --no-cache
-#QUARTO_CACHE   :=  --cache
-#QUARTO_OPTIONS  :=  --csl=$(CSL) $(QUARTO_CACHE)
-QUARTO_OPTIONS  :=  $(QUARTO_CACHE)
+QUARTO_CACHE    ?=  --no-cache
+#                   --cache-refresh
+#                   --cache
+
+QUARTO_OPTIONS  :=  --csl=$(CSL) $(QUARTO_CACHE)
+#QUARTO_OPTIONS  :=  $(QUARTO_CACHE)
+
 JULIA           := $(HOME)/.local/bin/julia
 
 MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 

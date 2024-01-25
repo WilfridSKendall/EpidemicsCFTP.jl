@@ -440,7 +440,8 @@ carried over from `ev1_3`.
 Computing the \NFZ
 ------------------------
 
-@fig-test-06-evolve22 depicts `ev2`, the `CEvolution` at the next step in algorithmic time.
+@fig-test-06-evolve22 depicts `ev2`, the
+trajectoru of the `CEvolution` at the next step in algorithmic time.
 
 
 ```{julia}
@@ -450,7 +451,6 @@ depict("test-06-evolve22", new_figure(
         title="Conditioned Evolution, step 2")
 ) ;
 ```
-
 
 ::: {#fig-test-06-evolve layout-ncol=2}
 

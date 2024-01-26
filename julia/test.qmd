@@ -182,7 +182,7 @@ Tabular and graphical displays of epidemics
 `EpidemicsUtilities` supplies some constants 
 used for the plotting parameter `select`, namely
 ```{julia}
-import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, MOST, NFZ
+import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, LFER, MOST, NFZ
 ```
 
 Here is a table of the evolution of the epidemic
@@ -554,13 +554,17 @@ ev0_max = maximal_evolution(initial, duration, [z.t for z ∈ iv1.cremovals]) ;
 
 ```{julia}                   
 #| echo: false                       
-# *** ISSUE *** `select = MOST` yields slanted regions!
+# *** ISSUE *** `REGIONS` yields slanted regions!
+# SELECTION = MOST
+#               `NFZ` yields complaints of zero-length lists
+SELECTION = ELEMENTS | BOUNDARIES | ACTIVATED
+
 depict("test-08-minimal", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), ev0_min, duration, theme=theme, select=BOUNDARIES),                                                          
+   draw_evolution!(deepcopy(lines_plot), ev0_min, duration, theme=theme, select=SELECTION),
          title="Minimal initial evolution")                                                     
 ) ; 
 depict("test-08-maximal", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), ev0_max, duration, theme=theme, select=BOUNDARIES),                                                          
+   draw_evolution!(deepcopy(lines_plot), ev0_max, duration, theme=theme, select=SELECTION),
          title="Maximal initial evolution")                                                     
 ) ; 
 ```
@@ -582,52 +586,48 @@ Progress starting with minimal evolution
 We generate a short sequence of candidate innovations,
 starting with the minimal evolution,
 and use these to generate successive `CEvolution`s
-in algorithmic time.
+up to algorithmic time `ALG`.
 ```{julia}
+ALG=6
+
 α=0.2
 β=0.1
-iv_null   = Innovation(initial.n, I[], R[], ev0_min.cremovals)
-iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i in 1:4] ;
+iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
+iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i in 1:ALG] ;
 ```
 
 ```{julia}
 minimal = CEvolution[]
 ev = ev0_min
-for iv in iv_seq  
+# 5th step yields misuse of `CRemoval(2.0, 3)`
+for iv in iv_seq[1:4]
     ev = CEvolution(ev, iv)
     push!(minimal, ev)
 end ;
 ```
 
-```{julia}                   
-#| echo: false                       
-depict("test-09-minstep1", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), minimal[1], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 1")                                                     
-) ; 
-depict("test-09-minstep2", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), minimal[2], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 2")                                                     
-) ; 
-depict("test-09-minstep3", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), minimal[3], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 3")                                                     
-) ; 
-depict("test-09-minstep4", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), minimal[4], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 4")                                                     
-) ; 
+```{julia}
+#| echo: false
+# use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)`
+for i in 1:4
+    depict("test-09-minstep$i", new_figure(
+        draw_evolution!(deepcopy(lines_plot), minimal[i], duration, theme=theme,
+                select=BOUNDARIES | ELEMENTS | ACTIVATED | NFZ),
+            title="Evolution at step $i")
+        ) ;
+end
 ```
+
 
 ::: {#fig-test-09-minstep layout-ncol=2 layout-nrow=2}
 
-![Step 1.](image/test-09-minstep1.pdf){#fig-test-09-minstep1}
+![](image/test-09-minstep1.pdf)
 
-![Step 2.](image/test-09-minstep2.pdf){#fig-test-09-minstep2}
+![](image/test-09-minstep2.pdf)
 
-![Step 3.](image/test-09-minstep3.pdf){#fig-test-09-minstep3}
+![](image/test-09-minstep3.pdf)
 
-![Step 4.](image/test-09-minstep4.pdf){#fig-test-09-minstep4}
+![](image/test-09-minstep4.pdf)
 
 Sequence of trajectories evolving in algorithmic time, starting
 with the minimal `CEvolution`.
@@ -649,35 +649,32 @@ for iv in iv_seq
 end ;
 ```
 
-```{julia}                   
-#| echo: false                       
-depict("test-10-maxstep1", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), maximal[1], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 1")                                                     
-) ; 
-depict("test-10-maxstep2", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), maximal[2], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 2")                                                     
-) ; 
-depict("test-10-maxstep3", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), maximal[3], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 3")                                                     
-) ; 
-depict("test-10-maxstep4", new_figure(                                                  
-   draw_evolution!(deepcopy(lines_plot), maximal[4], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 4")                                                     
-) ; 
+```{julia}
+#| echo: false
+for i in 1:6
+    depict("test-10-maxstep$i", new_figure(
+        draw_evolution!(deepcopy(lines_plot), maximal[i], duration, theme=theme,
+                select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
+            title="Evolution at step $i")
+        ) ;
+end
 ```
 
-::: {#fig-test-10-maxstep layout-ncol=2 layout-nrow=2}
 
-![Step 1.](image/test-10-maxstep1.pdf){#fig-test-10-maxstep1}
 
-![Step 2.](image/test-10-maxstep2.pdf){#fig-test-10-maxstep2}
+::: {#fig-test-10-maxstep layout-ncol=2 layout-nrow=3}
 
-![Step 3.](image/test-10-maxstep3.pdf){#fig-test-10-maxstep3}
+![](image/test-10-maxstep1.pdf)
 
-![Step 4.](image/test-10-maxstep4.pdf){#fig-test-10-maxstep4}
+![](image/test-10-maxstep2.pdf)
+
+![](image/test-10-maxstep3.pdf)
+
+![](image/test-10-maxstep4.pdf)
+
+![](image/test-10-maxstep5.pdf)
+
+![](image/test-10-maxstep6.pdf)
 
 Sequence of trajectories evolving in algorithmic time, starting
 with the maximal `CEvolution`.

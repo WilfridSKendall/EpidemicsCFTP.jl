@@ -507,6 +507,9 @@ exhibits the \NFZ and \LFE as regions.
 
 Examples of progress through algorithmic time
 =============================================
+
+Minimal and maximal conditional evolutions
+------------------------------------------
 We now demonstrate how this construction leads to progressive development through algorithmic time.
 To this end, we seed the random number generator so as to ensure repeatability.
 ```{julia}
@@ -573,4 +576,159 @@ Trajectories of maximal and minimal conditioned evolutions, placed together
 for purposes of comparison.
 
 :::
+
+Progress starting with minimal evolution
+----------------------------------------
+We generate a short sequence of candidate innovations,
+starting with the minimal evolution,
+and use these to generate successive `CEvolution`s
+in algorithmic time.
+```{julia}
+α=0.2
+β=0.1
+iv_null   = Innovation(initial.n, I[], R[], ev0_min.cremovals)
+iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i in 1:4] ;
+```
+
+```{julia}
+minimal = CEvolution[]
+ev = ev0_min
+for iv in iv_seq  
+    ev = CEvolution(ev, iv)
+    push!(minimal, ev)
+end ;
+```
+
+```{julia}                   
+#| echo: false                       
+depict("test-09-minstep1", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), minimal[1], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 1")                                                     
+) ; 
+depict("test-09-minstep2", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), minimal[2], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 2")                                                     
+) ; 
+depict("test-09-minstep3", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), minimal[3], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 3")                                                     
+) ; 
+depict("test-09-minstep4", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), minimal[4], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 4")                                                     
+) ; 
+```
+
+::: {#fig-test-09-minstep layout-ncol=2 layout-nrow=2}
+
+![Step 1.](image/test-09-minstep1.pdf){#fig-test-09-minstep1}
+
+![Step 2.](image/test-09-minstep2.pdf){#fig-test-09-minstep2}
+
+![Step 3.](image/test-09-minstep3.pdf){#fig-test-09-minstep3}
+
+![Step 4.](image/test-09-minstep4.pdf){#fig-test-09-minstep4}
+
+Sequence of trajectories evolving in algorithmic time, starting
+with the minimal `CEvolution`.
+
+:::
+
+{{< pagebreak >}}
+
+Progress starting with maximal evolution
+----------------------------------------
+We now use this to generate successive `CEvolution`s
+in algorithmic time but starting from maximal `CEvolution`.
+```{julia}
+maximal = CEvolution[]
+ev = ev0_max
+for iv in iv_seq  
+    ev = CEvolution(ev, iv)
+    push!(maximal, ev)
+end ;
+```
+
+```{julia}                   
+#| echo: false                       
+depict("test-10-maxstep1", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), maximal[1], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 1")                                                     
+) ; 
+depict("test-10-maxstep2", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), maximal[2], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 2")                                                     
+) ; 
+depict("test-10-maxstep3", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), maximal[3], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 3")                                                     
+) ; 
+depict("test-10-maxstep4", new_figure(                                                  
+   draw_evolution!(deepcopy(lines_plot), maximal[4], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 4")                                                     
+) ; 
+```
+
+::: {#fig-test-10-maxstep layout-ncol=2 layout-nrow=2}
+
+![Step 1.](image/test-10-maxstep1.pdf){#fig-test-10-maxstep1}
+
+![Step 2.](image/test-10-maxstep2.pdf){#fig-test-10-maxstep2}
+
+![Step 3.](image/test-10-maxstep3.pdf){#fig-test-10-maxstep3}
+
+![Step 4.](image/test-10-maxstep4.pdf){#fig-test-10-maxstep4}
+
+Sequence of trajectories evolving in algorithmic time, starting
+with the maximal `CEvolution`.
+
+:::
+
+{{< pagebreak >}}
+
+Comparison of minimal and maximal sequences
+-------------------------------------------
+
+```{julia}
+#| echo: false                       
+work = draw_evolution!(deepcopy(lines_plot), minimal[1], duration, theme=theme, select=BOUNDARIES)                                                         
+depict("test-11step1", new_figure(                                                  
+   draw_evolution!(work, maximal[1], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 1")                                                     
+) ; 
+
+work = draw_evolution!(deepcopy(lines_plot), minimal[2], duration, theme=theme, select=BOUNDARIES)                          
+depict("test-11step2", new_figure(      
+   draw_evolution!(work, maximal[2], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 2")                                                     
+) ; 
+
+work = draw_evolution!(deepcopy(lines_plot), minimal[3], duration, theme=theme, select=BOUNDARIES)
+depict("test-11step3", new_figure(                                                      
+   draw_evolution!(work, maximal[3], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 3")                                                     
+) ; 
+
+work = draw_evolution!(deepcopy(lines_plot), minimal[4], duration, theme=theme, select=BOUNDARIES)
+depict("test-11step4", new_figure(                           
+   draw_evolution!(work, maximal[4], duration, theme=theme, select=BOUNDARIES),                                                          
+         title="Evolution at step 4")                                                     
+) ; 
+```
+
+::: {#fig-test-11step layout-ncol=2 layout-nrow=2}
+
+![Step 1.](image/test-11step1.pdf){#fig-test-11step1}
+
+![Step 2.](image/test-11step2.pdf){#fig-test-11step2}
+
+![Step 3.](image/test-11step3.pdf){#fig-test-11step3}
+
+![Step 4.](image/test-11step4.pdf){#fig-test-11step4}
+
+Comparison of trajectories evolving in algorithmic time, starting
+with minimal and maximal `CEvolution`s.
+
+:::
+
 

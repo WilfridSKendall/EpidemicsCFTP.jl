@@ -608,12 +608,12 @@ end ;
 
 ```{julia}
 #| echo: false
-# use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)`
-for i in 1:4
+# use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)` at step 2
+for (i, ev) in enumerate(minimal)
     depict("test-09-minstep$i", new_figure(
-        draw_evolution!(deepcopy(lines_plot), minimal[i], duration, theme=theme,
+        draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | NFZ),
-            title="Evolution at step $i")
+            title="Minimal evolution at step $i")
         ) ;
 end
 ```
@@ -649,18 +649,17 @@ for iv in iv_seq
 end ;
 ```
 
+
 ```{julia}
 #| echo: false
-for i in 1:6
-    depict("test-10-maxstep$i", new_figure(
-        draw_evolution!(deepcopy(lines_plot), maximal[i], duration, theme=theme,
+for (i, ev) in enumerate(maximal)
+    depict("test-09-maxstep$i", new_figure(
+        draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
-            title="Evolution at step $i")
+            title="Maximal evolution at step $i")
         ) ;
 end
 ```
-
-
 
 ::: {#fig-test-10-maxstep layout-ncol=2 layout-nrow=3}
 

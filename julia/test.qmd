@@ -530,7 +530,7 @@ function maximal_evolution(initial::SIR, duration::S,
     infections = I[I(beginning,i,i+1) for i ∈ 1:(population-1)]
     cremovals  = C[C(t, population) for t in times]
     return CEvolution(initial, infections ∪ cremovals)
-end
+end ;
 ```
 
 ```{julia}
@@ -542,7 +542,7 @@ function minimal_evolution(initial::SIR, duration::S,
     infections = I[I(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
     cremovals  = C[C(t, i) for (i, t) in enumerate(times)]
     return CEvolution(initial, infections ∪ cremovals)
-end
+end ;
 ```
 
 Computation of minimal and maximal `CEvolution`s, whose trajectories
@@ -588,10 +588,7 @@ starting with the minimal evolution,
 and use these to generate successive `CEvolution`s
 up to algorithmic time `ALG`.
 ```{julia}
-ALG=6
-
-α=0.2
-β=0.1
+ALG=6 ; α=0.2 ; β=0.1
 iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
 iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i in 1:ALG] ;
 ```
@@ -599,8 +596,7 @@ iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i in 1:ALG]
 ```{julia}
 minimal = CEvolution[]
 ev = ev0_min
-# 5th step yields misuse of `CRemoval(2.0, 3)`
-for iv in iv_seq[1:4]
+for iv in iv_seq[1:ALG]
     ev = CEvolution(ev, iv)
     push!(minimal, ev)
 end ;
@@ -608,7 +604,7 @@ end ;
 
 ```{julia}
 #| echo: false
-# use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)` at step 2
+# use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)` at step 2????
 for (i, ev) in enumerate(minimal)
     depict("test-09-minstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
@@ -619,7 +615,7 @@ end
 ```
 
 
-::: {#fig-test-09-minstep layout-ncol=2 layout-nrow=2}
+::: {#fig-test-09-minstep layout-ncol=2 layout-nrow=3}
 
 ![](image/test-09-minstep1.pdf)
 
@@ -629,10 +625,15 @@ end
 
 ![](image/test-09-minstep4.pdf)
 
+![](image/test-09-minstep5.pdf)
+
+![](image/test-09-minstep6.pdf)
+
 Sequence of trajectories evolving in algorithmic time, starting
 with the minimal `CEvolution`.
 
 :::
+
 
 {{< pagebreak >}}
 
@@ -686,30 +687,14 @@ Comparison of minimal and maximal sequences
 -------------------------------------------
 
 ```{julia}
-#| echo: false                       
-work = draw_evolution!(deepcopy(lines_plot), minimal[1], duration, theme=theme, select=BOUNDARIES)                                                         
-depict("test-11step1", new_figure(                                                  
-   draw_evolution!(work, maximal[1], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 1")                                                     
-) ; 
-
-work = draw_evolution!(deepcopy(lines_plot), minimal[2], duration, theme=theme, select=BOUNDARIES)                          
-depict("test-11step2", new_figure(      
-   draw_evolution!(work, maximal[2], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 2")                                                     
-) ; 
-
-work = draw_evolution!(deepcopy(lines_plot), minimal[3], duration, theme=theme, select=BOUNDARIES)
-depict("test-11step3", new_figure(                                                      
-   draw_evolution!(work, maximal[3], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 3")                                                     
-) ; 
-
-work = draw_evolution!(deepcopy(lines_plot), minimal[4], duration, theme=theme, select=BOUNDARIES)
-depict("test-11step4", new_figure(                           
-   draw_evolution!(work, maximal[4], duration, theme=theme, select=BOUNDARIES),                                                          
-         title="Evolution at step 4")                                                     
-) ; 
+#| echo: false   
+for k in 1:6
+    work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, select=BOUNDARIES)                                                         
+    depict("test-11step$k", new_figure(                                                  
+        draw_evolution!(work, maximal[k], duration, theme=theme, select=BOUNDARIES),                                                          
+            title="Evolution at step $k")                                                     
+        )
+end ;
 ```
 
 ::: {#fig-test-11step layout-ncol=2 layout-nrow=2}
@@ -721,6 +706,10 @@ depict("test-11step4", new_figure(
 ![Step 3.](image/test-11step3.pdf){#fig-test-11step3}
 
 ![Step 4.](image/test-11step4.pdf){#fig-test-11step4}
+
+![Step 3.](image/test-11step3.pdf){#fig-test-11step5}
+
+![Step 4.](image/test-11step4.pdf){#fig-test-11step6}
 
 Comparison of trajectories evolving in algorithmic time, starting
 with minimal and maximal `CEvolution`s.

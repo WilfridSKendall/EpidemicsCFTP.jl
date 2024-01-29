@@ -316,7 +316,7 @@ AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 II: Basic use, conditioned (A)
 ```jldoctest evolution
 julia> evolution(initial_state, innovation, conditioned=true)
-ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
+ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.5, 4)
 
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
 
@@ -334,7 +334,7 @@ III: Basic use, conditioned (B)
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 
 julia> evolution(initial_state, innovation, conditioned=true) ;
-ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.5, 1)
+ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.5, 1)
 
 julia> initial_state = SIR(0.55, 1, 2, 3) ;
 
@@ -402,7 +402,7 @@ AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 II: Basic use, conditioned (A)
 ```jldoctest evolution
 julia> evolution_history(initial_state, innovation, conditioned=true)
-ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.5, 4)
+ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.5, 4)
 
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 4)]) ;
 
@@ -415,7 +415,7 @@ III: Basic use, conditioned (B)
 julia> innovation = Innovation(population, [Infection(0.6, 5, 6)], Removal[], [CRemoval(0.5, 1)]) ;
 
 julia> evolution_history(initial_state, innovation, conditioned=true) ;
-ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.5, 1)
+ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.5, 1)
 
 julia> initial_state = SIR(0.55, 1, 2, 3) ;
 
@@ -447,7 +447,7 @@ function evolution_history(initial_state::SIR, chronology::Vector{T}; conditione
 end
 
 # Computing the last feasible epidemic trajectory
-# ---------------------------------
+# -----------------------------------------------
 
 """
     last_feasible_evolution0(::Real, ::AbstractEvolution, ::Innovation; ::Bool=false)
@@ -481,15 +481,18 @@ function last_feasible_evolution(duration::Real, ev::AbstractEvolution,
     reverse_history = AbstractIncident[]
     reverse_chronology  = reverse([x for x ∈ chronology if x.t <= current_state.t])
 
-    if ! isempty(reverse_chronology)
-        for event ∈ reverse_chronology
+    if ! isempty(reverse_chronology) # HORRIBLE SPAGHETTI
+        for (k, event) ∈ enumerate(reverse_chronology) # Enumeration needed to look to past
             prior_state = EpidemicsCFTP.reverse_update(current_state, event)
             if ! EpidemicsCFTP.is_same_config(prior_state, current_state)
-                if conditioned && event isa Removal
-                    throw(EmployedRemoval(event))
+                if (event isa CRemoval) || (k==1)
+                    current_state = prior_state 
+                    push!(reverse_history, event)
+                elseif isempty([z for z ∈ reverse_chronology[k+1:end] if
+                         (z isa CRemoval) && (z.target ≥ event.infectee)])
+                    current_state = prior_state 
+                    push!(reverse_history, event)
                 end
-                current_state = prior_state
-                push!(reverse_history, event)
             elseif conditioned && event isa CRemoval
                 throw(MissedCRemoval(event))
             end

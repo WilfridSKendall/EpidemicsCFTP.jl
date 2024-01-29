@@ -869,7 +869,7 @@ CEvolution(initial, innov)
 
 # output
 
-ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.0, 2)
+ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.0, 2)
 ```
 
 V: What happens on employing an (unconditioned) removal:
@@ -881,7 +881,7 @@ CEvolution(initial, innov)
 
 # output
 
-ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.1, 1)
+ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
 
 """

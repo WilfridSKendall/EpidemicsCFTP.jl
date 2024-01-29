@@ -588,7 +588,7 @@ starting with the minimal evolution,
 and use these to generate successive `CEvolution`s
 up to algorithmic time `ALG`.
 ```{julia}
-ALG=6 ; α=0.2 ; β=0.1
+ALG=12 ; α=0.2 ; β=0.1
 iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
 iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i in 1:ALG] ;
 ```
@@ -605,7 +605,7 @@ end ;
 ```{julia}
 #| echo: false
 # use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)` at step 2????
-for (i, ev) in enumerate(minimal)
+for (i, ev) in enumerate(minimal[1:6])
     depict("test-09-minstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | NFZ),
@@ -653,7 +653,7 @@ end ;
 
 ```{julia}
 #| echo: false
-for (i, ev) in enumerate(maximal)
+for (i, ev) in enumerate(maximal[1:6])
     depict("test-09-maxstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
@@ -685,10 +685,11 @@ with the maximal `CEvolution`.
 
 Comparison of minimal and maximal sequences
 -------------------------------------------
+We achieve coalescence at step 9!
 
 ```{julia}
 #| echo: false   
-for k in 1:6
+for k in 1:12
     work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, select=BOUNDARIES)                                                         
     depict("test-11step$k", new_figure(                                                  
         draw_evolution!(work, maximal[k], duration, theme=theme, select=BOUNDARIES),                                                          
@@ -712,7 +713,26 @@ end ;
 ![Step 4.](image/test-11step6.pdf){#fig-test-11step6}
 
 Comparison of trajectories evolving in algorithmic time, starting
-with minimal and maximal `CEvolution`s.
+with minimal and maximal `CEvolution`s. (I)
+
+:::
+
+::: {#fig-test-12step layout-ncol=2 layout-nrow=2}
+
+![Step 7.](image/test-11step7.pdf){#fig-test-11step7}
+
+![Step 8.](image/test-11step8.pdf){#fig-test-11step8}
+
+![Step 9.](image/test-11step9.pdf){#fig-test-11step9}
+
+![Step 10.](image/test-11step10.pdf){#fig-test-11step10}
+
+![Step 11.](image/test-11step11.pdf){#fig-test-11step11}
+
+![Step 12.](image/test-11step12.pdf){#fig-test-11step12}
+
+Comparison of trajectories evolving in algorithmic time, starting
+with minimal and maximal `CEvolution`s. (II)
 
 :::
 

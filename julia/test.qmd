@@ -707,9 +707,9 @@ end ;
 
 ![Step 4.](image/test-11step4.pdf){#fig-test-11step4}
 
-![Step 3.](image/test-11step3.pdf){#fig-test-11step5}
+![Step 3.](image/test-11step5.pdf){#fig-test-11step5}
 
-![Step 4.](image/test-11step4.pdf){#fig-test-11step6}
+![Step 4.](image/test-11step6.pdf){#fig-test-11step6}
 
 Comparison of trajectories evolving in algorithmic time, starting
 with minimal and maximal `CEvolution`s.

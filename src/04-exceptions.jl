@@ -29,7 +29,7 @@ CEvolution(initial, innov)
 
 # output
 
-ERROR: [MissedCRemoval] The (conditioned) evolution misused CRemoval(0.05, 3)
+ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.05, 3)
 ```
 """
 struct MissedCRemoval <: BadIncident
@@ -55,7 +55,7 @@ CEvolution(initial, innov)
 
 # output
 
-ERROR: [EmployedRemoval] The (conditioned) evolution misused Removal(0.2, 1)
+ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.2, 1)
 ```
 """
 struct EmployedRemoval <: BadIncident
@@ -71,8 +71,25 @@ Sub-types of this exception are:
 [`EmployedRemoval`](@ref) and [`MissedCRemoval`](@ref), raised respectively when a 
 conditioned evolution uses a [`Removal`](@ref) which _is_ _not_ conditioned to appear in the trajectory,
 or doesn't use a [`CRemoval`](@ref) which _is_ conditioned to appear in the trajectory.
-See these types for doctests.
 """
 function Base.show(io::IO, e::BadIncident)
-    print(io, "[$(typeof(e))] The (conditioned) evolution misused $(e.incident)")
+    print(io, "[$(typeof(e))] The (conditioned) evolution failed to employ $(e.incident)")
+end
+
+"""
+    Base.show(io::IO, e::MissedCRemoval)
+    
+Printing a `MissedCRemoval` exception.
+"""
+function Base.show(io::IO, e::MissedCRemoval)
+    print(io, "[$(typeof(e))] The (conditioned) evolution failed to employ $(e.incident)")
+end
+
+"""
+    Base.show(io::IO, e::EmployedRemoval)
+    
+Printing a `EmployedRemoval` exception.
+"""
+function Base.show(io::IO, e::EmployedRemoval)
+    print(io, "[$(typeof(e))] The (conditioned) evolution wrongly employed $(e.incident)")
 end

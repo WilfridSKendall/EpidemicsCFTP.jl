@@ -936,12 +936,12 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     removals = EpidemicsCFTP.inactive_removals(ev, iv)
     
     # Step 3.
-    cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals)
+    recomputed_cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals)
     
     # Step 4.
-    duration = maximum(z.t for z in cremovals)
+    duration = maximum(z.t for z in recomputed_cremovals)
     LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, 
-                iv.infections, iv.cremovals, conditioned=true)
+                iv, recomputed_cremovals, conditioned=true)
     perpetuated_infections = PInfection[PInfection(z) for z ∈ LFE ∩ ev.infections] 
     
     # Step 5.
@@ -1060,7 +1060,7 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
 	end
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
-    iv_mod = Innovation(ev.initial.n, processed_infections, removals, cremovals)
+    iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
     return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
 end
 

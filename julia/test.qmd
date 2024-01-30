@@ -513,35 +513,34 @@ Minimal and maximal conditional evolutions
 We now demonstrate how this construction leads to progressive development through algorithmic time.
 To this end, we seed the random number generator so as to ensure repeatability.
 ```{julia}
-#| include: false
 Random.seed!(2)
 ```
 
-Initial `CEvolution`s can be _maximal_ or _minimal_; their definitions depend on
+Initial `Evolution`s can be _maximal_ or _minimal_; their definitions depend on
 the times of the `CRemoval`s, which are supplied as a vector of times. 
 Both require an `initial` state (of which only the fields `t` and `n` matter),
 `duration`,
-and a list of `CRemoval` times.
+and a list of `CRemoval` times. Here are functions to generate these.
 ```{julia}
 function maximal_evolution(initial::SIR, duration::S, 
-        times::Vector{T}) ::CEvolution where {S,T <: Real}
+        times::Vector{T}) ::Evolution where {S,T <: Real}
     beginning = initial.t
     population = initial.n
     infections = I[I(beginning,i,i+1) for i ∈ 1:(population-1)]
     cremovals  = C[C(t, population) for t in times]
-    return CEvolution(initial, infections ∪ cremovals)
+    return Evolution(initial, infections ∪ cremovals)
 end ;
 ```
 
 ```{julia}
 function minimal_evolution(initial::SIR, duration::S, 
-        times::Vector{T})::CEvolution where {S,T <: Real}
+        times::Vector{T})::Evolution where {S,T <: Real}
     beginning = initial.t
     population = initial.n
     sort(deepcopy(times))
     infections = I[I(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
     cremovals  = C[C(t, i) for (i, t) in enumerate(times)]
-    return CEvolution(initial, infections ∪ cremovals)
+    return Evolution(initial, infections ∪ cremovals)
 end ;
 ```
 
@@ -572,14 +571,15 @@ depict("test-08-maximal", new_figure(
 
 ::: {#fig-test-08-initial layout-ncol=2}
 
-![Minimal (conditioned) evolution.](image/test-08-minimal.pdf){#fig-test-08-minimal}
+![Minimal conditioned evolution.](image/test-08-minimal.pdf){#fig-test-08-minimal}
 
-![Maximal (conditioned) evolution.](image/test-08-maximal.pdf){#fig-test-08-maximal}
+![Maximal conditioned evolution.](image/test-08-maximal.pdf){#fig-test-08-maximal}
 
-Trajectories of maximal and minimal conditioned evolutions, placed together
-for purposes of comparison.
+Comparative trajectories of maximal and minimal conditioned evolutions.
 
 :::
+
+{{< pagebreak >}}
 
 Progress starting with minimal evolution
 ----------------------------------------
@@ -614,6 +614,60 @@ for (i, ev) in enumerate(minimal[1:6])
 end
 ```
 
+{{< pagebreak >}}
+
+We now see how `LFET` goes awry! Here is the second `minimal` `CEvolution`.
+The calculation of the `LFE` field here gives a clearly wrong answer.
+
+```{julia}
+function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation; 
+                                    conditioned::Bool=false)
+    return last_feasible_evolution0(duration, ev, iv, 
+                                EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals))
+end ;            
+function last_feasible_evolution0(duration::Real, ev::AbstractEvolution, iv::Innovation,
+            computed_cremovals::Vector{CRemoval}; conditioned::Bool=false)
+            
+    # Compute time-ordered list of `CRemoval`s of maximum `target` so far:
+    fence = [z[2] for z in unique(accumulate(max, [(z.target, z) for z in computed_cremovals]))]
+    
+    # Compute chronology from (perpetuated) infections formed from `ev.history` and infections in `iv`:
+    chronology = sort([PInfection(z) for z in ev.history if z isa OperativeInfection] ∪ iv.infections) 
+                                
+    # Deal with `chronology` using time bound and maximum `infectee` defined by `fence` target.
+    terminus = fence[end]
+    truncated_chronology = [z for z in chronology if (z < terminus) && (z.infectee ≤ terminus.target)]
+end ;
+```
+
+```{julia}
+ev, iv = minimal[1], iv_seq[2]
+println("cremovals before    ", sprint(show, MIME("text/plain"), ev.cremovals))
+println("cremovals proposed  ", sprint(show, MIME("text/plain"), iv.cremovals))
+resulting_cr = EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals)
+println("cremovals accepted  ", sprint(show, MIME("text/plain"), resulting_cr))
+chronology = sort([z for z in ev.history if z isa OperativeInfection] ∪ iv.infections)
+println("chronology          ", sprint(show, MIME("text/plain"), chronology))
+last_feasible_evolution(duration, ev, iv)
+
+removal_count = ev.initial.r
+
+println("no overshoots       ", sprint(show, MIME("text/plain"), 
+    sort(last_feasible_evolution(duration, ev, iv) ∪ resulting_cr)))
+
+tally = OperativeInfection[]
+for z in sort(last_feasible_evolution(duration, ev, iv) ∪ resulting_cr)
+    if z isa CRemoval
+        removal_count += 1
+    elseif z.target > removal_count
+        push!(tally, z)
+    end
+end
+println("active infections   ", sprint(show, MIME("text/plain"), tally))
+```
+Now choose the latest at highest level, use that.
+Then choose the latest at next highest level that is early than this choice, use that.
+And so forth.
 
 ::: {#fig-test-09-minstep layout-ncol=2 layout-nrow=3}
 
@@ -685,7 +739,7 @@ with the maximal `CEvolution`.
 
 Comparison of minimal and maximal sequences
 -------------------------------------------
-We achieve coalescence at step 9!
+We now plot a sequence of 12 steps in algorithmic time. We achieve coalescence at step 9!
 
 ```{julia}
 #| echo: false   

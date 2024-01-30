@@ -472,7 +472,7 @@ has been re-computed.
 function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation, 
             recomputed_cremovals::Vector{CRemoval};
             conditioned::Bool=false) ::Vector{AbstractIncident}                                 # <1>
-    chronology = sort(infections ∪ setdiff(ev.history, ev.cremovals) ∪ recomputed_cremovals)    # <2>
+    chronology = sort(iv.infections ∪ setdiff(ev.history, ev.cremovals) ∪ recomputed_cremovals) # <2>
     current_state = SIR(duration, 
         ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
 

@@ -1,0 +1,223 @@
+---
+title:  "Creating the `LFE` trajectory"
+author: "Wilfrid Kendall"
+date:   today
+---
+
+---
+toc: true
+
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+        \newcommand{\NFZ}{``no-fly zone"\xspace}
+        \newcommand{\LFE}{``last feasible epidemic"\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+jupyter:    julia-1.9
+---
+
+```{julia}
+#| include: false
+#| eval: true
+#| cache: false
+#| tags: [parameters]
+source = "LFE.qmd"
+
+using EpidemicsCFTP, Random, Test
+```
+
+Here is a table of software used in the following computations:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+import Markdown
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+""")
+```
+
+{{< pagebreak >}}
+
+Basic Constructions
+===================
+We currently need duration and starting configuration of the epidemic, together 
+with two rate parameters. Note following also works for `initial  = SIR(0.0, 3, 2, 0)`.
+```{julia}
+const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
+α=0.2 ; β=0.1 ;
+```
+When constructing `Innovation` or an `Evolution` (or even a `CEvolution` as is given later)
+it is useful to use some abbreviations for various `AbstractIncidents`.
+```{julia}
+AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
+AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
+```
+Here is the random seed.
+```{julia}
+Random.seed!(43) ;
+```
+
+Minimal and maximal initial `CEvolution`s
+-----------------------------------------
+The initial `CEvolution` can be _maximal_ or _minimal_; the definition depends on
+the times of the `CRemoval`s, which are supplied as a vector of times. 
+We require an `initial` state (of which only the fields `t` and `n` matter),
+`duration`,
+and a list of `CRemoval` times. Here are functions to generate the `CEvolution`s.
+```{julia}
+function maximal_evolution(initial::SIR, duration::S, 
+        times::Vector{T}) ::CEvolution where {S,T <: Real}
+    beginning = initial.t
+    population = initial.n
+    infections = I[I(beginning,i,i+1) for i ∈ 1:(population-1)]
+    cremovals  = C[C(t, population) for t in times]
+    return CEvolution(initial, infections ∪ cremovals)
+end ;
+function minimal_evolution(initial::SIR, duration::S, 
+        times::Vector{T})::CEvolution where {S,T <: Real}
+    beginning = initial.t
+    population = initial.n
+    sort(deepcopy(times))
+    infections = I[I(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
+    cremovals  = C[C(t, i) for (i, t) in enumerate(times)]
+    return CEvolution(initial, infections ∪ cremovals)
+end ;
+```
+
+Working with a list of `CRemoval` times,
+```{julia}
+initial_cremoval_times = [1.0, 2.0, 3.0, 4.0]
+println(initial_cremoval_times)
+```
+we obtain
+```{julia}
+max_ev = maximal_evolution(initial, duration, initial_cremoval_times)
+min_ev = minimal_evolution(initial, duration, initial_cremoval_times)
+println("Initial maximal `CEvolution` ", sprint(show, MIME("text/plain"), max_ev))
+println("Initial minimal `CEvolution` ", sprint(show, MIME("text/plain"), min_ev))
+```
+
+A suitable `Innovation`
+-----------------------
+We work with the following (randomly generated) innovation:
+```{julia}
+iv_null  = Innovation(initial.n, I[], R[], min_ev.cremovals)
+iv0 = generate_innovation(iv_null, duration, α=α, β=β)
+```
+
+Evaluation of new `CEvolution`
+==============================
+Here is the resulting `CEvolution` generated using `max_ev`.
+```{julia}
+ev = CEvolution(max_ev, iv0)
+```
+The resulting `LFE` is
+```{julia}
+ev.LFE
+```
+**ISSUE:** original implementation of 
+`LFE` does not report perpetuation! 
+
+Towards a correct and robust generation of `LFE`
+================================================
+We work with the `CEvolution` given by `ev = CEvolution(max_ev, iv0)`.
+
+The resulting underlying chronology is
+```{julia}
+ev.chronology
+```
+
+The `KilledInfection`s are those which have `target` field at or below the removal boundary.
+The removal boundary for each of the `AbstractIncident`s in the chronology can be computed 
+as follows, and used to check correctness of categorization of `KilledInfection`s.
+So we can remove all `KilledInfection`s (we do _not_ remove `KilledRemoval`s).
+```{julia}
+removal_boundary =
+    accumulate(+, z isa CRemoval ? 1 : 0 for z in ev.chronology, init=initial.r)
+@test any(z isa KilledInfection ? z.target ≤ rb : z.target > rb for 
+    (z, rb) in zip(ev.chronology, removal_boundary)) ;
+relevant_chronology =
+    filter(z -> !(z isa KilledInfection), ev.chronology)
+```
+Note `ev_reduced` has the same trajectory and history as the full `ev`!
+```{julia}
+ev_reduced = CEvolution(initial, relevant_chronology)
+@test ev.trajectory == ev_reduced.trajectory ;
+@test ev.history == ev_reduced.history ;
+```
+
+However we want to compute the `LFE` in a robust and correct manner. We work with the `relevant_chronology`. We compute the `cremoval_fence`, which records the highest `infectee`
+field encountered so far. Any feasible evolution cannot drop below this fence.
+```{julia}
+removal_fence =
+    accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
+println(removal_fence)
+```
+
+We now want to work backwards through the `relevant_chronology`, 
+commencing with a `current_timeline` set to the final value of the `removal_fence`,
+at each step carrying over
+the `AbstractIncident` `z` to a reverse `LFE` and tracking the new `current_LFE` level if either
+
+ * `z` is a `CRemoval`, in which case the `current_LFE` level is unchanged and `z` is added to
+`reverse_LFE`, or
+ * an `OperativeInfection` for which the `infectee` field equals the `current_LFE` level 
+ and _additionally_ the `current_LFE` level strictly exceeds the current value of the `removal_fence`.
+ In this last case the `current_LFE` level is then decremented by `1`.
+ * Otherwise nothing is done!
+ 
+```{julia}
+current_timeline = removal_fence[end]
+rf2              = removal_fence[end]               # DIAGNOSTIC
+reverse_LFE = AbstractIncident[]
+println("fence\tline\tIncident")                    # DIAGNOSTIC
+for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
+    println("$rf\t\t$current_timeline\t\t$z")       # DIAGNOSTIC
+    if z isa CRemoval
+        push!(reverse_LFE, z)
+    elseif z isa OperativeInfection && z.infectee == current_timeline && current_timeline > rf
+        push!(reverse_LFE, z)
+        current_timeline -= 1
+    end
+    rf2 = rf                                        # DIAGNOSTIC
+end
+println("$rf2\t\t$current_timeline\t\tCOMPLETION")  # DIAGNOSTIC
+```
+```{julia}
+LFE = reverse(reverse_LFE)
+println(sprint(show, MIME("text/plain"), LFE))
+println(sprint(show, MIME("text/plain"), ev.LFE))
+```
+
+```{julia}
+@test CEvolution(initial, LFE).history == LFE ;
+```

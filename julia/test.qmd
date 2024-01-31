@@ -516,31 +516,31 @@ To this end, we seed the random number generator so as to ensure repeatability.
 Random.seed!(2)
 ```
 
-Initial `Evolution`s can be _maximal_ or _minimal_; their definitions depend on
+Initial `CEvolution`s can be _maximal_ or _minimal_; their definitions depend on
 the times of the `CRemoval`s, which are supplied as a vector of times. 
 Both require an `initial` state (of which only the fields `t` and `n` matter),
 `duration`,
 and a list of `CRemoval` times. Here are functions to generate these.
 ```{julia}
 function maximal_evolution(initial::SIR, duration::S, 
-        times::Vector{T}) ::Evolution where {S,T <: Real}
+        times::Vector{T}) ::CEvolution where {S,T <: Real}
     beginning = initial.t
     population = initial.n
     infections = I[I(beginning,i,i+1) for i ∈ 1:(population-1)]
     cremovals  = C[C(t, population) for t in times]
-    return Evolution(initial, infections ∪ cremovals)
+    return CEvolution(initial, infections ∪ cremovals)
 end ;
 ```
 
 ```{julia}
 function minimal_evolution(initial::SIR, duration::S, 
-        times::Vector{T})::Evolution where {S,T <: Real}
+        times::Vector{T})::CEvolution where {S,T <: Real}
     beginning = initial.t
     population = initial.n
     sort(deepcopy(times))
     infections = I[I(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
     cremovals  = C[C(t, i) for (i, t) in enumerate(times)]
-    return Evolution(initial, infections ∪ cremovals)
+    return CEvolution(initial, infections ∪ cremovals)
 end ;
 ```
 

@@ -41,7 +41,7 @@ jupyter:    julia-1.9
 #| tags: [parameters]
 source = "LFE.qmd"
 
-using EpidemicsCFTP, Random, Test #,Logging
+using EpidemicsCFTP, Random, Test
 ```
 
 Here is a table of software used in the following computations:
@@ -86,10 +86,10 @@ Here is the random seed.
 Random.seed!(43) ;
 ```
 
-```julia
+```{julia}
 #| echo: false
 using Logging
-debuglogger = ConsoleLogger(stderr, Logging.Debug)
+debuglogger = ConsoleLogger(stderr, Logging.Info)
 global_logger(debuglogger) ;
 ```
 
@@ -279,22 +279,20 @@ function last_feasible_evolution(duration::Real,
 end ;
 ```
 
-Here is the proposed implementation in action, compared with previous implementation and with piece-work implementation.
+Here are results from the first ten steps in algorithmic time.
 ```{julia}
-proposed_LFE = last_feasible_evolution(duration, max_ev, iv0)
-println("CURRENT  ", sprint(show, MIME("text/plain"), ev.LFE))
-println("CODED    ", sprint(show, MIME("text/plain"), LFE))
-println("PROPOSED ", sprint(show, MIME("text/plain"), proposed_LFE))
-@test LFE == proposed_LFE ;
-```
+for i in 1:10
+    iv = generate_innovation(iv_null, duration, α=α, β=β)
+    proposed_LFE = last_feasible_evolution(duration, ev, iv)
+    
+    ev = CEvolution(ev, iv)
+    
+    println("STEP $i")
+    println("CREMOVALS ", sprint(show, MIME("text/plain"), ev.cremovals))
+    println("CURRENT   ", sprint(show, MIME("text/plain"), ev.LFE))
+    println("PROPOSED  ", sprint(show, MIME("text/plain"), proposed_LFE))
+    @test CEvolution(initial, ev.LFE).history == ev.LFE ;
 
-And here is the next step in algorithmic time.
-```{julia}
-iv = generate_innovation(iv_null, duration, α=α, β=β)
-ev_next = CEvolution(ev, iv)
-```
-```{julia}
-proposed_LFE = last_feasible_evolution(duration, ev, iv)
-println("CURRENT  ", sprint(show, MIME("text/plain"), ev_next.LFE))
-println("PROPOSED ", sprint(show, MIME("text/plain"), proposed_LFE))
+    ev_previous = ev
+end
 ```

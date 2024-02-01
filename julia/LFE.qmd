@@ -41,7 +41,7 @@ jupyter:    julia-1.9
 #| tags: [parameters]
 source = "LFE.qmd"
 
-using EpidemicsCFTP, Random, Test
+using EpidemicsCFTP, Random, Test #,Logging
 ```
 
 Here is a table of software used in the following computations:
@@ -70,7 +70,7 @@ Markdown.parse("""
 Basic Constructions
 ===================
 We currently need duration and starting configuration of the epidemic, together 
-with two rate parameters. Note following also works for `initial  = SIR(0.0, 3, 2, 0)`.
+with two rate parameters. Note following also works for `initial = SIR(0.0, 3, 2, 0)`.
 ```{julia}
 const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
 α=0.2 ; β=0.1 ;
@@ -84,6 +84,13 @@ AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR 
 Here is the random seed.
 ```{julia}
 Random.seed!(43) ;
+```
+
+```julia
+#| echo: false
+using Logging
+debuglogger = ConsoleLogger(stderr, Logging.Debug)
+global_logger(debuglogger) ;
 ```
 
 Minimal and maximal initial `CEvolution`s
@@ -128,7 +135,7 @@ println("Initial minimal `CEvolution` ", sprint(show, MIME("text/plain"), min_ev
 
 A suitable `Innovation`
 -----------------------
-We work with the following (randomly generated) innovation:
+We work with the following (randomly generated, determined by seed) innovation:
 ```{julia}
 iv_null  = Innovation(initial.n, I[], R[], min_ev.cremovals)
 iv0 = generate_innovation(iv_null, duration, α=α, β=β)
@@ -199,9 +206,9 @@ the `AbstractIncident` `z` to a reverse `LFE` and tracking the new `current_LFE`
 current_timeline = removal_fence[end]
 rf2              = removal_fence[end]               # DIAGNOSTIC
 reverse_LFE = AbstractIncident[]
-println("fence\tline\tIncident")                    # DIAGNOSTIC
+@debug "fence\tline\tIncident"
 for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
-    println("$rf\t\t$current_timeline\t\t$z")       # DIAGNOSTIC
+    @debug "$rf\t\t$current_timeline\t\t$(sprint(show, MIME("text/plain"), z))"
     if z isa CRemoval
         push!(reverse_LFE, z)
     elseif z isa OperativeInfection && z.infectee == current_timeline && current_timeline > rf
@@ -210,7 +217,7 @@ for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
     end
     rf2 = rf                                        # DIAGNOSTIC
 end
-println("$rf2\t\t$current_timeline\t\tCOMPLETION")  # DIAGNOSTIC
+@debug "$rf2\t\t$current_timeline\t\tCOMPLETION"
 ```
 ```{julia}
 LFE = reverse(reverse_LFE)
@@ -220,4 +227,74 @@ println(sprint(show, MIME("text/plain"), ev.LFE))
 
 ```{julia}
 @test CEvolution(initial, LFE).history == LFE ;
+```
+
+Implementation of `last_feasible_evolution`
+-------------------------------------------
+Here is a function which encapsulates the above work.
+Note that it does not assume `ev.infections` to have 
+been categorized as `OperativeInfection` versus `InOperativeInfection`.
+```{julia}
+function last_feasible_evolution(duration::Real, 
+    ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
+    
+    @debug "Compute mixed chronology, recomputing `cremovals`"
+    @debug "   and converting previous `OperativeInfection`s to `PInfection`s"
+    @debug "   (perhaps there should be a mechanism to inherit this from calling code?)."
+    recomputed_cremovals = EpidemicsCFTP.resulting_cremovals(ev, iv) 
+    previous_history = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
+    chronology = sort(iv.infections ∪ previous_history ∪ recomputed_cremovals)
+    
+    @debug "Compute `removal_boundary` and `relevant_chronology`"
+    removal_boundary =
+        accumulate(+, z isa CRemoval ? 1 : 0 for z in chronology, init=initial.r)
+    raw_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
+            for (z, rb) in zip(chronology, removal_boundary)]
+    relevant_chronology =
+        filter(z -> !(z isa KilledInfection), raw_chronology)
+    
+    @debug "Compute `removal_fence`"
+    removal_fence =
+        accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
+    @debug "$removal_fence"
+    
+    @debug "Work backwards through `relevant_chronology`"
+    current_timeline = removal_fence[end]
+    rf2              = removal_fence[end]               # DIAGNOSTIC
+    reverse_LFE = AbstractIncident[]
+    @debug "fence\tline\tIncident"
+    for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
+        @debug "$rf\t\t$current_timeline\t\t$(sprint(show, MIME("text/plain"), z))"
+        if z isa CRemoval
+            push!(reverse_LFE, z)
+        elseif z isa OperativeInfection && z.infectee == current_timeline && current_timeline > rf
+            push!(reverse_LFE, z)
+            current_timeline -= 1
+        end
+        rf2 = rf                                        # DIAGNOSTIC
+    end
+    @debug "$rf2\t\t$current_timeline\t\tCOMPLETION"
+    
+    return reverse(reverse_LFE)
+end ;
+```
+
+Here is the proposed implementation in action, compared with previous implementation and with piece-work implementation.
+```{julia}
+proposed_LFE = last_feasible_evolution(duration, max_ev, iv0)
+println("CURRENT  ", sprint(show, MIME("text/plain"), ev.LFE))
+println("CODED    ", sprint(show, MIME("text/plain"), LFE))
+println("PROPOSED ", sprint(show, MIME("text/plain"), proposed_LFE))
+@test LFE == proposed_LFE ;
+```
+
+And here is the next step in algorithmic time.
+```{julia}
+iv = generate_innovation(iv_null, duration, α=α, β=β)
+ev_next = CEvolution(ev, iv)
+```
+```{julia}
+proposed_LFE = last_feasible_evolution(duration, ev, iv)
+println("CURRENT  ", sprint(show, MIME("text/plain"), ev_next.LFE))
+println("PROPOSED ", sprint(show, MIME("text/plain"), proposed_LFE))
 ```

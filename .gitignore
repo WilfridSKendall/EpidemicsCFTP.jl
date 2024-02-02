@@ -1,5 +1,6 @@
 VERSION.txt
 
+products.txt
 Manifest.toml
 
 *.stamp

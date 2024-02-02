@@ -43,6 +43,8 @@ export Innovation, Evolution, CEvolution
 # # Defined in `02-methods.jl`
 export evolution, evolution_history
 
+export maximal_evolution, minimal_evolution
+
 export generate_innovation
 
 export alter

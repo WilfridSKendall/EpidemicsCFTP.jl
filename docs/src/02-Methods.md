@@ -30,6 +30,8 @@ also other helper functions:
 | [`generate_innovation`](@ref)              | Generates random [`Innovation`](@ref)                  |
 | [`evolution`](@ref)                        | Generates trajectory, history for [`Evolution`](@ref)  |
 | [`evolution_history`](@ref)                | Generates history for [`Evolution`](@ref)              |
+| [`maximal_evolution`](@ref)                | Generates maximal [`Evolution`](@ref) given `CRemoval`s|
+| [`minimal_evolution`](@ref)                | Generates minimal [`Evolution`](@ref) given `CRemoval`s|
 |                                            |                                                        |
 | [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)         |
 | [`EpidemicsCFTP.compute_nofly`](@ref)      | Computes adapted [`Infection`](@ref)s and nofly zone   |
@@ -47,6 +49,8 @@ also other helper functions:
 generate_innovation
 evolution
 evolution_history
+maximal_evolution
+minimal_evolution
 EpidemicsCFTP.last_feasible_evolution
 EpidemicsCFTP.compute_nofly
 EpidemicsCFTP.interval

@@ -446,6 +446,70 @@ function evolution_history(initial_state::SIR, chronology::Vector{T}; conditione
     return history
 end
 
+# Creating maximal and minimal `CEvolution`s
+# ------------------------------------------
+
+"""
+    maximal_evolution(::SIR, ::S, times::Vector{T})::CEvolution where {S,T <: Real}
+    
+Creates a maximal `CEvolution` placing `CRemoval`s at the times specified by the third argument.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+initial = SIR(0.0, 2, 1, 0)
+maximal_evolution(initial, 3.0, [1.0, 2.0])
+
+# output
+
+CEvolution(3,
+infections: AbstractInfection[ℐ₀.₀₀¹⁻²,ℐ₀.₀₀²⁻³]
+removals:   AbstractRemoval[]
+cremovals:  CRemoval[𝒞₁.₀₀³,𝒞₂.₀₀³]
+chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,ℐ₀.₀₀²⁻³,𝒞₁.₀₀³,𝒞₂.₀₀³]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(1:2:0),SIR₀.₀₀(0:3:0),SIR₁.₀₀(0:2:1),SIR₂.₀₀(0:1:2)]
+history:    AbstractIncident[ℐ₀.₀₀¹⁻²,ℐ₀.₀₀²⁻³,𝒞₁.₀₀³,𝒞₂.₀₀³])
+```
+"""
+function maximal_evolution(initial::SIR, duration::S, 
+        times::Vector{T}) ::CEvolution where {S,T <: Real}
+    beginning = initial.t
+    population = initial.n
+    infections = [Infection(beginning,i,i+1) for i ∈ 1:(population-1)]
+    cremovals  = [CRemoval(t, population) for t in times]
+    return CEvolution(initial, infections ∪ cremovals)
+end
+
+"""
+    minimal_evolution(::SIR, ::S, times::Vector{T})::CEvolution where {S,T <: Real}
+    
+Creates a minimal `CEvolution` placing `CRemoval`s at the times specified by the third argument.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+initial = SIR(0.0, 2, 1, 0)
+minimal_evolution(initial, 3.0, [1.0, 2.0])
+
+# output
+
+CEvolution(3,
+infections: AbstractInfection[ℐ₁.₀₀¹⁻²]
+removals:   AbstractRemoval[]
+cremovals:  CRemoval[𝒞₁.₀₀¹,𝒞₂.₀₀²]
+chronology: AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀₀²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₁.₀₀(1:2:0),SIR₁.₀₀(1:1:1),SIR₂.₀₀(1:0:2)]
+history:    AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀₀²])
+```
+"""
+function minimal_evolution(initial::SIR, duration::S, 
+        times::Vector{T})::CEvolution where {S,T <: Real}
+    beginning = initial.t
+    population = initial.n
+    sort(deepcopy(times))
+    infections = [Infection(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
+    cremovals  = [CRemoval(t, i) for (i, t) in enumerate(times)]
+    return CEvolution(initial, infections ∪ cremovals)
+end
+
 # Computing the last feasible epidemic trajectory
 # -----------------------------------------------
 """

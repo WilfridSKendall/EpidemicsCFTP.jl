@@ -1,8 +1,5 @@
 # # Exceptions
 # # ----------
-
-# Exceptions
-# -------------------------------
 """
     BadIncident
 
@@ -14,7 +11,7 @@ abstract type BadIncident <: Exception end
 """
     MissedCRemoval
 
-This is an exception raised when a [`CRemoval`](@ref) is missed by
+This is raised when a [`CRemoval`](@ref) is missed by
 `evolution`.
 
 ## Example
@@ -28,7 +25,6 @@ initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
 
 # output
-
 ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.05, 3)
 ```
 """
@@ -40,7 +36,7 @@ end
 """
     EmployedRemoval
 
-This is an exception raised when a [`Removal`](@ref) is not missed by
+This is raised when a [`Removal`](@ref) is not missed by
 `evolution`.
 
 ## Example
@@ -54,7 +50,6 @@ initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
 
 # output
-
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.2, 1)
 ```
 """
@@ -68,7 +63,7 @@ end
     
 Printing a `BadIncident` exception.
 Sub-types of this exception are:
-[`EmployedRemoval`](@ref) and [`MissedCRemoval`](@ref), raised respectively when a 
+[`EmployedRemoval`](@ref) and [`MissedCRemoval`](@ref), typically raised respectively when a 
 conditioned evolution uses a [`Removal`](@ref) which _is_ _not_ conditioned to appear in the trajectory,
 or doesn't use a [`CRemoval`](@ref) which _is_ conditioned to appear in the trajectory.
 """

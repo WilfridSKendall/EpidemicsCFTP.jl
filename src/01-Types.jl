@@ -814,7 +814,6 @@ cremovals  = [CRemoval(0.0, 1)]
 chronology = infections ∪ removals ∪ cremovals
 
 # output
-
 AbstractIncident[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²,𝒞₀.₀₀¹]
 ```
 
@@ -825,7 +824,6 @@ candidate = Innovation(population, Infection[], Removal[], cremovals) ;
 CEvolution(ev, candidate)
 
 # output
-
 CEvolution(3,
 infections: AbstractInfection[]
 removals:   AbstractRemoval[]
@@ -841,7 +839,6 @@ innov      = Innovation(population, infections, removals, cremovals)
 CEvolution(initial, innov)
 
 # output
-
 CEvolution(3,
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
@@ -857,7 +854,6 @@ ev = CEvolution(initial, chronology, NFZ1=[0.5])
 ev.NFZ1 == Real[0.5]
 
 # output
-
 true
 ```
 
@@ -868,7 +864,6 @@ innov = Innovation(population, Infection[], Removal[], cremovals1) ;
 CEvolution(initial, innov)
 
 # output
-
 ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.0, 2)
 ```
 
@@ -880,7 +875,6 @@ innov      = Innovation(population, infections, removals, cremovals) ;
 CEvolution(initial, innov)
 
 # output
-
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
 

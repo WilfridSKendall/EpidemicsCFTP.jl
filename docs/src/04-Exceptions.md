@@ -16,8 +16,8 @@ EmployedRemoval
 
 ## Methods for displaying exceptions
 ```@docs
-Base.show(io::IO, e::BadIncident)
-Base.show :: Tuple{IO, MissedCRemoval}
-Base.show :: Tuple{IO, EmployedRemoval}
+Base.show(::IO, ::BadIncident)
+Base.show(::IO, ::MissedCRemoval)
+Base.show(::IO, ::EmployedRemoval)
 
 ```

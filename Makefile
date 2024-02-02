@@ -21,16 +21,11 @@ test_files :=$(wildcard test/*.jl)
 .PHONY: documentation html-documentation pdf-documentation view test doc_images
 
 # ===================
-# GUI STARTS HERE
-# ----------------------------------------------
 # PRIMARY TARGETS
 # ====================
 # Documentation
-# Create documentation
 documentation: html-documentation pdf-documentation
-# Create html documentation
 html-documentation: test docs/site/index.html
-# Create pdf documentation
 pdf-documentation: docs/build/$(MODULE).pdf
 	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
 	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
@@ -40,32 +35,12 @@ pdf-documentation: docs/build/$(MODULE).pdf
 	xdg-open $<
 
 
-# Serve documentation
+# Serve documentation (not yet working)
 view: serve
 	xdg-open http://127.0.0.1:8000	
 
 # Place documentation online (not yet working)
 online: docs/build/index.md
-
-# Conduct doctests
-doctest:
-	@$(JULIA) --color=yes docs/make_doctests.jl
-
-# Conduct unit tests
-test: .test.stamp
-	@touch test.stamp
-
-# Clean `build` directory
-virgin: ; rm -rf docs/build/*
-# ===================
-# GUI ENDS HERE
-
-serve: documentation
-	pushd docs ; mkdocs serve
-
-# ----------------------------------------------
-# List test source: target is `$(MODULE)-test.pdf`
-include $(HOME)/lib/makefiles/listing-makefile.mak
 
 # ====================
 # Installation
@@ -77,6 +52,32 @@ commit:
 	$(GIT) commit -a
 	$(GIT) push
 		
+# ====================
+# Testing
+doctest:
+	@$(JULIA) --color=yes docs/make_doctests.jl
+
+test: .test.stamp
+	@touch test.stamp
+
+# Clean `docs/build` directory
+virgin: ; rm -rf docs/build/*
+# ===================
+# GUI ENDS HERE
+
+# ----------------------------------------------
+# Automatic help (prints this helptext, or uses gui):
+help: ; $(PYTHON) "$(PYTHONPATH)/make/browser.py"
+gui: ; $(PYTHON) "$(PYTHONPATH)/make/browser.py" --gui
+
+
+serve: documentation
+	pushd docs ; mkdocs serve
+
+# ----------------------------------------------
+# List test source: target is `$(MODULE)-test.pdf`
+include $(HOME)/lib/makefiles/listing-makefile.mak
+
 		
 # ====================
 # Arrangements
@@ -106,10 +107,6 @@ $(MODULE)-test.qmd: $(test_files)
 		echo "\`\`\`"          >> $(MODULE)-test.qmd ; \
 	done
 
-# ----------------------------------------------
-# Automatic help (prints this helptext, or uses gui):
-help: ; $(PYTHON) "$(PYTHONPATH)/make/browser.py"
-gui: ; $(PYTHON) "$(PYTHONPATH)/make/browser.py" --gui
 # ========================
 # README.pdf
 README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)

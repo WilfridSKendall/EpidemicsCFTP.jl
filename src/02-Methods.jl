@@ -460,7 +460,6 @@ initial = SIR(0.0, 2, 1, 0)
 maximal_evolution(initial, 3.0, [1.0, 2.0])
 
 # output
-
 CEvolution(3,
 infections: AbstractInfection[ℐ₀.₀₀¹⁻²,ℐ₀.₀₀²⁻³]
 removals:   AbstractRemoval[]
@@ -490,7 +489,6 @@ initial = SIR(0.0, 2, 1, 0)
 minimal_evolution(initial, 3.0, [1.0, 2.0])
 
 # output
-
 CEvolution(3,
 infections: AbstractInfection[ℐ₁.₀₀¹⁻²]
 removals:   AbstractRemoval[]
@@ -529,9 +527,7 @@ cev = CEvolution(initial, AbstractIncident[Infection(1.0, 1, 3), Removal(1.0, 3)
 CEvolution(cev, innov).LFE
 
 # output
-
 AbstractIncident[𝒞₂.₀₀¹]
-
 ```
 """
 function last_feasible_evolution(duration::Real, 

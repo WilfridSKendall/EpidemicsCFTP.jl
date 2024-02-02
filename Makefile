@@ -21,12 +21,16 @@ test_files :=$(wildcard test/*.jl)
 .PHONY: documentation html-documentation pdf-documentation view test doc_images
 
 # ===================
+# GUI STARTS HERE
+# ===============
 # PRIMARY TARGETS
-# ====================
+# ===============
 # Documentation
 documentation: html-documentation pdf-documentation
-html-documentation: test docs/site/index.html
-pdf-documentation: docs/build/$(MODULE).pdf
+#  * html format
+html-format: test docs/site/index.html
+#  * pdf format
+pdf-format:  docs/build/$(MODULE).pdf
 	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
 	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
 	echo "\\renewcommand{\\afterpartskip}{\\vfil}"      >> docs/build/custom.sty
@@ -42,7 +46,7 @@ view: serve
 # Place documentation online (not yet working)
 online: docs/build/index.md
 
-# ====================
+# ============
 # Installation
 install:
 	@touch src/$(MODULE).jl
@@ -52,7 +56,7 @@ commit:
 	$(GIT) commit -a
 	$(GIT) push
 		
-# ====================
+# =======
 # Testing
 doctest:
 	@$(JULIA) --color=yes docs/make_doctests.jl

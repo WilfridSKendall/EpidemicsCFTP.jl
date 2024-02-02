@@ -49,8 +49,16 @@ also other helper functions:
 generate_innovation
 evolution
 evolution_history
+```
+
+For purposes of CFTP we need to be able to generate initial _maximal_ or _minimal_ `CEvolution`s,
+specified by the initial state and a list of times for `CRemoval`s.
+```@docs 
 maximal_evolution
 minimal_evolution
+```
+
+```@docs 
 EpidemicsCFTP.last_feasible_evolution
 EpidemicsCFTP.compute_nofly
 EpidemicsCFTP.interval

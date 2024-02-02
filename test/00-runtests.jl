@@ -5,7 +5,8 @@ import InteractiveUtils: subtypes
 using EpidemicsCFTP
 using Test
 
-# Useful function for returning all concrete subtypes
+### Useful function for returning all concrete subtypes
+# -----------------------------------------------------
 function allconcretesubtypes(T)
     Tl = subtypes(T)
     if isempty(Tl)
@@ -14,6 +15,17 @@ function allconcretesubtypes(T)
         return ∪([allconcretesubtypes(S) for S ∈ Tl]...)
     end
 end
+
+### Useful constants
+# ------------------
+AI  = AbstractIncident;
+AIF = AbstractInfection;  I = Infection; P = PInfection; 
+NF  = NoFlyInfection;    XI = ExpungedInfection;
+AIR = AbstractRemoval;    R = Removal;   C = CRemoval;   
+KI  = KilledInfection;   KR = KilledRemoval;
+IM  = InfectionMarker;   RM = RemovalMarker;
+
+
 
     
 include("01-Types.jl")

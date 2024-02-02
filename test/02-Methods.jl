@@ -1,11 +1,5 @@
 ## Tests for `EpidemicsCFTP`
 # =========================
-### Useful constants
-# ------------------
-I, P, R, C, IM, RM = Infection, PInfection, Removal, CRemoval, 
-                            InfectionMarker, RemovalMarker
-AI, AIF, AIR       = AbstractIncident, AbstractInfection, AbstractRemoval
-
 
 ### Testing `isless`
 # ----------------------------------------------------------

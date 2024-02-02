@@ -1,8 +1,14 @@
-# Tests for `EpidemicsCFTP`
+## Tests for `EpidemicsCFTP`
+# =========================
+### Useful constants
+# ------------------
+I, P, R, C, IM, RM = Infection, PInfection, Removal, CRemoval, 
+                            InfectionMarker, RemovalMarker
+AI, AIF, AIR       = AbstractIncident, AbstractInfection, AbstractRemoval
 
 
-## Testing `isless`
-# =================================
+### Testing `isless`
+# ----------------------------------------------------------
 @testset "EpidemicsCFTP: $(rpad(isless, 23))" begin
     import EpidemicsCFTP: Removal_order
     for typeR1 ∈ allconcretesubtypes(AbstractRemoval)
@@ -50,7 +56,7 @@
     end
 end
 
-## Testing `alter`
+### Testing `alter`
 # -------------------
 @testset "EpidemicsCFTP: $(rpad(string(alter), 23))" begin
     crem = CRemoval(0.15, 1)
@@ -62,8 +68,8 @@ end
 end
 
 
-
-# =================================
+### Testing various actions
+# -------------------------
 @testset "EpidemicsCFTP: $(rpad("actions", 23))" begin
     infect = EpidemicsCFTP.infect
     remove = EpidemicsCFTP.remove
@@ -127,10 +133,9 @@ end
 end
 
 
+### Testing `evolution`
+# --------------------
 @testset "EpidemicsCFTP: $(rpad(string(evolution), 23))" begin
-    I, P, R, C = PInfection, Infection, Removal, CRemoval
-    AIF = AbstractInfection
-    AI  = AbstractIncident
     population     = 6
     initial_state1 = SIR(0.0, 1, 2, 3)
     innov1a        = Innovation(population, I[], R[R(0.5, 4)])
@@ -207,13 +212,25 @@ end
 
 end
 
+### Testing maximal and minimal constructions
+# -------------------------------------------
+@testset "EpidemicsCFTP: $(rpad("Maximal / minimal", 23))" begin
+    initial = SIR(0.0, 2, 1, 0)
+    pop     = initial.n
+    ev_max  = maximal_evolution(initial, 4.0, [1.0, 2.0, 3.0])
+    ev_min  = minimal_evolution(initial, 4.0, [1.0, 2.0, 3.0])
 
-## Testing `interval`
+    @test ev_max.infections == AIF[I(0.0, 1, 2), I(0.0, 2, 3)]
+    @test isempty(ev_max.removals)
+    @test ev_max.cremovals  == C[C(1.0, initial.n), C(2.0, initial.n), C(3.0, initial.n)]
+    @test ev_min.infections == AIF[I(1.0, 1, 2), I(2.0, 2, 3)]
+    @test isempty(ev_min.removals)
+    @test ev_min.cremovals  == C[C(1.0, 1), C(2.0, 2), C(3.0, 3)]
+end 
+
+### Testing `interval`
 # -------------------
 @testset "EpidemicsCFTP: $(rpad(string(EpidemicsCFTP.interval), 23))" begin
-    I, P, R, C, IM, RM = PInfection, Infection, Removal, CRemoval, 
-                            InfectionMarker, RemovalMarker
-    AI, AIF, AIR       = AbstractIncident, AbstractInfection, AbstractRemoval
     initial        = SIR(0.0, 2, 1, 0)
     n              = initial.n
     innov1         = Innovation(n, I[I(1,1,2), I(2,2,3)], R[], C[C(3,2)])
@@ -245,7 +262,9 @@ end
 end 
 
 
-## `FakeIncident` is an `AbstractIncident but without fields`
+### Testing `update` exception raising
+# ------------------------------------
+# `FakeIncident` is an `AbstractIncident but without fields`
 struct FakeIncident <: AbstractIncident end
 
     

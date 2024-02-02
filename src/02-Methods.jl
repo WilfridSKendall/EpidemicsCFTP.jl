@@ -480,8 +480,7 @@ function last_feasible_evolution(duration::Real,
         if z isa CRemoval
             push!(reverse_LFE, z)
         elseif z isa OperativeInfection && 
-                current_timeline > ev.initial.i &&
-                current_timeline > rf &&
+                current_timeline > max(ev.initial.i, rf) &&
                 z.infectee == current_timeline 
             push!(reverse_LFE, z)
             current_timeline -= 1
@@ -491,60 +490,6 @@ function last_feasible_evolution(duration::Real,
     return reverse(reverse_LFE)
 end
    
-
-"""
-    last_feasible_evolution0_deprecated(::Real, ::AbstractEvolution, ::Innovation; 
-            ::Bool=false) ::Vector{AbstractIncident}
-
-Computes the last feasible epidemic trajectory, re-computing `cremovals`
-using `ev.cremovals` and `iv.cremovals`.
-"""
-function last_feasible_evolution0_deprecated(duration::Real, ev::AbstractEvolution, iv::Innovation;
-    conditioned::Bool=false) ::Vector{AbstractIncident}
-    last_feasible_evolution(duration, ev, iv, 
-                            resulting_cremovals(ev, iv.cremovals); conditioned=conditioned)
-end
-
-"""
-    last_feasible_evolution_deprecated(::Real, ::AbstractEvolution, ::Innovation, ::Vector{CRemoval};
-            ::Bool=false) ::Vector{AbstractIncident} where {S <: AbstractInfection}
-
-Computes the last feasible epidemic trajectory, **assuming** `recomputed_cremovals`
-has been re-computed.
-"""
-function last_feasible_evolution_deprecated(duration::Real, ev::AbstractEvolution, iv::Innovation, 
-            recomputed_cremovals::Vector{CRemoval};
-            conditioned::Bool=false) ::Vector{AbstractIncident}                                 # <1>
-    chronology = sort(iv.infections ∪ setdiff(ev.history, ev.cremovals) ∪ recomputed_cremovals) # <2>
-    current_state = SIR(duration, 
-        ev.trajectory[end].s, ev.trajectory[end].i, ev.trajectory[end].r)
-
-    reverse_history = AbstractIncident[]
-    reverse_chronology  = reverse([x for x ∈ chronology if x.t <= current_state.t])
-
-    if ! isempty(reverse_chronology) # HORRIBLE SPAGHETTI
-        for (k, event) ∈ enumerate(reverse_chronology) # Enumeration needed to look to past
-            prior_state = EpidemicsCFTP.reverse_update(current_state, event)
-            if ! EpidemicsCFTP.is_same_config(prior_state, current_state)
-                if (event isa CRemoval) || (k==1)
-                    current_state = prior_state 
-                    push!(reverse_history, event)
-                elseif isempty([z for z ∈ reverse_chronology[k+1:end] if
-                         (z isa CRemoval) && (z.target ≥ event.infectee)])
-                    current_state = prior_state 
-                    push!(reverse_history, event)
-                end
-            elseif conditioned && event isa CRemoval
-                throw(MissedCRemoval(event))
-            end
-        end
-    end
-
-    return Base.reverse(reverse_history)
-end 
-# ## 1. Allow for non-zero starting time?
-# ## 2. Truncate `chronology` to run only up to `duration`?
-    
 # Compute infectious interval for each time line
 # ----------------------------------------------
 """

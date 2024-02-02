@@ -448,28 +448,71 @@ end
 
 # Computing the last feasible epidemic trajectory
 # -----------------------------------------------
+"""
+    last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation) ::Vector{AbstractIncident}
+
+Computes the last feasible epidemic trajectory relevant for a `CEvolution` which will be updated
+by a `Innovation`.
+"""
+function last_feasible_evolution(duration::Real, 
+    ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
+    
+    recomputed_cremovals = EpidemicsCFTP.resulting_cremovals(ev, iv) 
+    previous_infections = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
+    chronology = sort(iv.infections ∪ previous_infections ∪ recomputed_cremovals)
+    
+    removal_boundary =
+        accumulate(+, z isa CRemoval ? 1 : 0 for z in chronology, init=ev.initial.r)
+    @assert any(z isa KilledInfection ? z.target ≤ rb : z.target > rb for 
+                                    (z, rb) in zip(ev.chronology, removal_boundary))  
+    
+    raw_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
+            for (z, rb) in zip(chronology, removal_boundary)]
+    relevant_chronology =
+        filter(z -> !(z isa KilledInfection), raw_chronology)
+    
+    removal_fence =
+        accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
+    
+    current_timeline = removal_fence[end]
+    reverse_LFE = AbstractIncident[]
+    for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
+        if z isa CRemoval
+            push!(reverse_LFE, z)
+        elseif z isa OperativeInfection && 
+                current_timeline > ev.initial.i &&
+                current_timeline > rf &&
+                z.infectee == current_timeline 
+            push!(reverse_LFE, z)
+            current_timeline -= 1
+        end
+    end
+    
+    return reverse(reverse_LFE)
+end
+   
 
 """
-    last_feasible_evolution0(::Real, ::AbstractEvolution, ::Innovation; 
+    last_feasible_evolution0_deprecated(::Real, ::AbstractEvolution, ::Innovation; 
             ::Bool=false) ::Vector{AbstractIncident}
 
 Computes the last feasible epidemic trajectory, re-computing `cremovals`
 using `ev.cremovals` and `iv.cremovals`.
 """
-function last_feasible_evolution0(duration::Real, ev::AbstractEvolution, iv::Innovation;
+function last_feasible_evolution0_deprecated(duration::Real, ev::AbstractEvolution, iv::Innovation;
     conditioned::Bool=false) ::Vector{AbstractIncident}
     last_feasible_evolution(duration, ev, iv, 
                             resulting_cremovals(ev, iv.cremovals); conditioned=conditioned)
 end
 
 """
-    last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation, ::Vector{CRemoval};
+    last_feasible_evolution_deprecated(::Real, ::AbstractEvolution, ::Innovation, ::Vector{CRemoval};
             ::Bool=false) ::Vector{AbstractIncident} where {S <: AbstractInfection}
 
 Computes the last feasible epidemic trajectory, **assuming** `recomputed_cremovals`
 has been re-computed.
 """
-function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation, 
+function last_feasible_evolution_deprecated(duration::Real, ev::AbstractEvolution, iv::Innovation, 
             recomputed_cremovals::Vector{CRemoval};
             conditioned::Bool=false) ::Vector{AbstractIncident}                                 # <1>
     chronology = sort(iv.infections ∪ setdiff(ev.history, ev.cremovals) ∪ recomputed_cremovals) # <2>

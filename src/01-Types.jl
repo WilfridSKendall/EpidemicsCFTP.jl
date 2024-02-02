@@ -940,8 +940,7 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     
     # Step 4.
     duration = maximum(z.t for z in recomputed_cremovals)
-    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, 
-                iv, recomputed_cremovals, conditioned=true)
+    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv)
     perpetuated_infections = PInfection[PInfection(z) for z ∈ LFE ∩ ev.infections] 
     
     # Step 5.

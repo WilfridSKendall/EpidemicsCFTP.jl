@@ -56,16 +56,16 @@ import Base: isless
 # # Included files
 # # ==============
 # # Include types defined in this package.
-include("01-types.jl")
+include("01-Types.jl")
  
 # # Include general methods defined in this package.
-include("02-methods.jl")
+include("02-Methods.jl")
 
 # # Include subsidiary display methods extended in this package.
-include("03-methods-show.jl")
+include("03-Methods-show.jl")
 
 # # Include exceptions defined in this package.
-include("04-exceptions.jl")
+include("04-Exceptions.jl")
 
 end
 

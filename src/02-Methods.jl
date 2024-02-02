@@ -453,6 +453,22 @@ end
 
 Computes the last feasible epidemic trajectory relevant for a `CEvolution` which will be updated
 by a `Innovation`.
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+initial = SIR(0.0, 2, 1, 0)
+innov = Innovation(3, 
+    Infection[Infection(1.0, 1, 2)], 
+    Removal[Removal(1.0, 3)], 
+    CRemoval[CRemoval(2.0, 1)])
+cev = CEvolution(initial, AbstractIncident[Infection(1.0, 1, 3), Removal(1.0, 3), CRemoval(2.0, 1)])
+CEvolution(cev, innov).LFE
+
+# output
+
+AbstractIncident[𝒞₂.₀₀¹]
+
+```
 """
 function last_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}

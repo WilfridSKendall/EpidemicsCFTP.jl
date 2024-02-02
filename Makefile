@@ -6,6 +6,9 @@ MODULE     := $(notdir $(LOCATION))
 GIT        := /usr/bin/git
 JULIA      := $(HOME)/.julia/julia-current/bin/julia
 
+PYTHON 	:= /usr/bin/python2
+export PYTHONPATH=/home/wilfrid/lib/python
+
 QUARTO     := /usr/local/bin/quarto
 CSL        := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 src_files  := $(wildcard src/*.jl) 
@@ -17,29 +20,17 @@ test_files :=$(wildcard test/*.jl)
 # ========================
 .PHONY: documentation html-documentation pdf-documentation view test doc_images
 
-documentation: html-documentation pdf-documentation
-
-view: serve
-	xdg-open http://127.0.0.1:8000	
-
-serve: documentation
-	pushd docs ; mkdocs serve
-
-online: docs/build/index.md
-	
-doctest:
-	@$(JULIA) --color=yes docs/make_doctests.jl
-
-test: .test.stamp
-	@touch test.stamp
-
-virgin: ; rm -rf docs/build/*
-
-
+# ===================
+# GUI STARTS HERE
+# ----------------------------------------------
+# PRIMARY TARGETS
 # ====================
 # Documentation
+# Create documentation
+documentation: html-documentation pdf-documentation
+# Create html documentation
 html-documentation: test docs/site/index.html
-
+# Create pdf documentation
 pdf-documentation: docs/build/$(MODULE).pdf
 	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
 	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
@@ -47,6 +38,34 @@ pdf-documentation: docs/build/$(MODULE).pdf
 	echo "\\renewcommand\\thepart{\\Alph{part}}"        >> docs/build/custom.sty
 	latexmk -cd -g -xelatex -shell-escape docs/build/$(MODULE).tex
 	xdg-open $<
+
+
+# Serve documentation
+view: serve
+	xdg-open http://127.0.0.1:8000	
+
+# Place documentation online (not yet working)
+online: docs/build/index.md
+
+# Conduct doctests
+doctest:
+	@$(JULIA) --color=yes docs/make_doctests.jl
+
+# Conduct unit tests
+test: .test.stamp
+	@touch test.stamp
+
+# Clean `build` directory
+virgin: ; rm -rf docs/build/*
+# ===================
+# GUI ENDS HERE
+
+serve: documentation
+	pushd docs ; mkdocs serve
+
+# ----------------------------------------------
+# List test source: target is `$(MODULE)-test.pdf`
+include $(HOME)/lib/makefiles/listing-makefile.mak
 
 # ====================
 # Installation
@@ -69,9 +88,6 @@ docs/site/index.html: docs/build/index.md
 
 
 
-# ====================
-# List test source: target is `$(MODULE)-test.pdf`
-include $(HOME)/lib/makefiles/listing-makefile.mak
 listings: README.pdf Makefile.pdf $(MODULE)-test.pdf
 $(MODULE)-test.pdf: $(MODULE)-test.qmd
 	$(QUARTO) render $< --to pdf
@@ -90,6 +106,10 @@ $(MODULE)-test.qmd: $(test_files)
 		echo "\`\`\`"          >> $(MODULE)-test.qmd ; \
 	done
 
+# ----------------------------------------------
+# Automatic help (prints this helptext, or uses gui):
+help: ; $(PYTHON) "$(PYTHONPATH)/make/browser.py"
+gui: ; $(PYTHON) "$(PYTHONPATH)/make/browser.py" --gui
 # ========================
 # README.pdf
 README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)

@@ -13,10 +13,10 @@ makedocs(;
 ##
     pages=[
         "Introduction"            => "index.md",
-        "Types"                   => "01-types.md",
-        "Methods for computation" => "02-methods.md",
-        "Methods for display"     => "03-methods-show.md",
-        "Exceptions"              => "04-exceptions.md",
+        "Types"                   => "01-Types.md",
+        "Methods for computation" => "02-Methods.md",
+        "Methods for display"     => "03-Methods-show.md",
+        "Exceptions"              => "04-Exceptions.md",
         "Index"                   => "05-index.md",
     ],
 )

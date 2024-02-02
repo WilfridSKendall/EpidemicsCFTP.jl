@@ -14,9 +14,10 @@ MissedCRemoval
 EmployedRemoval
 ```
 
-
-
 ## Methods for displaying exceptions
 ```@docs
 Base.show(io::IO, e::BadIncident)
+Base.show :: Tuple{IO, MissedCRemoval}
+Base.show :: Tuple{IO, EmployedRemoval}
+
 ```

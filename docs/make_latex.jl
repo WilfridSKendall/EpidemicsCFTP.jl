@@ -9,18 +9,18 @@ makedocs(;
 ##
 #     pages=[
 #         "Introduction"            => "index.md",
-#         "Types"                   => "02-types.md",
-#         "Methods for computation" => "03-methods.md",
-#         "Methods for display"     => "04-methods-show.md",
-#         "Exceptions"              => "05-exceptions.md",
+#         "Types"                   => "02-Types.md",
+#         "Methods for computation" => "03-Methods.md",
+#         "Methods for display"     => "04-Methods-show.md",
+#         "Exceptions"              => "05-Exceptions.md",
 #         "Index"                   => "06-index.md",
 #     ],
     pages=[
         "index.md",
-        "01-types.md",
-        "02-methods.md",
-        "03-methods-show.md",
-        "04-exceptions.md",
+        "01-Types.md",
+        "02-Methods.md",
+        "03-Methods-show.md",
+        "04-Exceptions.md",
         "05-index.md",
     ],
 )

@@ -39,7 +39,8 @@ CFTP algorithm.
 
 -------------------------------
 
-## Information concerning `EpidemicsCFTP`  
+## Information 
+### Specifics concerning `EpidemicsCFTP`  
 
 Here is the documentation string for the module (under development):
 ```@docs
@@ -60,7 +61,7 @@ Markdown.parse("""
 -------------------------------
 
 
-## Installation
+### General advice on installation
 General advice on developing a `julia` package is given at 
 [`julialang.org/contribute/developing_package`](https://julialang.org/contribute/developing_package/).
 Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):

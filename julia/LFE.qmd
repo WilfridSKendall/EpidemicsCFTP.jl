@@ -69,90 +69,147 @@ Markdown.parse("""
 
 Basic Constructions
 ===================
-We currently need duration and starting configuration of the epidemic, together 
-with two rate parameters. Note following also works for `initial = SIR(0.0, 3, 2, 0)`.
+We need duration of the epidemic, together 
+with two rate parameters.
 ```{julia}
-const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
-α=0.2 ; β=0.1 ;
+const duration = 5.0 ; 
+const α=0.2 ;          const β=0.1 ;
 ```
+We also determine a sequence of initial conditions.
+```{julia}
+const initial1  = SIR(0.0, 4, 1, 0) ;
+const initial2  = SIR(0.0, 3, 2, 0) ;
+const initial3  = SIR(0.0, 4, 3, 0) ;
+const initial4  = SIR(0.0, 1, 4, 0) ;
+const initial5  = SIR(0.0, 0, 5, 0) ;
+```
+
 When constructing `Innovation` or an `Evolution` (or even a `CEvolution` as is given later)
 it is useful to use some abbreviations for various `AbstractIncidents`.
 ```{julia}
-AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
-AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
+AI  = AbstractIncident;
+AIF = AbstractInfection;  I = Infection; P = PInfection; 
+NF  = NoFlyInfection;    XI = ExpungedInfection;
+AIR = AbstractRemoval;    R = Removal;   C = CRemoval;   
+KI  = KilledInfection;   KR = KilledRemoval;
 ```
 Here is the random seed.
 ```{julia}
 Random.seed!(43) ;
 ```
 
+We will be testing
 ```{julia}
-#| echo: false
-using Logging
-debuglogger = ConsoleLogger(stderr, Logging.Info)
-global_logger(debuglogger) ;
+last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution ;
 ```
 
-Minimal and maximal initial `CEvolution`s
------------------------------------------
-The initial `CEvolution` can be _maximal_ or _minimal_; the definition depends on
-the times of the `CRemoval`s, which are supplied as a vector of times. 
-We require an `initial` state (of which only the fields `t` and `n` matter),
-`duration`,
-and a list of `CRemoval` times. Here are functions to generate the `CEvolution`s.
+Conditional removal times are specified as
 ```{julia}
-function maximal_evolution(initial::SIR, duration::S, 
-        times::Vector{T}) ::CEvolution where {S,T <: Real}
-    beginning = initial.t
-    population = initial.n
-    infections = I[I(beginning,i,i+1) for i ∈ 1:(population-1)]
-    cremovals  = C[C(t, population) for t in times]
-    return CEvolution(initial, infections ∪ cremovals)
+cremoval_times = [1.0, 2.0, 3.0, 4.0] ;
+```
+
+Finally our iteration range is
+```{julia}
+TWENTY  = 1:20 ;
+```
+{{< pagebreak >}}
+
+Unit Tests
+==========
+Here tests are carried out on the first twenty steps in algorithmic time,
+starting with both the maximal conditioned evolution and the minimal
+conditioned evolution, and specified `cremoval_times`.
+
+Zero algorithmic time, many initial conditions
+----------------------------------------------
+We first test the "zero step" (extending maximum and minimum conditioned evolutions
+using an essentially empty innovation `iv_null`) over a range of initial conditions.
+Note that in this case the constructed `CEvolution` is built directly from a chronology
+and hence its `LFE` field is an empty list!
+```{julia}
+iv_null = Innovation(initial1.n, I[], R[], [C(1,5), C(2,5), C(3,5), C(4,5)])
+iv      = iv_null
+traj_hi = [P(0,1,2), P(0,2,3), P(0,3,4), P(0,4,5), C(1,5), C(2,5), C(3,5), C(4,5)]
+traj_lo = [P(1,1,2), C(1,1), P(2,2,3), C(2,2), P(3,3,4), C(3,3), C(4,4)]
+for i in 1:5
+    initial = SIR(0, 5 - i, i, 0)
+    ev_hi   = maximal_evolution(initial, duration, cremoval_times)
+    ev_lo   = minimal_evolution(initial, duration, cremoval_times)
+    
+    LFE_hi = last_feasible_evolution(duration, ev_hi, iv)
+    LFE_lo = last_feasible_evolution(duration, ev_lo, iv)
+    
+    @test CEvolution(initial, convert(Vector{AI}, LFE_hi)).history == LFE_hi
+    @test CEvolution(initial, convert(Vector{AI}, LFE_lo)).history == LFE_lo
+
+    # # CAN'T DO THESE EXACT CALCULATIONS ALL THE TIME: i=5 LO CASE IS AN ISSUE
+    #LFE_max = convert(Vector{AI}, [z for z ∈ traj_hi if 
+    #    (! (z isa OperativeInfection)) || (z.infectee > initial.i)])
+    #LFE_min = convert(Vector{AI}, [z for z ∈ traj_lo if 
+    #    (! (z isa OperativeInfection)) || (z.infectee > initial.i)])
+    #@test LFE_max == sort(ev_hi.cremovals ∪ ev_hi.removals ∪ 
+    #    [P(z) for z ∈ ev_hi.infections if (z isa OperativeInfection) && (z.infectee > initial.i)])
+    #@test LFE_min == sort(ev_lo.cremovals ∪ ev_lo.removals ∪ 
+    #    [P(z) for z ∈ ev_lo.infections if (z isa OperativeInfection) && (z.infectee > initial.i)])
+end
+```
+The `@test`s check that the \LFE will be the history (hence _a fortiori_ the `LFE`) of of an epidemic
+generated using this `LFE`.
+
+Further steps in algorithmic time
+---------------------------------
+We now consider taking twenty steps in algorithmic time starting from each of the defined
+initial configurations.
+In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents.
+```{julia}
+ivl = [generate_innovation(iv_null, duration, α=α, β=β) for j in TWENTY]
+
+for init in [initial1, initial2, initial3, initial4, initial5]
+    ev_hi = maximal_evolution(init, duration, cremoval_times)
+    ev_lo = minimal_evolution(init, duration, cremoval_times)
+    for j in TWENTY
+        iv = ivl[j]
+        proposed_LFE_hi = last_feasible_evolution(duration, ev_hi, iv)
+        proposed_LFE_lo = last_feasible_evolution(duration, ev_lo, iv)
+    
+        ev_hi = CEvolution(ev_hi, iv)
+        ev_lo = CEvolution(ev_lo, iv)
+    
+        @test ev_hi.LFE == proposed_LFE_hi
+        @test ev_lo.LFE == proposed_LFE_lo
+        @test CEvolution(init, proposed_LFE_hi).history == proposed_LFE_hi
+        @test CEvolution(init, proposed_LFE_lo).history == proposed_LFE_lo
+    end
 end ;
-function minimal_evolution(initial::SIR, duration::S, 
-        times::Vector{T})::CEvolution where {S,T <: Real}
-    beginning = initial.t
-    population = initial.n
-    sort(deepcopy(times))
-    infections = I[I(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
-    cremovals  = C[C(t, i) for (i, t) in enumerate(times)]
-    return CEvolution(initial, infections ∪ cremovals)
-end ;
 ```
+The `@test`s are focussed as follows:
 
-Working with a list of `CRemoval` times,
-```{julia}
-initial_cremoval_times = [1.0, 2.0, 3.0, 4.0]
-println(initial_cremoval_times)
-```
-we obtain
-```{julia}
-max_ev = maximal_evolution(initial, duration, initial_cremoval_times)
-min_ev = minimal_evolution(initial, duration, initial_cremoval_times)
-println("Initial maximal `CEvolution` ", sprint(show, MIME("text/plain"), max_ev))
-println("Initial minimal `CEvolution` ", sprint(show, MIME("text/plain"), min_ev))
-```
+1. Check the computed `LFE` is actually stored in the corresponding `CEvolution` field;
+2. and, again, check this \LFE is the history (hence _a fortiori_ the `LFE`) of an epidemic
+generated using this `LFE`.
 
+{{< pagebreak >}}
+
+\appendix
 
 Towards a correct and robust generation of `LFE`
 ================================================
-Here is an alternative function to construct the `LFE`.
+We have introduced a new function to construct the `LFE`.
 Note that it does not assume `ev.infections` to have 
-been categorized as `OperativeInfection` versus `InOperativeInfection`.
-```{julia}
+been categorized as `OperativeInfection` versus `InoperativeInfection`.
+
+Here is a (non-executable) listing, instrumented for debugging.
+```julia
+# last_feasible_evolution == EpidemicsCFTP.last_feasible_evolution
+# resulting_cremovals = EpidemicsCFTP.resulting_cremovals
 function last_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
+    recomputed_cremovals = resulting_cremovals(ev, iv) 
+    previous_infections = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
+    chronology = sort(iv.infections ∪ previous_infections ∪ recomputed_cremovals)
     
-    @debug "Compute mixed chronology, recomputing `cremovals`"
-    @debug "   and converting previous `OperativeInfection`s to `PInfection`s"
-    @debug "   (perhaps there should be a mechanism to inherit this from calling code?)."
-    recomputed_cremovals = EpidemicsCFTP.resulting_cremovals(ev, iv) 
-    previous_history = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
-    chronology = sort(iv.infections ∪ previous_history ∪ recomputed_cremovals)
-    
-    @debug "Compute `removal_boundary` and `relevant_chronology`"
     removal_boundary =
-        accumulate(+, z isa CRemoval ? 1 : 0 for z in chronology, init=initial.r)
+        accumulate(+, z isa CRemoval ? 1 : 0 for z in chronology, init=ev.initial.r)
     @assert any(z isa KilledInfection ? z.target ≤ rb : z.target > rb for 
                                     (z, rb) in zip(ev.chronology, removal_boundary))  
     
@@ -161,51 +218,168 @@ function last_feasible_evolution(duration::Real,
     relevant_chronology =
         filter(z -> !(z isa KilledInfection), raw_chronology)
     
-    @debug "Compute `removal_fence`"
     removal_fence =
         accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
-    @debug "$removal_fence"
     
-    @debug "Work backwards through `relevant_chronology`"
     current_timeline = removal_fence[end]
-    rf2              = removal_fence[end]               # DIAGNOSTIC
     reverse_LFE = AbstractIncident[]
-    @debug "fence\tline\tIncident"
     for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
-        @debug "$rf\t\t$current_timeline\t\t$(sprint(show, MIME("text/plain"), z))"
         if z isa CRemoval
             push!(reverse_LFE, z)
-        elseif z isa OperativeInfection && z.infectee == current_timeline && current_timeline > rf
+        elseif z isa OperativeInfection && 
+                current_timeline > max(ev.initial.i, rf) &&
+                z.infectee == current_timeline 
             push!(reverse_LFE, z)
             current_timeline -= 1
         end
-        rf2 = rf                                        # DIAGNOSTIC
     end
-    @debug "$rf2\t\t$current_timeline\t\tCOMPLETION"
     
     return reverse(reverse_LFE)
 end ;
 ```
 
-Empirical results
-=================
-Here are results from the first ten steps in algorithmic time,
-starting with the maximal conditioned evolution.
-```{julia}
-ev = maximal_evolution(initial, duration, [1.0, 2.0, 3.0, 4.0])
-iv_null  = Innovation(initial.n, I[], R[], min_ev.cremovals)
-for i in 1:10
-    iv = generate_innovation(iv_null, duration, α=α, β=β)
-    proposed_LFE = last_feasible_evolution(duration, ev, iv)
+The `one_stop` function
+=======================
+We pull in the `one_step` function to aid debugging.
+```julia
+# Actually a method of `EpidemicsCFTP.CEvolution`
+function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
+    # inactive_removals = EpidemicsCFTP.inactive_removals
+    # resulting_cremovals = EpidemicsCFTP.resulting_cremovals
+    # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
+    # Step 1.
+    @assert length(ev.cremovals) == length(iv.cremovals)
+    @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
     
-    ev = CEvolution(ev, iv)
+    # Step 2.
+    removals = inactive_removals(ev, iv)
     
-    println("STEP $i")
-    println("CREMOVALS ", sprint(show, MIME("text/plain"), ev.cremovals))
-    println("CURRENT   ", sprint(show, MIME("text/plain"), ev.LFE))
-    println("PROPOSED  ", sprint(show, MIME("text/plain"), proposed_LFE))
-    @test CEvolution(initial, ev.LFE).history == ev.LFE ;
-
-    ev_previous = ev
+    # Step 3.
+    recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
+    
+    # Step 4.
+    duration = maximum(z.t for z in recomputed_cremovals)
+    LFE = last_feasible_evolution(duration, ev, iv)
+    perpetuated_infections = [z for z ∈ LFE if z isa PInfection] 
+    
+    # Step 5.
+    # * Initial computation of `NFZ2`, a **list of times** 
+    # indexed by time line ("level"), where each time is initially defined as
+    # the supremum of times of **inactivated** `Removal`s at given level or 
+    # below. So the envelope increases monotonically with level.
+    NFZ1 = repeat([-Inf], ev.initial.n)
+    for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
+        NFZ1[z.target] = max(NFZ1[z.target], z.t)
+    end
+    NFZ2 = accumulate(max, NFZ1)
+ 
+    # The hard work begins! We generate the NFZ3.
+    # * The list `processed_infections` of processed `AbstractInfection`s will
+    # eventually store (initially in reverse time order) an adjusted version of
+    # each infection supplied by the new `Innovation` `iv`.
+	processed_infections = AbstractInfection[]
+	NFZ3 = deepcopy(NFZ2)
+	
+	# * Iteration: work backwards through `Infection`s supplied by `iv`
+	# together with perpetuated infections,
+    # determining in each case how to transform the supplied `Infection`
+    # when adding it to the list `processed_infections`.
+	for z ∈ reverse(sort(iv.infections ∪ perpetuated_infections))
+	    
+	    # * If the `Infection` `z` has `target` on the removed portion of a level
+        # then it will never be activated, so add `z` as a `KilledInfection`.
+	    if (z ≥ ev.finis[z.target])
+	        push!(processed_infections, KilledInfection(z))
+	        continue
+	    end
+	    
+	    # * If the `Infection` `z` potentially infects a level at a _later time_ 
+        # than the current `NFZ2` at that level, then its activation will
+        # never break the conditioning (**needs proof!**), so add `z` as-is.
+        # (I think the point is: since we are working backwards in time, once
+        # `z.t` is considered then `NFZ2` is frozen from time `t` onwards.)
+	    #
+	    # At this stage of the iteration 
+	    @assert(z < ev.finis[z.target])
+	    #
+        if (z.t ≥ NFZ3[z.infectee])
+	        push!(processed_infections, z)
+	        continue
+	    end
+	    
+	    # * However if `z.t < NFZ2[z.infectee - 1]` then no issue can arise, as 
+        # infection of the level immediately below `z.infectee` will then not be
+        # allowed at this time. So again add `z` as-is.
+        #
+	    # At this stage of the iteration 
+	    @assert(z < ev.finis[z.target])
+	    @assert(z.t < NFZ3[z.infectee])
+	    #
+        if (z.t < NFZ3[z.infectee - 1])
+	        push!(processed_infections, z)
+	        continue
+	    end
+	    
+	    # * Suppose `z ≥ ev.start[z.target]`: then an issue would arise
+        # if the level at `z.infectee - 1` were to become infected before `z.t`. 
+        #
+	    # At this stage of the iteration 
+	    @assert(z.t < NFZ3[z.infectee])
+	    @assert(z.t ≥ NFZ3[z.infectee - 1])
+	    @assert(z < ev.finis[z.target])
+	    #
+	    # One of two cases must hold:
+	    #
+	    # * Case (a): Suppose `z < ev.start[z.infectee - 1]`.
+        # Then **increase** `NFZ2[z.infectee - 1]` to `z.t` in order to
+        # preclude the time line getting infected, and also transform `z` to a
+        # `NoFlyInfection` when added to `processed_infections`, to signal
+        # that it should never become infected.  
+        # Case (b): Alternatively, suppose `z ≥ ev.start[z.infectee - 1]`.
+        # Then increasing `NFZ2[z.infectee - 1]` to `z.t` would lead to a
+        # problem, since this level is infected at time `z.t`. Therefore we
+        # transform `z` to a `ExpungedInfection` when we add it to 
+        # `processed_infections`, so that it is treated as an
+        # `InoperativeInfection`.
+	    if (z ≥ ev.start[z.target])
+            if (z < ev.start[z.infectee - 1])
+                NFZ3[z.infectee - 1] = z.t
+                push!(processed_infections, NoFlyInfection(z))
+                # Uncomment for tracking information
+                # @info "Conversion of infection into $(NoFlyInfection(z))"
+                continue
+            else 
+                push!(processed_infections, ExpungedInfection(z))
+                # Uncomment for tracking information
+                # @info "Conversion of infection into $(ExpungedInfection(z))"
+                continue 
+            end 
+	    end
+	    
+	    # At this stage of the iteration 
+	    @assert(z.t < NFZ3[z.infectee])
+	    @assert(z.t ≥ NFZ3[z.infectee - 1])
+	    @assert(z < ev.start[z.target])
+	    # 
+	    # * Consider now that potential `Infection`s to be treated later in this
+        # iteration must have time mark earlier than `z.t`. If one of these were
+        # to infect the level `z.infectee - 1` then it would follow by monotonicity
+        # that the `z.target` level would become infected by that time `z.t`; and 
+        # thus would create an infection of the `z.infectee` level at time `z.t`. 
+        # In order for this to be prevented, we need to extend the `NFZ2` 
+        # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
+        # to a `NoFlyInfection` when we add it to `processed_infections`, to
+        # signal that it should never become infected.
+	    NFZ3[z.infectee - 1] = z.t 
+	    push!(processed_infections, NoFlyInfection(z))
+        # Uncomment for tracking information
+        # @info "Conversion of infection into $(NoFlyInfection(z))"
+	
+	end
+    
+    # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
+    iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
+    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
 end
 ```
+

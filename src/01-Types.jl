@@ -709,10 +709,10 @@ chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 
-julia> println(ev.start)
-AbstractInfection[InfectionMarker(Inf, 0, 1), InfectionMarker(Inf, 1, 2), InfectionMarker(Inf, 2, 3)]
-julia> println(ev.finis)
-AbstractRemoval[CRemoval(0.0, 1), RemovalMarker(Inf, 2), RemovalMarker(Inf, 3)]
+julia> ev.start
+AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[∞]¹⁻²,ℳ⁻[∞]²⁻³]
+julia> ev.finis
+AbstractRemoval[𝒞₀.₀₀¹,ℳ⁺[∞]²,ℳ⁺[∞]³]
 ```
 """
 struct Evolution <: AbstractEvolution
@@ -735,7 +735,7 @@ struct Evolution <: AbstractEvolution
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
-        start, finis    = interval(trajectory, history)
+        start, finis        = interval(trajectory, history)
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start, finis)
     end

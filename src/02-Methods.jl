@@ -574,7 +574,7 @@ end
     interval(::Vector{SIR}, ::Vector{AbstractIncident})
         ::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
     
-Returns `AbstractIncident`s (possibly started with`InfectionMarker`, possibly
+Returns `AbstractIncident`s (possibly started with `InfectionMarker`, possibly
 ending with `RemovalMarker`) to mark out infectious intervals of time lines.
 
 Note that this currently presumes epidemic start and end incidents are marked
@@ -601,9 +601,15 @@ function interval(trajectory::Vector{SIR},
     z0, z1 = trajectory[1], trajectory[end]
     z0, z1 = SIR(-Inf, z0.s, z0.i, z0.r), SIR(+Inf, z1.s, z1.i, z1.r)
     
-    # Compute initial infection and removal incidents
-    start = AbstractInfection[(k ≥ z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
+    # Compute initial infection and removal incidents.
+#    start = AbstractInfection[(k ≥ z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
+#                    InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
+    # If time line `k` is strictly higher than the ultimate number infected,
+    # then `start` time is `+Inf` (this is precisely when it will never be infected).
+    start = AbstractInfection[(k > z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
                     InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
+    # if time line `k` is lower than or equal to the initial number removed,
+    # then `finis` time is `-Inf` (this is precisely when it has been removed before start).
     finis = AbstractRemoval[(k ≤ z0.r) ? RemovalMarker(z0.t, k) : 
                     RemovalMarker(z1.t, k)        for k in 1:z0.n]
     

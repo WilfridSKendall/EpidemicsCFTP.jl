@@ -18,7 +18,7 @@ doc_images := docs/src/image/introduction-18-one-iteration.pdf \
 test_files :=$(wildcard test/*.jl)
 
 # ========================
-.PHONY: documentation html-documentation pdf-documentation view test doc_images
+.PHONY: documentation html-format pdf-format view test doc_images
 
 # ===================
 # GUI STARTS HERE
@@ -26,7 +26,7 @@ test_files :=$(wildcard test/*.jl)
 # PRIMARY TARGETS
 # ===============
 # Documentation
-documentation: html-documentation pdf-documentation
+documentation: html-format pdf-format
 #  * html format
 html-format: test docs/site/index.html
 #  * pdf format

@@ -671,7 +671,7 @@ and also **computed** fields `chronology`, `trajectory` and `history`.
 
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
 to compute the `trajectory` and `history` fields,
-and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
+and the implicit use of [`interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 ## Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -772,7 +772,7 @@ initial state `initial`,
 and also **computed** fields `chronology`, `trajectory` and `history`.
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
 to compute the `trajectory` and `history` fields,
-and the implicit use of [`EpidemicsCFTP.interval`](@ref) to compute start and finish incidents
+and the implicit use of [`interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 
 It possesses extra fields `LFE`, `NFZ1`,  `NFZ2`, and `NFZ3` which are respectively
@@ -795,8 +795,8 @@ In the first case, the procedure is as follows:
 1. Test for compatibility between `ev` and `iv`:  
     * Check the `cremoval` lists have the same length;
     * Check the `cremoval` lists generate the same times ('t' field).
-2. Use `EpidemicsCFTP.inactive_removals` to form the new `removals` list by selecting only those `AbstractRemoval`s from `iv.removals` which will not be activated. Type is changed to KilledRemoval` for an `AbstractRemoval` occurring after removal time for the corresponding time line. Note that the function discards `Removal`s (as opposed to `CRemoval`s) which _would_ be activated. 
-3. Form the new `cremovals` list using `EpidemicsCFTP.resulting_cremovals`, by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
+2. Use [`inactive_removals`](@ref) to form the new `removals` list by selecting only those `AbstractRemoval`s from `iv.removals` which will not be activated. Type is changed to KilledRemoval` for an `AbstractRemoval` occurring after removal time for the corresponding time line. Note that the function discards `Removal`s (as opposed to `CRemoval`s) which _would_ be activated. 
+3. Form the new `cremovals` list using [`resulting_cremovals`](@ref), by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
 4. Compute `LFE`. Note `cremovals` has already been computed in step 3. Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
 5. Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
     * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
@@ -922,19 +922,22 @@ struct CEvolution <: AbstractEvolution
     end
 
 function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
+    # inactive_removals = EpidemicsCFTP.inactive_removals
+    # resulting_cremovals = EpidemicsCFTP.resulting_cremovals
+    # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
     # Step 1.
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
     
     # Step 2.
-    removals = EpidemicsCFTP.inactive_removals(ev, iv)
+    removals = inactive_removals(ev, iv)
     
     # Step 3.
-    recomputed_cremovals  = EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals)
+    recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
     
     # Step 4.
     duration = maximum(z.t for z in recomputed_cremovals)
-    LFE = EpidemicsCFTP.last_feasible_evolution(duration, ev, iv)
+    LFE = last_feasible_evolution(duration, ev, iv)
     perpetuated_infections = [z for z ∈ LFE if z isa PInfection] 
     
     # Step 5.

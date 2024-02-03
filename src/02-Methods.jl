@@ -530,11 +530,13 @@ CEvolution(cev, innov).LFE
 AbstractIncident[𝒞₂.₀₀¹]
 ```
 """
+# last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
+# resulting_cremovals     = EpidemicsCFTP.resulting_cremovals
 function last_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
-    # resulting_cremovals = EpidemicsCFTP.resulting_cremovals
+    
     recomputed_cremovals = resulting_cremovals(ev, iv) 
-    previous_infections = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
+    previous_infections  = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
     chronology = sort(iv.infections ∪ previous_infections ∪ recomputed_cremovals)
     
     removal_boundary =
@@ -569,7 +571,7 @@ end
 # Compute infectious interval for each time line
 # ----------------------------------------------
 """
-    EpidemicsCFTP.interval(::Vector{SIR}, ::Vector{AbstractIncident})
+    interval(::Vector{SIR}, ::Vector{AbstractIncident})
         ::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
     
 Returns `AbstractIncident`s (possibly started with`InfectionMarker`, possibly

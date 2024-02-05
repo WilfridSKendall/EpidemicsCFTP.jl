@@ -69,143 +69,136 @@ Markdown.parse("""
 
 Basic Constructions
 ===================
-We need duration of the epidemic, together 
-with two rate parameters.
+We specify the duration of the epidemic, its population,  and two rate parameters.
 ```{julia}
-const duration = 5.0 ; 
-const α=0.2 ;          const β=0.1 ;
+const duration = 5.0 ; const population = 5 ; const α=0.2 ; const β=0.1 ;
 ```
-We also determine a sequence of initial conditions.
-```{julia}
-const initial1  = SIR(0.0, 4, 1, 0) ;
-const initial2  = SIR(0.0, 3, 2, 0) ;
-const initial3  = SIR(0.0, 4, 3, 0) ;
-const initial4  = SIR(0.0, 1, 4, 0) ;
-const initial5  = SIR(0.0, 0, 5, 0) ;
-```
-
-When constructing `Innovation` or an `Evolution` (or even a `CEvolution` as is given later)
-it is useful to use some abbreviations for various `AbstractIncidents`.
+When constructing an `Innovation` or a `CEvolution`, it is useful to
+use some abbreviations for various `AbstractIncident`s.
 ```{julia}
 AI  = AbstractIncident;
-AIF = AbstractInfection;  I = Infection; P = PInfection; 
-NF  = NoFlyInfection;    XI = ExpungedInfection;
-AIR = AbstractRemoval;    R = Removal;   C = CRemoval;   
-KI  = KilledInfection;   KR = KilledRemoval;
+AIF = AbstractInfection; I = Infection; P = PInfection;
+ NF = NoFlyInfection;   XI = ExpungedInfection;
+AIR = AbstractRemoval;   R = Removal;   C = CRemoval;
+ KI = KilledInfection;  KR = KilledRemoval;
 ```
-Here is the random seed.
+Here is the random seed used for random generation of `Innovation`s.
 ```{julia}
 Random.seed!(43) ;
 ```
 
-We will be testing
+We will be testing the following function from `EpidemicsCFTP`:
 ```{julia}
 last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution ;
 ```
 
-Conditional removal times are specified as
+Conditional removal times `cremoval_times` are specified as 
 ```{julia}
-cremoval_times = [1.0, 2.0, 3.0, 4.0] ;
+#| echo: false
+cremoval_times = [1.0, 2.0, 3.0, 4.0] 
+println(cremoval_times)
+```
+```{julia}
+#| echo: false
+SAMPLE  = 1:20 ;
+Markdown.md"and finally the iteration range over algorithmic time is `SAMPLE =` $SAMPLE."
 ```
 
-Finally our iteration range is
-```{julia}
-TWENTY  = 1:20 ;
-```
+
 {{< pagebreak >}}
 
 Unit Tests
 ==========
-Here tests are carried out on the first twenty steps in algorithmic time,
-starting with both the maximal conditioned evolution and the minimal
-conditioned evolution, and specified `cremoval_times`.
+```{julia}
+#| echo: false
+Markdown.md"Here tests are carried out on the range $SAMPLE in algorithmic time, \
+starting with both the maximal conditioned evolution and the minimal \
+conditioned evolution, and specified `cremoval_times`."
+```
 
 Zero algorithmic time, many initial conditions
 ----------------------------------------------
 We first test the "zero step" (extending maximum and minimum conditioned evolutions
-using an essentially empty innovation `iv_null`) over a range of initial conditions.
-Note that in this case the constructed `CEvolution` is built directly from a chronology
-and hence its `LFE` field is an empty list!
+using an essentially empty innovation) over a range of initial conditions.
+In this edge-case the constructed `CEvolution` is built directly from a chronology
+so its `LFE` field is actually an empty list!
 ```{julia}
-iv_null = Innovation(initial1.n, I[], R[], [C(1,5), C(2,5), C(3,5), C(4,5)])
-iv      = iv_null
+iv = Innovation(population, I[], R[], [C(1,5), C(2,5), C(3,5), C(4,5)])
 traj_hi = [P(0,1,2), P(0,2,3), P(0,3,4), P(0,4,5), C(1,5), C(2,5), C(3,5), C(4,5)]
 traj_lo = [P(1,1,2), C(1,1), P(2,2,3), C(2,2), P(3,3,4), C(3,3), C(4,4)]
-for i in 1:5
-    initial = SIR(0, 5 - i, i, 0)
-    ev_hi   = maximal_evolution(initial, duration, cremoval_times)
-    ev_lo   = minimal_evolution(initial, duration, cremoval_times)
-    
-    LFE_hi = last_feasible_evolution(duration, ev_hi, iv)
-    LFE_lo = last_feasible_evolution(duration, ev_lo, iv)
-    
-    @test CEvolution(initial, convert(Vector{AI}, LFE_hi)).history == LFE_hi
-    @test CEvolution(initial, convert(Vector{AI}, LFE_lo)).history == LFE_lo
+for i in 1:population
+    initial = SIR(0, population - i, i, 0)
+    startup = initial.i + initial.r
 
-    # # CAN'T DO THESE EXACT CALCULATIONS ALL THE TIME: i=5 LO CASE IS AN ISSUE
-    #LFE_max = convert(Vector{AI}, [z for z ∈ traj_hi if 
-    #    (! (z isa OperativeInfection)) || (z.infectee > initial.i)])
-    #LFE_min = convert(Vector{AI}, [z for z ∈ traj_lo if 
-    #    (! (z isa OperativeInfection)) || (z.infectee > initial.i)])
-    #@test LFE_max == sort(ev_hi.cremovals ∪ ev_hi.removals ∪ 
-    #    [P(z) for z ∈ ev_hi.infections if (z isa OperativeInfection) && (z.infectee > initial.i)])
-    #@test LFE_min == sort(ev_lo.cremovals ∪ ev_lo.removals ∪ 
-    #    [P(z) for z ∈ ev_lo.infections if (z isa OperativeInfection) && (z.infectee > initial.i)])
+    ev_hi  = maximal_evolution(initial, duration, cremoval_times)
+    ev_lo  = minimal_evolution(initial, duration, cremoval_times)
+    for (ev, traj) in [(ev_hi, traj_hi), (ev_lo, traj_lo)]
+        computed_LFE = convert(Vector{AI}, [z for z ∈ traj if
+                        (! (z isa OperativeInfection)) || (z.infectee > startup)])
+
+        LFE = last_feasible_evolution(duration, ev, iv)
+    
+        @test CEvolution(initial, convert(Vector{AI}, LFE)).history == LFE
+        @test computed_LFE == sort(ev.cremovals ∪ ev.removals ∪ 
+            [P(z) for z ∈ ev.infections if (z isa OperativeInfection) && (z.infectee > startup)])
+    end
 end
 ```
 The `@test`s check that the \LFE will be the history (hence _a fortiori_ the `LFE`) of of an epidemic
-generated using this `LFE`.
+generated using this `LFE`. This should hold in all cases, not just these edge-cases.
 
 Further steps in algorithmic time
 ---------------------------------
-We now consider taking twenty steps in algorithmic time starting from each of the defined
-initial configurations.
-In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents.
 ```{julia}
-ivl = [generate_innovation(iv_null, duration, α=α, β=β) for j in TWENTY]
-
-for init in [initial1, initial2, initial3, initial4, initial5]
-    ev_hi = maximal_evolution(init, duration, cremoval_times)
-    ev_lo = minimal_evolution(init, duration, cremoval_times)
-    for j in TWENTY
+#| echo: false
+Markdown.md"We now simulate over the range $SAMPLE in algorithmic time, \
+starting from each of the defined \
+initial configurations. \
+In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents."
+```
+```{julia}
+ivl = [generate_innovation(iv, duration, α=α, β=β) for j in SAMPLE]
+for i in 1:population
+    init = SIR(0, population - i, i, 0) 
+    for j in SAMPLE
         iv = ivl[j]
-        proposed_LFE_hi = last_feasible_evolution(duration, ev_hi, iv)
-        proposed_LFE_lo = last_feasible_evolution(duration, ev_lo, iv)
+        for ev in [maximal_evolution(init, duration, cremoval_times),
+                        minimal_evolution(init, duration, cremoval_times)]
+            proposed_LFE = last_feasible_evolution(duration, ev, iv)
     
-        ev_hi = CEvolution(ev_hi, iv)
-        ev_lo = CEvolution(ev_lo, iv)
+            ev = CEvolution(ev, iv)
     
-        @test ev_hi.LFE == proposed_LFE_hi
-        @test ev_lo.LFE == proposed_LFE_lo
-        @test CEvolution(init, proposed_LFE_hi).history == proposed_LFE_hi
-        @test CEvolution(init, proposed_LFE_lo).history == proposed_LFE_lo
+            @test ev.LFE == proposed_LFE
+            @test CEvolution(init, proposed_LFE).history == proposed_LFE
+        end
     end
 end ;
 ```
-The `@test`s are focussed as follows:
+The `@test`s check:
 
-1. Check the computed `LFE` is actually stored in the corresponding `CEvolution` field;
-2. and, again, check this \LFE is the history (hence _a fortiori_ the `LFE`) of an epidemic
-generated using this `LFE`.
+1. the computed `LFE` is actually stored in the corresponding `CEvolution` field;
+2. this \LFE is the history (hence _a fortiori_ the `LFE`) of an epidemic
+generated using the self-same `LFE`.
 
 {{< pagebreak >}}
 
 \appendix
+# Appendices {.unnumbered}
 
 Towards a correct and robust generation of `LFE`
 ================================================
 We have introduced a new function to construct the `LFE`.
 Note that it does not assume `ev.infections` to have 
 been categorized as `OperativeInfection` versus `InoperativeInfection`.
-
 Here is a (non-executable) listing, instrumented for debugging.
 ```julia
-# last_feasible_evolution == EpidemicsCFTP.last_feasible_evolution
-# resulting_cremovals = EpidemicsCFTP.resulting_cremovals
+# last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
+# resulting_cremovals     = EpidemicsCFTP.resulting_cremovals
 function last_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
+    
     recomputed_cremovals = resulting_cremovals(ev, iv) 
-    previous_infections = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
+    previous_infections  = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
     chronology = sort(iv.infections ∪ previous_infections ∪ recomputed_cremovals)
     
     removal_boundary =
@@ -215,8 +208,7 @@ function last_feasible_evolution(duration::Real,
     
     raw_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
             for (z, rb) in zip(chronology, removal_boundary)]
-    relevant_chronology =
-        filter(z -> !(z isa KilledInfection), raw_chronology)
+    relevant_chronology = filter(z -> !(z isa KilledInfection), raw_chronology)
     
     removal_fence =
         accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
@@ -235,15 +227,16 @@ function last_feasible_evolution(duration::Real,
     end
     
     return reverse(reverse_LFE)
-end ;
+end
 ```
 
 The `one_stop` function
 =======================
-We pull in the `one_step` function to aid debugging.
+The `one_step` function corresponds to the method `CEvolution(::AbstractEvolution, ::Innovation)`,
+and is listed here to aid in de-bugging.
 ```julia
 # Actually a method of `EpidemicsCFTP.CEvolution`
-function one_step(ev::AbstractEvolution, iv::Innovation)::CEvolution
+function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # inactive_removals = EpidemicsCFTP.inactive_removals
     # resulting_cremovals = EpidemicsCFTP.resulting_cremovals
     # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution

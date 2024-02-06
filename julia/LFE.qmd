@@ -189,8 +189,44 @@ end ;
 ```
 These `@test`s check respectively
 
- * that the`LFE` computed using `last_feasible_evolution` agrees with what is stored in the `CEvolution` field;
+ * that the \LFE computed using `last_feasible_evolution` agrees with what is stored in the `CEvolution` field;
  * that this \LFE is the history (hence _a fortiori_ the `LFE`) of an epidemic generated using the self-same `LFE`.
+
+
+The following will I think produce a useful test of `LFE`. However 
+at present something is a bit wrong!
+```{julia}
+initial = SIR(0,4,1,0)
+iv = ivl[2]
+ev = extremal_evolution(initial, duration, cremoval_times)
+ev = CEvolution(ev, iv)
+println("LFE: ", sprint(show, MIME("text/plain"), ev.LFE))
+println()
+cycle = zip(ev.chronology, Iterators.flatten(([initial], ev.trajectory)))
+for (k, (z, s)) ∈ enumerate(cycle)
+    if z ∈ ev.LFE && z isa Infection
+        print("Incident: ", sprint(show, MIME("text/plain"), z))
+        println(" at state : ", sprint(show, MIME("text/plain"), s))
+        if z isa OperativeInfection
+            chron = collect(Iterators.drop(ev.chronology, k))
+            println("Remaining chron: ", sprint(show, MIME("text/plain"), chron))
+            try
+                remainder = EpidemicsCFTP.evolution_history(s, chron; conditioned=true)
+                println("Onwards history: ", sprint(show, MIME("text/plain"), remainder))
+            catch e
+                println("Successfully caught $e")
+            else
+                println("woops, need to raise a new kind of exception, something wrong")
+            end
+        end
+    end
+end
+
+for (a, b) in zip(ev.trajectory, ev.chronology)
+    println(sprint(show, MIME("text/plain"), (a,b)))
+end
+```
+Trajectory doesn't keep pace with chronology, only history!
 
 {{< pagebreak >}}
 

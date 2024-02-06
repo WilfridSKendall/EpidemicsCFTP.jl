@@ -18,16 +18,12 @@ end
 
 ### Useful constants
 # ------------------
-AI  = AbstractIncident;
-AIF = AbstractInfection;  I = Infection; P = PInfection; 
-NF  = NoFlyInfection;    XI = ExpungedInfection;
-AIR = AbstractRemoval;    R = Removal;   C = CRemoval;   
-KI  = KilledInfection;   KR = KilledRemoval;
-IM  = InfectionMarker;   RM = RemovalMarker;
+import EpidemicsCFTP:
+    AI,
+    AIF, I, P, NF, XI,
+    AIR, R, C, KI, KR,
+    IM,  RM
 
-
-
-    
 include("01-Types.jl")
 include("02-Methods.jl")
 include("03-Various.jl")

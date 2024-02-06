@@ -1,9 +1,6 @@
 # # Various tests
 # The following unit tests should eventually be incorporated in `EpidemicsCFTP/test`
-# test files. To aid concise expression, 
-# we define some abbreviations.
-AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
-AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
+# test files.
 
 # Initial condition and duration
 duration    = 5.0
@@ -12,7 +9,7 @@ initial     = SIR(0.0, 4, 1, 0)
 # ## Original appendix for `test.qmd`
 # We now add some structures used later for defining and testing
 # `Innovation`s and `AbstractEvolution`s.
-infections  = AI[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
+infections  = AIF[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AIF[I(0,3,4), I(2,4,5)]
 uremovals   = R[R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4.9,5)]
 removals    = R[R(1,5), R(3,5), R(4.9,5)]
 cremovals   = C[C(2t, t) for t ∈ [1,2]] 
@@ -72,7 +69,7 @@ end ;
 # (not activated by the trajectory of `ev1` equivalently `ev1_1`).
 
 
-infections2 = AI[I(2t-1.5, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)]
+infections2 = AIF[I(2t-1.5, t, t+1) for t ∈ [1,2]] ∪ AIF[I(0,3,4), I(2,4,5)]
 removals2   = R[R(0.5,5), R(2.5,5), R(2.6,1), R(3.6,1), R(3.9,5), R(4.6,2)]
 cremovals2  = C[C(2t, 2t) for t ∈ [1,2]] 
 
@@ -83,8 +80,8 @@ iv1_2 = Innovation(initial.n, iv1_1.infections,
 ev1_2 = CEvolution(initial, iv1_2)
 
 begin ; title = "Inserting Removals"
-    early_removals = [z for z ∈ ev1_2.chronology if z isa AR && z < ev1_2.start[z.target]]
-    late_removals  = [z for z ∈ ev1_2.chronology if z isa AR && z > ev1_2.finis[z.target]]
+    early_removals = [z for z ∈ ev1_2.chronology if z isa AIR && z < ev1_2.start[z.target]]
+    late_removals  = [z for z ∈ ev1_2.chronology if z isa AIR && z > ev1_2.finis[z.target]]
     @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
         @test ev1_2.trajectory == ev1.trajectory
         @test [z for z ∈ ev1_2.chronology if z isa R]  == early_removals
@@ -111,9 +108,9 @@ end ;
 
 last_feasible_history =
     EpidemicsCFTP.last_feasible_evolution(duration, ev1_3, iv2c)
-last_feasible_new_infections = AI[z for z ∈ last_feasible_history ∩ iv2c.infections]
+last_feasible_new_infections = AIF[z for z ∈ last_feasible_history ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev1_3.infections]
-other_older_infections       = setdiff(ev1_3.infections, AI[z for z ∈ last_feasible_history if z isa AI])
+other_older_infections       = setdiff(ev1_3.infections, AIF[z for z ∈ last_feasible_history if z isa AIF])
 iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪
                         other_older_infections, ev1_3.removals, ev1_3.cremovals)
 ev1_4 = CEvolution(initial, iv1_4, LFE=last_feasible_history)
@@ -128,7 +125,7 @@ end ;
 # ### Basic tests
 # We now derive some structures relating to a different `Innovation` and `Evolution`/`CEvolution`.
 xuiv1 = Innovation(initial.n, 
-    I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)], 
+    I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AIF[I(0,3,4), I(2,4,5)], 
     [R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)])
 xuev1 = Evolution(initial, xuiv1)
 
@@ -159,7 +156,7 @@ end ;
 
 # ### Intermediate stages
 xiv2c = Innovation(initial.n, 
-    AI[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
+    AIF[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
         I(3.6,4,5), I(3.9,4,5), I(4.5,1,3), I(4.4,3,4)], 
     R[R(0.5,2), R(2,3), R(1.2,4), R(3.3,1), R(4.5,5), R(4.8,1)], 
     C[C(2, 2), C(4,5)])
@@ -191,9 +188,9 @@ begin ; title = "Expected evolution (II)"
 end ;
 
 # ### Finally compute the "no-fly" zone and check resulting evolution
-last_feasible_new_infections = AI[z for z ∈ xev2.LFE ∩ iv2c.infections]
+last_feasible_new_infections = AIF[z for z ∈ xev2.LFE ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ xev2.LFE ∩ ev1_3.infections]
-other_older_infections       = setdiff(xev1_3.infections, AI[z for z ∈ xev2.LFE if z isa AI])
+other_older_infections       = setdiff(xev1_3.infections, AIF[z for z ∈ xev2.LFE if z isa AIF])
 xiv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, xev1_3.removals, xev1_3.cremovals)
 xev1_4 = CEvolution(initial, xiv1_4, LFE=xev2.LFE)

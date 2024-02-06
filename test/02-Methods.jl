@@ -208,11 +208,11 @@ end
 
 ### Testing maximal and minimal constructions
 # -------------------------------------------
-@testset "EpidemicsCFTP: $(rpad("Maximal / minimal", 23))" begin
+@testset "EpidemicsCFTP: $(rpad("extremal", 23))" begin
     initial = SIR(0.0, 2, 1, 0)
     pop     = initial.n
-    ev_max  = maximal_evolution(initial, 4.0, [1.0, 2.0, 3.0])
-    ev_min  = minimal_evolution(initial, 4.0, [1.0, 2.0, 3.0])
+    ev_max  = extremal_evolution(initial, 4.0, [1.0, 2.0, 3.0])
+    ev_min  = extremal_evolution(initial, 4.0, [1.0, 2.0, 3.0], maximal=false)
 
     @test ev_max.infections == AIF[I(0.0, 1, 2), I(0.0, 2, 3)]
     @test isempty(ev_max.removals)
@@ -233,14 +233,14 @@ end
     @test evol1.start   == AIF[IM(-Inf,0,1),  I(1,1,2),   I(2,2,3)]
     @test evol1.finis   == AIR[C(3,2),       RM(Inf,2),  RM(Inf,3)]
     
-    # Testing maximally fast `CEvolution`
+    # Testing a fast `CEvolution`
     innov2         = Innovation(n, I[I(0,1,2), I(0,2,3)], R[], C[C(3,2)])
     evol2          = CEvolution(initial, innov2)
     @test evol2.history == AI[I(0,1,2),       I(0,2,3),   C(3,2)  ]
     @test evol2.start   == AIF[IM(-Inf,0,1),  I(0,1,2),   I(0,2,3)]
     @test evol2.finis   == AIR[C(3,2),       RM(Inf,2),  RM(Inf,3)]
     
-    # Testing maximally slow `CEvolution`
+    # Testing a slow `CEvolution`
     innov3         = Innovation(n, I[I(2,1,2), I(3,2,3)], R[], C[C(2,2), C(3,3)])
     evol3          = CEvolution(initial, innov3)
     @test evol3.history == AI[I(2,1,2),      C(2,2),    I(3,2,3), C(3,3)]

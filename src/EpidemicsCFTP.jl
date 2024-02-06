@@ -42,10 +42,7 @@ export Innovation, Evolution, CEvolution
 
 # # Defined in `02-methods.jl`
 export evolution, evolution_history
-
-export maximal_evolution, minimal_evolution
-
-export generate_innovation
+export extremal_evolution, generate_innovation
 
 export alter
 # # Defined in `04-exceptions.jl`

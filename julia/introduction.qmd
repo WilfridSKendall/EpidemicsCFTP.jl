@@ -841,7 +841,7 @@ the trajectory of the _last_ possible epidemic path that activates
 all the `CRemoval` events and none of the `Removal` events. 
 This is most easily accomplished by computing
 in reverse time.
-We use the function `EpidemicsCFTP.last_feasible_evolution0`.
+We use the function `EpidemicsCFTP.last_feasible_evolution`.
 It first computes a new `chronology` by mixing the relevant infections from `innov_candidate`,
 the activated infections from `innov1_2`,
 and the conditioned removals
@@ -850,7 +850,7 @@ and then computes the reverse-initial state as the final state of the evolution
 By this means we can compute and display the history of the \LFE using:
 ```{julia}
 last_feasible_history = 
-    EpidemicsCFTP.last_feasible_evolution0(duration, evol1_2, innov_candidate)
+    EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate)
 ```
 
 ```{julia}

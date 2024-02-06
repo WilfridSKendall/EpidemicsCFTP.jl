@@ -41,7 +41,13 @@ jupyter:    julia-1.9
 #| tags: [parameters]
 source = "LFE.qmd"
 
-using EpidemicsCFTP, Random, Test
+using Random, Test
+import EpidemicsCFTP: EpidemicsCFTP, 
+    Innovation, CEvolution, SIR,
+    AbstractIncident,
+    AbstractInfection, OperativeInfection, Infection, PInfection, NoFlyInfection, ExpungedInfection,
+    AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
+    generate_innovation, extremal_evolution
 ```
 
 Here is a table of software used in the following computations:
@@ -76,6 +82,9 @@ const duration = 5.0 ; const population = 5 ; const α=0.2 ; const β=0.1 ;
 When constructing an `Innovation` or a `CEvolution`, it is useful to
 use some abbreviations for various `AbstractIncident`s.
 ```{julia}
+import EpidemicsCFTP: AI, I, P, R, C
+```
+```julia
 AI  = AbstractIncident;
 AIF = AbstractInfection; I = Infection; P = PInfection;
  NF = NoFlyInfection;   XI = ExpungedInfection;
@@ -130,55 +139,58 @@ for i in 1:population
     initial = SIR(0, population - i, i, 0)
     startup = initial.i + initial.r
 
-    ev_hi  = maximal_evolution(initial, duration, cremoval_times)
-    ev_lo  = minimal_evolution(initial, duration, cremoval_times)
+    ev_hi  = extremal_evolution(initial, duration, cremoval_times)
+    ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
     for (ev, traj) in [(ev_hi, traj_hi), (ev_lo, traj_lo)]
         computed_LFE = convert(Vector{AI}, [z for z ∈ traj if
-                        (! (z isa OperativeInfection)) || (z.infectee > startup)])
+                         ! (z isa OperativeInfection) || z.infectee > startup])
 
         LFE = last_feasible_evolution(duration, ev, iv)
     
-        @test CEvolution(initial, convert(Vector{AI}, LFE)).history == LFE
+        @test CEvolution(initial, LFE).history == LFE
         @test computed_LFE == sort(ev.cremovals ∪ ev.removals ∪ 
-            [P(z) for z ∈ ev.infections if (z isa OperativeInfection) && (z.infectee > startup)])
+            [P(z) for z ∈ ev.infections if z isa OperativeInfection && z.infectee > startup])
     end
 end
 ```
-The `@test`s check that the \LFE will be the history (hence _a fortiori_ the `LFE`) of of an epidemic
-generated using this `LFE`. This should hold in all cases, not just these edge-cases.
+These `@test`s check respectively
+
+ * that the `LFE` reconstructed from the resulting `CEvolution` 
+(a rather trivial calculation in these edge-cases) agrees with the `LFE` computed using `last_feasible_evolution`.
+ * that the \LFE will be the history (hence _a fortiori_ the `LFE`) of of an epidemic
+generated using this `LFE`. (This check should hold in all cases, not just the above edge-cases.)
 
 Further steps in algorithmic time
 ---------------------------------
 ```{julia}
 #| echo: false
-Markdown.md"We now simulate over the range $SAMPLE in algorithmic time, \
-starting from each of the defined \
-initial configurations. \
+Markdown.md"We now simulate over the algorithmic time range $SAMPLE, \
+starting in turn from each of the defined initial configurations. \
 In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents."
 ```
 ```{julia}
 ivl = [generate_innovation(iv, duration, α=α, β=β) for j in SAMPLE]
 for i in 1:population
-    init = SIR(0, population - i, i, 0) 
+    initial = SIR(0, population - i, i, 0) 
+    ev_hi  = extremal_evolution(initial, duration, cremoval_times)
+    ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
     for j in SAMPLE
         iv = ivl[j]
-        for ev in [maximal_evolution(init, duration, cremoval_times),
-                        minimal_evolution(init, duration, cremoval_times)]
+        for ev in [ev_hi, ev_lo]
             proposed_LFE = last_feasible_evolution(duration, ev, iv)
     
             ev = CEvolution(ev, iv)
     
             @test ev.LFE == proposed_LFE
-            @test CEvolution(init, proposed_LFE).history == proposed_LFE
+            @test CEvolution(initial, proposed_LFE).history == proposed_LFE
         end
     end
 end ;
 ```
-The `@test`s check:
+These `@test`s check respectively
 
-1. the computed `LFE` is actually stored in the corresponding `CEvolution` field;
-2. this \LFE is the history (hence _a fortiori_ the `LFE`) of an epidemic
-generated using the self-same `LFE`.
+ * that the`LFE` computed using `last_feasible_evolution` agrees with what is stored in the `CEvolution` field;
+ * that this \LFE is the history (hence _a fortiori_ the `LFE`) of an epidemic generated using the self-same `LFE`.
 
 {{< pagebreak >}}
 

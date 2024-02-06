@@ -51,10 +51,9 @@ using PrettyTables
 # `PrettyTables` documentation is to be found at <https://ronisbr.github.io/PrettyTables.jl/stable/>
 
 import Random
-
-using Test
-# `Test` is only required for testsets at end of document!
 ```
+
+{{< pagebreak >}}
 
 Here is a table of software used in the following computations:
 ```{julia}
@@ -86,25 +85,24 @@ theme = create_theme(load_theme("config/test-theme.yml"))
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
+Useful abbreviations for some imports from `EpidemicsCFTP`:
+```{julia}
+#| echo: false
+labels   = [:AI  :AIF :I  :P  :R  :C]
+import EpidemicsCFTP: AI, AIF, I, P, R, C
+pretty_table(map(eval, labels), header=vec(labels), alignment = :l)
+```
+
 {{< pagebreak >}}
 
 Construction of epidemics
 =========================
 Parameters: initial state and duration
 --------------------------------------
-We shall only use artificial examples,
-so the rate parameters need not be defined.
+We shall only use artificial examples, so there is no need to define rate parameters.
 ```{julia}
 const duration = 5.0 ; const initial  = SIR(0.0, 4, 1, 0) ;
 ```
-
-When constructing `Innovation` or an `Evolution` (or even a `CEvolution` as is given later)
-it is useful to use some abbreviations for various `AbstractIncidents`.
-```{julia}
-AI = AbstractInfection; I = Infection; P = PInfection; NF  = NoFlyInfection; XI = ExpungedInfection;
-AR = AbstractRemoval;   R = Removal;   C = CRemoval;   KI = KilledInfection; KR = KilledRemoval;
-```
-
 
 Construction of unconditioned epidemic
 --------------------------------------
@@ -115,7 +113,6 @@ are computed
 from input data):
 
 ::: {layout-ncol=2}
-
 
 ```{julia}
 #| echo: false
@@ -137,7 +134,7 @@ pretty_table(DataFrame(name=[fieldnames(Evolution)...], type=[fieldtypes(Evoluti
 We construct an `Innovation` and a corresponding `Evolution` as follows.
 ```{julia}
 uiv1 = Innovation(initial.n, 
-    I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AI[I(0,3,4), I(2,4,5)], 
+    I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AIF[I(0,3,4), I(2,4,5)], 
     [R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)])
 ```
 The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follows:
@@ -261,7 +258,7 @@ We introduce a new ("candidate")
 of the entire `CEvolution` trajectory.
 ```{julia} 
 iv2c = Innovation(initial.n, 
-    AI[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
+    AIF[I(0.75,1,2), I(1.5,1,2), I(0.8,3,4), I(1.5,2,3), I(2.5,1,2), I(3.3,3,4), 
         I(3.6,4,5), I(3.9,4,5), I(4.5,1,3), I(4.4,3,4)], 
     R[R(0.5,2), R(2,3), R(1.2,4), R(3.3,1), R(4.5,5), R(4.8,1)], 
     C[C(2, 2), C(4,5)])
@@ -398,9 +395,9 @@ To determine how to replace infections,
 we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`.
 (In fact this yields the final `ev2.LFE`!)
 ```{julia}
-last_feasible_new_infections = AI[z for z ∈ ev2.LFE ∩ iv2c.infections]
+last_feasible_new_infections = AIF[z for z ∈ ev2.LFE ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ ev2.LFE ∩ ev1_3.infections]
-other_older_infections       = setdiff(ev1_3.infections, AI[z for z ∈ ev2.LFE if z isa AI])
+other_older_infections       = setdiff(ev1_3.infections, AIF[z for z ∈ ev2.LFE if z isa AIF])
 iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, ev1_3.removals, ev1_3.cremovals)
 ev1_4 = CEvolution(initial, iv1_4, LFE=ev2.LFE)
@@ -508,8 +505,8 @@ exhibits the \NFZ and \LFE as regions.
 Examples of progress through algorithmic time
 =============================================
 
-Minimal and maximal conditional evolutions
-------------------------------------------
+Extremal conditional evolutions
+-------------------------------
 We now demonstrate how this construction leads to progressive development through algorithmic time.
 To this end, we seed the random number generator so as to ensure repeatability.
 ```{julia}
@@ -520,35 +517,13 @@ Initial `CEvolution`s can be _maximal_ or _minimal_; their definitions depend on
 the times of the `CRemoval`s, which are supplied as a vector of times. 
 Both require an `initial` state (of which only the fields `t` and `n` matter),
 `duration`,
-and a list of `CRemoval` times. Here are functions to generate these.
-```{julia}
-function maximal_evolution(initial::SIR, duration::S, 
-        times::Vector{T}) ::CEvolution where {S,T <: Real}
-    beginning = initial.t
-    population = initial.n
-    infections = I[I(beginning,i,i+1) for i ∈ 1:(population-1)]
-    cremovals  = C[C(t, population) for t in times]
-    return CEvolution(initial, infections ∪ cremovals)
-end ;
-```
-
-```{julia}
-function minimal_evolution(initial::SIR, duration::S, 
-        times::Vector{T})::CEvolution where {S,T <: Real}
-    beginning = initial.t
-    population = initial.n
-    sort(deepcopy(times))
-    infections = I[I(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
-    cremovals  = C[C(t, i) for (i, t) in enumerate(times)]
-    return CEvolution(initial, infections ∪ cremovals)
-end ;
-```
+and a list of `CRemoval` times.
 
 Computation of minimal and maximal `CEvolution`s, whose trajectories
 are illustrated in @fig-test-08-initial.
 ```{julia}
-ev0_min = minimal_evolution(initial, duration, [z.t for z ∈ iv1.cremovals]) ;
-ev0_max = maximal_evolution(initial, duration, [z.t for z ∈ iv1.cremovals]) ;
+ev0_min = extremal_evolution(initial, duration, [z.t for z ∈ iv1.cremovals]; maximal=false) ;
+ev0_max = extremal_evolution(initial, duration, [z.t for z ∈ iv1.cremovals]) ;
 ```
 
 ```{julia}                   
@@ -583,10 +558,8 @@ Comparative trajectories of maximal and minimal conditioned evolutions.
 
 Progress starting with minimal evolution
 ----------------------------------------
-We generate a short sequence of candidate innovations,
-starting with the minimal evolution,
-and use these to generate successive `CEvolution`s
-up to algorithmic time `ALG`.
+We generate a short sequence of candidate innovations, starting with the minimal evolution,
+and use these to generate successive `CEvolution`s up to algorithmic time `ALG`.
 ```{julia}
 ALG=12 ; α=0.2 ; β=0.1
 iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
@@ -617,10 +590,13 @@ end
 {{< pagebreak >}}
 
 We now see how `LFET` goes awry! Here is the second `minimal` `CEvolution`.
-The calculation of the `LFE` field here gives a clearly wrong answer.
-
 ```{julia}
-function last_feasible_evolution(duration::Real, ev::AbstractEvolution, iv::Innovation; 
+last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
+```
+
+The calculation of the `LFE` field using the following variant gives a clearly wrong answer.
+```julia
+function last_feasible_evolutionX(duration::Real, ev::AbstractEvolution, iv::Innovation; 
                                     conditioned::Bool=false)
     return last_feasible_evolution0(duration, ev, iv, 
                                 EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals))

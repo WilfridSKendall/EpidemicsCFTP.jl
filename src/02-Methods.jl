@@ -521,9 +521,9 @@ CEvolution(cev, innov).LFE
 AbstractIncident[𝒞₂.₀₀¹]
 ```
 """
+function last_feasible_evolution(duration::Real, 
 # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
 # resulting_cremovals     = EpidemicsCFTP.resulting_cremovals
-function last_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
     
     recomputed_cremovals = resulting_cremovals(ev, iv) 
@@ -904,4 +904,49 @@ function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=
                         rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
                     for k ∈ 2:n]...)
     return Innovation(n, infections, removals)
+end
+
+# Debugging functions
+# -------------------
+
+"""
+    is_correct_LFE(::CEvolution; ::Bool=false)::Bool
+    
+Checks that the `LFE` field of a `CEvolution` is genuinely a lease
+feasible evolution.
+
+Doctests to follow ...
+
+"""
+function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
+# evolution_history = EpidemicsCFTP.evolution_history
+# NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
+# EmptyLFE          = EpidemicsCFTP.EmptyLFE
+    @debug ev.history
+    @debug  ev.LFE
+
+    if isempty(ev.LFE)
+        throw(EmptyLFE(ev))
+    end
+
+    (state, pointer) = iterate(ev.trajectory)
+    for z ∈ sort(ev.history ∪ ev.LFE)
+        if z ∈ ev.LFE
+            @debug (z, state)
+        end
+        if z ∈ ev.LFE && z isa OperativeInfection
+            chron0 = filter(!=(z), ev.chronology)
+            try
+                remainder = evolution_history(state, chron0; conditioned=true)
+            catch e
+                @debug e
+            else
+                throw(NonMinimalLFE(ev))
+            end
+        end
+        if z ∈ ev.history
+            (state, pointer) = iterate(ev.trajectory, pointer)
+        end
+    end
+    return true
 end

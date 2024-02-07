@@ -90,3 +90,10 @@ EpidemicsCFTP.remove
 EpidemicsCFTP.is_same_config
 EpidemicsCFTP.update
 ```
+## Methods for debugging
+| _Method_                               | _Summary_                                                  |
+|:---------------------------------------|:-----------------------------------------------------------|
+| [`EpidemicsCFTP.is_correct_LFE`](@ref) | Checks whether `LFE` is indeed least feasible evolution!   |
+```@docs
+is_correct_LFE
+```

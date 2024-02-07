@@ -95,5 +95,5 @@ EpidemicsCFTP.update
 |:---------------------------------------|:-----------------------------------------------------------|
 | [`EpidemicsCFTP.is_correct_LFE`](@ref) | Checks whether `LFE` is indeed least feasible evolution!   |
 ```@docs
-is_correct_LFE
+EpidemicsCFTP.is_correct_LFE
 ```

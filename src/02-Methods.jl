@@ -910,9 +910,9 @@ end
 # -------------------
 
 """
-    is_correct_LFE(::CEvolution; ::Bool=false)::Bool
+    EpidemicsCFTP.is_correct_LFE(::CEvolution; ::Bool=false)::Bool
     
-Checks that the `LFE` field of a `CEvolution` is genuinely a lease
+Checks that the `LFE` field of a `CEvolution` is genuinely a least
 feasible evolution.
 
 Doctests to follow ...
@@ -923,14 +923,15 @@ function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
 # NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
 # EmptyLFE          = EpidemicsCFTP.EmptyLFE
     @debug ev.history
-    @debug  ev.LFE
+    @debug ev.LFE
 
     if isempty(ev.LFE)
         throw(EmptyLFE(ev))
     end
 
     (state, pointer) = iterate(ev.trajectory)
-    for z ∈ sort(ev.history ∪ ev.LFE)
+    for z ∈ sort(ev.history ∪ [zz for zz ∈ ev.LFE if zz isa Infection]) 
+        # We want to add only `Infection`s as these are the only genuinely new incidents!
         if z ∈ ev.LFE
             @debug (z, state)
         end
@@ -941,6 +942,7 @@ function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
             catch e
                 @debug e
             else
+                println("$pointer: ", sprint(show, MIME("text/plain"), z), " ", sprint(show, MIME("text/plain"), state))
                 throw(NonMinimalLFE(ev))
             end
         end

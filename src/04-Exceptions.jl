@@ -1,5 +1,5 @@
-# # Exceptions
-# # ----------
+# Exceptions
+# ----------
 """
     BadIncident
 
@@ -7,7 +7,16 @@ An exception to report misuse of an incident. Doctests are supplied below for
 specific sub-types.
 """
 abstract type BadIncident <: Exception end
-        
+
+"""
+    BadLFE
+
+An exception to report problems with an `LFE` as produced by `last_feasible_evolution`
+(typically arising as a field of a `CEvolution`).
+"""
+abstract type BadLFE <: Exception end
+
+# ### Specific `BadIncident` exceptions
 """
     MissedCRemoval
 
@@ -57,7 +66,33 @@ struct EmployedRemoval <: BadIncident
     incident ::AbstractIncident
 end
 
-# ### Display of `Exception` `BadIncident`
+# ### Specific `BadLFE` exceptions
+"""
+    NonMinimalLFE
+
+An exception to report a non-minimal `LFE`.
+"""
+struct NonMinimalLFE <: Exception
+    evolution ::AbstractEvolution
+end
+
+
+"""
+    EmptyLFE
+
+An exception to report an empty `LFE`.
+"""
+struct EmptyLFE <: Exception
+    evolution ::AbstractEvolution
+end
+
+
+
+
+
+
+
+# ### Display of `Exception`s based on `BadIncident`
 """
     Base.show(io::IO, e::BadIncident)
     
@@ -87,4 +122,16 @@ Printing a `EmployedRemoval` exception.
 """
 function Base.show(io::IO, e::EmployedRemoval)
     print(io, "[$(typeof(e))] The (conditioned) evolution wrongly employed $(e.incident)")
+end
+
+
+
+# ### Display of `Exception`s based on `BadLFE`
+"""
+    Base.show(io::IO, e::BadLFE)
+    
+Printing a `BadLFE` exception.
+"""
+function Base.show(io::IO, e::BadLFE)
+    print(io, "[$(typeof(e))] The following LFE is faulty:\n\t$(e.evolution)")
 end

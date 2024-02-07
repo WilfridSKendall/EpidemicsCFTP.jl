@@ -45,9 +45,10 @@ export evolution, evolution_history
 export extremal_evolution, generate_innovation
 
 export alter
-# # Defined in `04-exceptions.jl`
 
+# # Defined in `04-exceptions.jl`
 export BadIncident, MissedCRemoval, EmployedRemoval
+export BadLFE, EmptyLFE, NonMinimalLFE
 
 # # Note also that `isless` is overloaded in `Methods.jl`!
 import Base: isless

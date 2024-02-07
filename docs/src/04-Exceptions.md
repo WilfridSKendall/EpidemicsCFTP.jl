@@ -1,5 +1,5 @@
 # Exceptions
-## Generic exception
+## Generic exception for `BadIncident`
 Here is the generic exception used 
 to flag bad incidents in the course of the
 perfect simulation code.
@@ -8,16 +8,29 @@ perfect simulation code.
 BadIncident
 ```
 
+### Particular cases of `BadIncident`
 Here are exceptions for some specific cases.
 ```@docs
 MissedCRemoval
 EmployedRemoval
 ```
 
+## Generic exception for `BadLFE`
+```@docs
+BadLFE
+```
+### Particular cases of `BadLFE`
+Here are exceptions for some specific cases.
+```@docs
+EmptyLFE
+NonMinimalLFE
+```
+
+
 ## Methods for displaying exceptions
 ```@docs
 Base.show(::IO, ::BadIncident)
 Base.show(::IO, ::MissedCRemoval)
 Base.show(::IO, ::EmployedRemoval)
-
+Base.show(::IO, ::BadLFE)
 ```

@@ -918,7 +918,7 @@ feasible evolution.
 Doctests to follow ...
 
 """
-function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
+function    (ev::CEvolution; debug::Bool=false)::Bool
 # evolution_history = EpidemicsCFTP.evolution_history
 # NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
 # EmptyLFE          = EpidemicsCFTP.EmptyLFE

@@ -918,7 +918,7 @@ feasible evolution.
 Doctests to follow ...
 
 """
-function    (ev::CEvolution; debug::Bool=false)::Bool
+function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
 # evolution_history = EpidemicsCFTP.evolution_history
 # NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
 # EmptyLFE          = EpidemicsCFTP.EmptyLFE
@@ -938,11 +938,12 @@ function    (ev::CEvolution; debug::Bool=false)::Bool
         if z ∈ ev.LFE && z isa OperativeInfection
             chron0 = filter(!=(z), ev.chronology)
             try
-                remainder = evolution_history(state, chron0; conditioned=true)
+                violation = evolution_history(state, chron0; conditioned=true)
+                println("violation: ", sprint(show, MIME("text/plain"), violation))
             catch e
                 @debug e
             else
-                println("$pointer: ", sprint(show, MIME("text/plain"), z), " ", sprint(show, MIME("text/plain"), state))
+                println("$pointer: ", sprint(show, MIME("text/plain"), z))
                 throw(NonMinimalLFE(ev))
             end
         end

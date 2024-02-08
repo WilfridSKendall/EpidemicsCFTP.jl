@@ -267,3 +267,7 @@ struct FakeIncident <: AbstractIncident end
     @test_throws UndefVarError update(SIR(0.0, 1, 2, 3), FakeIncident())
 end
 
+
+### Testing `LFE` construction
+# ----------------------------
+# _TO BE COMPLETED_

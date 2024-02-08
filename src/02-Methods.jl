@@ -502,12 +502,14 @@ end
 # Computing the last feasible epidemic trajectory
 # -----------------------------------------------
 """
-    last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation) ::Vector{AbstractIncident}
+    EpidemicsCFTP.last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation) ::Vector{AbstractIncident}
 
 Computes the last feasible epidemic trajectory relevant for a `CEvolution` which will be updated
-by a `Innovation`.
+by a `Innovation`. This is used when constructing a `CEvolution` from an `AbstractEvolution`
+and an `Innovation`: see examples I and II. Example III gives an explicit use, in a partial correctness test 
+(see `EpidemicsCFTP.is_correct_LFE`(@ref) for a complementary and more challenging test).
 
-## Example
+## Example I
 ```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
 innov = Innovation(3, 
@@ -520,14 +522,40 @@ CEvolution(cev, innov).LFE
 # output
 AbstractIncident[𝒞₂.₀₀¹]
 ```
+
+## Example II
+```jldoctest LFE_test; setup = :(using EpidemicsCFTP, Random)
+Random.seed!(43) 
+duration, population = 5.0, 5
+α, β = 0.2, 0.1
+cremoval_times = [1.0, 2.0, 3.0, 4.0] 
+initial = SIR(0, population - 1, 1, 0) 
+ev = extremal_evolution(initial, duration, cremoval_times)
+iv0 = Innovation(population, Infection[], Removal[], ev.cremovals)
+iv = generate_innovation(iv0, duration, α=α, β=β)
+evx = CEvolution(ev, iv)
+evx.LFE
+
+# output
+AbstractIncident[𝒫₀.₀₀¹⁻²,ℐ₀.₈₅²⁻³,ℐ₀.₉₆³⁻⁴,𝒞₁.₀₀⁴,𝒞₂.₀₀⁴,ℐ₂.₁₆⁴⁻⁵,𝒞₃.₀₀³,𝒞₄.₀₀⁵]
+```
+
+# Example III
+```jldoctest LFE_test
+import EpidemicsCFTP: last_feasible_evolution
+last_feasible_evolution(duration, evx, iv) == evx.LFE
+
+# output
+true
+```
 """
 function last_feasible_evolution(duration::Real, 
+    ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
 # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
 # resulting_cremovals     = EpidemicsCFTP.resulting_cremovals
-    ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
     
     recomputed_cremovals = resulting_cremovals(ev, iv) 
-    previous_infections  = [PInfection(z) for z in ev.chronology if z isa OperativeInfection]
+    previous_infections  = [P(z) for z in ev.chronology if z isa OperativeInfection]
     chronology = sort(iv.infections ∪ previous_infections ∪ recomputed_cremovals)
     
     removal_boundary =
@@ -913,9 +941,30 @@ end
     EpidemicsCFTP.is_correct_LFE(::CEvolution; ::Bool=false)::Bool
     
 Checks that the `LFE` field of a `CEvolution` is genuinely a least
-feasible evolution.
+feasible evolution. (Used primarily for **verification** that a
+given `LFE` field is correct.) The example indicates usage. 
+See example III from `EpidemicsCFTP.last_feasible_evolution`(@ref) for
+a further simple complementary test using `last_feasible_evolution`.
 
-Doctests to follow ...
+# Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+import Random
+import EpidemicsCFTP: is_correct_LFE
+Random.seed!(43) 
+duration, population = 5.0, 5
+α, β = 0.2, 0.1
+cremoval_times = [1.0, 2.0, 3.0, 4.0] 
+initial = SIR(0, population - 1, 1, 0) 
+ev = extremal_evolution(initial, duration, cremoval_times)
+iv0 = Innovation(population, Infection[], Removal[], ev.cremovals)
+iv = generate_innovation(iv0, duration, α=α, β=β)
+evx = CEvolution(ev, iv)
+is_correct_LFE(evx)
+
+# output
+true
+```
+
 
 """
 function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool

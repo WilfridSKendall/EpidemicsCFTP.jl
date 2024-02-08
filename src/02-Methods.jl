@@ -483,6 +483,7 @@ cremovals:  CRemoval[𝒞₁.₀₀¹,𝒞₂.₀₀²]
 chronology: AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀₀²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₁.₀₀(1:2:0),SIR₁.₀₀(1:1:1),SIR₂.₀₀(1:0:2)]
 history:    AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀₀²])
+```
 """
 function extremal_evolution(initial::SIR, duration::S, times::Vector{T}; 
                             maximal::Bool=true) ::CEvolution where {S,T <: Real}
@@ -508,7 +509,7 @@ Computes the last feasible epidemic trajectory relevant for a [`CEvolution`](@re
 by a [`Innovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
 from an [`AbstractEvolution`](@ref)
 and an [`Innovation`](@ref): see examples I and II. Example III gives an explicit use, in a partial correctness test 
-(see [`EpidemicsCFTP.is_correct_LFE`](@ref) for a complementary and more challenging test).
+(see [`is_correct_LFE`](@ref) for a complementary and more challenging test).
 
 ## Example I
 ```jldoctest; setup = :(using EpidemicsCFTP)

@@ -30,8 +30,7 @@ also other helper functions:
 | [`generate_innovation`](@ref)              | Generates random [`Innovation`](@ref)                  |
 | [`evolution`](@ref)                        | Generates trajectory, history for [`Evolution`](@ref)  |
 | [`evolution_history`](@ref)                | Generates history for [`Evolution`](@ref)              |
-| [`maximal_evolution`](@ref)                | Generates maximal [`Evolution`](@ref) given `CRemoval`s|
-| [`minimal_evolution`](@ref)                | Generates minimal [`Evolution`](@ref) given `CRemoval`s|
+| [`extremal_evolution`](@ref)               | Generates extremal [`Evolution`](@ref) from `CRemoval`s|
 |                                            |                                                        |
 | [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)         |
 | [`EpidemicsCFTP.compute_nofly`](@ref)      | Computes adapted [`Infection`](@ref)s and nofly zone   |
@@ -54,8 +53,7 @@ evolution_history
 For purposes of CFTP we need to be able to generate initial _maximal_ or _minimal_ `CEvolution`s,
 specified by the initial state and a list of times for `CRemoval`s.
 ```@docs 
-maximal_evolution
-minimal_evolution
+extremal_evolution
 ```
 
 ```@docs 
@@ -91,9 +89,9 @@ EpidemicsCFTP.is_same_config
 EpidemicsCFTP.update
 ```
 ## Methods for debugging
-| _Method_                               | _Summary_                                                  |
-|:---------------------------------------|:-----------------------------------------------------------|
-| [`EpidemicsCFTP.is_correct_LFE`](@ref) | Checks whether `LFE` is indeed least feasible evolution!   |
+| _Method_                               | _Summary_                                                   |
+|:---------------------------------------|:------------------------------------------------------------|
+| [`EpidemicsCFTP.is_correct_LFE`](@ref) | Checks whether `LFE` is indeed a _last_ feasible evolution! |
 ```@docs
 EpidemicsCFTP.is_correct_LFE
 ```

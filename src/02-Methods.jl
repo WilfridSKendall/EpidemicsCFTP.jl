@@ -943,7 +943,7 @@ end
 Checks that the `LFE` field of a `CEvolution` is genuinely a least
 feasible evolution. (Used primarily for **verification** that a
 given `LFE` field is correct.) The example indicates usage. 
-See example III from `EpidemicsCFTP.last_feasible_evolution`(@ref) for
+See example III from the doctests for `last_feasible_evolution`(@ref) for
 a further simple complementary test using `last_feasible_evolution`.
 
 # Example

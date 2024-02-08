@@ -919,7 +919,6 @@ Doctests to follow ...
 
 """
 function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
-# evolution         = EpidemicsCFTP.evolution
 # evolution_history = EpidemicsCFTP.evolution_history
 # NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
 # EmptyLFE          = EpidemicsCFTP.EmptyLFE
@@ -928,7 +927,7 @@ function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
     end
 
     # cycle = ev.trajectory
-    cycle = zip(evolution(ev.initial, ev.LFE)...)
+    cycle = evolution(ev.initial, ev.LFE)[1]
     (state, pointer) = iterate(cycle)
     # for z ∈ sort(ev.history ∪ [zz for zz ∈ ev.LFE if zz isa Infection]) 
     # for z ∈ sort(ev.history ∪ [zz for zz ∈ ev.LFE if !(zz isa PInfection)]) 
@@ -936,7 +935,6 @@ function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
     @debug println("state:     ", sprint(show, MIME("text/plain"), ev.LFE)) 
     @debug println("state:     ", sprint(show, MIME("text/plain"), sort(ev.history ∪ ev.LFE)))
     for z ∈ sort(ev.history ∪ ev.LFE)
-        # We want to add only genuinely new `LFE` incidents!
         # Check whether the `PInfection`s risk being duplicated by `Infection`s.
         if z ∈ ev.LFE
             @debug println("state:     ", sprint(show, MIME("text/plain"), (z, state)))
@@ -944,7 +942,8 @@ function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
         if z ∈ ev.LFE && z isa OperativeInfection
             chron0 = filter(!=(z), ev.chronology)
             try
-                violation = evolution_history(state, chron0; conditioned=true)
+                state_plus = SIR(z.t, state.s, state.i, state.r)
+                violation = evolution_history(state_plus, chron0; conditioned=true)
                 @debug println("state:     ", sprint(show, MIME("text/plain"), state))
                 @debug println("chron0:    ", sprint(show, MIME("text/plain"), chron0))
                 @debug println("deleted:   ", sprint(show, MIME("text/plain"), z))

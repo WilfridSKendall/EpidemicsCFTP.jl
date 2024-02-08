@@ -504,10 +504,11 @@ end
 """
     EpidemicsCFTP.last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation) ::Vector{AbstractIncident}
 
-Computes the last feasible epidemic trajectory relevant for a `CEvolution` which will be updated
-by a `Innovation`. This is used when constructing a `CEvolution` from an `AbstractEvolution`
-and an `Innovation`: see examples I and II. Example III gives an explicit use, in a partial correctness test 
-(see `EpidemicsCFTP.is_correct_LFE`(@ref) for a complementary and more challenging test).
+Computes the last feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
+by a [`Innovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
+from an [`AbstractEvolution`](@ref)
+and an [`Innovation`](@ref): see examples I and II. Example III gives an explicit use, in a partial correctness test 
+(see [`EpidemicsCFTP.is_correct_LFE`](@ref) for a complementary and more challenging test).
 
 ## Example I
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -940,11 +941,11 @@ end
 """
     EpidemicsCFTP.is_correct_LFE(::CEvolution; ::Bool=false)::Bool
     
-Checks that the `LFE` field of a `CEvolution` is genuinely a least
+Checks that the `LFE` field of a [`CEvolution`](@ref) is genuinely a least
 feasible evolution. (Used primarily for **verification** that a
 given `LFE` field is correct.) The example indicates usage. 
-See example III from the doctests for `last_feasible_evolution`(@ref) for
-a further simple complementary test using `last_feasible_evolution`.
+See example III from the doctests for [`last_feasible_evolution`](@ref) for
+a further simple complementary test using that function.
 
 # Example
 ```jldoctest; setup = :(using EpidemicsCFTP)

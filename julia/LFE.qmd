@@ -129,8 +129,9 @@ Zero algorithmic time, many initial conditions
 ----------------------------------------------
 We first test the "zero step" (extending maximum and minimum conditioned evolutions
 using an essentially empty innovation) over a range of initial conditions.
-In this edge-case the constructed `CEvolution` is built directly from a chronology
-so its `LFE` field is actually an empty list!
+In this edge-case it is necessary to build the constructed `CEvolution` from the
+null `Innovation` `iv` in order to ensure all fields are filled as required!
+Note the fudge to make sure that the `CRemoval` list is unchanged. 
 ```{julia}
 iv = Innovation(population, I[], R[], [C(1,5), C(2,5), C(3,5), C(4,5)])
 traj_hi = [P(0,1,2), P(0,2,3), P(0,3,4), P(0,4,5), C(1,5), C(2,5), C(3,5), C(4,5)]
@@ -141,18 +142,26 @@ for i ∈ 1:population
 
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)
     ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
-    for (ev, traj) ∈ [(ev_hi, traj_hi), (ev_lo, traj_lo)]
+    for (ev, traj, kind) ∈ [(ev_hi, traj_hi, "HI"), (ev_lo, traj_lo, "LO")]
+        @debug "Step $i $kind"
         computed_LFE = convert(Vector{AI}, [z for z ∈ traj if
                          ! (z isa OperativeInfection) || z.infectee > startup])
 
         LFE = last_feasible_evolution(duration, ev, iv)
     
-        @test CEvolution(initial, LFE).history == LFE
+        @test CEvolution(ev.initial, LFE).history == LFE
         @test computed_LFE == sort(ev.cremovals ∪ ev.removals ∪ 
             [P(z) for z ∈ ev.infections if z isa OperativeInfection && z.infectee > startup])
-            
-        append!(ev.LFE, LFE)
-        @test EpidemicsCFTP.is_correct_LFE(ev)
+         
+        evx = CEvolution(ev, iv)
+        # FUDGE STARTS
+        deleteat!(evx.cremovals, 1:length(ev.cremovals))
+        append!(evx.cremovals, ev.cremovals)
+        # FUDGE ENDS
+        @test ev.removals == evx.removals
+        @test ev.cremovals == evx.cremovals
+        @test ev.trajectory == evx.trajectory
+        @test EpidemicsCFTP.is_correct_LFE(evx)
     end
 end
 ```
@@ -174,23 +183,21 @@ In this case the constructed `CEvolution` _will_ have an `LFE` field with the co
 ```
 ```{julia}
 ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ SAMPLE]
-# for i ∈ 1:population
-for i ∈ 1:1
+for i ∈ 1:population
     initial = SIR(0, population - i, i, 0) 
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)
     ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
-    # for j ∈ SAMPLE
-    for j ∈ 1:1
+    for j ∈ SAMPLE
         iv = ivl[j]
-        high = true
-        #for ev ∈ [ev_hi, ev_lo]
-        for ev ∈ [ev_hi]
+        for (ev, kind) ∈ [(ev_hi, "HI"), (ev_lo, "LO")]
+            @debug "Step $i sample $j $kind"
             proposed_LFE = last_feasible_evolution(duration, ev, iv)
     
             ev = CEvolution(ev, iv)
     
             @test ev.LFE == proposed_LFE
-            @test CEvolution(initial, proposed_LFE).history == proposed_LFE
+            @test CEvolution(ev.initial, proposed_LFE).history == proposed_LFE
+
             # @test  EpidemicsCFTP.is_correct_LFE(ev)
             try
                 EpidemicsCFTP.is_correct_LFE(ev)
@@ -204,7 +211,6 @@ for i ∈ 1:1
                 println("LFE  ", sprint(show, MIME("text/plain"), e.evolution.LFE))
                 println("ev   ", sprint(show, MIME("text/plain"), e.evolution))
             end
-            high = ! high
         end
     end
 end ;
@@ -217,32 +223,6 @@ These `@test`s check respectively
 
 {{< pagebreak >}}
 
-Here we focus on a problematic case (`i=1` and `j=1`, `ev_hi`) where issues arise at time `1`.
-```{julia}
-i = 1
-initial = SIR(0, population - i, i, 0) 
-ev  = extremal_evolution(initial, duration, cremoval_times)
-iv = ivl[1]
-ev = CEvolution(ev, iv)
-proposed_LFE = last_feasible_evolution(duration, ev, iv)
-evx = CEvolution(initial, ev.infections[1:6] ∪ ev.removals ∪ ev.cremovals[1:1], LFE=proposed_LFE[1:4])
-LFE = evx.LFE
-
-@test CEvolution(initial, LFE).history == LFE
-
-try
-    EpidemicsCFTP.is_correct_LFE(evx)
-catch e
-    println("hist ", sprint(show, MIME("text/plain"), e.evolution.history))
-    println("LFE  ", sprint(show, MIME("text/plain"), e.evolution.LFE))
-    println()
-    println("ev   ", sprint(show, MIME("text/plain"), e.evolution))
-end
-
-``` 
- 
-{{< pagebreak >}}
-
 \appendix
 # Appendices {.unnumbered}
 
@@ -251,7 +231,7 @@ Towards a correct and robust generation of `LFE`
 We have introduced a new function to construct the `LFE`.
 Note that it does not assume `ev.infections` to have 
 been categorized as `OperativeInfection` versus `InoperativeInfection`.
-Here is a (non-executable) listing, instrumented for debugging.
+Here is a (non-executable) listing, listed for purposes of debugging.
 ```julia
 function last_feasible_evolution(duration::Real, 
     # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
@@ -294,37 +274,45 @@ end
 
 Checking `LFE`
 ==============
-The following produces a useful test of `LFE`.
+The following produces a useful test of `LFE`
+ (non-executable listing, listed for purposes of debugging).
 ```julia
-function is_correct_LFE(ev::CEvolution; debug::Bool=false)
-    # evolution_history = EpidemicsCFTP.evolution_history
-    # NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
-    # EmptyLFE          = EpidemicsCFTP.EmptyLFE
-
-    @debug ev.history
-    @debug  ev.LFE
-
+function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
+# evolution         = EpidemicsCFTP.evolution
+# evolution_history = EpidemicsCFTP.evolution_history
+# NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
+# EmptyLFE          = EpidemicsCFTP.EmptyLFE
     if isempty(ev.LFE)
         throw(EmptyLFE(ev))
     end
 
-    (state, pointer) = iterate(ev.trajectory)
+    cycle = evolution(ev.initial, ev.LFE)[1]
+    (state, pointer) = iterate(cycle)
+    @debug println("state:     ", sprint(show, MIME("text/plain"), ev.history)) 
+    @debug println("state:     ", sprint(show, MIME("text/plain"), ev.LFE)) 
+    @debug println("state:     ", sprint(show, MIME("text/plain"), sort(ev.history ∪ ev.LFE)))
     for z ∈ sort(ev.history ∪ ev.LFE)
         if z ∈ ev.LFE
-            @debug (z, state)
+            @debug println("state:     ", sprint(show, MIME("text/plain"), (z, state)))
         end
         if z ∈ ev.LFE && z isa OperativeInfection
             chron0 = filter(!=(z), ev.chronology)
             try
-                remainder = evolution_history(state, chron0; conditioned=true)
+                state_plus = SIR(z.t, state.s, state.i, state.r)
+                violation = evolution_history(state_plus, chron0; conditioned=true)
+                @debug println("state:     ", sprint(show, MIME("text/plain"), state))
+                @debug println("chron0:    ", sprint(show, MIME("text/plain"), chron0))
+                @debug println("deleted:   ", sprint(show, MIME("text/plain"), z))
+                @debug println("full path: ", sprint(show, MIME("text/plain"), violation))
             catch e
                 @debug e
             else
+                @debug println("$pointer: ", sprint(show, MIME("text/plain"), z))
                 throw(NonMinimalLFE(ev))
             end
         end
-        if z ∈ ev.history
-            (state, pointer) = iterate(ev.trajectory, pointer)
+        if z ∈ ev.LFE
+            (state, pointer) = iterate(cycle, pointer)
         end
     end
     return true
@@ -334,7 +322,7 @@ end
 The `one_stop` function
 =======================
 The `one_step` function corresponds to the method `CEvolution(::AbstractEvolution, ::Innovation)`,
-and is listed here to aid in de-bugging.
+listed for purposes of debugging.
 ```julia
 # Actually a method of `EpidemicsCFTP.CEvolution`
 function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution

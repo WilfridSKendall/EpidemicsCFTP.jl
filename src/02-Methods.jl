@@ -919,6 +919,7 @@ Doctests to follow ...
 
 """
 function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
+# evolution         = EpidemicsCFTP.evolution
 # evolution_history = EpidemicsCFTP.evolution_history
 # NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
 # EmptyLFE          = EpidemicsCFTP.EmptyLFE
@@ -926,16 +927,12 @@ function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
         throw(EmptyLFE(ev))
     end
 
-    # cycle = ev.trajectory
     cycle = evolution(ev.initial, ev.LFE)[1]
     (state, pointer) = iterate(cycle)
-    # for z ∈ sort(ev.history ∪ [zz for zz ∈ ev.LFE if zz isa Infection]) 
-    # for z ∈ sort(ev.history ∪ [zz for zz ∈ ev.LFE if !(zz isa PInfection)]) 
     @debug println("state:     ", sprint(show, MIME("text/plain"), ev.history)) 
     @debug println("state:     ", sprint(show, MIME("text/plain"), ev.LFE)) 
     @debug println("state:     ", sprint(show, MIME("text/plain"), sort(ev.history ∪ ev.LFE)))
     for z ∈ sort(ev.history ∪ ev.LFE)
-        # Check whether the `PInfection`s risk being duplicated by `Infection`s.
         if z ∈ ev.LFE
             @debug println("state:     ", sprint(show, MIME("text/plain"), (z, state)))
         end
@@ -949,14 +946,12 @@ function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
                 @debug println("deleted:   ", sprint(show, MIME("text/plain"), z))
                 @debug println("full path: ", sprint(show, MIME("text/plain"), violation))
             catch e
-                #@debug e
-                @info e
+                @debug e
             else
                 @debug println("$pointer: ", sprint(show, MIME("text/plain"), z))
                 throw(NonMinimalLFE(ev))
             end
         end
-        # if z ∈ ev.history
         if z ∈ ev.LFE
             (state, pointer) = iterate(cycle, pointer)
         end

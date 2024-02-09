@@ -46,6 +46,9 @@ view: serve
 # Place documentation online (not yet working)
 online: docs/build/index.md
 
+# Listing of code
+listings: README.pdf Makefile.pdf $(MODULE)-test.pdf
+
 # ============
 # Installation
 install:
@@ -55,7 +58,7 @@ install:
 commit:
 	$(GIT) commit -a
 	$(GIT) push
-		
+
 # =======
 # Testing
 doctest:
@@ -93,7 +96,6 @@ docs/site/index.html: docs/build/index.md
 
 
 
-listings: README.pdf Makefile.pdf $(MODULE)-test.pdf
 $(MODULE)-test.pdf: $(MODULE)-test.qmd
 	$(QUARTO) render $< --to pdf
 	rm $<

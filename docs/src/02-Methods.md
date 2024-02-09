@@ -1,5 +1,11 @@
 # Methods for computation
 
+## Helpful notation
+Notation that is useful for concise expression of CFTP algorithms.
+```@docs
+∘
+```
+
 ## Comparison method
 A total ordering is provided by [`Base.isless`](@ref)
 (with signature `isless(::AbstractIncident,::AbstractIncident)`), based on time `t` of occurrence of 

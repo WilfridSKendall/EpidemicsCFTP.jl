@@ -1,3 +1,39 @@
+# Helpful notation
+# ----------------
+# The following simple notation enables concise expression of _CFTP_ algorithms.
+# Check no overload of
+# ```{julia}
+# map(uppercase∘first, ["apple", "banana", "carrot"])
+# (==(6)∘length).(["apple", "banana", "carrot"])
+# ```
+import Base: ∘
+
+"""
+    Base.∘(::CEvolution, ::Innovation) ::CEvolution
+
+Shorthand for `CEvolution(cev, iv)` is `cev ∘ iv`.
+
+# Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
+iv  = Innovation(2, [Infection(0.5, 1, 2)], Removal[], [CRemoval(1.0, 1)])
+cev ∘ iv
+
+# output
+CEvolution(2,
+infections: AbstractInfection[ℐ₀.₅₀¹⁻²]
+removals:   AbstractRemoval[]
+cremovals:  CRemoval[𝒞₁.₀₀¹]
+chronology: AbstractIncident[ℐ₀.₅₀¹⁻²,𝒞₁.₀₀¹]
+trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₅₀(0:2:0),SIR₁.₀₀(0:1:1)]
+history:    AbstractIncident[ℐ₀.₅₀¹⁻²,𝒞₁.₀₀¹])
+```
+"""
+function ∘(cev::CEvolution, iv::Innovation)::CEvolution
+    return CEvolution(cev, iv)
+end
+
+
 # Total ordering of incidents
 # ---------------------------
 # To note: this ordering is a refinement of time-ordering!

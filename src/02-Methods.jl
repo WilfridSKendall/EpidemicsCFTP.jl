@@ -6,7 +6,6 @@
 # map(uppercase∘first, ["apple", "banana", "carrot"])
 # (==(6)∘length).(["apple", "banana", "carrot"])
 # ```
-import Base: ∘
 """
     Base.∘(::CEvolution, ::Innovation) ::CEvolution
 

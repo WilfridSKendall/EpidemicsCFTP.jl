@@ -50,8 +50,8 @@ export alter
 export BadIncident, MissedCRemoval, EmployedRemoval
 export BadLFE, EmptyLFE, NonMinimalLFE
 
-# # Note also that `isless` is overloaded in `Methods.jl`!
-import Base: isless
+# # Note also that `isless` and `∘` are overloaded in `Methods.jl`!
+import Base: isless, ∘
 
 # # Included files
 # # ==============

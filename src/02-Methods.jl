@@ -7,11 +7,11 @@
 # (==(6)∘length).(["apple", "banana", "carrot"])
 # ```
 import Base: ∘
-
 """
     Base.∘(::CEvolution, ::Innovation) ::CEvolution
 
 Shorthand for `CEvolution(cev, iv)` is `cev ∘ iv`.
+(Use `\circ`.)
 
 # Example
 ```jldoctest; setup = :(using EpidemicsCFTP)

@@ -48,6 +48,8 @@ import EpidemicsCFTP: EpidemicsCFTP,
     AbstractInfection, OperativeInfection, Infection, PInfection, NoFlyInfection, ExpungedInfection,
     AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
     generate_innovation, extremal_evolution
+
+# ENV["JULIA_DEBUG"] = Main    
 ```
 
 Here is a table of software used in the following computations:
@@ -75,12 +77,17 @@ Markdown.parse("""
 
 Basic Constructions
 ===================
-We specify the duration of the epidemic, its population,  and two rate parameters.
 ```{julia}
-const duration = 5.0 ; const population = 5 ; const α=0.2 ; const β=0.1 ;
+#| echo: false
+const REPLICATES = 60
+Markdown.md"The number of simulation replicates over algorithmic time is $REPLICATES. \
+We specify the duration of the epidemic, its population,  and two rate parameters."
 ```
-When constructing an `Innovation` or a `CEvolution`, it is useful to
-use some abbreviations for various `AbstractIncident`s.
+```{julia}
+const duration = 5.0 ; const population = 5 ; const α=0.3 ; const β=0.2 ;
+```
+It is useful to
+have some abbreviations for various `AbstractIncident`s.
 ```{julia}
 import EpidemicsCFTP: AI, I, P, R, C
 ```
@@ -93,7 +100,7 @@ AIR = AbstractRemoval;   R = Removal;   C = CRemoval;
 ```
 Here is the random seed used for random generation of `Innovation`s.
 ```{julia}
-Random.seed!(43) ;
+Random.seed!(44) ;
 ```
 
 We will be testing the following function from `EpidemicsCFTP`:
@@ -101,16 +108,30 @@ We will be testing the following function from `EpidemicsCFTP`:
 last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution ;
 ```
 
-Conditional removal times `cremoval_times` are specified as 
+Conditional removal times (`cremoval_times`) are specified as 
 ```{julia}
 #| echo: false
-cremoval_times = [1.0, 2.0, 3.0, 4.0] 
+cremoval_times = [1.0, 2.0, 3.0, 3.5, 4.0] 
 println(cremoval_times)
+
+@assert duration > maximum(cremoval_times)
 ```
+
+We need to be able to (weakly) compare two `AbstractEvolution`s.
 ```{julia}
-#| echo: false
-SAMPLE  = 1:20 ;
-Markdown.md"and finally the iteration range over algorithmic time is `SAMPLE =` $SAMPLE."
+import EpidemicsCFTP: AbstractEvolution
+function ≼(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
+    ev1.initial.n == ev2.initial.n || return false
+    return all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+end ;
+function ≼(ev1::CEvolution, ev2::CEvolution) ::Bool
+    any(ev1.initial.n != ev2.initial.n) && return false
+    pair = zip(ev1.cremovals, ev2.cremovals)
+    any(z1.t != z2.t  for (z1, z2) ∈ pair) && return false 
+    timelines_ok = all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+    crtargets_ok = all(z1.target ≥ z2.target for (z1, z2) ∈ pair)
+    return timelines_ok && crtargets_ok 
+end ;
 ```
 
 
@@ -120,9 +141,18 @@ Unit Tests
 ==========
 ```{julia}
 #| echo: false
-Markdown.md"Here tests are carried out on the range $SAMPLE in algorithmic time, \
-starting with both the maximal conditioned evolution and the minimal \
-conditioned evolution, and specified `cremoval_times`."
+Markdown.md"Unit tests are carried out on $REPLICATES replicates in algorithmic time, \
+using as initial states both the maximal conditioned evolution and the minimal \
+conditioned evolution."
+```
+
+```{julia}
+#| echo: false
+description = join([string(t) for t ∈ cremoval_times], ", ")
+Markdown.md"Simulations are conditioned on specified `cremoval_times`: \
+[$description]."
+
+
 ```
 
 Zero algorithmic time, many initial conditions
@@ -131,27 +161,31 @@ We first test the "zero step" (extending maximum and minimum conditioned evoluti
 using an essentially empty innovation) over a range of initial conditions.
 In this edge-case it is necessary to build the constructed `CEvolution` from the
 null `Innovation` `iv` in order to ensure all fields are filled as required!
-Note the fudge to make sure that the `CRemoval` list is unchanged. 
-```{julia}
-iv = Innovation(population, I[], R[], [C(1,5), C(2,5), C(3,5), C(4,5)])
-traj_hi = [P(0,1,2), P(0,2,3), P(0,3,4), P(0,4,5), C(1,5), C(2,5), C(3,5), C(4,5)]
-traj_lo = [P(1,1,2), C(1,1), P(2,2,3), C(2,2), P(3,3,4), C(3,3), C(4,4)]
+Note the fudge to make sure that the `CRemoval` list is unchanged. Note too
+the monotonicity test using `ev_pair`.
+```{julia simulation1}
+iv = Innovation(population, I[], R[], 
+    C[C(t,population) for (r, t) ∈ enumerate(cremoval_times)])
+crcount = length(cremoval_times)
+traj_hi = [P(0, r, r+1) for r ∈ 1:population] ∪ iv.cremovals
+traj_lo = sort([P(t, r, r+1) for (r,t) ∈ enumerate(cremoval_times)][1:end-1] 
+    ∪ [C(t, r) for (r,t) ∈ enumerate(cremoval_times)])
+
 for i ∈ 1:population
     initial = SIR(0, population - i, i, 0)
     startup = initial.i + initial.r
-
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)
     ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
+    ev_pair = []
     for (ev, traj, kind) ∈ [(ev_hi, traj_hi, "HI"), (ev_lo, traj_lo, "LO")]
         @debug "Step $i $kind"
         computed_LFE = convert(Vector{AI}, [z for z ∈ traj if
-                         ! (z isa OperativeInfection) || z.infectee > startup])
-
+                ! (z isa OperativeInfection) || startup < z.infectee ≤ crcount])
         LFE = last_feasible_evolution(duration, ev, iv)
-    
         @test CEvolution(ev.initial, LFE).history == LFE
         @test computed_LFE == sort(ev.cremovals ∪ ev.removals ∪ 
-            [P(z) for z ∈ ev.infections if z isa OperativeInfection && z.infectee > startup])
+            [P(z) for z ∈ ev.infections if
+                z isa OperativeInfection && startup < z.infectee ≤ crcount])
          
         evx = CEvolution(ev, iv)
         # FUDGE STARTS
@@ -162,8 +196,10 @@ for i ∈ 1:population
         @test ev.cremovals == evx.cremovals
         @test ev.trajectory == evx.trajectory
         @test EpidemicsCFTP.is_correct_LFE(evx)
+        push!(ev_pair, evx)
     end
-end
+    @test ev_pair[1] ≼ ev_pair[2]
+end ;
 ```
 These `@test`s check respectively
 
@@ -171,24 +207,27 @@ These `@test`s check respectively
 (a rather trivial calculation in these edge-cases) agrees with the `LFE` computed using `last_feasible_evolution`;
  * that the \LFE will be the history (hence _a fortiori_ the `LFE`) of of an epidemic
 generated using this `LFE` (This check should hold in all cases, not just the above edge-cases);
- * and that the \LFE is genuinely the least feasible evolution.
+ * that the \LFE is genuinely the least feasible evolution;
+ * and that the constructed "`HI`" and "`LO`" `CEvolutions` are in weakly monotonic relationship.
 
 Further steps in algorithmic time
 ---------------------------------
 ```{julia}
 #| echo: false
-Markdown.md"We now simulate over the algorithmic time range $SAMPLE, \
+Markdown.md"We now simulate $REPLICATES replicates over the algorithmic time range, \
 starting in turn from each of the defined initial configurations. \
-In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents."
+In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents. \
+Note the monotonicity test using `ev_pair`."
 ```
 ```{julia}
-ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ SAMPLE]
+ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ 1:REPLICATES]
 for i ∈ 1:population
     initial = SIR(0, population - i, i, 0) 
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)
     ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
-    for j ∈ SAMPLE
+    for j ∈ 1:REPLICATES
         iv = ivl[j]
+        ev_pair = []
         for (ev, kind) ∈ [(ev_hi, "HI"), (ev_lo, "LO")]
             @debug "Step $i sample $j $kind"
             proposed_LFE = last_feasible_evolution(duration, ev, iv)
@@ -198,7 +237,6 @@ for i ∈ 1:population
             @test ev.LFE == proposed_LFE
             @test CEvolution(ev.initial, proposed_LFE).history == proposed_LFE
 
-            # @test  EpidemicsCFTP.is_correct_LFE(ev)
             try
                 EpidemicsCFTP.is_correct_LFE(ev)
             catch e
@@ -211,7 +249,9 @@ for i ∈ 1:population
                 println("LFE  ", sprint(show, MIME("text/plain"), e.evolution.LFE))
                 println("ev   ", sprint(show, MIME("text/plain"), e.evolution))
             end
+            push!(ev_pair, ev)
         end
+        @test ev_pair[1] ≼ ev_pair[2]
     end
 end ;
 ```
@@ -219,7 +259,8 @@ These `@test`s check respectively
 
  * that the \LFE computed using `last_feasible_evolution` agrees with what is stored in the `CEvolution` field;
  * that this \LFE is the history (hence _a fortiori_ the `LFE`) of an epidemic generated using the self-same `LFE`;
- * and that the \LFE is genuinely the least feasible evolution.
+ * that the \LFE is genuinely the least feasible evolution;
+ * and that the constructed "`HI`" and "`LO`" `CEvolutions` are in weakly monotonic relationship.
 
 {{< pagebreak >}}
 

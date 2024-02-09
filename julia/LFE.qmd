@@ -120,18 +120,21 @@ println(cremoval_times)
 We need to be able to (weakly) compare two `AbstractEvolution`s.
 ```{julia}
 import EpidemicsCFTP: AbstractEvolution
-function ≼(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
+function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
     ev1.initial.n == ev2.initial.n || return false
     return all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
 end ;
-function ≼(ev1::CEvolution, ev2::CEvolution) ::Bool
-    any(ev1.initial.n != ev2.initial.n) && return false
+
+function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
+    any(ev1.initial.n != ev2.initial.n) && error("populations differ")
     pair = zip(ev1.cremovals, ev2.cremovals)
-    any(z1.t != z2.t  for (z1, z2) ∈ pair) && return false 
+    any(z1.t != z2.t  for (z1, z2) ∈ pair) && error("cremoval times differ")
     timelines_ok = all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
     crtargets_ok = all(z1.target ≥ z2.target for (z1, z2) ∈ pair)
     return timelines_ok && crtargets_ok 
 end ;
+
+weq = ⪯
 ```
 
 
@@ -187,18 +190,19 @@ for i ∈ 1:population
             [P(z) for z ∈ ev.infections if
                 z isa OperativeInfection && startup < z.infectee ≤ crcount])
          
-        evx = CEvolution(ev, iv)
+        evx = ev ∘ iv # Need to restore `cremovals` of `ev` (resp. `ev_hi` or `ev_lo`)
         # FUDGE STARTS
         deleteat!(evx.cremovals, 1:length(ev.cremovals))
         append!(evx.cremovals, ev.cremovals)
         # FUDGE ENDS
+
         @test ev.removals == evx.removals
         @test ev.cremovals == evx.cremovals
         @test ev.trajectory == evx.trajectory
         @test EpidemicsCFTP.is_correct_LFE(evx)
         push!(ev_pair, evx)
     end
-    @test ev_pair[1] ≼ ev_pair[2]
+    @test ev_pair[1] ⪯ ev_pair[2]
 end ;
 ```
 These `@test`s check respectively
@@ -232,7 +236,7 @@ for i ∈ 1:population
             @debug "Step $i sample $j $kind"
             proposed_LFE = last_feasible_evolution(duration, ev, iv)
     
-            ev = CEvolution(ev, iv)
+            ev = ev ∘ iv
     
             @test ev.LFE == proposed_LFE
             @test CEvolution(ev.initial, proposed_LFE).history == proposed_LFE
@@ -251,7 +255,7 @@ for i ∈ 1:population
             end
             push!(ev_pair, ev)
         end
-        @test ev_pair[1] ≼ ev_pair[2]
+        @test ev_pair[1] ⪯ ev_pair[2]
     end
 end ;
 ```
@@ -318,11 +322,8 @@ Checking `LFE`
 The following produces a useful test of `LFE`
  (non-executable listing, listed for purposes of debugging).
 ```julia
+# import EpidemicsCFTP: evolution, evolution_history, NonMinimalLFE, EmptyLFE
 function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
-# evolution         = EpidemicsCFTP.evolution
-# evolution_history = EpidemicsCFTP.evolution_history
-# NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
-# EmptyLFE          = EpidemicsCFTP.EmptyLFE
     if isempty(ev.LFE)
         throw(EmptyLFE(ev))
     end
@@ -365,7 +366,8 @@ The `one_stop` function
 The `one_step` function corresponds to the method `CEvolution(::AbstractEvolution, ::Innovation)`,
 listed for purposes of debugging.
 ```julia
-# Actually a method of `EpidemicsCFTP.CEvolution`
+# Actually a method of `EpidemicsCFTP.CEvolution`: see also `∘` in next section!
+# import EpidemicsCFTP: inactive_removals, resulting_cremovals, last_feasible_evolution
 function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # inactive_removals = EpidemicsCFTP.inactive_removals
     # resulting_cremovals = EpidemicsCFTP.resulting_cremovals
@@ -506,4 +508,36 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
 end
 ```
 
+Notation
+========
+We need to be able to (weakly) compare two `AbstractEvolution`s,
+using `⪯` (`\preceq`).
+```julia
+import EpidemicsCFTP: AbstractEvolution, CEvolution
+import EpidemicsCFTP: AbstractEvolution
+function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
+    ev1.initial.n == ev2.initial.n || return false
+    return all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+end ;
 
+function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
+    any(ev1.initial.n != ev2.initial.n) && error("populations differ")
+    pair = zip(ev1.cremovals, ev2.cremovals)
+    any(z1.t != z2.t  for (z1, z2) ∈ pair) && error("cremoval times differ")
+    timelines_ok = all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+    crtargets_ok = all(z1.target ≥ z2.target for (z1, z2) ∈ pair)
+    return timelines_ok && crtargets_ok 
+end ;
+
+weq = ⪯
+```
+
+
+It is also useful to be able to compose a `CEvolution` with an `Innovation`
+(non-commutative!) using `∘` (`\circ`).
+```julia
+import EpidemicsCFTP: CEvolution, Innovation
+function ∘(cev::CEvolution, iv::Innovation) ::CEvolution
+    return CEvolution(cev, iv)
+end ;
+```

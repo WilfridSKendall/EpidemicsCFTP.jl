@@ -10,7 +10,7 @@
     Base.∘(::CEvolution, ::Innovation) ::CEvolution
 
 Shorthand for `CEvolution(cev, iv)` is `cev ∘ iv`.
-(Use `\circ`.)
+(Use `\\circ`.)
 
 # Example
 ```jldoctest; setup = :(using EpidemicsCFTP)

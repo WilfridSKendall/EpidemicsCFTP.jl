@@ -112,7 +112,8 @@ Conditional removal times (`cremoval_times`) are specified as
 ```{julia}
 #| echo: false
 # cremoval_times = [1.0, 2.0, 3.0, 3.5, 4.0] 
-cremoval_times = [1.0, 2.0, 3.0] 
+# cremoval_times = [1.0, 2.0, 3.0] 
+cremoval_times = [1.0, 2.0] # NB Just ojne removal doesn't work! 
 println(cremoval_times)
 
 @assert duration > maximum(cremoval_times)
@@ -238,7 +239,7 @@ for i ∈ 1:population
             push!(ev_pair, ev)
         end
         @test ev_pair[1] ⪯ ev_pair[2]
-        if (! not_yet_coalesced) && ev_pair[2] ⪯ ev_pair[1]
+        if ev_pair[2] ⪯ ev_pair[1]
             print("c")
         else
             print("-")

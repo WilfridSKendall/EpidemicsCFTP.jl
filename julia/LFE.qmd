@@ -84,7 +84,8 @@ Markdown.md"The number of simulation replicates over algorithmic time is $REPLIC
 We specify the duration of the epidemic, its population,  and two rate parameters."
 ```
 ```{julia}
-const duration = 5.0 ; const population = 5 ; const α=0.3 ; const β=0.2 ;
+#const duration = 5.0 ; const population = 5 ; const α=0.3 ; const β=0.2 ;
+const duration = 2.5 ; const population = 2 ; const α=0.1 ; const β=0.05 ; # Minimalist approach to debugging
 ```
 It is useful to
 have some abbreviations for various `AbstractIncident`s.
@@ -206,13 +207,15 @@ Note the monotonicity test using `ev_pair`."
 ```
 ```{julia}
 ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ 1:REPLICATES]
-for i ∈ 1:population
+#for i ∈ 1:population
+for i ∈ 1:1 # DEBUGGING
     initial = SIR(0, population - i, i, 0) 
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)
     ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
     not_yet_coalesced = true
     print("Step $i: ")
-    for j ∈ 1:REPLICATES
+    #for j ∈ 1:REPLICATES
+    for j ∈ 1:5 # DEBUGGING
         iv = ivl[j]
         ev_pair = []
         for (ev, kind) ∈ [(ev_hi, "HI"), (ev_lo, "LO")]
@@ -238,17 +241,24 @@ for i ∈ 1:population
             end
             push!(ev_pair, ev)
         end
+        
         @test ev_pair[1] ⪯ ev_pair[2]
-        if ev_pair[2] ⪯ ev_pair[1]
-            print("c")
-        else
-            print("-")
-        end
-        if j % 80 == 0
-            print("\n        ")
-        elseif j % 10 == 0
-            print(" ")
-        end
+        #if ev_pair[2] ⪯ ev_pair[1]
+        #    print("c")
+        #else
+        #    print("-")
+        #end
+        #if j % 80 == 0
+        #    print("\n        ")
+        #elseif j % 10 == 0
+        #    print(" ")
+        #end
+        println("\nStep $j: coalescence ", ev_pair[2] ⪯ ev_pair[1])
+        println("HI: ", sprint(show, MIME("text/plain"), ev_pair[1]))
+        println("    ", sprint(show, MIME("text/plain"), ev_pair[1].start))
+        println("LO: ", sprint(show, MIME("text/plain"), ev_pair[2]))
+        println("    ", sprint(show, MIME("text/plain"), ev_pair[2].start))
+        
         # @test (! not_yet_coalesced) || ev_pair[2] ⪯ ev_pair[1]
         not_yet_coalesced = not_yet_coalesced && ! (ev_pair[2] ⪯ ev_pair[1])
     end

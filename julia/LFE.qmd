@@ -47,7 +47,7 @@ import EpidemicsCFTP: EpidemicsCFTP,
     AbstractIncident,
     AbstractInfection, OperativeInfection, Infection, PInfection, NoFlyInfection, ExpungedInfection,
     AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
-    generate_innovation, extremal_evolution
+    ⪯, generate_innovation, extremal_evolution
 
 # ENV["JULIA_DEBUG"] = Main    
 ```
@@ -79,7 +79,7 @@ Basic Constructions
 ===================
 ```{julia}
 #| echo: false
-const REPLICATES = 60
+const REPLICATES = 160
 Markdown.md"The number of simulation replicates over algorithmic time is $REPLICATES. \
 We specify the duration of the epidemic, its population,  and two rate parameters."
 ```
@@ -111,32 +111,12 @@ last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution ;
 Conditional removal times (`cremoval_times`) are specified as 
 ```{julia}
 #| echo: false
-cremoval_times = [1.0, 2.0, 3.0, 3.5, 4.0] 
+# cremoval_times = [1.0, 2.0, 3.0, 3.5, 4.0] 
+cremoval_times = [1.0, 2.0, 3.0] 
 println(cremoval_times)
 
 @assert duration > maximum(cremoval_times)
 ```
-
-We need to be able to (weakly) compare two `AbstractEvolution`s.
-```{julia}
-import EpidemicsCFTP: AbstractEvolution
-function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
-    ev1.initial.n == ev2.initial.n || return false
-    return all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
-end ;
-
-function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
-    any(ev1.initial.n != ev2.initial.n) && error("populations differ")
-    pair = zip(ev1.cremovals, ev2.cremovals)
-    any(z1.t != z2.t  for (z1, z2) ∈ pair) && error("cremoval times differ")
-    timelines_ok = all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
-    crtargets_ok = all(z1.target ≥ z2.target for (z1, z2) ∈ pair)
-    return timelines_ok && crtargets_ok 
-end ;
-
-weq = ⪯
-```
-
 
 {{< pagebreak >}}
 
@@ -229,6 +209,8 @@ for i ∈ 1:population
     initial = SIR(0, population - i, i, 0) 
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)
     ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
+    not_yet_coalesced = true
+    print("Step $i: ")
     for j ∈ 1:REPLICATES
         iv = ivl[j]
         ev_pair = []
@@ -256,7 +238,20 @@ for i ∈ 1:population
             push!(ev_pair, ev)
         end
         @test ev_pair[1] ⪯ ev_pair[2]
+        if (! not_yet_coalesced) && ev_pair[2] ⪯ ev_pair[1]
+            print("c")
+        else
+            print("-")
+        end
+        if j % 80 == 0
+            print("\n        ")
+        elseif j % 10 == 0
+            print(" ")
+        end
+        # @test (! not_yet_coalesced) || ev_pair[2] ⪯ ev_pair[1]
+        not_yet_coalesced = not_yet_coalesced && ! (ev_pair[2] ⪯ ev_pair[1])
     end
+    println()
 end ;
 ```
 These `@test`s check respectively
@@ -266,6 +261,8 @@ These `@test`s check respectively
  * that the \LFE is genuinely the least feasible evolution;
  * and that the constructed "`HI`" and "`LO`" `CEvolutions` are in weakly monotonic relationship.
 
+Also an attempt to check coalescence is permanent: not currently working!
+ 
 {{< pagebreak >}}
 
 \appendix

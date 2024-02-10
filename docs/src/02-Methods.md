@@ -4,6 +4,7 @@
 Notation that is useful for concise expression of CFTP algorithms.
 ```@docs
 ∘
+⪯
 ```
 
 ## Comparison method

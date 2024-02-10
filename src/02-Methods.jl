@@ -32,6 +32,35 @@ function ∘(cev::CEvolution, iv::Innovation)::CEvolution
     return CEvolution(cev, iv)
 end
 
+"""
+    ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool
+
+This allows us to (weakly) compare two `AbstractEvolution`s
+with the same population `initial.n`, by comparing the `start` fields.
+(Use `\\preceq`.)
+"""
+function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
+    ev1.initial.n == ev2.initial.n || return false
+    return all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+end
+    
+"""
+    ⪯(::CEvolution, ::CEvolution) ::Bool
+
+This allows us to (weakly) compare two `CEvolution`s
+with the the same population `initial.n _and_ the same `CRemoval` times,
+by comparing the `start` fields as in `[⪯(::AbstractEvolution, ::AbstractEvolution)]`(@ref), 
+_but also_ the `CRemoval` `target` fields.
+(Use `\\preceq`.)
+"""
+function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
+    any(ev1.initial.n != ev2.initial.n) && error("populations differ")
+    pair = zip(ev1.cremovals, ev2.cremovals)
+    any(z1.t != z2.t  for (z1, z2) ∈ pair) && error("cremoval times differ")
+    timelines_ok = all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+    crtargets_ok = all(z1.target ≥ z2.target for (z1, z2) ∈ pair)
+    return timelines_ok && crtargets_ok 
+end
 
 # Total ordering of incidents
 # ---------------------------

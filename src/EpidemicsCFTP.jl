@@ -46,6 +46,8 @@ export extremal_evolution, generate_innovation
 
 export alter
 
+export ⪯
+
 # # Defined in `04-exceptions.jl`
 export BadIncident, MissedCRemoval, EmployedRemoval
 export BadLFE, EmptyLFE, NonMinimalLFE

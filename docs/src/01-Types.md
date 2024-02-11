@@ -126,6 +126,13 @@ ExpungedInfection
 InfectionMarker
 ```
 
+### Abbreviations for `AbstractIncident`s
+It is often helpful to import or use the submodule `.abbreviations` in `EpidemicsCFTP`.
+```@docs
+EpidemicsCFTP.abbreviations
+```
+
+
 ## Representing different kinds of environments
 `AbstractEnvironment` is a generic type for a collection of lists of `infections`,
 `removals` and `cremovals` (conditioned removals).

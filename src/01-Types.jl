@@ -503,6 +503,7 @@ struct InfectionMarker <: NonOperativeInfection
     end
 end
 
+
 # Structures for `S-I-R` epidemics
 # -------------------------------
 

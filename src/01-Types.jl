@@ -593,14 +593,14 @@ and a computed field `chronology` holding a
 time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> population = 3
 3
-julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
+julia> infections = [I(0.7,1,2), P(0.5,1,2)]
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
+julia> removals   = [R(0.2, 3), R(0.1, 2)]
 Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
-julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
+julia> cremovals  = [C(0.0, 1), C(0.05, 2)]
 CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 julia> iv = Innovation(population, infections, removals, cremovals)
 Innovation(3,

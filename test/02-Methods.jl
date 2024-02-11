@@ -53,8 +53,8 @@ end
 ### Testing `alter`
 # -------------------
 @testset "EpidemicsCFTP: $(rpad(string(alter), 23))" begin
-    crem = CRemoval(0.15, 1)
-    @test alter(crem, 100) == CRemoval(0.15, 100)
+    crem = C(0.15, 1)
+    @test alter(crem, 100) == C(0.15, 100)
     @test_throws ArgumentError   alter(crem, -100)
     # Now check non-integer second arguments cause errors!
     @test_throws MethodError     alter(crem,  100.5)

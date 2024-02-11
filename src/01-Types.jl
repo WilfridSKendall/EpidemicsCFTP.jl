@@ -23,6 +23,8 @@ Sub-type of [`AbstractTimedOccurrence`](@ref).
 Expects a field `kind` which is a `String`. This field is
 used by function `show`
 to represent the particular kind of incident.
+
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `AI`.
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
@@ -37,6 +39,8 @@ Also expects field `target<:Int`.
 
 If the potential removal is to become realized 
 then `target` must index a time line which is infectious just before time `t`.
+
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `AIR`.
 """
 abstract type AbstractRemoval <: AbstractIncident end
 
@@ -86,6 +90,8 @@ activated (`OperativeInfection`) and those which should not _ever_ be
 activated (`NonoOperativeInfection`), because their targets are
 on "removed" portions of time lines or because they would if activated
 lead to removal of inactivated `Removal` incidents.
+
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `AIF`.
 """
 abstract type AbstractInfection <: AbstractIncident end
 
@@ -132,6 +138,8 @@ The `Removal` is realized if the specified timeline is infectious just before ti
 
 If activated in course of evolution of a conditioned epidemic then an error will be raised.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `R`.
+
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> Removal(0.1, 4)
@@ -162,11 +170,13 @@ Represent a conditioned removal using a sub-type of [`OperativeRemoval`](@ref), 
 The `target` field should always index a time line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `C`.
+
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> CRemoval(0.1, 4)
 𝒞₀.₁₀⁴
-julia> z = Removal(0.1, 4) ;
+julia> z = R(0.1, 4) ;
 
 julia> CRemoval(z)
 𝒞₀.₁₀⁴
@@ -196,11 +206,13 @@ Implements a removal which can never be activated using a sub-type of [`Abstract
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `KilledRemoval` is never realized.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `KR`.
+
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> KilledRemoval(0.1, 4)
 𝒦₀.₁₀⁴
-julia> z = Removal(0.1, 4) ;
+julia> z = R(0.1, 4) ;
 
 julia> KilledRemoval(z)
 𝒦₀.₁₀⁴
@@ -227,6 +239,7 @@ end
 
 This is a marker normally placed at the end of an epidemic to signal completion of infected time lines.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `RM`.
 """
 struct RemovalMarker <: NonOperativeRemoval
     kind      ::String
@@ -253,6 +266,8 @@ end
 Represent a potential infection using a sub-type of [`OperativeInfection`](@ref),
 using mark time `t` and another mark `target` and a further mark `infectee`.
 Marks `target` and `infectee` must be positive integers with `target < infectee`.
+
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `I`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -291,12 +306,14 @@ Intended to identify an `Infection` from a previous iteration of the CFTP
 algorithm which has had to be carried over to avoid failure to activate
 a `CRemoval`.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `P`.
+
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> PInfection(0.2, 1, 2)
 𝒫₀.₂₀¹⁻²
-julia> z = Infection(0.2, 1, 2) ;
-
+julia> z = I(0.2, 1, 2)
+ℐ₀.₂₀¹⁻²
 julia> PInfection(z)
 𝒫₀.₂₀¹⁻²
 ```
@@ -343,11 +360,13 @@ to an error being raised when some
 [`Removal`](@ref) 
 (as opposed to a [`CRemoval`](@ref)) is activated.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `NF`.
+
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> y = NoFlyInfection(0.2, 1, 2)
 𝒩₀.₂₀¹⁻²
-julia> z = Infection(0.2, 1, 2) ;
+julia> z = I(0.2, 1, 2) ;
 
 julia> NoFlyInfection(z) == y
 true
@@ -384,12 +403,14 @@ Intended to identify an `Infection` which
 will never be activated because
 its `target` time line is not infected.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `KI`.
+
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> KilledInfection(0.2, 1, 2)
 𝒦₀.₂₀¹⁻²
-julia> z = Infection(0.2, 1, 2) ;
-
+julia> z = I(0.2, 1, 2)
+ℐ₀.₂₀¹⁻²
 julia> KilledInfection(z)
 𝒦₀.₂₀¹⁻²
 ```
@@ -440,13 +461,14 @@ an [`ExpungedInfection`](@ref),
 which (being a [`NonOperativeInfection`](@ref))
 will never be activated.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `XI`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> y = ExpungedInfection(0.2, 1, 2)
 𝒳₀.₂₀¹⁻²
-julia> z = Infection(0.2, 1, 2) ;
-
+julia> z = I(0.2, 1, 2)
+ℐ₀.₂₀¹⁻²
 julia> ExpungedInfection(z) == y
 true
 ```
@@ -480,6 +502,7 @@ end
 This is a marker normally placed at the start of an epidemic to signal initial infected time lines.
 Differs from (for example) `Infection` in that the `target` mark can be zero.
 
+[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `IM`.
 """
 struct InfectionMarker <: NonOperativeInfection
     kind      ::String
@@ -675,16 +698,16 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> initial    = SIR(0.0, 2, 1, 0)
 SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
-julia> infections = [NoFlyInfection(0.7,1,2), PInfection(0.5,1,2)]
+julia> infections = [NF(0.7,1,2), P(0.5,1,2)]
 OperativeInfection[𝒩₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [Removal(0.2, 3), Removal(0.1, 2)]
+julia> removals   = [R(0.2, 3), R(0.1, 2)]
 Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
-julia> cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 2)]
+julia> cremovals  = [C(0.0, 1), C(0.05, 2)]
 CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
 julia> innov      = Innovation(population, infections, removals, cremovals)
 Innovation(3,
@@ -743,9 +766,9 @@ struct Evolution <: AbstractEvolution
     
     function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
         innovation = Innovation(initial_state.n,
-                        AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
-                        AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
-                        CRemoval[z for z ∈ chronology if z isa CRemoval],
+                        AIF[z for z ∈ chronology if z isa AIF],
+                        AIR[z for z ∈ chronology if z isa AIR && !(z isa C)],
+                        C[z for z ∈ chronology if z isa C],
                         )
         return Evolution(initial_state, innovation)
     end
@@ -806,12 +829,12 @@ In the first case, the procedure is as follows:
 6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
 
 We begin with setup of the various incidents.
-```jldoctest CEvolution; setup = :(using EpidemicsCFTP)
+```jldoctest CEvolution; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 initial    = SIR(0.0, 2, 1, 0)
 population = initial.n
-infections = [NoFlyInfection(0,2,3), ExpungedInfection(0.2, 2, 3), Infection(0.7,1,2), PInfection(0.5,1,2)]
-removals   = [Removal(0.1, 1), KilledRemoval(0.2, 3), Removal(0.1, 2)]
-cremovals  = [CRemoval(0.0, 1)]
+infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.1, 1), KR(0.2, 3), R(0.1, 2)]
+cremovals  = [C(0.0, 1)]
 chronology = infections ∪ removals ∪ cremovals
 
 # output
@@ -821,7 +844,7 @@ AbstractIncident[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻�
 I: Updating an `AbstractEvolution` using a candidate `Innovation`:
 ```jldoctest CEvolution
 ev = CEvolution(initial, chronology) ;
-candidate = Innovation(population, Infection[], Removal[], cremovals) ;
+candidate = Innovation(population, I[], R[], cremovals) ;
 CEvolution(ev, candidate)
 
 # output
@@ -860,7 +883,7 @@ true
 
 IV: What happens on missing a conditioned removal:
 ```jldoctest CEvolution
-cremovals1 = sort(cremovals ∪ [CRemoval(0.0, 2)]) ;
+cremovals1 = sort(cremovals ∪ [C(0.0, 2)]) ;
 innov = Innovation(population, Infection[], Removal[], cremovals1) ;
 CEvolution(initial, innov)
 
@@ -870,8 +893,8 @@ ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.
 
 V: What happens on employing an (unconditioned) removal:
 ```jldoctest CEvolution
-removals   = [Removal(0.1, 1), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.2, 1)] ;
+removals   = [R(0.1, 1), R(0.1, 2)] ;
+cremovals  = [C(0.2, 1)] ;
 innov      = Innovation(population, infections, removals, cremovals) ;
 CEvolution(initial, innov)
 
@@ -939,7 +962,7 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # Step 4.
     duration = maximum(z.t for z in recomputed_cremovals)
     LFE = last_feasible_evolution(duration, ev, iv)
-    perpetuated_infections = [z for z ∈ LFE if z isa PInfection] 
+    perpetuated_infections = [z for z ∈ LFE if z isa P] 
     
     # Step 5.
     # * Initial computation of `NFZ2`, a **list of times** 
@@ -968,7 +991,7 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
 	    # * If the `Infection` `z` has `target` on the removed portion of a level
         # then it will never be activated, so add `z` as a `KilledInfection`.
 	    if (z ≥ ev.finis[z.target])
-	        push!(processed_infections, KilledInfection(z))
+	        push!(processed_infections, KI(z))
 	        continue
 	    end
 	    
@@ -1023,14 +1046,14 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
 	    if (z ≥ ev.start[z.target])
             if (z < ev.start[z.infectee - 1])
                 NFZ3[z.infectee - 1] = z.t
-                push!(processed_infections, NoFlyInfection(z))
+                push!(processed_infections, NF(z))
                 # Uncomment for tracking information
-                # @info "Conversion of infection into $(NoFlyInfection(z))"
+                # @info "Conversion of infection into $(NF(z))"
                 continue
             else 
-                push!(processed_infections, ExpungedInfection(z))
+                push!(processed_infections, XI(z))
                 # Uncomment for tracking information
-                # @info "Conversion of infection into $(ExpungedInfection(z))"
+                # @info "Conversion of infection into $(XI(z))"
                 continue 
             end 
 	    end
@@ -1050,9 +1073,9 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
         # to a `NoFlyInfection` when we add it to `processed_infections`, to
         # signal that it should never become infected.
 	    NFZ3[z.infectee - 1] = z.t 
-	    push!(processed_infections, NoFlyInfection(z))
+	    push!(processed_infections, NF(z))
         # Uncomment for tracking information
-        # @info "Conversion of infection into $(NoFlyInfection(z))"
+        # @info "Conversion of infection into $(NF(z))"
 	
 	end
     

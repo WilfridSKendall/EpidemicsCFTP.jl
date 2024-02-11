@@ -73,10 +73,9 @@ end
 ## Testing creation of concrete subtypes of `AbstractEvolution`
 @testset "EpidemicsCFTP: $(rpad(AbstractEvolution, 23))" begin
     initial    = SIR(0, 2, 1, 0)
-    infections = [NoFlyInfection(0,2,3), ExpungedInfection(2, 2, 3), 
-                  Infection(7,1,2), PInfection(5,1,2)]
-    removals   = [Removal(1, 1), KilledRemoval(2, 3), Removal(0.11, 2)]
-    cremovals  = [CRemoval(0, 1)]
+    infections = [NF(0,2,3), XI(2, 2, 3), I(7,1,2), P(5,1,2)]
+    removals   = [R(1, 1), KR(2, 3), R(0.11, 2)]
+    cremovals  = [C(0, 1)]
     for evolutiontype ∈ allconcretesubtypes(AbstractEvolution)
         ev = evolutiontype(initial, infections ∪ removals ∪ cremovals)
         @test ev.initial == ev.trajectory[1]
@@ -85,9 +84,6 @@ end
 
 ## Testing construction of `Innovation`
 @testset "EpidemicsCFTP: $(rpad(string(Innovation), 23))" begin
-    P, I, R, C = PInfection, Infection, Removal, CRemoval
-    AI = AbstractIncident
-
     population = 3
     infects    = I[I(0.60, 1, 2)]
     allinfects = Union{I, P}[P(0.70, 1, 2)]
@@ -129,12 +125,12 @@ end
 
 ## Testing construction of `CEvolution`
 @testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
-    I, P, R, C         = PInfection, Infection, Removal, CRemoval
-    IM, RM             = InfectionMarker, RemovalMarker
-    NFI, EI, KR        = NoFlyInfection, ExpungedInfection, KilledRemoval
-    AIF, AIR           = AbstractInfection, AbstractRemoval
+#    I, P, R, C         = PInfection, Infection, Removal, CRemoval
+#    IM, RM             = InfectionMarker, RemovalMarker
+#    NF, XI, KR        = NoFlyInfection, ExpungedInfection, KilledRemoval
+#    AIF, AIR           = AbstractInfection, AbstractRemoval
     initial    = SIR(0.0, 2, 1, 0)
-    infections = [NFI(0.5,2,3), EI(1.5,2,3), I(1,1,2), P(3,2,3)]
+    infections = [NF(0.5,2,3), XI(1.5,2,3), I(1,1,2), P(3,2,3)]
     removals   = [R(0.5,2), R(0.25,3), KR(0.5,1)]
     cremovals  = [C(2,1), C(4,2)]
     uev        = Evolution(initial, infections ∪ removals ∪ cremovals)

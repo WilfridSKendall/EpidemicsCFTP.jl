@@ -189,7 +189,7 @@ end ;
 
 # ### Finally compute the "no-fly" zone and check resulting evolution
 last_feasible_new_infections = AIF[z for z ∈ xev2.LFE ∩ iv2c.infections]
-perpetuated_infections       = P[PInfection(z) for z ∈ xev2.LFE ∩ ev1_3.infections]
+perpetuated_infections       = P[P(z) for z ∈ xev2.LFE ∩ ev1_3.infections]
 other_older_infections       = setdiff(xev1_3.infections, AIF[z for z ∈ xev2.LFE if z isa AIF])
 xiv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
                         other_older_infections, xev1_3.removals, xev1_3.cremovals)

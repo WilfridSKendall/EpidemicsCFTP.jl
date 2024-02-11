@@ -2,7 +2,7 @@ import EpidemicsCFTP: date, version
 println("EpidemicsCFTP version $version, compiled on $date")
 
 import InteractiveUtils: subtypes
-using EpidemicsCFTP
+using EpidemicsCFTP, EpidemicsCFTP.abbreviations
 using Test
 
 ### Useful function for returning all concrete subtypes

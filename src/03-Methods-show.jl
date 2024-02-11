@@ -37,10 +37,10 @@ middle of three arguments and employing subscripts and 2 decimal places for time
 and superscript for the `target` field.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> Removal(0.10, 3)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+julia> R(0.10, 3)
 ℛ₀.₁₀³
-julia> CRemoval(0.10, 3)
+julia> C(0.10, 3)
 𝒞₀.₁₀³
 ```
 """
@@ -56,10 +56,10 @@ This applies when used with `print`, being the string produced
 buy `repr`, and can be used 
 as input to produce a copy.
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> print(Removal(0.10, 3))
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+julia> print(R(0.10, 3))
 Removal(0.1, 3)
-julia> print(CRemoval(0.10, 3))
+julia> print(C(0.10, 3))
 CRemoval(0.1, 3)
 ```
 """
@@ -78,10 +78,10 @@ Note that a more general form (arising for example from use of `print`) can be u
 as input to produce a copy.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> Infection(0.10, 3, 4)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+julia> I(0.10, 3, 4)
 ℐ₀.₁₀³⁻⁴
-julia> PInfection(0.10, 3, 4)
+julia> P(0.10, 3, 4)
 𝒫₀.₁₀³⁻⁴
 ```
 """
@@ -98,10 +98,10 @@ buy `repr`, and can be used
 as input to produce a copy.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> print(Infection(0.10, 3, 4))
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+julia> print(I(0.10, 3, 4))
 Infection(0.1, 3, 4)
-julia> print(PInfection(0.10, 3, 4))
+julia> print(P(0.10, 3, 4))
 PInfection(0.1, 3, 4)
 ```
 """
@@ -117,15 +117,15 @@ Implementation of `show` for [`Innovation`](@ref) as three rows of lists of inci
 -- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> population = 3
 3
-julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
+julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)] 
+julia> removals   = [R(0.1, 2), R(0.2, 3)] 
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
-julia> Innovation(population, infections, removals, CRemoval[])
+julia> Innovation(population, infections, removals, C[])
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
@@ -143,15 +143,15 @@ end
     Base.show(io::IO, z::Innovation)
     
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> population = 3
 3
-julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] 
+julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)]
+julia> removals   = [R(0.1, 2), R(0.2, 3)]
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
-julia> print(Innovation(population, infections, removals, CRemoval[]))
+julia> print(Innovation(population, infections, removals, C[]))
 Innovation(3,
   OperativeInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
   Removal[Removal(0.1, 2), Removal(0.2, 3)])
@@ -194,18 +194,18 @@ Implementation of `show` for [`AbstractEvolution`](@ref) as three rows of lists 
 We illustrate both these versions here.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> initial    = SIR(0.0, 2,1,0)
 SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
-julia> infections = [Infection(0.7,1,2), PInfection(0.5,1,2)]
+julia> infections = [I(0.7,1,2), P(0.5,1,2)]
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [Removal(0.1, 2), Removal(0.2, 3)]
+julia> removals   = [R(0.1, 2), R(0.2, 3)]
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-julia> cremovals = [CRemoval(0.6, 2)]
+julia> cremovals = [C(0.6, 2)]
 CRemoval[𝒞₀.₆₀²]
-julia> innovation = Innovation(population, infections, removals, CRemoval[])
+julia> innovation = Innovation(population, infections, removals, C[])
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
@@ -252,8 +252,8 @@ Implementation of `show` for vector of [`AbstractTimedOccurrence`](@ref)
 incidents with line-breaking.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-julia> infections = repeat([Infection(0.7,1,2), PInfection(0.5,1,2)], 6)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+julia> infections = repeat([I(0.7,1,2), P(0.5,1,2)], 6)
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,
     𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 ```

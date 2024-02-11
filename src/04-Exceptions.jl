@@ -24,11 +24,11 @@ This is raised when a [`CRemoval`](@ref) is missed by
 `evolution`.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.2, 3), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.0, 1), CRemoval(0.05, 3)] ;
+infections = [I(0.7,1,2), P(0.5,1,2)] ;
+removals   = [R(0.2, 3), R(0.1, 2)] ;
+cremovals  = [C(0.0, 1), C(0.05, 3)] ;
 innov      = Innovation(population, infections, removals, cremovals) ;
 initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)
@@ -49,11 +49,11 @@ This is raised when a [`Removal`](@ref) is not missed by
 `evolution`.
 
 ## Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3 ;
-infections = [Infection(0.7,1,2), PInfection(0.5,1,2)] ;
-removals   = [Removal(0.05, 3), Removal(0.2, 1), Removal(0.1, 2)] ;
-cremovals  = [CRemoval(0.5, 1)] ;
+infections = [I(0.7,1,2), P(0.5,1,2)] ;
+removals   = [R(0.05, 3), R(0.2, 1), R(0.1, 2)] ;
+cremovals  = [C(0.5, 1)] ;
 innov      = Innovation(population, infections, removals, cremovals) ;
 initial    = SIR(0.0, 2, 1, 0)
 CEvolution(initial, innov)

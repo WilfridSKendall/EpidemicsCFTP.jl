@@ -9,7 +9,7 @@
 """
     Base.∘(::CEvolution, ::Innovation) ::CEvolution
 
-Shorthand for `CEvolution(cev, iv)` is `cev ∘ iv`.
+Shorthand for `CEvolution(cev, iv)` is `cev ∘ iv`.  
 (Use `\\circ`.)
 
 # Example
@@ -36,7 +36,7 @@ end
     ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool
 
 This allows us to (weakly) compare two `AbstractEvolution`s
-with the same population `initial.n`, by comparing the `start` fields.
+with the same population `initial.n`, by comparing the `start` fields.  
 (Use `\\preceq`.)
 """
 function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
@@ -49,8 +49,8 @@ end
 
 This allows us to (weakly) compare two `CEvolution`s
 with the the same population `initial.n _and_ the same `CRemoval` times,
-by comparing the `start` fields as in `[⪯(::AbstractEvolution, ::AbstractEvolution)]`(@ref), 
-_but also_ the `CRemoval` `target` fields.
+by comparing not only the `start` fields as in the `AbstractEvolution` version, 
+_but also_ the `CRemoval` `target` fields.  
 (Use `\\preceq`.)
 """
 function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool

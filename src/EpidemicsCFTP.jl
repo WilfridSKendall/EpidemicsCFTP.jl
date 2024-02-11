@@ -18,6 +18,7 @@ using Formatting
 import Distributions
 # # The `DataFrames` module is required in order to provide placeholders for trajectory flows.
 import DataFrames
+
 # # Exports
 # # =======
 # # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
@@ -52,6 +53,10 @@ export ⪯
 export BadIncident, MissedCRemoval, EmployedRemoval
 export BadLFE, EmptyLFE, NonMinimalLFE
 
+# # Sub-module defined in `05-Abbreviations.jl`
+# This is _not_ explicitly exported: import or use it 
+# as `EpidemicsCFTP.abbreviations`.
+
 # # Note also that `isless` and `∘` are overloaded in `Methods.jl`!
 import Base: isless, ∘
 
@@ -68,6 +73,12 @@ include("03-Methods-show.jl")
 
 # # Include exceptions defined in this package.
 include("04-Exceptions.jl")
+
+# # Include abbreviations defined in a sub-package.
+include("05-Abbreviations.jl")
+
+# # From this we use the `.abbreviations` module for ease of reference.
+using .abbreviations
 
 end
 

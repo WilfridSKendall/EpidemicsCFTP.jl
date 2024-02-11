@@ -503,16 +503,6 @@ struct InfectionMarker <: NonOperativeInfection
     end
 end
 
-# Standard abbreviations for various `AbstractInfection`s
-# -------------------------------------------------------
-# These need to be specifically exported.
-AI  = AbstractIncident;
-AIF = AbstractInfection;  I = Infection; P = PInfection;
- NF = NoFlyInfection;    XI = ExpungedInfection;
-AIR = AbstractRemoval;    R = Removal;   C = CRemoval;
- KI = KilledInfection;   KR = KilledRemoval;
-IM  = InfectionMarker;   RM = RemovalMarker;
-
 # Structures for `S-I-R` epidemics
 # -------------------------------
 

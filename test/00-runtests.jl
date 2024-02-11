@@ -18,7 +18,7 @@ end
 
 ### Useful constants
 # ------------------
-import EpidemicsCFTP:
+import EpidemicsCFTP.abbreviations:
     AI,
     AIF, I, P, NF, XI,
     AIR, R, C, KI, KR,

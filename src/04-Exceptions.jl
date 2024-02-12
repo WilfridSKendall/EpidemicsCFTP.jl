@@ -23,7 +23,7 @@ abstract type BadLFE <: Exception end
 This is raised when a [`CRemoval`](@ref) is missed by
 `evolution`.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3 ;
 infections = [I(0.7,1,2), P(0.5,1,2)] ;
@@ -48,7 +48,7 @@ end
 This is raised when a [`Removal`](@ref) is not missed by
 `evolution`.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3 ;
 infections = [I(0.7,1,2), P(0.5,1,2)] ;

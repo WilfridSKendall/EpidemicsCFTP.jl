@@ -184,9 +184,16 @@ Instances should always possess fields as given in the table.
 | `envelope0`   | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 | `envelope`    | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 
+#### Unconditioned `Evolution`
+
 ```@docs
 Evolution
-CEvolution
+Evolution(::SIR, ::Innovation)
+Evolution(::SIR, ::Vector{AbstractIncident})
 ```
 
+#### Conditioned `CEvolution`
+```@docs
+CEvolution
+```
 

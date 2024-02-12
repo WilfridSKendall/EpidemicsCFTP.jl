@@ -36,7 +36,7 @@ Implementation of `show` for [`AbstractRemoval`](@ref), using `MIME("text/plain"
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscript for the `target` field.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> R(0.10, 3)
 ℛ₀.₁₀³
@@ -55,7 +55,7 @@ end
 This applies when used with `print`, being the string produced
 buy `repr`, and can be used 
 as input to produce a copy.
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> print(R(0.10, 3))
 Removal(0.1, 3)
@@ -77,7 +77,7 @@ and superscripts for the `target` and `infectee` fields.
 Note that a more general form (arising for example from use of `print`) can be used 
 as input to produce a copy.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> I(0.10, 3, 4)
 ℐ₀.₁₀³⁻⁴
@@ -97,7 +97,7 @@ This applies when used with `print`, being the string produced
 buy `repr`, and can be used 
 as input to produce a copy.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> print(I(0.10, 3, 4))
 Infection(0.1, 3, 4)
@@ -116,7 +116,7 @@ end
 Implementation of `show` for [`Innovation`](@ref) as three rows of lists of incidents
 -- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> population = 3
 3
@@ -142,7 +142,7 @@ end
 """
     Base.show(io::IO, z::Innovation)
     
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> population = 3
 3
@@ -173,7 +173,7 @@ end
     
 Implementation of `show` for [`SIR`](@ref) using subscript and 2 decimal places for time.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> SIR(0.4, 1, 2, 3)
 SIR₀.₄₀(1:2:3)
@@ -193,7 +193,7 @@ Implementation of `show` for [`AbstractEvolution`](@ref) as three rows of lists 
 -- or two rows if no [`CRemoval`](@ref)s -- together with further calculations. 
 We illustrate both these versions here.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> initial    = SIR(0.0, 2,1,0)
 SIR₀.₀₀(2:1:0)
@@ -251,7 +251,7 @@ end
 Implementation of `show` for vector of [`AbstractTimedOccurrence`](@ref)
 incidents with line-breaking.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> infections = repeat([I(0.7,1,2), P(0.5,1,2)], 6)
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,

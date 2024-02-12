@@ -541,7 +541,7 @@ at a specified time `t` (a real number). Note that `n` is
 a computed field, calculated
 at initialization of the state structure and accessed as `sir.n`.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 julia> sir = SIR(0.1, 1, 2, 3)
 SIR₀.₁₀(1:2:3)
@@ -615,17 +615,16 @@ Note that there is a first argument `population` (an `Int`),
 and a computed field `chronology` holding a
 time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 
-## Example
+### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
-julia> population = 3
-3
-julia> infections = [I(0.7,1,2), P(0.5,1,2)]
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [R(0.2, 3), R(0.1, 2)]
-Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
-julia> cremovals  = [C(0.0, 1), C(0.05, 2)]
-CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-julia> iv = Innovation(population, infections, removals, cremovals)
+population = 3
+infections = [I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.2, 3), R(0.1, 2)]
+cremovals  = [C(0.0, 1), C(0.05, 2)]
+
+Innovation(population, infections, removals, cremovals)
+
+# output
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
@@ -678,9 +677,10 @@ It is a generic sub-type of [`AbstractEnvironment`](@ref)
 """
 abstract type AbstractEvolution <: AbstractEnvironment end
 
-# ### Instances of evolution for an $\SIR$ epidemic
+# ### (Unconditioned) evolution for an $\SIR$ epidemic
 """
-    Evolution(::SIR, ::Innovation)
+    Evolution(::SIR, ::Innovation)::Evolution
+    Evolution(::SIR, ::Vector{AbstractIncident)::Evolution
 
 This implements _unconditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -693,45 +693,24 @@ stored as a sequence of three **time-ordered** lists
 initial state `initial`,
 and also **computed** fields `chronology`, `trajectory` and `history`.
 
-Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
-to compute the `trajectory` and `history` fields,
-and the implicit use of [`interval`](@ref) to compute start and finish incidents
+Note that [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
+is used in the course of the construction to compute the `trajectory` and `history` fields,
+while [`interval`](@ref) is used in the course of the construction to compute start and finish incidents
 for infectious intervals.
-## Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
-julia> initial    = SIR(0.0, 2, 1, 0)
-SIR₀.₀₀(2:1:0)
-julia> population = initial.n
-3
-julia> infections = [NF(0.7,1,2), P(0.5,1,2)]
-OperativeInfection[𝒩₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [R(0.2, 3), R(0.1, 2)]
-Removal[ℛ₀.₂₀³,ℛ₀.₁₀²]
-julia> cremovals  = [C(0.0, 1), C(0.05, 2)]
-CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-julia> innov      = Innovation(population, infections, removals, cremovals)
-Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])
 
-julia> ev = Evolution(initial, innov)
-Evolution(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
-trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹])
+See [`Evolution(::SIR,::Innovation)`](@ref Evolution(::SIR, ::Innovation)) 
+and [`Evolution(::SIR,::Vector{AbstractIncident})`](@ref Evolution(::SIR, ::Vector{AbstractIncident})) 
+for examples of construction.
 
-julia> ev = Evolution(initial, infections ∪ removals ∪ cremovals)
-Evolution(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
-removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
-trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹])
+### Behaviour of `start` and `finis` fields
+```jldoctest evolution_doctest
+julia> using EpidemicsCFTP, EpidemicsCFTP.abbreviations ;
+
+julia> initial = SIR(0,2,1,0) ;
+
+julia> iv = Innovation(initial.n, [NF(14,1,2),P(10,1,2)],[R(4,3),R(2, 2)],[C(0,1), C(1, 2)]) ;
+
+julia> ev = Evolution(initial, iv) ;
 
 julia> ev.start
 AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[∞]¹⁻²,ℳ⁻[∞]²⁻³]
@@ -750,8 +729,33 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
-    
-    function Evolution(initial_state::SIR, innovation::Innovation)
+
+@doc """
+    Evolution(::SIR, ::Innovation)::Evolution
+
+An `Evolution` can be constructed using only an `initial` state 
+and an `Innovation`.
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial    = SIR(0, 2, 1, 0)
+population = initial.n
+infections = [NF(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.2, 3), R(0.1, 2)] 
+cremovals  = [C(0.0, 1), C(0.05, 2)]
+innov      = Innovation(population, infections, removals, cremovals)
+Evolution(initial, innov)
+
+# output
+Evolution(3,
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹])
+```
+"""
+function Evolution(initial_state::SIR, innovation::Innovation)::Evolution
         # Need to check population == sum of initial.state entries
         population = innovation.population
         infections = innovation.infections
@@ -764,7 +768,32 @@ struct Evolution <: AbstractEvolution
             trajectory, history, initial_state, start, finis)
     end
     
-    function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})
+@doc """
+    Evolution(::SIR, ::Vector{AbstractIncident})::Evolution
+
+An `Evolution` can be constructed using only an `initial` state 
+and a `chronology` (a `Vector{AbstractIncident}` of `AbstractIncident`s
+in increasing order).
+### Example 
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial    = SIR(0, 2, 1, 0)
+population = initial.n
+infections = [NF(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.2, 3), R(0.1, 2)] 
+cremovals  = [C(0.0, 1), C(0.05, 2)]
+Evolution(initial, infections ∪ removals ∪ cremovals)
+
+# output
+Evolution(3,
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹])
+```
+"""
+function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})::Evolution
         innovation = Innovation(initial_state.n,
                         AIF[z for z ∈ chronology if z isa AIF],
                         AIR[z for z ∈ chronology if z isa AIR && !(z isa C)],
@@ -775,6 +804,8 @@ struct Evolution <: AbstractEvolution
 
 end
 
+                        
+# # ### (Conditioned) evolution for an $\SIR$ epidemic
 """
     CEvolution(::SIR, ::Innovation; LFE::Vector{AbstractIncident}=AbstractIncident[],
         NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])::CEvolution
@@ -805,7 +836,7 @@ of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, the monotonically increasing envelope of `NFZ1`, and the region which must
 not be infected if we are not to violate conditioning on removals.
 
-## Example
+### Example
 Four cases:
 
 * updating an `AbstractEvolution` using a candidate `Innovation` (preferred),
@@ -901,7 +932,6 @@ CEvolution(initial, innov)
 # output
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
-
 """
 struct CEvolution <: AbstractEvolution
     population ::Int

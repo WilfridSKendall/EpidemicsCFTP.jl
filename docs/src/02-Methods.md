@@ -1,13 +1,13 @@
 # Methods for computation
 
-## Helpful notation
+## Helpful operators
 Notation that is useful for concise expression of CFTP algorithms.
 ```@docs
-∘
 ⪯
+∘
 ```
 
-## Comparison method
+## A total ordering for incidents
 A total ordering is provided by [`Base.isless`](@ref)
 (with signature `isless(::AbstractIncident,::AbstractIncident)`), based on time `t` of occurrence of 
 the two arguments, which should be 
@@ -17,7 +17,7 @@ instances of
 isless(::S, ::T) where {S <: AbstractInfection, T <: AbstractRemoval}
 ```
 
-## Conversion methods
+## Altering `CRemoval` targets
 A method concerning conversion of one incident into another.
 ```@docs
 alter

@@ -1,5 +1,5 @@
-# Helpful notation
-# ----------------
+# Helpful operators
+# -----------------
 # The following simple notation enables concise expression of _CFTP_ algorithms.
 # ```
 """
@@ -32,10 +32,21 @@ end
 """
     ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool
 
-This allows us to (weakly) compare two `AbstractEvolution`s
+This allows us to compare (weakly) two `AbstractEvolution`s
 with the same population `initial.n`, by comparing the `start` fields.
 
 (Use `\\preceq`.)
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial = SIR(0.0, 2, 1, 0)
+iv1 = Innovation(2, I[I(1,1,2)], R[])
+iv2 = Innovation(2, I[I(2,1,2)], R[])
+Evolution(initial, iv1) ⪯ Evolution(initial, iv2)
+
+# output
+true
+```
 """
 function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
     ev1.initial.n == ev2.initial.n || return false
@@ -45,12 +56,25 @@ end
 """
     ⪯(::CEvolution, ::CEvolution) ::Bool
 
-This allows us to (weakly) compare two `CEvolution`s
-with the the same population `initial.n _and_ the same `CRemoval` times,
-by comparing not only the `start` fields as in the `AbstractEvolution` version, 
-_but also_ the `CRemoval` `target` fields.  
+This specializes 
+[`⪯(::AbstractEvolution, ::AbstractEvolution)`](@ref)
+by allowing us to compare weakly two `CEvolution`s
+with the same population `initial.n` _and_ the same `CRemoval` times,
+comparing not only the `start` fields as in the `AbstractEvolution` version, 
+but also the `CRemoval` `target` fields.  
 
 (Use `\\preceq`.)
+
+## Example
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial = SIR(0.0, 2, 1, 0)
+civ1 = Innovation(2, I[I(1,1,2)], R[], [C(3,1)])
+civ2 = Innovation(2, I[I(2,1,2)], R[], [C(3,1)])
+CEvolution(initial, civ1) ⪯ CEvolution(initial, civ2)
+
+# output
+true
+```
 """
 function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
     any(ev1.initial.n != ev2.initial.n) && error("populations differ")
@@ -453,7 +477,7 @@ and (with the `conditioned` flag set to `true`) [`CEvolution`](@ref) objects.
 
 ## Example
 I: Basic use, unconditioned
-```jldoctest evolution; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest evolution_history; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
 
 julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[R(0.5, 4)], C[]) ;
@@ -463,7 +487,7 @@ AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 ```
 
 II: Basic use, conditioned (A)
-```jldoctest evolution
+```jldoctest evolution_history
 julia> evolution_history(initial_state, innovation, conditioned=true)
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.5, 4)
 
@@ -474,7 +498,7 @@ AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 ```
 
 III: Basic use, conditioned (B)
-```jldoctest evolution
+```jldoctest evolution_history
 julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[], [C(0.5, 1)]) ;
 
 julia> evolution_history(initial_state, innovation, conditioned=true) ;

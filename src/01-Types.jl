@@ -24,7 +24,7 @@ Expects a field `kind` which is a `String`. This field is
 used by function `show`
 to represent the particular kind of incident.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `AI`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this as `AI`.
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
@@ -40,7 +40,7 @@ Also expects field `target<:Int`.
 If the potential removal is to become realized 
 then `target` must index a time line which is infectious just before time `t`.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `AIR`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this as `AIR`.
 """
 abstract type AbstractRemoval <: AbstractIncident end
 
@@ -91,7 +91,7 @@ activated (`NonoOperativeInfection`), because their targets are
 on "removed" portions of time lines or because they would if activated
 lead to removal of inactivated `Removal` incidents.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `AIF`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this as `AIF`.
 """
 abstract type AbstractInfection <: AbstractIncident end
 
@@ -138,7 +138,7 @@ The `Removal` is realized if the specified timeline is infectious just before ti
 
 If activated in course of evolution of a conditioned epidemic then an error will be raised.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `R`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `R`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -170,7 +170,7 @@ Represent a conditioned removal using a sub-type of [`OperativeRemoval`](@ref), 
 The `target` field should always index a time line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `C`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `C`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -206,7 +206,7 @@ Implements a removal which can never be activated using a sub-type of [`Abstract
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 The `KilledRemoval` is never realized.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `KR`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `KR`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -239,7 +239,7 @@ end
 
 This is a marker normally placed at the end of an epidemic to signal completion of infected time lines.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `RM`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `RM`.
 """
 struct RemovalMarker <: NonOperativeRemoval
     kind      ::String
@@ -267,7 +267,7 @@ Represent a potential infection using a sub-type of [`OperativeInfection`](@ref)
 using mark time `t` and another mark `target` and a further mark `infectee`.
 Marks `target` and `infectee` must be positive integers with `target < infectee`.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `I`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `I`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -306,7 +306,7 @@ Intended to identify an `Infection` from a previous iteration of the CFTP
 algorithm which has had to be carried over to avoid failure to activate
 a `CRemoval`.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `P`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `P`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -360,7 +360,7 @@ to an error being raised when some
 [`Removal`](@ref) 
 (as opposed to a [`CRemoval`](@ref)) is activated.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `NF`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `NF`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -403,7 +403,7 @@ Intended to identify an `Infection` which
 will never be activated because
 its `target` time line is not infected.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `KI`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `KI`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -461,7 +461,7 @@ an [`ExpungedInfection`](@ref),
 which (being a [`NonOperativeInfection`](@ref))
 will never be activated.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `XI`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `XI`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -502,7 +502,7 @@ end
 This is a marker normally placed at the start of an epidemic to signal initial infected time lines.
 Differs from (for example) `Infection` in that the `target` mark can be zero.
 
-[`EpidemicsCFTP.abbrevations`](@ref) abbreviates this as `IM`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `IM`.
 """
 struct InfectionMarker <: NonOperativeInfection
     kind      ::String

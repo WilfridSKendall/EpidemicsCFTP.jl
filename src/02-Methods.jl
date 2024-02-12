@@ -3,12 +3,9 @@
 # The following simple notation enables concise expression of _CFTP_ algorithms.
 # ```
 """
-    Base.∘(::CEvolution, ::Innovation) ::CEvolution
+    Base.∘(::CEvolution, ::Innovation) ::CEvolution (Use `\\circ`.)
 
-Shorthand for `CEvolution(cev, iv)` is `cev ∘ iv`.
-
-(Use `\\circ`.)
-
+The succinct statement `cev ∘ iv` is an expressive shorthand for `CEvolution(cev, iv)`.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
@@ -30,13 +27,10 @@ function ∘(cev::CEvolution, iv::Innovation)::CEvolution
 end
 
 """
-    ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool
+    ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool (Use `\\preceq`.)
 
 This allows us to compare (weakly) two `AbstractEvolution`s
 with the same population `initial.n`, by comparing the `start` fields.
-
-(Use `\\preceq`.)
-
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 initial = SIR(0.0, 2, 1, 0)
@@ -54,7 +48,7 @@ function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
 end
     
 """
-    ⪯(::CEvolution, ::CEvolution) ::Bool
+    ⪯(::CEvolution, ::CEvolution) ::Bool (Use `\\preceq`.)
 
 This specializes 
 [`⪯(::AbstractEvolution, ::AbstractEvolution)`](@ref)
@@ -62,9 +56,6 @@ by allowing us to compare weakly two `CEvolution`s
 with the same population `initial.n` _and_ the same `CRemoval` times,
 comparing not only the `start` fields as in the `AbstractEvolution` version, 
 but also the `CRemoval` `target` fields.  
-
-(Use `\\preceq`.)
-
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 initial = SIR(0.0, 2, 1, 0)
@@ -83,6 +74,25 @@ function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
     timelines_ok = all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
     crtargets_ok = all(z1.target ≥ z2.target for (z1, z2) ∈ pair)
     return timelines_ok && crtargets_ok 
+end
+
+"""
+    ≃(::AbstractEvolution, ::AbstractEvolution) ::Bool          (Use `\\simeq`.)
+
+This allows us to test equality (weakly) for two `AbstractEvolution`s
+with the same population `initial.n`, using [`⪯`](@ref) both ways.
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial = SIR(0.0, 2, 1, 0)
+iv = Innovation(2, I[I(1,1,2)], R[])
+Evolution(initial, iv) ≃ Evolution(initial, iv)
+
+# output
+true
+```
+"""
+function ≃(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
+    return (ev1 ⪯ ev2) && (ev2 ⪯ ev1)
 end
 
 # Total ordering of incidents
@@ -642,24 +652,41 @@ function last_feasible_evolution(duration::Real,
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
 # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
 # resulting_cremovals     = EpidemicsCFTP.resulting_cremovals
-    
+        
+    # First re-sample `CRemoval`s.
     recomputed_cremovals = resulting_cremovals(ev, iv) 
+    # Capture all previous `Infection`s and convert to `PInfection`s
     previous_infections  = [P(z) for z in ev.chronology if z isa OperativeInfection]
+    # Generate a new candidate `chronology`.
     chronology = sort(iv.infections ∪ previous_infections ∪ recomputed_cremovals)
-    
+
+    # The `removal_boundary`uses the `CRemoval`s (times and activations guaranteed
+    # by conditioning! in an accumulation which counts the number of removed time
+    # lines at each incident of the candidate `chronology`. 
     removal_boundary =
         accumulate(+, z isa CRemoval ? 1 : 0 for z in chronology, init=ev.initial.r)
-    @assert any(z isa KilledInfection ? z.target ≤ rb : z.target > rb for 
-                                    (z, rb) in zip(ev.chronology, removal_boundary))  
     
+    # Two sanity checks!
+    @assert all(z.target > r for (z, r) in 
+                    Iterators.filter(x -> (x isa OperativeInfection),
+                           zip(ev.chronology, removal_boundary)))      
+    @assert all(z.target > r for (z, r) in 
+                    Iterators.filter(x -> (x isa CRemoval),
+                           zip(ev.chronology, removal_boundary))) 
+    
+    # This may be out-of-place!
     raw_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
             for (z, rb) in zip(chronology, removal_boundary)]
+    # Focus on operative incidents.
     relevant_chronology =
         filter(z -> !(z isa KilledInfection), raw_chronology)
     
+     
+    # Now compute the running maximum of `CRemoval` targets over the `relevant_chronology`.
     removal_fence =
         accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
     
+    # We now work backwards in time!
     current_timeline = removal_fence[end]
     reverse_LFE = AbstractIncident[]
     for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))

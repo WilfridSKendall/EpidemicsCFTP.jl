@@ -47,7 +47,7 @@ export extremal_evolution, generate_innovation
 
 export alter
 
-export ⪯
+export ⪯, ≃
 
 # # Defined in `04-exceptions.jl`
 export BadIncident, MissedCRemoval, EmployedRemoval

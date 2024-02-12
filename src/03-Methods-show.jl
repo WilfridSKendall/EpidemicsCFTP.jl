@@ -136,7 +136,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
     println(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
     print(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
     isempty(z.cremovals) ? nothing : print(io, rpad("\ncremovals:",12," "),sprint(show, MIME("text/plain"), z.cremovals))
-    print(io, ")\n")
+    print(io, ")")
 end
 
 """
@@ -242,7 +242,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
     println(io, rpad("chronology:",12," "), sprint(show, MIME("text/plain"), z.chronology))
     println(io, rpad("trajectory:",12," "), sprint(show, MIME("text/plain"), z.trajectory))
     print(io, rpad("history:",12," "), sprint(show, MIME("text/plain"), z.history))
-    println(io, ")")
+    print(io, ")")
 end
 
 """

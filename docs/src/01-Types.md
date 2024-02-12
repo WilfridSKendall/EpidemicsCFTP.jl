@@ -164,7 +164,7 @@ based on an `Innovation`.
 `CEvolution` does the same, but returns an error if it violates conditioning 
 in the way it treats`AbstractRemoval`s.
 (This distinctive behaviour is implemented in the [`evolution`](@ref) function
-when keyword `conditioned` keyword is `true`.)
+when keyword `conditioned` is `true`.)
 
 
 Instances should always possess fields as given in the table.

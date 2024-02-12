@@ -700,7 +700,7 @@ for infectious intervals.
 
 See [`Evolution(::SIR,::Innovation)`](@ref Evolution(::SIR, ::Innovation)) 
 and [`Evolution(::SIR,::Vector{AbstractIncident})`](@ref Evolution(::SIR, ::Vector{AbstractIncident})) 
-for examples of construction.
+below for examples of construction.
 
 ### Behaviour of `start` and `finis` fields
 ```jldoctest evolution_doctest

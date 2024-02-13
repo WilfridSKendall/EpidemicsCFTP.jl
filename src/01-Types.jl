@@ -817,7 +817,7 @@ This implements _conditional_ evolution of an SIR epidemic
 based on a given [`Innovation`](@ref) 
 for innovations,
 and starting from a given [`SIR`](@ref) for initial state.
-An error is raised if the resulting `evolution` activates
+An error is raised if the resulting [`evolution`](@ref) activates
 an [`AbstractRemoval`](@ref) incident which is not a [`CRemoval`](@ref).
 
 It represents an entire simulation corresponding to a single step of _algorithmic_ time,

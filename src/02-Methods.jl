@@ -5,7 +5,10 @@
 """
     Base.∘(::CEvolution, ::Innovation) ::CEvolution (Use `\\circ`.)
 
-The succinct statement `cev ∘ iv` is an expressive shorthand for `CEvolution(cev, iv)`.
+The succinct statement `cev ∘ iv` is an expressive shorthand for 
+[`CEvolution(cev, iv)`](@ref `CEvolution`).
+ Note that at present the construction
+`cev = cev ∘ innov` gives faulty results. I presume this is a list-related problem!
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
@@ -1075,14 +1078,9 @@ is_correct_LFE(evx)
 # output
 true
 ```
-
-
 """
 function is_correct_LFE(ev::CEvolution; debug::Bool=false)::Bool
-# evolution         = EpidemicsCFTP.evolution
-# evolution_history = EpidemicsCFTP.evolution_history
-# NonMinimalLFE     = EpidemicsCFTP.NonMinimalLFE
-# EmptyLFE          = EpidemicsCFTP.EmptyLFE
+# import EpidemicsCFTP: evolution, evolution_history, NonMinimalLFE, EmptyLFE
     if isempty(ev.LFE)
         throw(EmptyLFE(ev))
     end

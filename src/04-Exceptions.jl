@@ -11,8 +11,10 @@ abstract type BadIncident <: Exception end
 """
     BadLFE
 
-An exception to report problems with an `LFE` as produced by `last_feasible_evolution`
-(typically arising as a field of a `CEvolution`).
+An exception to report problems with an `LFE` as produced by 
+[`last_feasible_evolution`](@ref)
+(typically arising as a field of a 
+[`CEvolution`](@ref)).
 """
 abstract type BadLFE <: Exception end
 
@@ -46,7 +48,7 @@ end
     EmployedRemoval
 
 This is raised when a [`Removal`](@ref) is not missed by
-`evolution`.
+[`evolution`}(@ref).
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)

@@ -655,16 +655,16 @@ function last_feasible_evolution(duration::Real,
         
     # First re-sample `CRemoval`s.
     recomputed_cremovals = resulting_cremovals(ev, iv) 
-    # Capture all previous `Infection`s and convert to `PInfection`s
-    previous_infections  = [P(z) for z in ev.chronology if z isa OperativeInfection]
-    # Generate a new candidate `chronology`.
-    chronology = sort(iv.infections ∪ previous_infections ∪ recomputed_cremovals)
+    # For each `OperativeInfection` in previous trajectory, create a `PInfection` in a new list.
+    previous_active_infections  = [P(z) for z in ev.history if z isa OperativeInfection]
+    # Generate a new candidate `candidate_chronology`.
+    candidate_chronology = sort(iv.infections ∪ previous_active_infections ∪ recomputed_cremovals)
 
     # The `removal_boundary`uses the `CRemoval`s (times and activations guaranteed
     # by conditioning! in an accumulation which counts the number of removed time
-    # lines at each incident of the candidate `chronology`. 
+    # lines at each incident of the candidate `candidate_chronology`. 
     removal_boundary =
-        accumulate(+, z isa CRemoval ? 1 : 0 for z in chronology, init=ev.initial.r)
+        accumulate(+, z isa CRemoval ? 1 : 0 for z in candidate_chronology, init=ev.initial.r)
     
     # Two sanity checks!
     @assert all(z.target > r for (z, r) in 
@@ -674,19 +674,20 @@ function last_feasible_evolution(duration::Real,
                     Iterators.filter(x -> (x isa CRemoval),
                            zip(ev.chronology, removal_boundary))) 
     
-    # This may be out-of-place!
-    raw_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
-            for (z, rb) in zip(chronology, removal_boundary)]
-    # Focus on operative incidents.
-    relevant_chronology =
-        filter(z -> !(z isa KilledInfection), raw_chronology)
+    # # This may be out-of-place!
+    raw_candidate_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
+            for (z, rb) in zip(candidate_chronology, removal_boundary)]
     
+    # Focus on operative incidents.
+    # Is this required?
+    relevant_chronology =
+        filter(z -> !(z isa KilledInfection), raw_candidate_chronology)
      
     # Now compute the running maximum of `CRemoval` targets over the `relevant_chronology`.
     removal_fence =
         accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
     
-    # We now work backwards in time!
+    # We now work backwards in time through the `relevant_chronology`!
     current_timeline = removal_fence[end]
     reverse_LFE = AbstractIncident[]
     for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
@@ -1056,8 +1057,8 @@ end
 """
     EpidemicsCFTP.is_correct_LFE(::CEvolution; ::Bool=false)::Bool
     
-Checks that the `LFE` field of a [`CEvolution`](@ref) is genuinely a least
-feasible evolution. (Used primarily for **verification** that a
+Checks that the `LFE` field of a [`CEvolution`](@ref) is genuinely a 
+_last feasible evolution_. (Used primarily for **verification** that a
 given `LFE` field is correct.) The example indicates usage. 
 See example III from the doctests for [`last_feasible_evolution`](@ref) for
 a further simple complementary test using that function.

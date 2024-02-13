@@ -181,8 +181,9 @@ Instances should always possess fields as given in the table.
 | `start`       | `Vector{AbstractInfection}`  | **computed** |                   | list              |
 | `finis`       | `Vector{AbstractRemoval}`    | **computed** |                   | list              |
 | `LFE `        | `Vector{SIR}`                | **computed** | `CEvolution`      | ordered list      |
-| `envelope0`   | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
-| `envelope`    | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
+| `NFZ1`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
+| `NFZ2`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
+| `NFZ3`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 
 #### Unconditioned `Evolution`
 

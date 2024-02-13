@@ -615,7 +615,7 @@ innov = Innovation(3,
     I[I(1.0, 1, 2)], 
     R[R(1.0, 3)], 
     C[C(2.0, 1)])
-cev = CEvolution(initial, AbstractIncident[I(1.0, 1, 3), R(1.0, 3), C(2.0, 1)])
+cev = CEvolution(initial, AI[I(1.0, 1, 3), R(1.0, 3), C(2.0, 1)])
 CEvolution(cev, innov).LFE
 
 # output
@@ -650,8 +650,8 @@ true
 """
 function last_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
-# last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
-# resulting_cremovals     = EpidemicsCFTP.resulting_cremovals
+# import EpidemicsCFTP: last_feasible_evolution,
+#                       resulting_cremovals
         
     # First re-sample `CRemoval`s.
     recomputed_cremovals = resulting_cremovals(ev, iv) 
@@ -667,12 +667,9 @@ function last_feasible_evolution(duration::Real,
         accumulate(+, z isa CRemoval ? 1 : 0 for z in candidate_chronology, init=ev.initial.r)
     
     # Two sanity checks!
-    @assert all(z.target > r for (z, r) in 
-                    Iterators.filter(x -> (x isa OperativeInfection),
-                           zip(ev.chronology, removal_boundary)))      
-    @assert all(z.target > r for (z, r) in 
-                    Iterators.filter(x -> (x isa CRemoval),
-                           zip(ev.chronology, removal_boundary))) 
+    cycle = zip(candidate_chronology, removal_boundary)
+    @assert all(z.target > r for (z, r) in Iterators.filter(x -> (x isa OperativeInfection), cycle))      
+    @assert all(z.target > r for (z, r) in Iterators.filter(x -> (x isa CRemoval), cycle)) 
     
     # # This may be out-of-place!
     raw_candidate_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
@@ -680,17 +677,15 @@ function last_feasible_evolution(duration::Real,
     
     # Focus on operative incidents.
     # Is this required?
-    relevant_chronology =
-        filter(z -> !(z isa KilledInfection), raw_candidate_chronology)
+    relevant_chronology = filter(z -> !(z isa KilledInfection), raw_candidate_chronology)
      
     # Now compute the running maximum of `CRemoval` targets over the `relevant_chronology`.
-    removal_fence =
-        accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
+    removal_fence = accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
     
     # We now work backwards in time through the `relevant_chronology`!
     current_timeline = removal_fence[end]
     reverse_LFE = AbstractIncident[]
-    for (z, rf) in Base.Iterators.reverse(zip(relevant_chronology, removal_fence))
+    for (z, rf) in Iterators.reverse(zip(relevant_chronology, removal_fence))
         if z isa CRemoval
             push!(reverse_LFE, z)
         elseif z isa OperativeInfection && 

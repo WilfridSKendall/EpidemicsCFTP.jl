@@ -976,9 +976,9 @@ struct CEvolution <: AbstractEvolution
     end
 
 function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
-    # inactive_removals = EpidemicsCFTP.inactive_removals
-    # resulting_cremovals = EpidemicsCFTP.resulting_cremovals
-    # last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
+    # import EpidemicsCFTP: inactive_removals,
+    #                       resulting_cremovals,
+    #                       last_feasible_evolution
     # Step 1.
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))

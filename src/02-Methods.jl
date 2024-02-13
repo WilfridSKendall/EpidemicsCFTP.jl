@@ -6,7 +6,7 @@
     Base.∘(::CEvolution, ::Innovation) ::CEvolution (Use `\\circ`.)
 
 The succinct statement `cev ∘ iv` is an expressive shorthand for 
-[`CEvolution(cev, iv)`](@ref `CEvolution`).
+[`CEvolution(cev, iv)`](@ref CEvolution).
  Note that at present the construction
 `cev = cev ∘ innov` gives faulty results. I presume this is a list-related problem!
 ### Example

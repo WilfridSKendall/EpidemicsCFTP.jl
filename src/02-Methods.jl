@@ -649,43 +649,27 @@ true
 ```
 """
 function last_feasible_evolution(duration::Real, 
+# import EpidemicsCFTP: last_feasible_evolution, resulting_cremovals
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
-# import EpidemicsCFTP: last_feasible_evolution,
-#                       resulting_cremovals
         
-    # First re-sample `CRemoval`s.
-    recomputed_cremovals = resulting_cremovals(ev, iv) 
-    # For each `OperativeInfection` in previous trajectory, create a `PInfection` in a new list.
-    previous_active_infections  = [P(z) for z in ev.history if z isa OperativeInfection]
-    # Generate a new candidate `candidate_chronology`.
-    candidate_chronology = sort(iv.infections ∪ previous_active_infections ∪ recomputed_cremovals)
-
-    # The `removal_boundary`uses the `CRemoval`s (times and activations guaranteed
-    # by conditioning! in an accumulation which counts the number of removed time
-    # lines at each incident of the candidate `candidate_chronology`. 
+    recomputed_cremovals = resulting_cremovals(ev, iv)                                              # <1>
+    previous_active_infections  = [P(z) for z in ev.history if z isa OperativeInfection]            # <2>
+    candidate_chronology = sort(iv.infections ∪ previous_active_infections ∪ recomputed_cremovals)  # <3>
     removal_boundary =
-        accumulate(+, z isa CRemoval ? 1 : 0 for z in candidate_chronology, init=ev.initial.r)
-    
-    # Two sanity checks!
-    cycle = zip(candidate_chronology, removal_boundary)
+        accumulate(+, z isa CRemoval ? 1 : 0 for z in candidate_chronology, init=ev.initial.r)      # <4>
+
+    cycle = zip(candidate_chronology, removal_boundary)                                             # <5>
     @assert all(z.target > r for (z, r) in Iterators.filter(x -> (x isa OperativeInfection), cycle))      
     @assert all(z.target > r for (z, r) in Iterators.filter(x -> (x isa CRemoval), cycle)) 
     
-    # # This may be out-of-place!
     raw_candidate_chronology = [z isa OperativeInfection && z.target ≤ rb ? KilledInfection(z) : z
-            for (z, rb) in zip(candidate_chronology, removal_boundary)]
-    
-    # Focus on operative incidents.
-    # Is this required?
-    relevant_chronology = filter(z -> !(z isa KilledInfection), raw_candidate_chronology)
-     
-    # Now compute the running maximum of `CRemoval` targets over the `relevant_chronology`.
-    removal_fence = accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)
-    
-    # We now work backwards in time through the `relevant_chronology`!
+            for (z, rb) in zip(candidate_chronology, removal_boundary)]                             # <6>
+    relevant_chronology = filter(z -> !(z isa KilledInfection), raw_candidate_chronology)           # <7>
+    removal_fence = accumulate(max, z isa CRemoval ? z.target : 1 for z in relevant_chronology)     # <8>
+
     current_timeline = removal_fence[end]
     reverse_LFE = AbstractIncident[]
-    for (z, rf) in Iterators.reverse(zip(relevant_chronology, removal_fence))
+    for (z, rf) in Iterators.reverse(zip(relevant_chronology, removal_fence))                       # <9>
         if z isa CRemoval
             push!(reverse_LFE, z)
         elseif z isa OperativeInfection && 
@@ -695,9 +679,24 @@ function last_feasible_evolution(duration::Real,
             current_timeline -= 1
         end
     end
-    
-    return reverse(reverse_LFE)
+    return reverse(reverse_LFE)                                                                     # <9>
 end
+# 1. First re-sample `CRemoval`s.
+# 2. For each `OperativeInfection` in the `history` of the previous `CEvolution`, 
+# create a `PInfection` in a new list.
+# Note that the argument here is that if any of these get used then it must be because of perpetuation,
+# and perpetuation can only apply to `OperativeInfection`s that get into this previous `history`!
+# 3. Generate a new `candidate_chronology`.
+# 4. The `removal_boundary` uses the `CRemoval`s (times and activations guaranteed by conditioning!)
+# in an accumulation which counts the number of removed time lines at each incident of 
+# the `candidate_chronology`. 
+# 5. Two sanity checks to check `OperativeInfection`s and `CRemoval`s have a chance of being activated!
+# 6. Convert to `KilledInfection`s all `OperativeInfection`s which would not be activated by reason 
+# of having `target` field at or below the `removal_boundary`.
+# 7. Prune down to the `relevant_chronology` by removing all `KilledInfection`s.
+# 8. Now compute the running maximum of `CRemoval` targets over the `relevant_chronology`.
+# 9. Finally work backwards in time through the `relevant_chronology` to create `reverse_LFE`,
+# which is a reversal of the final `LFE` that will eventually be returned.
    
 # Compute infectious interval for each time line
 # ----------------------------------------------

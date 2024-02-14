@@ -79,8 +79,8 @@ Basic Constructions
 ===================
 ```{julia}
 #| echo: false
-const REPLICATES = 160
-Markdown.md"The number of simulation replicates over algorithmic time is $REPLICATES. \
+const REPLICATES = 1:60
+Markdown.md"The range of simulation replicates over algorithmic time is $REPLICATES. \
 We specify the duration of the epidemic, its population,  and two rate parameters."
 ```
 ```{julia}
@@ -129,7 +129,7 @@ Unit Tests
 ==========
 ```{julia}
 #| echo: false
-Markdown.md"Unit tests are carried out on $REPLICATES replicates in algorithmic time, \
+Markdown.md"Unit tests are carried out in algorithmic time for a sample $REPLICATES, \
 using as initial states both the maximal conditioned evolution and the minimal conditioned \
 evolution. Simulations are conditioned on the specified `cremoval_times`. "
 ```
@@ -187,14 +187,14 @@ Further steps in algorithmic time
 ---------------------------------
 ```{julia}
 #| echo: false
-Markdown.md"We now simulate $REPLICATES replicates over the algorithmic time range, \
+Markdown.md"We now simulate over the algorithmic time range for a sample $REPLICATES, \
 starting in turn from each of the defined initial configurations. \
 In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents. \
 Note the monotonicity test using `ev_pair`. Note also some lines of commented-out code concerned \
 with visual representation of coalescence for each choice of `initial` condition"
 ```
 ```{julia}
-ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ 1:REPLICATES]
+ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ REPLICATES]
 for i ∈ 1:population
     initial = SIR(0, population - i, i, 0) 
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)

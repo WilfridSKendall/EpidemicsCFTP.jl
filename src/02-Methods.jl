@@ -7,8 +7,6 @@
 
 The succinct statement `cev ∘ iv` is an expressive shorthand for 
 [`CEvolution(cev, iv)`](@ref CEvolution).
- Note that at present the construction
-`cev = cev ∘ innov` gives faulty results. I presume this is a list-related problem!
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
@@ -881,10 +879,10 @@ end
 # # ------------------
 
 """
-    compute_nofly(CEvolution, Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
+    compute_NFZ(CEvolution, Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
     
 Performs a careful computation of the "true" boundary (`nofly_bound` in the code
-of function `compute_nofly`):
+of function `compute_NFZ`):
 works backwards through the new `Infection`s 
 as explained in annotations of the source-code. 
 
@@ -892,7 +890,7 @@ Doctests to follow ...
 
 Note the source-code also contains many commented-out assertions!
 """
-function compute_nofly(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
+function compute_NFZ(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
 	nofly_bound = deepcopy(ev.NFZ2)                                        # <1>
 	
 	processed_infections = AbstractInfection[]                                 # <2>

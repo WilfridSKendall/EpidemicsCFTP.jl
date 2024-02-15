@@ -5,16 +5,16 @@ import Random
 
 Random.seed!(44)
 
-const population = 5
-const duration   = 5
-const cremoval_times = collect(1:3)
-const iv0 = Innovation(5, I[], R[], [C(t,t) for t in cremoval_times])
+const population = 4
+const duration   = population
+const cremoval_times = collect(1:(population-3))
+const iv0 = Innovation(population, I[], R[], [C(t,t) for t in cremoval_times])
 const initial = SIR(0, population - 1, 1, 0)
 
 const REPLICATES=40
 
-ev = extremal_evolution(initial, duration, cremoval_times, maximal=false)
-# println(sprint(show, MIME("text/plain"), ev))
+#ev = extremal_evolution(initial, duration, cremoval_times, maximal=false)
+ev = extremal_evolution(initial, duration, cremoval_times, maximal=true)
 
 count_tests = 0
 for i in 1:REPLICATES
@@ -49,9 +49,11 @@ for i in 1:REPLICATES
                 try
                     chron0 = [zz for zz in ev.chronology if zz>z]
                     pushfirst!(chron0, Infection(z))
-                    println(sprint(show, MIME("text/plain"),          evolution_history(state,chron0, conditioned=true)))
-                    error("Should not have succeeded!")
+                    println("Remaining chronology: ", sprint(show, MIME("text/plain"), chron0))
+                    println("BAD trajectory: ", sprint(show, MIME("text/plain"),          evolution_history(state,chron0, conditioned=true)))
+                    error("This should not have succeeded!")
                 catch e
+                    e isa EmployedRemoval ? nothing : rethrow()
                     println(e)
                 end
             else

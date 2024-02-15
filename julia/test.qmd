@@ -715,7 +715,7 @@ with the maximal `CEvolution`.
 
 Comparison of minimal and maximal sequences
 -------------------------------------------
-We now plot a sequence of 12 steps in algorithmic time. We achieve coalescence at step 9!
+We now plot a sequence of 12 steps in algorithmic time. We achieve coalescence at step 2!
 
 ```{julia}
 #| echo: false   

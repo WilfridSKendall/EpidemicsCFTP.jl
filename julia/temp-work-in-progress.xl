@@ -11,12 +11,14 @@ const cremoval_times = collect(1:3)
 const iv0 = Innovation(5, I[], R[], [C(t,t) for t in cremoval_times])
 const initial = SIR(0, population - 1, 1, 0)
 
+const REPLICATES=40
 
 ev = extremal_evolution(initial, duration, cremoval_times, maximal=false)
 # println(sprint(show, MIME("text/plain"), ev))
 
-for i in 1:4
-    global ev, state
+count_tests = 0
+for i in 1:REPLICATES
+    global count_tests, ev, state
     ev = ev ∘ generate_innovation(iv0, duration)
     println("\nNFZ3:       ", ev.NFZ3)
     if any(t!=-Inf for t in ev.NFZ3)
@@ -45,8 +47,9 @@ for i in 1:4
             if z isa ExpungedInfection
                 println(sprint(show, MIME("text/plain"), (z, state)))
                 try
-                    println(sprint(show, MIME("text/plain"),          evolution_history(state, sort(union(ev.chronology,
-                                        [I(z)])), conditioned=true)))
+                    chron0 = [zz for zz in ev.chronology if zz>z]
+                    pushfirst!(chron0, Infection(z))
+                    println(sprint(show, MIME("text/plain"),          evolution_history(state,chron0, conditioned=true)))
                     error("Should not have succeeded!")
                 catch e
                     println(e)
@@ -55,12 +58,12 @@ for i in 1:4
                 state = state_dict[z]
             end
         end
-
+        count_tests+=1
     end
 end
 
-
-
-# Why does the SECOND ExpungedInfection not lead to an exception?!
+println("\n$REPLICATES replicates:")
+println("$(REPLICATES - count_tests) had trivial `NFZ3`")
+println("Remaining $count_tests tests all successful!")
 
 

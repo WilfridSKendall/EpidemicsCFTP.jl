@@ -198,5 +198,8 @@ Evolution(::SIR, ::Vector{AbstractIncident})
 #### Conditioned `CEvolution`
 ```@docs
 CEvolution
+CEvolution(::SIR, ::Innovation)
+CEvolution(SIR, Vector{AbstractIncident})
+CEvolution(::AbstractEvolution, ::Innovation)
 ```
 

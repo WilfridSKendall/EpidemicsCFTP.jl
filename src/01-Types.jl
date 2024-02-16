@@ -730,10 +730,9 @@ abstract type AbstractEvolution <: AbstractEnvironment end
 
 # ### (Unconditioned) evolution for an $\SIR$ epidemic
 """
-    Evolution(::SIR, ::Innovation)::Evolution
-    Evolution(::SIR, ::Vector{AbstractIncident)::Evolution
+    Evolution
 
-This implements _unconditional_ evolution of an SIR epidemic 
+This represents an _unconditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
 for innovations,
 and starting from a given [`SIR`](@ref) for initial state.
@@ -745,15 +744,16 @@ initial state `initial`,
 and also **computed** fields `chronology`, `trajectory` and `history`.
 
 Note that [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
-is used in the course of the construction to compute the `trajectory` and `history` fields,
-while [`interval`](@ref) is used in the course of the construction to compute start and finish incidents
+is used in the course of the constructions to compute the `trajectory` and `history` fields,
+while [`interval`](@ref) is used in the course of the constructions to compute start and finish incidents
 for infectious intervals.
 
 See [`Evolution(::SIR,::Innovation)`](@ref Evolution(::SIR, ::Innovation)) 
 and [`Evolution(::SIR,::Vector{AbstractIncident})`](@ref Evolution(::SIR, ::Vector{AbstractIncident})) 
 below for examples of construction.
 
-### Behaviour of `start` and `finis` fields
+### Example
+We illustrate here the behaviour of the `start` and `finis` fields
 ```jldoctest evolution_doctest
 julia> using EpidemicsCFTP, EpidemicsCFTP.abbreviations ;
 
@@ -858,11 +858,7 @@ end
                         
 # # ### (Conditioned) evolution for an $\SIR$ epidemic
 """
-    CEvolution(::SIR, ::Innovation; LFE::Vector{AbstractIncident}=AbstractIncident[],
-        NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])::CEvolution
-    CEvolution(SIR, Vector{AbstractIncident}; 
-                LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])::CEvolution
-    CEvolution(::AbstractEvolution, ::Innovation)::CEvolution
+    CEvolution
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -887,31 +883,15 @@ of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, the monotonically increasing envelope of `NFZ1`, and the region which must
 not be infected if we are not to violate conditioning on removals.
 
-### Example
-Four cases:
+There are three different derived constructors discussed below:
 
-* updating an `AbstractEvolution` using a candidate `Innovation` (preferred),
-* using an `Innovation`, 
+* updating an [`AbstractEvolution`](@ref) using a candidate `Innovation` (preferred),
+* using an [`Innovation`](@ref), 
 * using a `chronology` of incidents,
-* what happens on missing a conditioned removal, 
-* what happens on employing an (unconditioned) removal.
 
-In the first case, the procedure is as follows:
-
-1. Test for compatibility between `ev` and `iv`:  
-    * Check the `cremoval` lists have the same length;
-    * Check the `cremoval` lists generate the same times ('t' field).
-2. Use [`inactive_removals`](@ref) to form the new `removals` list by selecting only those `AbstractRemoval`s from `iv.removals` which will not be activated. Type is changed to KilledRemoval` for an `AbstractRemoval` occurring after removal time for the corresponding time line. Note that the function discards `Removal`s (as opposed to `CRemoval`s) which _would_ be activated. 
-3. Form the new `cremovals` list using [`resulting_cremovals`](@ref), by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
-4. Compute `LFE`. Note `cremovals` has already been computed in step 3. Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
-5. Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
-    * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
-    * compute `NFZ1`;
-    * and generate `NFZ2`.
-6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
-
+### Example
 We begin with setup of the various incidents.
-```jldoctest CEvolution; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 initial    = SIR(0.0, 2, 1, 0)
 population = initial.n
 infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
@@ -921,67 +901,6 @@ chronology = infections ∪ removals ∪ cremovals
 
 # output
 AbstractIncident[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²,𝒞₀.₀₀¹]
-```
-
-I: Updating an `AbstractEvolution` using a candidate `Innovation`:
-```jldoctest CEvolution
-ev = CEvolution(initial, chronology) ;
-candidate = Innovation(population, I[], R[], cremovals) ;
-CEvolution(ev, candidate)
-
-# output
-CEvolution(3,
-infections: AbstractInfection[]
-removals:   AbstractRemoval[]
-cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: AbstractIncident[𝒞₀.₀₀¹]
-trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹])
-```
-
-II: Using an `Innovation`:
-```jldoctest CEvolution
-innov      = Innovation(population, infections, removals, cremovals) 
-CEvolution(initial, innov)
-
-# output
-CEvolution(3,
-infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹])
-```
-
-III: Using a `chronology` of incidents:
-```jldoctest CEvolution
-ev = CEvolution(initial, chronology, NFZ1=[0.5])
-ev.NFZ1 == Real[0.5]
-
-# output
-true
-```
-
-IV: What happens on missing a conditioned removal:
-```jldoctest CEvolution
-cremovals1 = sort(cremovals ∪ [C(0.0, 2)]) ;
-innov = Innovation(population, Infection[], Removal[], cremovals1) ;
-CEvolution(initial, innov)
-
-# output
-ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.0, 2)
-```
-
-V: What happens on employing an (unconditioned) removal:
-```jldoctest CEvolution
-removals   = [R(0.1, 1), R(0.1, 2)] ;
-cremovals  = [C(0.2, 1)] ;
-innov      = Innovation(population, infections, removals, cremovals) ;
-CEvolution(initial, innov)
-
-# output
-ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
 """
 struct CEvolution <: AbstractEvolution
@@ -1000,32 +919,67 @@ struct CEvolution <: AbstractEvolution
     NFZ1       ::Vector{Real}
     NFZ2       ::Vector{Real}
     NFZ3       ::Vector{Real}
-    
-    function CEvolution(initial_state::SIR, innovation::Innovation;
-                        LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
-        # Need to check population == sum of `initial_state` entries
-        population          = innovation.population
-        infections          = innovation.infections
-        removals            = innovation.removals
-        cremovals           = innovation.cremovals   
-        chronology          = innovation.chronology
-        trajectory, history = evolution(initial_state, innovation, conditioned=true)
-        start, finis        = interval(trajectory, history)
-        
-        return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ3)
-    end
-    
-    function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
-                        LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
-            innovation = Innovation(initial_state.n,
-                        AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
-                        AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
-                        CRemoval[z for z ∈ chronology if z isa CRemoval]
-                        )
-        return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
-    end
 
+@doc """
+        CEvolution(::AbstractEvolution, ::Innovation)::CEvolution
+
+This is the first way to construct a [`CEvolution`](@ref): 
+updating an [`AbstractEvolution`](@ref) using a candidate `Innovation`.
+The procedure is as follows:
+
+1. Test for compatibility between `ev` and `iv`:  
+    * Check the `cremoval` lists have the same length;
+    * Check the `cremoval` lists generate the same times ('t' field).
+2. Use [`inactive_removals`](@ref) to form the new `removals` list by selecting only those `AbstractRemoval`s from `iv.removals` which will not be activated. Type is changed to KilledRemoval` for an `AbstractRemoval` occurring after removal time for the corresponding time line. Note that the function discards `Removal`s (as opposed to `CRemoval`s) which _would_ be activated. 
+3. Form the new `cremovals` list using [`resulting_cremovals`](@ref), by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
+4. Compute `LFE`. Note `cremovals` has already been computed in step 3. Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
+5. Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  
+    * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
+    * compute `NFZ1`;
+    * and generate `NFZ2`.
+6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
+
+
+### Example
+```jldoctest CEvolution_setup
+ev = CEvolution(initial, chronology) ;
+candidate = Innovation(population, I[], R[], cremovals) ;
+CEvolution(ev, candidate)
+
+# output
+CEvolution(3,
+infections: AbstractInfection[]
+removals:   AbstractRemoval[]
+cremovals:  CRemoval[𝒞₀.₀₀¹]
+chronology: AbstractIncident[𝒞₀.₀₀¹]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹])
+```
+
+We also cover here two ways in which exceptions can be raised.
+
+#### What happens on missing a conditioned removal:
+```jldoctest CEvolution_setup
+cremovals1 = sort(cremovals ∪ [C(0.0, 2)]) ;
+innov = Innovation(population, Infection[], Removal[], cremovals1) ;
+CEvolution(initial, innov)
+
+# output
+ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.0, 2)
+```
+
+#### What happens on employing an (unconditioned) removal:
+```jldoctest CEvolution_setup
+removals   = [R(0.1, 1), R(0.1, 2)] ;
+cremovals  = [C(0.2, 1)] ;
+innov      = Innovation(population, infections, removals, cremovals) ;
+CEvolution(initial, innov)
+
+# output
+ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
+```
+
+"""
 function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
@@ -1165,4 +1119,66 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
 end
 
+@doc """
+        CEvolution(SIR, Vector{AbstractIncident}; 
+                LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])::CEvolution
+
+This is the second way to construct a [`CEvolution`](@ref): 
+using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
+### Example
+```jldoctest CEvolution_setup
+ev = CEvolution(initial, chronology, NFZ1=[0.5])
+ev.NFZ1 == Real[0.5]
+
+# output
+true
+``
+"""
+function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
+        innovation = Innovation(initial_state.n,
+                    AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
+                    AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
+                    CRemoval[z for z ∈ chronology if z isa CRemoval]
+                    )
+    return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
 end
+
+@doc """
+    CEvolution(::SIR, ::Innovation; 
+            LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])::CEvolution
+
+This is the third way:
+employing an [`Innovation`](@ref).
+### Example
+```jldoctest CEvolution_setup
+innov      = Innovation(population, infections, removals, cremovals) 
+CEvolution(initial, innov)
+
+# output
+CEvolution(3,
+infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹]
+chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+history:    AbstractIncident[𝒞₀.₀₀¹])
+```
+"""
+function CEvolution(initial_state::SIR, innovation::Innovation;
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
+    # Need to check population == sum of `initial_state` entries
+    population          = innovation.population
+    infections          = innovation.infections
+    removals            = innovation.removals
+    cremovals           = innovation.cremovals   
+    chronology          = innovation.chronology
+    trajectory, history = evolution(initial_state, innovation, conditioned=true)
+    start, finis        = interval(trajectory, history)
+        
+    return new(population, infections, removals, cremovals, chronology, 
+        trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ3)
+end
+
+end
+

@@ -886,7 +886,17 @@ of function `compute_NFZ`):
 works backwards through the new `Infection`s 
 as explained in annotations of the source-code. 
 
-Doctests to follow ...
+### Example
+```jldoctest CEvolution; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial = SIR(0,1,1,0)
+ev = CEvolution(initial, AI[C(4,1)])
+iv = Innovation(2, AI[I(4.2,1,2), R(4.9,2), C(4,1)])
+ev = ev ∘ iv
+ev.NFZ3
+
+# output
+Real[-Inf, 4.9]
+```
 
 Note the source-code also contains many commented-out assertions!
 """

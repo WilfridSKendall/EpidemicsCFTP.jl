@@ -604,8 +604,7 @@ abstract type AbstractEnvironment end
 
 # ### Innovations
 """
-    Innovation(::Int, ::Vector{S}, ::Vector{T},
-               ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    Innovation
 
 This represents an entire innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -614,9 +613,22 @@ stored as a sequence of three **time-ordered** lists
 Note that there is a first argument `population` (an `Int`),
 and a computed field `chronology` holding a
 time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
+"""
+struct Innovation <: AbstractEnvironment
+    population ::Int
+    infections ::Vector{<:AbstractInfection}
+    removals   ::Vector{<:AbstractRemoval}
+    cremovals  ::Vector{CRemoval}
+    chronology ::Vector{<:AbstractIncident}
 
+@doc """
+    Innovation(::Int, ::Vector{S}, ::Vector{T},
+               ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}    
+
+This is the usual basic creation of an `Innovation`, specifying
+all of `infections`, `removals`, and `cremovals`.
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3
 infections = [I(0.7,1,2), P(0.5,1,2)]
 removals   = [R(0.2, 3), R(0.1, 2)]
@@ -631,40 +643,79 @@ removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])  
 ```
 """
-struct Innovation <: AbstractEnvironment
-    population ::Int
-    infections ::Vector{<:AbstractInfection}
-    removals   ::Vector{<:AbstractRemoval}
-    cremovals  ::Vector{CRemoval}
-    chronology ::Vector{<:AbstractIncident}
-
-    function Innovation(population::Int, infections::Vector{S},
-                        removals::Vector{T},
-                        cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
-        noun = "Innovation($population, $infections, $removals, $cremovals)"
-        if population ≤ 0
-            throw(DomainError(noun, "non-positive population size $population"))
-        elseif length(cremovals) > population
-            throw(ArgumentError("too many conditional removals in \n$noun"))
-        elseif any(cr.target > population for cr ∈ cremovals)
-            throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
-        elseif any(r.target > population for r ∈ removals)
-            throw(ArgumentError("some removal timelines too high in \n$noun"))
-        elseif any(i.target > population for i ∈ infections)
-            throw(ArgumentError("some infection targets too high in \n$noun"))
-        else
-            chron = Iterators.flatten([infections, removals, cremovals])
-            return new(population, sort(infections), 
-                sort(removals), 
-                sort(cremovals),
-                [x::AbstractIncident for x ∈ sort(collect(chron))])
-        end
+function Innovation(population::Int, infections::Vector{S},
+                    removals::Vector{T},
+                    cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    noun = "Innovation($population, $infections, $removals, $cremovals)"
+    if population ≤ 0
+        throw(DomainError(noun, "non-positive population size $population"))
+    elseif length(cremovals) > population
+        throw(ArgumentError("too many conditional removals in \n$noun"))
+    elseif any(cr.target > population for cr ∈ cremovals)
+        throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
+    elseif any(r.target > population for r ∈ removals)
+        throw(ArgumentError("some removal timelines too high in \n$noun"))
+    elseif any(i.target > population for i ∈ infections)
+        throw(ArgumentError("some infection targets too high in \n$noun"))
+    else
+        # chron = Iterators.flatten([infections, removals, cremovals])
+        return new(population, sort(infections), 
+            sort(removals), 
+            sort(cremovals),
+            convert(Vector{AI}, sort(infections ∪ removals ∪ cremovals)))
+            # [x::AbstractIncident for x ∈ sort(collect(chron))])
     end
+end
 
-    function Innovation(population::Int, infections::Vector{S},
-                        removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
-        return Innovation(population, infections, removals, CRemoval[])
-    end
+@doc """
+    Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    
+Variant of `Innovation` which omits `cremovals` list.
+
+### Example
+```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+population = 3
+infections = [I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.2, 3), R(0.1, 2)]
+
+Innovation(population, infections, removals)
+
+# output
+Innovation(3,
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]) 
+```
+"""
+function Innovation(population::Int, infections::Vector{S},
+                    removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    return Innovation(population, infections, removals, CRemoval[])
+end
+
+@doc """
+    Innovation(::Int, ::Vector{AbstractIncident})
+    
+Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
+
+### Example
+```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+population = 3
+chron      = [R(0.1, 2), R(0.2, 3), I(0.7,1,2), P(0.5,1,2), C(1,2)]
+
+Innovation(population, chron)
+
+# output
+Innovation(3,
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₁.₀₀²])
+```
+"""
+function Innovation(population::Int, chronology::Vector{AbstractIncident})
+    infections = convert(Vector{AIF}, filter(z -> z isa AIF, chronology))
+    removals   = convert(Vector{AIR}, filter(z -> (z isa AIR) && !(z isa C), chronology))
+    cremovals  = C.(filter(z -> (z isa C), chronology))
+    return Innovation(population, infections, removals, cremovals)
+end
 
 end
 
@@ -883,7 +934,7 @@ CEvolution(3,
 infections: AbstractInfection[]
 removals:   AbstractRemoval[]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: CRemoval[𝒞₀.₀₀¹]
+chronology: AbstractIncident[𝒞₀.₀₀¹]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```

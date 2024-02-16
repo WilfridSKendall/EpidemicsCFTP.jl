@@ -891,7 +891,7 @@ Doctests to follow ...
 Note the source-code also contains many commented-out assertions!
 """
 function compute_NFZ(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
-	nofly_bound = deepcopy(ev.NFZ2)                                        # <1>
+	nofly_bound = deepcopy(ev.NFZ2)                                            # <1>
 	
 	processed_infections = AbstractInfection[]                                 # <2>
 	 
@@ -1029,6 +1029,7 @@ function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::R
     end
 end
 
+    
 """
     generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
 

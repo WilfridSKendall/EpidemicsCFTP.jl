@@ -29,16 +29,13 @@ Pkg.test("EpidemicsCFTP")
 ```
 or simply run the following in `bash`:
 ```bash
-cd ~/.julia/dev/EpidemicsCFTP # this directory
 make test
 ```
-
 
 DocTests
 --------
 Working in `bash`,
 ```bash
-cd ~/.julia/dev/EpidemicsCFTP # this directory
 make doctest
 ```
 
@@ -46,15 +43,13 @@ Documentation
 -------------
 For `gitbook` format, working in `bash`,
 ```bash
-cd ~/.julia/dev/EpidemicsCFTP # this directory
-make view
+make html-format
 ```
 
 PDF documentation
 -----------------
 For `pdf` format, working in `bash`,
 ```bash
-cd ~/.julia/dev/EpidemicsCFTP # this directory
-make view-pdf
+make pdf-format
 ```
 

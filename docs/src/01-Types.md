@@ -156,6 +156,8 @@ AbstractEvolution
 of lists of the requisite infections or removals. 
 ```@docs
 Innovation
+Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+Innovation(::Int, ::Vector{AbstractIncident})
 ```
 
 ### Two kinds of `AbstractEvolution`

@@ -641,6 +641,7 @@ AbstractIncident[𝒫₀.₀₀¹⁻²,ℐ₀.₈₅²⁻³,ℐ₀.₉₆³⁻�
 ```
 
 ### Example III
+Here is a simple test for validity of the `LFE` field.
 ```jldoctest LFE_test
 import EpidemicsCFTP: last_feasible_evolution
 last_feasible_evolution(duration, evx, iv) == evx.LFE
@@ -1070,7 +1071,6 @@ _last feasible evolution_. (Used primarily for **verification** that a
 given `LFE` field is correct.) The example indicates usage. 
 See example III from the doctests for [`last_feasible_evolution`](@ref) for
 a further simple complementary test using that function.
-
 ### Example
 ```jldoctest
 import Random
@@ -1139,3 +1139,67 @@ end
 # that `pointer` references the next iterate of the iterator.
 # 5. If we get to the end of this function without throwing an exception which can't be dealt with,
 # then the `LFE` is genuinely minimal, so `true` is returned!
+
+"""
+    EpidemicsCFTP.is_correct_NFZ3(ev::CEvolution)::Bool
+    
+Used primarily to check that the `NFZ3` field of a [`CEvolution`](@ref) is genuinely a 
+_no-fly zone_. The function works through the
+[`ExpungedInfection`](@ref)s in the `infections` field, checking that in each case if one started
+from a putative success for the `ExpungedInfection` then one
+would activate an conditioned `Removal`, thereby violating conditioning.
+### Example
+```jldoctest
+infections = AIF[XI(1.5,3,4), I(2.2,2,3), XI(2.3,1,4), XI(3.1,3,4), XI(3.2,3,4), XI(3.3,3,4)]
+removals   = AIR[R(3.4,4)]
+cremovals  = C[C(1,1)]
+iv         = Innovation(4, infections, removals, cremovals)
+ev         = CEvolution(SIR(0,3,1,0), iv)
+NFZ3       = [-Inf, -Inf, -Inf, 3.4]
+append!(ev.NFZ3, NFZ3)
+EpidemicsCFTP.is_correct_NFZ3(ev)
+
+# output
+true
+```
+"""
+function is_correct_NFZ3(ev::CEvolution)::Bool
+# import EpidemicsCFTP: evolution_history, EmployedRemoval, ExpungedInfection,
+#                       ExpungedInfectionGivesValidTrajectory
+    if all(t==-Inf for t in ev.NFZ3)                                                        # <1>
+        return true
+    end
+    expunged   = filter(z -> z isa ExpungedInfection, ev.infections)                        # <2>
+    if isempty(expunged)
+        return true
+    end
+    state_dict = Dict(zip(ev.history, ev.trajectory[2:end]))                                # <3>
+    
+    state      = ev.initial
+    for z in sort(ev.history ∪ expunged)                                                    # <4>
+        if z isa ExpungedInfection
+            try
+                beginning = SIR(z.t, state.n - z.infectee, z.infectee - state.r, state.r)   # <5>
+                chron0 = [zz for zz in ev.chronology if zz>z]
+                evolution_history(beginning, chron0, conditioned=true)
+            catch e
+                e isa EmployedRemoval ? nothing : rethrow()
+                return true
+            end
+            throw(ExpungedInfectionGivesValidTrajectory(ev, z))                             # <6>
+        else
+            state = state_dict[z]                                                           # <7>
+        end
+    end
+end
+# 1. Return `true` if `NFZ3` is filled with `-Inf`.
+# 2. List the `ExpungedInfection`s in the `infections` field. Return `true` if this is empty.
+# 3. Construct a dictionary mapping `history` to `trajectory[2:end]` so that each incident in
+# `ev.history` is mapped to the state of the epidemic at the time of the incident.
+# 4. Iterate through the ordered list of the union of `ev.history` and `ExpungedInfection`s.
+# 5. For each `ExpungedInfection`, compute a trajectory based on a start in which `z` actually succeeded 
+# making an infection! Catch every exception that arises, ignore `EmployedRemoval` exceptions,
+# `rethrow` all others. 
+# 6. If the computed trajectory doesn't return an error, then `z` should not have been expunged!
+# So raise an appropriate exception, namely [`ExpungedInfectionGivesValidTrajectory`](@ref).
+# 7. For incidents which are not `ExpungedInfection`s, simply update the `state`.

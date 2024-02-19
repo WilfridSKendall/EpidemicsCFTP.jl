@@ -52,6 +52,7 @@ export ⪯, ≃, ⋄
 # # Defined in `04-exceptions.jl`
 export BadIncident, MissedCRemoval, EmployedRemoval
 export BadLFE, EmptyLFE, NonMinimalLFE
+export BadNFZ3, ExpungedInfectionGivesValidTrajectory
 
 # # Sub-module defined in `05-Abbreviations.jl`
 # This is _not_ explicitly exported: import or use it 

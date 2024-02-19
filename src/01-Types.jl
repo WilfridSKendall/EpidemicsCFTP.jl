@@ -527,6 +527,10 @@ an [`ExpungedInfection`](@ref),
 which (being a [`NonOperativeInfection`](@ref))
 will never be activated.
 
+Ensure that it is the case that `ExpungedInfection`s arise **only** in this way!
+(This occurs in one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
+and later in a re-factoring of this using the function [`compute_NFZ`](@ref)).
+
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `ExpungedInfection` as `XI`.
 
 ### Example

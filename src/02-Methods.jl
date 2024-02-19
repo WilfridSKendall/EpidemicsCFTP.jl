@@ -1153,10 +1153,9 @@ would activate an conditioned `Removal`, thereby violating conditioning.
 infections = AIF[XI(1.5,3,4), I(2.2,2,3), XI(2.3,1,4), XI(3.1,3,4), XI(3.2,3,4), XI(3.3,3,4)]
 removals   = AIR[R(3.4,4)]
 cremovals  = C[C(1,1)]
-iv         = Innovation(4, infections, removals, cremovals)
-ev         = CEvolution(SIR(0,3,1,0), iv)
+chron      = sort(infections ∪ removals ∪ cremovals)
 NFZ3       = [-Inf, -Inf, -Inf, 3.4]
-append!(ev.NFZ3, NFZ3)
+ev         = CEvolution(SIR(0,3,1,0), chron; NFZ3=NFZ3)
 EpidemicsCFTP.is_correct_NFZ3(ev)
 
 # output

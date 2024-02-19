@@ -97,10 +97,10 @@ EpidemicsCFTP.is_same_config
 EpidemicsCFTP.update
 ```
 ## Methods for debugging
-| _Method_                               | _Summary_                                                   |
-|:---------------------------------------|:------------------------------------------------------------|
-| [`EpidemicsCFTP.is_correct_LFE`](@ref) | Checks whether `LFE` is indeed a _last_ feasible evolution! |
-| [`EpidemicsCFTP.is_correct_NFZ3](@ref) | Checks whether `NFZ3` is indeed a valid no-fly zone!        |
+| _Method_                                | _Summary_                                                 |
+|:----------------------------------------|:----------------------------------------------------------|
+| [`EpidemicsCFTP.is_correct_LFE`](@ref)  |Checks whether `LFE` is indeed a _last_ feasible evolution!|
+| [`EpidemicsCFTP.is_correct_NFZ3`](@ref) |Checks whether `NFZ3` is indeed a valid no-fly zone!       |
 ```@docs
 EpidemicsCFTP.is_correct_LFE
 EpidemicsCFTP.is_correct_NFZ3

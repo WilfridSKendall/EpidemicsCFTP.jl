@@ -981,7 +981,7 @@ There are three different derived constructors discussed below:
 
 ### Example
 We begin with illustration of a chronology (we will repeat this construction below!).
-```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
 population = initial.n
 infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
@@ -1031,7 +1031,7 @@ The procedure is as follows:
 
 
 ### Example
-```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
 population = initial.n
 infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
@@ -1058,7 +1058,7 @@ as `ev ⋄ candidate`.
 We also cover here two ways in which exceptions can be raised.
 
 #### What happens on missing a conditioned removal:
-```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest CEvolution_setup
 cremovals1 = sort(cremovals ∪ [C(0.0, 2)]) ;
 innov = Innovation(population, Infection[], Removal[], cremovals1) ;
 CEvolution(initial, innov)
@@ -1068,7 +1068,7 @@ ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.
 ```
 
 #### What happens on employing an (unconditioned) removal:
-```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest CEvolution_setup
 removals   = [R(0.1, 1), R(0.1, 2)] ;
 cremovals  = [C(0.2, 1)] ;
 innov      = Innovation(population, infections, removals, cremovals) ;
@@ -1224,7 +1224,7 @@ end
 This is the second way to construct a [`CEvolution`](@ref): 
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
 ### Example
-```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
 population = initial.n
 infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
@@ -1256,7 +1256,7 @@ end
 This is the third way:
 employing an [`Innovation`](@ref).
 ### Example
-```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
 population = initial.n
 infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]

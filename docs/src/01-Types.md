@@ -64,6 +64,7 @@ are always conditioned to happen).
 ```@docs
 Removal
 CRemoval
+CRemoval(::AbstractRemoval)
 ```
 #### Two kinds of [`NonOperativeRemoval`](@ref)
 `KilledRemoval` is a further kind of removal which will _never_ be realized.
@@ -71,7 +72,9 @@ CRemoval
 It also is never realized.
 ```@docs
 KilledRemoval
+KilledRemoval(::AbstractRemoval)
 RemovalMarker
+RemovalMarker(::AbstractRemoval)
 ```
 
 ### `AbstractInfection`
@@ -109,8 +112,11 @@ all activated removals as `CRemoval`s).
 
 ```@docs
 Infection
+Infection(::AbstractInfection)
 PInfection
+PInfection(::AbstractInfection)
 NoFlyInfection
+NoFlyInfection(z::AbstractInfection)
 ```
 
 #### Three different kinds of `NonOperativeInfection`s
@@ -122,8 +128,11 @@ It also is never realized.
 
 ```@docs
 KilledInfection
+KilledInfection(::AbstractInfection)
 ExpungedInfection
+ExpungedInfection(::ExpungedInfection)
 InfectionMarker
+InfectionMarker(::InfectionMarker)
 ```
 
 ### Abbreviations for `AbstractIncident`s
@@ -198,8 +207,8 @@ Evolution(::SIR, ::Vector{AbstractIncident})
 #### Conditioned `CEvolution`
 ```@docs
 CEvolution
-CEvolution(::SIR, ::Innovation)
-CEvolution(SIR, Vector{AbstractIncident})
 CEvolution(::AbstractEvolution, ::Innovation)
+CEvolution(::SIR, ::Vector{AbstractIncident})
+CEvolution(::SIR, ::Innovation)
 ```
 

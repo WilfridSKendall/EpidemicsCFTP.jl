@@ -24,7 +24,7 @@ Expects a field `kind` which is a `String`. This field is
 used by function `show`
 to represent the particular kind of incident.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this as `AI`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractIncident` as `AI`.
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
@@ -40,7 +40,7 @@ Also expects field `target<:Int`.
 If the potential removal is to become realized 
 then `target` must index a time line which is infectious just before time `t`.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this as `AIR`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractRemoval` as `AIR`.
 """
 abstract type AbstractRemoval <: AbstractIncident end
 
@@ -91,7 +91,7 @@ activated (`NonoOperativeInfection`), because their targets are
 on "removed" portions of time lines or because they would if activated
 lead to removal of inactivated `Removal` incidents.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this as `AIF`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractInfection` as `AIF`.
 """
 abstract type AbstractInfection <: AbstractIncident end
 
@@ -138,7 +138,7 @@ The `Removal` is realized if the specified timeline is infectious just before ti
 
 If activated in course of evolution of a conditioned epidemic then an error will be raised.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `R`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `Removal` as `R`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -170,15 +170,11 @@ Represent a conditioned removal using a sub-type of [`OperativeRemoval`](@ref), 
 The `target` field should always index a time line which is currently infectious 
 (a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `C`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `CRemoval` as `C`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> CRemoval(0.1, 4)
-𝒞₀.₁₀⁴
-julia> z = R(0.1, 4) ;
-
-julia> CRemoval(z)
 𝒞₀.₁₀⁴
 ```
 """
@@ -193,9 +189,20 @@ struct CRemoval <: OperativeRemoval
                 new("𝒞", float(t), target))
     end
 
-    function CRemoval(z::AbstractRemoval)
-        return CRemoval(z.t, z.target)
-    end
+@doc """
+    CRemoval(z::AbstractRemoval)::CRemoval
+
+Converts an [`AbstractRemoval`](@ref) to a `CRemoval`. 
+
+### Example
+```jldoctest
+julia> CRemoval(R(0.1, 4))
+𝒞₀.₁₀⁴
+```
+"""
+function CRemoval(z::AbstractRemoval)::CRemoval
+    return CRemoval(z.t, z.target)
+end
 end
 
 
@@ -204,17 +211,15 @@ end
 
 Implements a removal which can never be activated using a sub-type of [`AbstractRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
-The `KilledRemoval` is never realized.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `KR`.
+The `KilledRemoval` is never realized. It should be the case that `KilledRemoval`s are precisely those
+`AbstractRemoval`s which have `target` in the removal zone.
+
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledRemoval` as `KR`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> KilledRemoval(0.1, 4)
-𝒦₀.₁₀⁴
-julia> z = R(0.1, 4) ;
-
-julia> KilledRemoval(z)
 𝒦₀.₁₀⁴
 ```
 """
@@ -223,15 +228,29 @@ struct KilledRemoval <: NonOperativeRemoval
     t         ::Float64
     target    ::Int
 
-    function KilledRemoval(t::T, target::Int) where T <: Union{Float64, Int}
-        noun = "KilledRemoval($t, $target)"
-        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("𝒦", float(t), target))
-    end
+function KilledRemoval(t::T, target::Int) where T <: Union{Float64, Int}
+    noun = "KilledRemoval($t, $target)"
+    return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
+            new("𝒦", float(t), target))
+end
 
-    function KilledRemoval(z::AbstractRemoval)
-        return KilledRemoval(z.t, z.target)
-    end
+@doc """
+    KilledRemoval(::AbstractRemoval)::KilledRemoval
+    
+Converts an [`AbstractRemoval`](@ref) to a `KilledRemoval`. This should happen _only_ at the
+stage of creating an [`Innovation`](@ref) containing [`CRemoval`](@ref)s, in which case the `CRemoval`s
+determine the `finis` times of all actual infectious periods, so that we can ascertain
+precisely which `AbstractRemoval`s should be converted to `KilledRemoval`s.
+
+### Example
+```jldoctest
+julia> KilledRemoval(R(0.1, 4))
+𝒦₀.₁₀⁴
+```
+"""
+function KilledRemoval(z::AbstractRemoval)::KilledRemoval
+    return KilledRemoval(z.t, z.target)
+end
 end
 
 """
@@ -239,7 +258,12 @@ end
 
 This is a marker normally placed at the end of an epidemic to signal completion of infected time lines.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractRemoval` as `RM`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `RemovalMarker` as `RM`.
+### Example
+```jldoctest
+julia> RemovalMarker(0.1, 4)
+ℳ⁺₀.₁₀⁴
+```
 """
 struct RemovalMarker <: NonOperativeRemoval
     kind      ::String
@@ -251,10 +275,21 @@ struct RemovalMarker <: NonOperativeRemoval
         return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
                 new("ℳ⁺", float(t), target))
     end
+
+@doc """
+    function RemovalMarker(::AbstractRemoval)::RemovalMarker
     
-    function RemovalMarker(z::AbstractRemoval)
-        return RemovalMarker(z.t, z.target)
-    end
+Converts an [`AbstractRemoval`](@ref) to a `RemovalMarker`.
+
+### Example
+```jldoctest
+julia> RemovalMarker(R(0.1, 4))
+ℳ⁺₀.₁₀⁴
+```
+"""
+function RemovalMarker(z::AbstractRemoval)::RemovalMarker
+    return RemovalMarker(z.t, z.target)
+end
 end
 
 
@@ -267,10 +302,10 @@ Represent a potential infection using a sub-type of [`OperativeInfection`](@ref)
 using mark time `t` and another mark `target` and a further mark `infectee`.
 Marks `target` and `infectee` must be positive integers with `target < infectee`.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `I`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `Infection` as `I`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest
 julia> Infection(0.2, 1, 2)
 ℐ₀.₂₀¹⁻²
 ```
@@ -292,9 +327,20 @@ struct Infection <: OperativeInfection
         end
     end
 
-    function Infection(z::AbstractInfection)
-        Infection(z.t, z.target, z.infectee)
-    end
+@doc """
+    Infection(z::AbstractInfection)::Infection
+    
+Converts an [`AbstractInfection`](@ref) to a `KilledInfection`.
+
+### Example
+```jldoctest
+julia> KilledInfection(I(0.2, 1, 2))
+𝒦₀.₂₀¹⁻²
+```
+"""
+function Infection(z::AbstractInfection)::Infection
+    Infection(z.t, z.target, z.infectee)
+end
 end
 
 """
@@ -306,15 +352,11 @@ Intended to identify an `Infection` from a previous iteration of the CFTP
 algorithm which has had to be carried over to avoid failure to activate
 a `CRemoval`.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `P`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `PInfection` as `P`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> PInfection(0.2, 1, 2)
-𝒫₀.₂₀¹⁻²
-julia> z = I(0.2, 1, 2)
-ℐ₀.₂₀¹⁻²
-julia> PInfection(z)
 𝒫₀.₂₀¹⁻²
 ```
 """
@@ -334,10 +376,22 @@ struct PInfection <: OperativeInfection
             return new("𝒫", float(t), target, infectee)
         end
     end
+
+@doc """
+    PInfection(z::AbstractInfection)::PInfection
     
-    function PInfection(z::AbstractInfection)
-        return PInfection(z.t, z.target, z.infectee)
-    end
+Converts an [`AbstractInfection`](@ref) to a `PInfection`.
+We often refer to this as "perpetuation".
+
+### Example
+```jldoctest
+julia> PInfection(I(0.2, 1, 2))
+𝒫₀.₂₀¹⁻²
+```
+"""    
+function PInfection(z::AbstractInfection)::PInfection
+    return PInfection(z.t, z.target, z.infectee)
+end
 end
 
 """
@@ -360,16 +414,12 @@ to an error being raised when some
 [`Removal`](@ref) 
 (as opposed to a [`CRemoval`](@ref)) is activated.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `NF`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `NoFlyInfection` as `NF`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
-julia> y = NoFlyInfection(0.2, 1, 2)
+```jldoctest
+julia> NoFlyInfection(0.2, 1, 2)
 𝒩₀.₂₀¹⁻²
-julia> z = I(0.2, 1, 2) ;
-
-julia> NoFlyInfection(z) == y
-true
 ```
 """
 struct NoFlyInfection <: OperativeInfection
@@ -389,9 +439,19 @@ struct NoFlyInfection <: OperativeInfection
         end
     end
     
-    function NoFlyInfection(z::AbstractInfection)
-        return NoFlyInfection(z.t, z.target, z.infectee)
-    end
+@doc """
+    NoFlyInfection(z::AbstractInfection)::NoFlyInfection
+
+Converts an [`AbstractInfection`](@ref) to a `NoFlyInfection`.
+### Example
+```jldoctest
+julia> y = NoFlyInfection(I(0.2, 1, 2))
+𝒩₀.₂₀¹⁻²
+```
+"""
+function NoFlyInfection(z::AbstractInfection)::NoFlyInfection
+    return NoFlyInfection(z.t, z.target, z.infectee)
+end
 end
 
 """
@@ -403,15 +463,11 @@ Intended to identify an `Infection` which
 will never be activated because
 its `target` time line is not infected.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `KI`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledInfection` as `KI`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> KilledInfection(0.2, 1, 2)
-𝒦₀.₂₀¹⁻²
-julia> z = I(0.2, 1, 2)
-ℐ₀.₂₀¹⁻²
-julia> KilledInfection(z)
 𝒦₀.₂₀¹⁻²
 ```
 """
@@ -433,9 +489,19 @@ struct KilledInfection <: NonOperativeInfection
         end
     end
     
-    function KilledInfection(z::AbstractInfection)
-        return KilledInfection(z.t, z.target, z.infectee)
-    end
+@doc """
+    KilledInfection(::AbstractInfection)::KilledInfection
+
+Converts an [`AbstractInfection`](@ref) to a `KilledInfection`.
+### Example
+```jldoctest
+julia> KilledInfection(I(0.2, 1, 2))
+𝒦₀.₂₀¹⁻²
+```
+"""
+function KilledInfection(z::AbstractInfection)::KilledInfection
+    return KilledInfection(z.t, z.target, z.infectee)
+end
 end
 
 
@@ -461,16 +527,12 @@ an [`ExpungedInfection`](@ref),
 which (being a [`NonOperativeInfection`](@ref))
 will never be activated.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `XI`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `ExpungedInfection` as `XI`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> y = ExpungedInfection(0.2, 1, 2)
 𝒳₀.₂₀¹⁻²
-julia> z = I(0.2, 1, 2)
-ℐ₀.₂₀¹⁻²
-julia> ExpungedInfection(z) == y
-true
 ```
 """
 struct ExpungedInfection <: NonOperativeInfection
@@ -490,10 +552,20 @@ struct ExpungedInfection <: NonOperativeInfection
             return new("𝒳", float(t), target, infectee)
         end
     end
-    
-    function ExpungedInfection(z::AbstractInfection)
-        return ExpungedInfection(z.t, z.target, z.infectee)
-    end
+
+@doc """
+    ExpungedInfection(::AbstractInfection)::ExpungedInfection
+
+Converts an [`AbstractInfection`](@ref) to a `ExpungedInfection`.
+### Example
+```jldoctest
+julia> ExpungedInfection(I(0.2, 1, 2))
+𝒳₀.₂₀¹⁻²
+```
+"""
+function ExpungedInfection(z::AbstractInfection)::ExpungedInfection
+    return ExpungedInfection(z.t, z.target, z.infectee)
+end
 end
 
 """
@@ -502,7 +574,12 @@ end
 This is a marker normally placed at the start of an epidemic to signal initial infected time lines.
 Differs from (for example) `Infection` in that the `target` mark can be zero.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates this `AbstractInfection` as `IM`.
+The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `InfectionMarker` as `IM`.
+### Example
+```jldoctest
+julia> InfectionMarker(0.2, 1, 2)
+ℳ⁻₀.₂₀¹⁻²
+```
 """
 struct InfectionMarker <: NonOperativeInfection
     kind      ::String
@@ -521,9 +598,19 @@ struct InfectionMarker <: NonOperativeInfection
         end
     end
     
-    function InfectionMarker(z::AbstractInfection)
-        return InfectionMarker(z.t, z.target, z.infectee)
-    end
+@doc """
+    InfectionMarker(::AbstractInfection)::InfectionMarker
+
+Converts an [`AbstractInfection`](@ref) to an `InfectionMarker`.
+### Example
+```jldoctest
+julia> InfectionMarker(I(0.2, 1, 2))
+ℳ⁻₀.₂₀¹⁻²
+```
+"""
+function InfectionMarker(z::AbstractInfection)::InfectionMarker
+    return InfectionMarker(z.t, z.target, z.infectee)
+end
 end
 
 
@@ -633,7 +720,6 @@ population = 3
 infections = [I(0.7,1,2), P(0.5,1,2)]
 removals   = [R(0.2, 3), R(0.1, 2)]
 cremovals  = [C(0.0, 1), C(0.05, 2)]
-
 Innovation(population, infections, removals, cremovals)
 
 # output
@@ -787,7 +873,7 @@ struct Evolution <: AbstractEvolution
 An `Evolution` can be constructed using only an `initial` state 
 and an `Innovation`.
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 initial    = SIR(0, 2, 1, 0)
 population = initial.n
 infections = [NF(0.7,1,2), P(0.5,1,2)]
@@ -826,7 +912,7 @@ An `Evolution` can be constructed using only an `initial` state
 and a `chronology` (a `Vector{AbstractIncident}` of `AbstractIncident`s
 in increasing order).
 ### Example 
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 initial    = SIR(0, 2, 1, 0)
 population = initial.n
 infections = [NF(0.7,1,2), P(0.5,1,2)]
@@ -890,7 +976,7 @@ There are three different derived constructors discussed below:
 * using a `chronology` of incidents,
 
 ### Example
-We begin with setup of the various incidents.
+We begin with illustration of a chronology (we will repeat this construction below!).
 ```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 initial    = SIR(0.0, 2, 1, 0)
 population = initial.n
@@ -941,7 +1027,13 @@ The procedure is as follows:
 
 
 ### Example
-```jldoctest CEvolution_setup
+```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial    = SIR(0.0, 2, 1, 0)
+population = initial.n
+infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.1, 1), KR(0.2, 3), R(0.1, 2)]
+cremovals  = [C(0.0, 1)]
+chronology = infections ∪ removals ∪ cremovals
 ev = CEvolution(initial, chronology) ;
 candidate = Innovation(population, I[], R[], cremovals) ;
 CEvolution(ev, candidate)
@@ -956,10 +1048,13 @@ trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 
+Note also the abbreviation of `CEvolution(ev, candidate)`
+as `ev ⋄ candidate`.
+
 We also cover here two ways in which exceptions can be raised.
 
 #### What happens on missing a conditioned removal:
-```jldoctest CEvolution_setup
+```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 cremovals1 = sort(cremovals ∪ [C(0.0, 2)]) ;
 innov = Innovation(population, Infection[], Removal[], cremovals1) ;
 CEvolution(initial, innov)
@@ -969,7 +1064,7 @@ ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.
 ```
 
 #### What happens on employing an (unconditioned) removal:
-```jldoctest CEvolution_setup
+```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 removals   = [R(0.1, 1), R(0.1, 2)] ;
 cremovals  = [C(0.2, 1)] ;
 innov      = Innovation(population, infections, removals, cremovals) ;
@@ -978,7 +1073,6 @@ CEvolution(initial, innov)
 # output
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
-
 """
 function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
@@ -1126,13 +1220,20 @@ end
 This is the second way to construct a [`CEvolution`](@ref): 
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
 ### Example
-```jldoctest CEvolution_setup
+```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial    = SIR(0.0, 2, 1, 0)
+population = initial.n
+infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.1, 1), KR(0.2, 3), R(0.1, 2)]
+cremovals  = [C(0.0, 1)]
+chronology = infections ∪ removals ∪ cremovals
+
 ev = CEvolution(initial, chronology, NFZ1=[0.5])
 ev.NFZ1 == Real[0.5]
 
 # output
 true
-``
+```
 """
 function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
                     LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
@@ -1151,7 +1252,14 @@ end
 This is the third way:
 employing an [`Innovation`](@ref).
 ### Example
-```jldoctest CEvolution_setup
+```jldoctest CEvolution_setup; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+initial    = SIR(0.0, 2, 1, 0)
+population = initial.n
+infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.1, 1), KR(0.2, 3), R(0.1, 2)]
+cremovals  = [C(0.0, 1)]
+chronology = infections ∪ removals ∪ cremovals
+
 innov      = Innovation(population, infections, removals, cremovals) 
 CEvolution(initial, innov)
 

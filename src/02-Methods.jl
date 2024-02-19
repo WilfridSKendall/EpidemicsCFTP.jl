@@ -3,15 +3,15 @@
 # The following simple notation enables concise expression of _CFTP_ algorithms.
 # ```
 """
-    Base.∘(::CEvolution, ::Innovation) ::CEvolution (Use `\\circ`.)
+    Base.⋄(::CEvolution, ::Innovation) ::CEvolution (Use `\\diamond`.)
 
-The succinct statement `cev ∘ iv` is an expressive shorthand for 
+The succinct statement `cev ⋄ iv` is an expressive shorthand for 
 [`CEvolution(cev, iv)`](@ref CEvolution).
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
 iv  = Innovation(2, [I(0.5, 1, 2)], R[], [C(1.0, 1)])
-cev ∘ iv
+cev ⋄ iv
 
 # output
 CEvolution(2,
@@ -23,7 +23,7 @@ trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₅₀(0:2:0),SIR₁.₀₀(0:1:1)]
 history:    AbstractIncident[ℐ₀.₅₀¹⁻²,𝒞₁.₀₀¹])
 ```
 """
-function ∘(cev::CEvolution, iv::Innovation)::CEvolution
+function ⋄(cev::CEvolution, iv::Innovation)::CEvolution
     return CEvolution(cev, iv)
 end
 
@@ -33,7 +33,7 @@ end
 This allows us to compare (weakly) two `AbstractEvolution`s
 with the same population `initial.n`, by comparing the `start` fields.
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 initial = SIR(0.0, 2, 1, 0)
 iv1 = Innovation(2, I[I(1,1,2)], R[])
 iv2 = Innovation(2, I[I(2,1,2)], R[])
@@ -58,7 +58,7 @@ with the same population `initial.n` _and_ the same `CRemoval` times,
 comparing not only the `start` fields as in the `AbstractEvolution` version, 
 but also the `CRemoval` `target` fields.  
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 initial = SIR(0.0, 2, 1, 0)
 civ1 = Innovation(2, I[I(1,1,2)], R[], [C(3,1)])
 civ2 = Innovation(2, I[I(2,1,2)], R[], [C(3,1)])
@@ -83,7 +83,7 @@ end
 This allows us to test equality (weakly) for two `AbstractEvolution`s
 with the same population `initial.n`, using [`⪯`](@ref) both ways.
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 initial = SIR(0.0, 2, 1, 0)
 iv = Innovation(2, I[I(1,1,2)], R[])
 Evolution(initial, iv) ≃ Evolution(initial, iv)
@@ -117,7 +117,7 @@ Notice that `PInfection` and `CRemoval` take priority in, respectively,
 `AbstractInfection`s and `AbstractRemovals`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> C(0.10, 2) < R(0.10, 2)
 true
 julia> P(0.15, 2, 5) < I(0.15, 2, 5)
@@ -202,7 +202,7 @@ the mark `target` of the [`CRemoval`](@ref) `rem`
 to point to a positive `timeline` specified by the `Integer` argument.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> crem = C(0.15, 4)
 𝒞₀.₁₅⁴
 
@@ -230,7 +230,7 @@ end
 Tests whether an incident should be activated for a given state.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), I(0.1, 4, 6))
 true
 julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), XI(0.1, 4, 6))
@@ -298,7 +298,7 @@ to a given state and returns resulting state if it is activated (and hence opera
 Otherwise returns original state but with updated time `t`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), R(0.2, 4))
 SIR₀.₂₀(1:1:4)
 julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), KR(0.2, 4))
@@ -610,7 +610,7 @@ and an [`Innovation`](@ref): see examples I and II. Example III gives an explici
 (see [`is_correct_LFE`](@ref) for a complementary and more challenging test).
 
 ### Example I
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 initial = SIR(0.0, 2, 1, 0)
 innov = Innovation(3, 
     I[I(1.0, 1, 2)], 
@@ -712,7 +712,7 @@ Note that this currently presumes epidemic start and end incidents are marked
 out by first argument `trajectory`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> trajectory = [SIR(0.0, 2,2,3), SIR(0.5, 2,1,4), SIR(0.6, 1,2,4), SIR(1.0, 1,2,4)] ;
 
 julia> history = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] ;
@@ -818,7 +818,7 @@ from an [`AbstractEvolution`](@ref).
 Those which lie in the removals zone are converted to [`KilledRemoval`](@ref)s.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> initial_state = SIR(0.55, 1, 2, 3) ; n = 6 ;
 
 julia> innovation = Innovation(n, [I(0.6, 5, 6)], R[R(0.5, 4)], C[]) ;
@@ -891,11 +891,13 @@ as explained in annotations of the source-code.
 initial = SIR(0,1,1,0)
 ev = CEvolution(initial, AI[C(4,1)])
 iv = Innovation(2, AI[I(4.2,1,2), R(4.9,2), C(4,1)])
-ev = ev ∘ iv
+ev = ev ⋄ iv
 ev.NFZ3
 
 # output
-Real[-Inf, 4.9]
+2-element Vector{Real}:
+ -Inf
+   4.9
 ```
 
 Note the source-code also contains many commented-out assertions!
@@ -1070,7 +1072,7 @@ See example III from the doctests for [`last_feasible_evolution`](@ref) for
 a further simple complementary test using that function.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 import Random
 import EpidemicsCFTP: is_correct_LFE
 Random.seed!(43) 

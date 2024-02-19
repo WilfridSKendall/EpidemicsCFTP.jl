@@ -1,7 +1,7 @@
 # Standard abbreviations for various `AbstractInfection`s
 # -------------------------------------------------------
 """
-The module `abbreviations` provides simple abbreviations for `AbstractIncident`s,
+The sub-module `EpidemicsCFTP.abbreviations` provides simple abbreviations for [`AbstractIncident`](@ref)s,
 at the cost of using one-, two- or three-letter capital abbreviations:
 
 ```
@@ -13,8 +13,12 @@ AIR = AbstractRemoval;    R = Removal;   C = CRemoval;
 IM  = InfectionMarker;   RM = RemovalMarker;
 ```
 
-Make all abbreviationsa vailable by `using EpidemicsCFTP.abbreviations`,
-or `import` only selected abbreviations from `EpidemicsCFTP.abbreviations`.
+Make all abbreviations available by `using EpidemicsCFTP.abbreviations`.
+Alternatively `import` only some selected abbreviations from `EpidemicsCFTP.abbreviations`,
+for example as in the following.
+```julia
+import EpidemicsCFTP.abbreviations: I
+```
 """
 module abbreviations
 

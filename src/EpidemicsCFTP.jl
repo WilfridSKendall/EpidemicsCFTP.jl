@@ -47,7 +47,7 @@ export extremal_evolution, generate_innovation
 
 export alter
 
-export ⪯, ≃
+export ⪯, ≃, ⋄
 
 # # Defined in `04-exceptions.jl`
 export BadIncident, MissedCRemoval, EmployedRemoval
@@ -57,8 +57,8 @@ export BadLFE, EmptyLFE, NonMinimalLFE
 # This is _not_ explicitly exported: import or use it 
 # as `EpidemicsCFTP.abbreviations`.
 
-# # Note also that `isless` and `∘` are overloaded in `Methods.jl`!
-import Base: isless, ∘
+# # Note also that `isless` is overloaded in `Methods.jl`!
+import Base: isless
 
 # # Included files
 # # ==============

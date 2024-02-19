@@ -37,7 +37,7 @@ middle of three arguments and employing subscripts and 2 decimal places for time
 and superscript for the `target` field.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> R(0.10, 3)
 ℛ₀.₁₀³
 julia> C(0.10, 3)
@@ -56,7 +56,7 @@ This applies when used with `print`, being the string produced
 buy `repr`, and can be used 
 as input to produce a copy.
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> print(R(0.10, 3))
 Removal(0.1, 3)
 julia> print(C(0.10, 3))
@@ -78,7 +78,7 @@ Note that a more general form (arising for example from use of `print`) can be u
 as input to produce a copy.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> I(0.10, 3, 4)
 ℐ₀.₁₀³⁻⁴
 julia> P(0.10, 3, 4)
@@ -98,7 +98,7 @@ buy `repr`, and can be used
 as input to produce a copy.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> print(I(0.10, 3, 4))
 Infection(0.1, 3, 4)
 julia> print(P(0.10, 3, 4))
@@ -117,7 +117,7 @@ Implementation of `show` for [`Innovation`](@ref) as three rows of lists of inci
 -- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> population = 3
 3
 julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
@@ -143,7 +143,7 @@ end
     Base.show(io::IO, z::Innovation)
     
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> population = 3
 3
 julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
@@ -194,7 +194,7 @@ Implementation of `show` for [`AbstractEvolution`](@ref) as three rows of lists 
 We illustrate both these versions here.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> initial    = SIR(0.0, 2,1,0)
 SIR₀.₀₀(2:1:0)
 julia> population = initial.n
@@ -252,7 +252,7 @@ Implementation of `show` for vector of [`AbstractTimedOccurrence`](@ref)
 incidents with line-breaking.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+```jldoctest
 julia> infections = repeat([I(0.7,1,2), P(0.5,1,2)], 6)
 OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,
     𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]

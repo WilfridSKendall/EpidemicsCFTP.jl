@@ -1,10 +1,4 @@
-using Test, Documenter, EpidemicsCFTP
-
-
+using Test, EpidemicsCFTP, Documenter
+DocMeta.setdocmeta!(EpidemicsCFTP, :DocTestSetup, :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations); recursive=true)
 doctest(EpidemicsCFTP)
 
-# Currently raises error
-# ```julia
-# UndefVarError: `iocapture` not defined
-# ```
-# which is odd, as `Documenter.makedocs` runs the doctests just fine!

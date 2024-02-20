@@ -80,7 +80,7 @@ Basic Constructions
 ```{julia}
 #| echo: false
 const REPLICATES = 1:60
-Markdown.md"The range of simulation replicates over algorithmic time is $REPLICATES. \
+Markdown.md"The range of simulation replicates over algorithmic time is $(REPLICATES[end]). \
 We specify the duration of the epidemic, its population,  and two rate parameters."
 ```
 ```{julia}
@@ -129,7 +129,7 @@ Unit Tests for zero algorithmic time, many initial conditions
 =============================================================
 ```{julia}
 #| echo: false
-Markdown.md"Unit tests are carried out in algorithmic time for a sample $REPLICATES, \
+Markdown.md"Unit tests are carried out in algorithmic time for a sample of size $(REPLICATES[end]), \
 using as initial states both the maximal conditioned evolution and the minimal conditioned \
 evolution. Simulations are conditioned on the specified `cremoval_times`. "
 ```
@@ -185,7 +185,7 @@ Unit Tests for further steps in algorithmic time
 ================================================
 ```{julia}
 #| echo: false
-Markdown.md"We now simulate over the algorithmic time range for a sample $REPLICATES, \
+Markdown.md"We now simulate over the algorithmic time range for a sample of size $(REPLICATES[end]), \
 starting in turn from each of the defined initial configurations. \
 In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents. \
 Note the monotonicity test using `ev_pair`."
@@ -202,16 +202,14 @@ for i ∈ 1:population
         ev_hi, ev_lo = ev_hi ⋄ ivl[j], ev_lo ⋄ ivl[j] 
         for ev in [ev_hi, ev_lo]
             @test CEvolution(ev.initial, ev.LFE).history == ev.LFE                          # <1>
-            @test EpidemicsCFTP.is_correct_LFE(ev)                                          # <2>
-            @test is_correct_LFE(ev)                                                        # <3>
-            @test is_correct_NFZ(ev)                                                        # <3>
+            @test is_correct_LFE(ev)                                                        # <2>
+            @test is_correct_NFZ(ev)                                                        # <2>
         end
-        @test ev_lo ⪯ ev_hi                                                                 # <4>
+        @test ev_lo ⪯ ev_hi                                                                 # <3>
 
-        same_trajectory = ≃(ev_hi, ev_lo)
-        @test (! coalesced) || same_trajectory                                              # <5>
-        coalesced = same_trajectory    
-        print(same_trajectory ? "c"         : "-")
+        @test (! coalesced) || ≃(ev_hi, ev_lo)                                              # <4>
+        coalesced = ≃(ev_hi, ev_lo)    
+        print(≃(ev_hi, ev_lo) ? "c"         : "-")
         print((j % 10) == 0   ? " "         : "" )
         print((j % 80) == 0   ? "\n       " : "" )
     end
@@ -219,10 +217,8 @@ end ;
 ```
 1. Check the \LFE is the history of an epidemic generated using the self-same `LFE`
 (hence _a fortiori_ the `LFE` of this new epidemic);
-2. Check the \LFE is genuinely the least feasible evolution (otherwise an exception will be raised 
-by `EpidemicsCFTP.is_correct_LFE` which will be caught and reported on); 
-3. Check
+2. Check
 `LFE` and `NFZ` are correct for both `ev_lo` and `ev_hi`;
-4. Check `CEvolutions` arising from maximal and minimal starts are weakly monotonically related;
-5. Check that once coalescence is obtained then it persists! Coalescence times are printed out.
+3. Check `CEvolutions` arising from maximal and minimal starts are weakly monotonically related;
+4. Check that once coalescence is obtained then it persists! Coalescence times are printed out.
  

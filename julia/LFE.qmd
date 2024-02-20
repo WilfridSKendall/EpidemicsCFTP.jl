@@ -47,7 +47,7 @@ import EpidemicsCFTP: EpidemicsCFTP,
     AbstractIncident,
     AbstractInfection, OperativeInfection, Infection, PInfection, NoFlyInfection, ExpungedInfection,
     AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
-    ⪯, ≃, generate_innovation, extremal_evolution
+    ⪯, ≃, ⋄, generate_innovation, extremal_evolution
 
 # ENV["JULIA_DEBUG"] = Main    
 ```
@@ -161,7 +161,7 @@ for i ∈ 1:population                                                          
         @test computed_LFE == sort(ev.cremovals ∪ ev.removals ∪ [P(z) for z ∈ ev.infections 
                 if z isa OperativeInfection && startup < z.infectee ≤ crcount])     # <4>
          
-        evx = ev ∘ iv
+        evx = ev ⋄ iv
         deleteat!(evx.cremovals, 1:length(ev.cremovals))                            # <5>
         append!(evx.cremovals, ev.cremovals)                                        # <5>
 
@@ -178,7 +178,7 @@ end ;
 generated using this `LFE` (This check should hold in all cases, not just the above edge-cases);
 4. Check the `LFE` computed from the trajectory (a rather trivial calculation in these edge-cases)
 agrees with the `LFE` computed using the resulting `CEvolution`;
-5. Fudge the result of `ev ∘ iv` to restore the `cremovals` of `ev`.
+5. Fudge the result of `ev ⋄ iv` to restore the `cremovals` of `ev`.
 6. Also check `removals`, and `trajectory` fields are unchanged  (hence also the `infections` field) in this case of zero algorithmic time.
 7. Check that the \LFE is genuinely the least feasible evolution;
 8. Check that the constructed maximal and minimal `CEvolutions` are weakly monotonically related.
@@ -204,7 +204,7 @@ for i ∈ 1:population
     
     for j ∈ REPLICATES
         iv = ivl[j]
-        ev_hi, ev_lo = ev_hi ∘ iv, ev_lo ∘ iv 
+        ev_hi, ev_lo = ev_hi ⋄ iv, ev_lo ⋄ iv 
         
         for ev in [ev_hi, ev_lo]
             @test CEvolution(ev.initial, ev.LFE).history == ev.LFE                          # <1>
@@ -355,7 +355,7 @@ then the `LFE` is genuinely minimal, so `true` is returned!
 The `one_stop` function
 =======================
 The `one_step` function corresponds to the method `CEvolution(::AbstractEvolution, ::Innovation)`;
-a non-executable listing is given here. See also `∘` in next section!
+a non-executable listing is given here. See also `⋄` in next section!
 ```julia
 function one_stop(ev::AbstractEvolution, iv::Innovation)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
@@ -393,12 +393,16 @@ in the intersection of `LFE` and `history`.
 The `compute_NFZ` function
 ============================
 ```julia
-function compute_NFZ(ev::CEvolution, iv::Innovation, perpetuated_infections::P[])::Tuple{Vector{AI},Vector{Real}}
+function compute_NFZ(ev::CEvolution, iv::Innovation, 
+                    perpetuated_infections::P[])::Tuple{Vector{AI},Vector{Real}}
     NFZ1 = repeat([-Inf], ev.initial.n)
-    for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
+    NFZ1 = Dict{Int, Real}()
+    for z ∈ filter(x -> x < ev.finis[x.target], removals)
         NFZ1[z.target] = max(NFZ1[z.target], z.t)
     end
+
     NFZ2 = accumulate(max, NFZ1)
+    
     NFZ3 = deepcopy(ev.NFZ2)                                                    # <1>
 	
 	processed_infections = AbstractInfection[]                                  # <2>
@@ -464,23 +468,23 @@ when adding it to the list `processed_infections`.
 4. If the `Infection` `z` has `target` on the removed portion of a level
 then it will never be activated, so add `z` as a `KilledInfection`.
 5. If the `Infection` `z` potentially infects a level at a _later time_ 
-than the current `NFZ2` at that level, then its activation will
+than the current `NFZ3` at that level, then its activation will
 never break the conditioning (**needs proof!**), so add `z` as-is.
 (I think the point is: since we are working backwards in time, once
-`z.t` is considered then `NFZ2` is frozen from time `t` onwards.)
-6. However if `z.t < NFZ2[z.infectee - 1]` then no issue can arise, as 
+`z.t` is considered then `NFZ3` is frozen from time `t` onwards.)
+6. However if `z.t < NFZ3[z.infectee - 1]` then no issue can arise, as 
 infection of the level immediately below `z.infectee` will then not be
 allowed at this time. So again add `z` as-is.
 7. Suppose `z ≥ ev.start[z.target]`: then an issue would arise
 if the level at `z.infectee - 1` were to become infected before
 `z.t`. One of two cases must hold:
 8. Case (a): Suppose `z < ev.start[z.infectee - 1]`.
-Then **increase** `NFZ2[z.infectee - 1]` to `z.t` in order to
+Then **increase** `NFZ3[z.infectee - 1]` to `z.t` in order to
 preclude the time line getting infected, and also transform `z` to a
 `NoFlyInfection` when added to `processed_infections`, to signal
 that it should never become infected.  
 Case (b): Suppose `z ≥ ev.start[z.infectee - 1]`.
-Then increasing `NFZ2[z.infectee - 1]` to `z.t` would lead to a
+Then increasing `NFZ3[z.infectee - 1]` to `z.t` would lead to a
 problem, since this level is infected at time `z.t`. Therefore we
 transform `z` to a `ExpungedInfection` when we add it to 
 `processed_infections`, so that it is treated as an
@@ -490,7 +494,7 @@ iteration must have time mark earlier than `z.t`. If one of these were
 to infect the level `z.infectee - 1` then it would follow by monotonicity
 that the `z.target` level would become infected by that time `z.t`; and 
 thus would create an infection of the `z.infectee` level at time `z.t`. 
-In order for this to be prevented, we need to extend the `NFZ2` 
+In order for this to be prevented, we need to extend the `NFZ3` 
 at level `z.infectee - 1` up to time `z.t`. We also transform `z`
 to a `NoFlyInfection` when we add it to `processed_infections`, to
 signal that it should never become infected.
@@ -523,10 +527,10 @@ weq = ⪯
 
 
 It is also useful to be able to compose a `CEvolution` with an `Innovation`
-(non-commutative!) using `∘` (`\circ`).
+(non-commutative!) using `⋄` (`\diamond`).
 ```julia
 import EpidemicsCFTP: CEvolution, Innovation
-function ∘(cev::CEvolution, iv::Innovation) ::CEvolution
+function ⋄(cev::CEvolution, iv::Innovation) ::CEvolution
     return CEvolution(cev, iv)
 end ;
 ```

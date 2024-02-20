@@ -159,8 +159,8 @@ from the input data.
 Here is an `Innovation` to generate the `CEvolution` of the corresponding conditioned epidemic:
 ```{julia}
 iv1 = Innovation(initial.n, uev1.infections, 
-        R[z for z in setdiff(uev1.removals, uev1.history)], 
-        C[C(z) for z in uev1.removals ∩ uev1.history])
+        R[z for z ∈ setdiff(uev1.removals, uev1.history)], 
+        C[C(z) for z ∈ uev1.removals ∩ uev1.history])
 ```
 Here is the resulting `CEvolution` of an epidemic (_conditioned_ on observed removals) is:
 ```{julia}
@@ -391,9 +391,25 @@ they still lead to activation of the relevant `CRemoval`.
 
 Adding infections from the \LFE
 -------------------------------
+```{julia}
+#| echo: false
+if EpidemicsCFTP.is_correct_LFE(ev2)
+    Markdown.parse("""
 To determine how to replace infections, 
-we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`.
-(In fact this yields the final `ev2.LFE`!)
+we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`
+(in fact the resulting `ev1_4` yields the final `ev2.LFE`!).
+The construction of `ev1_4.LFE=ev2.LFE` in @fig-test-05-LFE has been checked using `EpidemicsCFTP.is_correct_LFE` and is **valid**.
+""")
+else
+    Markdown.parse("""
+To determine how to replace infections, 
+we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`
+(in fact the resulting `ev1_4`  yields the final `ev2.LFE`!),
+According to `EpidemicsCFTP.is_correct_LFE`, the construction of `ev1_4.LFE` is **not** valid.
+""")
+end
+```
+
 ```{julia}
 last_feasible_new_infections = AIF[z for z ∈ ev2.LFE ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ ev2.LFE ∩ ev1_3.infections]
@@ -402,7 +418,6 @@ iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infec
                         other_older_infections, ev1_3.removals, ev1_3.cremovals)
 ev1_4 = CEvolution(initial, iv1_4, LFE=ev2.LFE)
 ```
-
 
 ```{julia}
 #| echo: false
@@ -431,18 +446,35 @@ carried over from `ev1_3`.
 
 :::
 
-
 {{< pagebreak >}}
 
 Computing the \NFZ
 ------------------------
 
+```{julia}
+#| echo: false
+if EpidemicsCFTP.is_correct_NFZ3(ev2)
+    Markdown.parse("""
 @fig-test-06-evolve depicts `ev2`, the
 trajectory of the `CEvolution` at the next step in algorithmic time.
 Display options for the new evolution are chosen to give only the epidemic trajectory boundary,
 the removals trajectory boundary, and the 
-\LFE (`LFE`) and 
-\NFZ (`NFZ`) boundaries.
+\\LFE (`LFE`) and 
+\\NFZ (`NFZ`) boundaries.
+`EpidemicsCFTP.is_correct_NFZ3` has verified the construction of `ev2.NFZ3` in @fig-test-06-evolve22.
+""")
+else
+    Markdown.parse("""
+@fig-test-06-evolve depicts `ev2`, the
+trajectory of the `CEvolution` at the next step in algorithmic time.
+Display options for the new evolution are chosen to give only the epidemic trajectory boundary,
+the removals trajectory boundary, and the 
+\\LFE (`LFE`) and 
+\\NFZ (`NFZ`) boundaries.
+**Warning:** according to `EpidemicsCFTP.is_correct_NFZ3`, the construction of `ev2.NFZ3` is **not** valid.
+""")
+end
+```
 
 ```{julia}
 #| echo: false
@@ -507,10 +539,11 @@ Examples of progress through algorithmic time
 
 Extremal conditional evolutions
 -------------------------------
-We now demonstrate how this construction leads to progressive development through algorithmic time.
-To this end, we seed the random number generator so as to ensure repeatability.
+We now demonstrate how this construction leads to progressive development through algorithmic time,
+using `EpidemicsCFTP.is_correct_LFE` and `EpidemicsCFTP.is_correct_NFZ3` to verify each step.
+We seed the random number generator so as to ensure repeatability.
 ```{julia}
-Random.seed!(2)
+Random.seed!(2) ;
 ```
 
 Initial `CEvolution`s can be _maximal_ or _minimal_; their definitions depend on
@@ -519,7 +552,7 @@ Both require an `initial` state (of which only the fields `t` and `n` matter),
 `duration`,
 and a list of `CRemoval` times.
 
-Computation of minimal and maximal `CEvolution`s, whose trajectories
+Initial computations of minimal and maximal `CEvolution`s
 are illustrated in @fig-test-08-initial.
 ```{julia}
 ev0_min = extremal_evolution(initial, duration, [z.t for z ∈ iv1.cremovals]; maximal=false) ;
@@ -528,9 +561,6 @@ ev0_max = extremal_evolution(initial, duration, [z.t for z ∈ iv1.cremovals]) ;
 
 ```{julia}                   
 #| echo: false                       
-# *** ISSUE *** `REGIONS` yields slanted regions!
-# SELECTION = MOST
-#               `NFZ` yields complaints of zero-length lists
 SELECTION = ELEMENTS | BOUNDARIES | ACTIVATED
 
 depict("test-08-minimal", new_figure(                                                  
@@ -556,21 +586,25 @@ Comparative trajectories of maximal and minimal conditioned evolutions.
 
 {{< pagebreak >}}
 
-Progress starting with minimal evolution
-----------------------------------------
+Progress starting with minimal (slowest) evolution
+--------------------------------------------------
 We generate a short sequence of candidate innovations, starting with the minimal evolution,
 and use these to generate successive `CEvolution`s up to algorithmic time `ALG`.
+We use the expressive "diamond" infix operator `⋄`, as in `ev = ev ⋄ iv`, instead of `ev = CEvolution(ev, iv)`.
+Note that exceptions will be raised if `LFE` or `NFZ3` structures appear to be wrong.
+See the image sequence in @fig-test-09-minstep.
 ```{julia}
 ALG=12 ; α=0.2 ; β=0.1
 iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
-iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i in 1:ALG] ;
+iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i ∈ 1:ALG] ;
 ```
 
 ```{julia}
-minimal = CEvolution[]
-ev = ev0_min
-for iv in iv_seq[1:ALG]
-    ev = CEvolution(ev, iv)
+ev, minimal = ev0_min, CEvolution[]
+for iv ∈ iv_seq[1:ALG]
+    ev = ev ⋄ iv
+    EpidemicsCFTP.is_correct_LFE(ev)
+    EpidemicsCFTP.is_correct_NFZ3(ev)
     push!(minimal, ev)
 end ;
 ```
@@ -578,72 +612,70 @@ end ;
 ```{julia}
 #| echo: false
 # use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)` at step 2????
-for (i, ev) in enumerate(minimal[1:6])
+for (i, ev) ∈ enumerate(minimal[1:6])
     depict("test-09-minstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | NFZ),
-            title="Minimal evolution at step $i")
+            title="Min evolution, step $i")
         ) ;
 end
 ```
 
-{{< pagebreak >}}
 
-We now see how `LFET` goes awry! Here is the second `minimal` `CEvolution`.
+Progress starting with maximal (fastest) evolution
+--------------------------------------------------
+We now use this to generate successive `CEvolution`s
+in algorithmic time but starting from maximal `CEvolution`.
+See the image sequence in
+@fig-test-10-maxstep.
 ```{julia}
-last_feasible_evolution = EpidemicsCFTP.last_feasible_evolution
-```
-
-The calculation of the `LFE` field using the following variant gives a clearly wrong answer.
-```julia
-function last_feasible_evolutionX(duration::Real, ev::AbstractEvolution, iv::Innovation; 
-                                    conditioned::Bool=false)
-    return last_feasible_evolution0(duration, ev, iv, 
-                                EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals))
-end ;            
-function last_feasible_evolution0(duration::Real, ev::AbstractEvolution, iv::Innovation,
-            computed_cremovals::Vector{CRemoval}; conditioned::Bool=false)
-            
-    # Compute time-ordered list of `CRemoval`s of maximum `target` so far:
-    fence = [z[2] for z in unique(accumulate(max, [(z.target, z) for z in computed_cremovals]))]
-    
-    # Compute chronology from (perpetuated) infections formed from `ev.history` and infections in `iv`:
-    chronology = sort([PInfection(z) for z in ev.history if z isa OperativeInfection] ∪ iv.infections) 
-                                
-    # Deal with `chronology` using time bound and maximum `infectee` defined by `fence` target.
-    terminus = fence[end]
-    truncated_chronology = [z for z in chronology if (z < terminus) && (z.infectee ≤ terminus.target)]
+ev, maximal = ev0_max, CEvolution[]
+for iv ∈ iv_seq  
+    ev = ev ⋄ iv
+    EpidemicsCFTP.is_correct_LFE(ev)
+    EpidemicsCFTP.is_correct_NFZ3(ev)
+    push!(maximal, ev)
 end ;
 ```
 
+
 ```{julia}
-ev, iv = minimal[1], iv_seq[2]
-println("cremovals before    ", sprint(show, MIME("text/plain"), ev.cremovals))
-println("cremovals proposed  ", sprint(show, MIME("text/plain"), iv.cremovals))
-resulting_cr = EpidemicsCFTP.resulting_cremovals(ev, iv.cremovals)
-println("cremovals accepted  ", sprint(show, MIME("text/plain"), resulting_cr))
-chronology = sort([z for z in ev.history if z isa OperativeInfection] ∪ iv.infections)
-println("chronology          ", sprint(show, MIME("text/plain"), chronology))
-last_feasible_evolution(duration, ev, iv)
-
-removal_count = ev.initial.r
-
-println("no overshoots       ", sprint(show, MIME("text/plain"), 
-    sort(last_feasible_evolution(duration, ev, iv) ∪ resulting_cr)))
-
-tally = OperativeInfection[]
-for z in sort(last_feasible_evolution(duration, ev, iv) ∪ resulting_cr)
-    if z isa CRemoval
-        removal_count += 1
-    elseif z.target > removal_count
-        push!(tally, z)
-    end
+#| echo: false
+for (i, ev) ∈ enumerate(maximal[1:6])
+    depict("test-10-maxstep$i", new_figure(
+        draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
+                select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
+            title="Max evolution, step $i")
+        ) ;
 end
-println("active infections   ", sprint(show, MIME("text/plain"), tally))
 ```
-Now choose the latest at highest level, use that.
-Then choose the latest at next highest level that is early than this choice, use that.
-And so forth.
+
+Comparison of minimal and maximal sequences
+-------------------------------------------
+```{julia}
+#| echo: false
+plot_range = 1:6
+Markdown.parse("""
+Finally, @fig-test-11step plots the first 
+$(plot_range[end])
+steps of both minimal and maximal evolutions in algorithmic time. 
+Monotonicity is 
+$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "maintained throughout" : "**not** maintained"),
+while full coalescence (including agreement of `CRemoval` `target` fields) occurs at step $(findfirst(minimal .≃ maximal)) 
+$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "and then persists" : "but does **not** persist").
+""")
+```
+
+```{julia}
+#| echo: false   
+for k ∈ plot_range
+    work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, select=BOUNDARIES)                                                         
+    depict("test-11step$k", new_figure(                                                  
+        draw_evolution!(work, maximal[k], duration, theme=theme, select=BOUNDARIES),                                                          
+            title="Evolution at step $k")                                                     
+        )
+end ;
+```
 
 ::: {#fig-test-09-minstep layout-ncol=2 layout-nrow=3}
 
@@ -660,37 +692,9 @@ And so forth.
 ![](image/test-09-minstep6.pdf)
 
 Sequence of trajectories evolving in algorithmic time, starting
-with the minimal `CEvolution`.
+with the minimal (slowest) `CEvolution`.
 
 :::
-
-
-{{< pagebreak >}}
-
-Progress starting with maximal evolution
-----------------------------------------
-We now use this to generate successive `CEvolution`s
-in algorithmic time but starting from maximal `CEvolution`.
-```{julia}
-maximal = CEvolution[]
-ev = ev0_max
-for iv in iv_seq  
-    ev = CEvolution(ev, iv)
-    push!(maximal, ev)
-end ;
-```
-
-
-```{julia}
-#| echo: false
-for (i, ev) in enumerate(maximal[1:6])
-    depict("test-09-maxstep$i", new_figure(
-        draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
-                select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
-            title="Maximal evolution at step $i")
-        ) ;
-end
-```
 
 ::: {#fig-test-10-maxstep layout-ncol=2 layout-nrow=3}
 
@@ -707,26 +711,12 @@ end
 ![](image/test-10-maxstep6.pdf)
 
 Sequence of trajectories evolving in algorithmic time, starting
-with the maximal `CEvolution`.
+with the maximal (fastest) `CEvolution`.
 
 :::
 
 {{< pagebreak >}}
 
-Comparison of minimal and maximal sequences
--------------------------------------------
-We now plot a sequence of 12 steps in algorithmic time. We achieve coalescence at step 2!
-
-```{julia}
-#| echo: false   
-for k in 1:12
-    work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, select=BOUNDARIES)                                                         
-    depict("test-11step$k", new_figure(                                                  
-        draw_evolution!(work, maximal[k], duration, theme=theme, select=BOUNDARIES),                                                          
-            title="Evolution at step $k")                                                     
-        )
-end ;
-```
 
 ::: {#fig-test-11step layout-ncol=2 layout-nrow=2}
 
@@ -738,31 +728,12 @@ end ;
 
 ![Step 4.](image/test-11step4.pdf){#fig-test-11step4}
 
-![Step 3.](image/test-11step5.pdf){#fig-test-11step5}
+![Step 5.](image/test-11step5.pdf){#fig-test-11step5}
 
-![Step 4.](image/test-11step6.pdf){#fig-test-11step6}
-
-Comparison of trajectories evolving in algorithmic time, starting
-with minimal and maximal `CEvolution`s. (I)
-
-:::
-
-::: {#fig-test-12step layout-ncol=2 layout-nrow=2}
-
-![Step 7.](image/test-11step7.pdf){#fig-test-11step7}
-
-![Step 8.](image/test-11step8.pdf){#fig-test-11step8}
-
-![Step 9.](image/test-11step9.pdf){#fig-test-11step9}
-
-![Step 10.](image/test-11step10.pdf){#fig-test-11step10}
-
-![Step 11.](image/test-11step11.pdf){#fig-test-11step11}
-
-![Step 12.](image/test-11step12.pdf){#fig-test-11step12}
+![Step 6.](image/test-11step6.pdf){#fig-test-11step6}
 
 Comparison of trajectories evolving in algorithmic time, starting
-with minimal and maximal `CEvolution`s. (II)
+with minimal and maximal `CEvolution`s.
 
 :::
 

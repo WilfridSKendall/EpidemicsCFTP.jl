@@ -171,7 +171,7 @@ for i ∈ 1:population                                                          
 end ;
 ```
 1. Iterate through all possible initial configurations with zero initial removals.
-2. Iterate through first the results of the minimal initial condition then the results of the maximal initial condition.
+2. Deal first with minimal (slowest) evolution then maximal (fastest).
 3. Check that the \LFE will be the history (hence _a fortiori_ the `LFE`) of an epidemic
 generated using this `LFE` (This check should hold in all cases, not just the above edge-cases);
 4. Check the `LFE` computed from the trajectory (a rather trivial calculation in these edge-cases)
@@ -220,5 +220,5 @@ end ;
 2. Check
 `LFE` and `NFZ` are correct for both `ev_lo` and `ev_hi`;
 3. Check `CEvolutions` arising from maximal and minimal starts are weakly monotonically related;
-4. Check that once coalescence is obtained then it persists! Coalescence times are printed out.
+4. Check that once coalescence is obtained then it persists! Coalescence times are indicated.
  

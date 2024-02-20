@@ -49,7 +49,8 @@ source = "introduction.qmd"
 #| eval: true
 #| cache: false
 using EpidemicsCFTP, EpidemicsCFTP.abbreviations, EpidemicsUtilities
-import EpidemicsUtilities: BOUNDARIES, REGIONS, TOP, ELEMENTS, BASIC, LFE, LFET, LFER
+import EpidemicsUtilities: BOUNDARIES, REGIONS, TOP, ELEMENTS, BASIC, LFE, LFET, LFER # REMOVE THIS LATER
+import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, LFER, MOST, NFZ
 
 import Compose: context, compose, line, text, fontsize, 
     hcenter, linewidth, stroke
@@ -143,7 +144,7 @@ perpetuated infections `P` or `𝒫`,
 potential removals `R` or `ℛ`
 and conditioned removals `C` or `𝒞`),
 ```{julia}
-innov1 = Innovation(initial.n,
+iv1 = Innovation(initial.n,
     AIF[I(0.11, 2, 3), I(0.2, 2, 5), P(0.4, 1, 2), I(0.5, 2, 5),  I(0.6, 2, 4), I(0.75, 1, 2), 
         I(0.85, 3, 4), I(0.9, 2, 3), I(1.0, 2, 5), I(1.05, 4, 5), I(1.1, 2, 3), P(1.2, 2, 4), 
         I(1.45, 4, 6), I(1.5, 3, 4),  I(1.6, 3, 5)  ],
@@ -241,23 +242,23 @@ set_default_plot_size(theme.figwidth, theme.figheight)
 # Constructing the epidemic
 An epidemic can now be constructed as follows;
 the epidemic
-`evol1 = CEvolution(initial, innov1)`
+`ev1 = CEvolution(initial, iv1)`
 starts at the `initial` state at process time \(0.0\) and then evolves
 in process time 
 based on the various potential incidents
 held in the `Innovations`
-structure `innov1`. 
+structure `iv1`. 
 @tbl-evolution tabulates the epidemic trajectory 
-`evol1 = CEvolution(initial, innov1)`
+`ev1 = CEvolution(initial, iv1)`
 up to time `duration=2.0`
-for initial state `initial` and a particular `Innovation` structure `innov1`.
+for initial state `initial` and a particular `Innovation` structure `iv1`.
 ```{julia}
 #| label: tbl-evolution
 #| tbl-cap: CEvolution of an epidemic
 #| echo: false 
-evol1 = CEvolution(initial, innov1)
+ev1 = CEvolution(initial, iv1)
 
-flow = table_trajectories1(duration, evol1.trajectory) ;
+flow = table_trajectories1(duration, ev1.trajectory) ;
 header = [:t, :susceptibles, :infectives, :removals, :epidemic]
 Markdown.parse(pretty_table(String, flow[:,header], 
   header=header, tf=tf_markdown, alignment=[:l, :c, :c, :c, :c]))
@@ -350,7 +351,7 @@ an _infectivity zone_, and between the infectivity zone and a _susceptible zone_
 depict("introduction-03-boundary", 
     new_figure(
         draw_regions!(deepcopy(incidents_template), 
-            duration, evol1, theme=theme, select=BOUNDARIES | TOP),
+            duration, ev1, theme=theme, select=BOUNDARIES | TOP),
         title="Boundaries for the coupling construction")
 )
 ```
@@ -378,7 +379,7 @@ Markdown.parse(pretty_table(String, xy_flow[:,header],
 #| label: fig-introduction-04-zones
 #| fig-cap: "Infectivity and removal zones. [`04-zones`]"
 figure_zones = draw_regions!(deepcopy(incidents_template), 
-    duration, evol1, theme=theme, select=BOUNDARIES | REGIONS)
+    duration, ev1, theme=theme, select=BOUNDARIES | REGIONS)
 depict("introduction-04-zones", new_figure(figure_zones,
     title="Zones of infectivity and removal"))
 ```
@@ -386,14 +387,14 @@ depict("introduction-04-zones", new_figure(figure_zones,
 
 Adding incidents to the plot
 ----------------------------
-@fig-introduction-05-incidents adds incidents corresponding to the underlying `innov1`
+@fig-introduction-05-incidents adds incidents corresponding to the underlying `iv1`
 using the `EpidemicsUtilities` function `draw_elements`. This figure
 does not yet take account of whether or not incidents are activated,
-but merely illustrates the occurrences of the various incidents..
+but merely illustrates the occurrences of the various incidents.
 ```{julia}
 #| echo: false
 #| label: fig-introduction-05-incidents
-#| fig-cap: "Incidents arising from the `innov1` structure,                   \
+#| fig-cap: "Incidents arising from the `iv1` structure,                   \
 #|           together with the epidemic curve and infectivity and             \
 #|           removal zones. Note that most of these incidents will turn out   \
 #|           to be inactive. Zones are closed at upper edges: the upper       \
@@ -401,7 +402,7 @@ but merely illustrates the occurrences of the various incidents..
 #|           whilst the upper boundary of the removal zone is \"removed\".    \
 #|                                             [`05-incidents`]"
 depict("introduction-05-incidents", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1, duration, theme=theme, select=ELEMENTS),
+    draw_evolution!(deepcopy(figure_zones), ev1, duration, theme=theme, select=ELEMENTS),
     title="Incidents driving the epidemic")
 )
 ```
@@ -436,7 +437,7 @@ observed removals).
 #|           those infections reaching from within the infectivity zone to       \
 #|           just above it. [`06-activated`]"
 depict("introduction-06-activated", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev1, duration, theme=theme, select=BASIC),
     title="Incidents driving the epidemic, emphasizing activated incidents")
 )
 ```
@@ -488,22 +489,22 @@ that permits implementation of CFTP,
 Sample a new `Innovation` structure
 -----------------------------------
 The first sub-step is to produce a randomly sampled innovation
-`innov_candidate`
+`iv2c`
 (using the function `generate_innovation`).
 with conditioned removals
 occurring at the same times but with randomly
 assigned different `target` time lines.
-Compare the original innovation `innov1` with `innov_candidate`: 
+Compare the original innovation `iv1` with `iv2c`: 
 ```{julia}
 #| echo: false
-println("innov1 = ", sprint(show, MIME("text/plain"), innov1))
-innov_candidate = generate_innovation(innov1, duration, α=α, β=β)
-println("\ninnov_candidate = ", sprint(show, MIME("text/plain"), innov_candidate))
+println("iv1 = ", sprint(show, MIME("text/plain"), iv1))
+iv2c = generate_innovation(iv1, duration, α=α, β=β)
+println("\niv2c = ", sprint(show, MIME("text/plain"), iv2c))
 ```
 
 ::: {.callout-tip}
-# Explanatory note concerning `innov_candidate`
-Note that the innovation `innov_candidate` is independent of the current `CEvolution`.
+# Explanatory note concerning `iv2c`
+Note that the innovation `iv2c` is independent of the current `CEvolution`.
 It is not used directly in defining a new `CEvolution`, but is used
 as a supply of components in what follows.
 :::
@@ -511,7 +512,7 @@ as a supply of components in what follows.
 
 
 It is not correct simply 
-to replace `innov1` by `innov_candidate`, as this will break the conditioning
+to replace `iv1` by `iv2c`, as this will break the conditioning
 on observed removals.
 Instead 
 it is necessary to work systematically through
@@ -528,73 +529,73 @@ preserve the conditional distribution of the $\SIR$ epidemic. This should be dis
 in the paper now being drafted: it is one of the crucial steps of the entire argument!
 :::
 
-We insert some incidents in `innov_candidate`
+We insert some incidents in `iv2c`
 to force some implementation issues to arise:
 
 a) an extra infection which might affect the \LFE infection;
 ```{julia}
-push!(innov_candidate.infections, I(1.1, 2, 4), )
+push!(iv2c.infections, I(1.1, 2, 4), )
 ```
 b) some extra infections which might produce a faster 
 epidemic without hitting new removals;
 ```{julia}
-push!(innov_candidate.infections, I(0.5, 1, 2), I(0.85, 2, 4), I(1.05, 2, 3), I(1.55, 4, 6))
+push!(iv2c.infections, I(0.5, 1, 2), I(0.85, 2, 4), I(1.05, 2, 3), I(1.55, 4, 6))
 ```
 c) a couple of inactivated removals in time lines 2 and 3 
 which might affect the \NFZ;
 ```{julia}
-push!(innov_candidate.removals, R(0.3, 2), R(0.1, 3))
+push!(iv2c.removals, R(0.3, 2), R(0.1, 3))
 ```
 
 Cutting to the chase
 --------------------
 The full algorithmic step is very simply obtained:
 ```{julia}
-new_evol2 = evol1 ⋄ innov_candidate
+new_ev2 = ev1 ⋄ iv2c
 ```
-We now progressively reveal how we get to this.
+We now illustrate the steps involved in this algorithmic step.
 
 
 ***BORROW FROM `test.qmd`***
 
 Remove all inactive removals from previous `Innovation`
 -------------------------------------------------------
-We progressively deploy the incidents of `innov_candidate`, inserting selected 
+We progressively deploy the incidents of `iv2c`, inserting selected 
 kinds of incidents 
-into successive modifications `innov1_x` (for `x=0, 1, ...`)
-of the original `Innovation` `innov1`
+into successive modifications `iv1_x` (for `x=0, 1, ...`)
+of the original `Innovation` `iv1`
 so as to ensure that conditions on activated removals are not violated
-when `innov1_x` is used to update `innov1` to produce `evol_x`.
-First remove all unactivated removals from `innov1`: see @fig-introduction-07-old-removals-gone. 
+when `iv1_x` is used to update `iv1` to produce `evol_x`.
+First remove all unactivated removals from `iv1`: see @fig-introduction-07-old-removals-gone. 
 ```{julia}
-innov1_0 = Innovation(initial.n, innov1.infections, R[], innov1.cremovals)
-evol1_0 = CEvolution(initial, innov1_0)
+iv1_0 = Innovation(initial.n, iv1.infections, R[], iv1.cremovals)
+ev1_0 = CEvolution(initial, iv1_0)
 ```
 ::: {.callout-tip}
-# Explanatory note for `innov1_0`
-This is obtained from `innov1` 
+# Explanatory note for `iv1_0`
+This is obtained from `iv1` 
 by omitting all (old) `inactive_removals`.
 
 The resulting `CEvolution` structure 
-`evol1_0 = CEvolution(initial, innov1_0)` 
-therefore yields the same trajectory as `evol1 = CEvolution(initial, innov1)`.
+`ev1_0 = CEvolution(initial, iv1_0)` 
+therefore yields the same trajectory as `ev1 = CEvolution(initial, iv1)`.
 :::
 
 ```{julia}
 #| echo: false
 #| label: fig-introduction-07-old-removals-gone
 #| fig-cap: "This is @fig-introduction-06-activated, but with all non-activated removals      \
-#|           taken away, while retaining conditioned removals, as specified in `innov1_0`. \
+#|           taken away, while retaining conditioned removals, as specified in `iv1_0`. \
 #|           [`07-old-removals-gone`]"
 depict("introduction-07-old-removals-gone", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1_0, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev1_0, duration, theme=theme, select=MOST),
     title="The epidemic as before, deleting all non-activated removals")
 )
 ```
 
 Adding in those removals from the new innovation which remain inactive
 ----------------------------------------------------------------------
-We now insert those of the removals from `innov_candidate` which 
+We now insert those of the removals from `iv2c` which 
 would _not_ be activated by the old epidemic structure. 
 To do this, we use the `CEvolution` attributes `start` and `finis`,
 holding "birth" and "death" incidents of the epidemic for each time line.
@@ -616,39 +617,39 @@ a) removals occurring before respective time line is infected (before relevant `
 b) removals occurring on or after respective time line is removed
 (after relevant `finis`): these removals are all converted to `KilledRemoval`s.
 
-This allows us to add the new inactive removals from `innov_candidate` to `innov1_0`,
+This allows us to add the new inactive removals from `iv2c` to `iv1_0`,
 converting those in the removals zone to `KilledRemoval`s, forming
-a resulting (intermediate) evolution `innov1_1` which is
+a resulting (intermediate) evolution `iv1_1` which is
 used to plot @fig-introduction-08-inactive-removals.
-```julia
-innov1_1 = Innovation(initial.n, innov1_0.infections, 
-    EpidemicsCFTP.inactive_removals(evol1, innov_candidate), innov1_0.cremovals)
-evol1_1 = CEvolution(initial, innov1_1)
+```{julia}
+iv1_1 = Innovation(initial.n, iv1_0.infections, 
+    EpidemicsCFTP.inactive_removals(ev1, iv2c), iv1_0.cremovals)
+ev1_1 = CEvolution(initial, iv1_1)
 ```
 ::: {.callout-tip}
-# Explanatory note for `innov1_1`
-This is obtained from `innov1_0` 
+# Explanatory note for `iv1_1`
+This is obtained from `iv1_0` 
 by using the `inactive_removals` method to insert all (non-conditional) removals
-in `innov_candidate` which would not be activated by the trajectory of `evol1`
-equivalently `evol1_0`. Removals in the removals zone 
+in `iv2c` which would not be activated by the trajectory of `ev1`
+equivalently `ev1_0`. Removals in the removals zone 
 are re-typed as `KilledRemoval`.
 
 The resulting `CEvolution` structure 
-`evol1_1 = CEvolution(initial, innov1_1)` 
-actually yields the same trajectory as `evol1`
-equivalently `evol1_0` (since no inserted removals will be activated).
+`ev1_1 = CEvolution(initial, iv1_1)` 
+actually yields the same trajectory as `ev1`
+equivalently `ev1_0` (since no inserted removals will be activated).
 :::
 
-```julia
+```{julia}
 #| echo: false
 #| label: fig-introduction-08-inactive-removals
 #| fig-cap: "This is @fig-introduction-07-old-removals-gone, but with non-activated removals added     \
-#|           from `innov_candidate` to form `evol1_1`. Note three inactive removals (different colour, \
+#|           from `iv2c` to form `ev1_1`. Note three inactive removals (different colour, \
 #|           labelled by $\\mathcal{K}$) at time 1.61 on time line 1; times 1.46, 1.52 on time line 2,            \
 #|           all in the removal zone.                       \
 #|           [`08-inactive-removals`]"
 depict("introduction-08-inactive-removals", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1_1, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev1_1, duration, theme=theme, select=MOST),
     title="Inactive removals added from new innovation")
 )
 ```
@@ -657,59 +658,53 @@ Re-sampling using proposed time lines for conditioned removals
 --------------------------------------------------------------
 Now consider the conditioned removals. Compare the old and new conditioned removals
 and determine whether the old can be replaced by the corresponding new conditioned removal.
-```julia
+```{julia}
 #| echo: false
 Markdown.parse("""
 | `CRemoval` source               | Resulting list of `CRemoval`s                                    |
 |:--------------------------------|:-----------------------------------------------------------------|
-| Old conditioned removals:       | `$(sprint(show, MIME("text/plain"), innov1.cremovals))`          |
-| Candidate conditioned removals: | `$(sprint(show, MIME("text/plain"), innov_candidate.cremovals))` |
+| Old conditioned removals:       | `$(sprint(show, MIME("text/plain"), iv1.cremovals))`          |
+| Candidate conditioned removals: | `$(sprint(show, MIME("text/plain"), iv2c.cremovals))` |
 """)
 ```
 Replacement is permitted exactly if
 the new conditioned removal will still be activated by the `CEvolution` under consideration.
 This happens if it lies in the infectivity interval (`start[k]`, `finis[k]`)
-using the lists `start`, `finis` computed by `interval(evol1_1)`,
+using the lists `start`, `finis` computed by `interval(ev1_1)`,
 which is invoked by the function `EpidemicsCFTP.resulting_cremovals`.
 
-@fig-introduction-09-processed-cremovals graphs the resulting evolution `evol1_2`:
+@fig-introduction-09-processed-cremovals graphs the resulting evolution `ev1_2`:
 Note we need some envelope calculations (later to be incorporated!).
-```julia
-innov1_2 = Innovation(initial.n, innov1_1.infections, 
-                innov1_1.removals, 
-                EpidemicsCFTP.resulting_cremovals(evol1_1, innov_candidate)) ;
-early_inactivated_removals = [z for z ∈ innov1_2.removals if z < evol1_1.start[z.target]]
-NFZ1  = repeat([0.0], initial.n)
-for z ∈ early_inactivated_removals
-    NFZ1[z.target]  = max(NFZ1[z.target], z.t)
-end
-NFZ2  = accumulate(max, NFZ1)
-evol1_2 = CEvolution(initial, innov1_2; NFZ1=NFZ1, NFZ2=NFZ2) ;
+```{julia}
+iv1_2 = Innovation(initial.n, ev1.infections, 
+                ev1_1.removals, 
+                EpidemicsCFTP.resulting_cremovals(ev1, iv2c)) ;
+ev1_2 = CEvolution(initial, iv1_2)
 ```
 ::: {.callout-tip}
-# Explanatory note for `innov1_2`
-This is obtained from `innov1_1` 
+# Explanatory note for `iv1_2`
+This is obtained from `iv1_1` 
 by using `EpidemicsCFTP.resulting_cremovals`
 to re-mark the `CRemoval`s.
 
 The resulting `CEvolution`
-`evol1_2 = CEvolution(initial, innov1_2; NFZ1=NFZ1, NFZ2=NFZ2)` 
-actually yields the same trajectory as `evol1`
-(or`evol1_0` or `evol1_1`),
+`ev1_2 = CEvolution(initial, iv1_2; NFZ1=NFZ1, NFZ2=NFZ2)` 
+actually yields the same trajectory as `ev1`
+(or`ev1_0` or `ev1_1`),
 as marks are changed only if they do not de-activate the respective `CRemoval`,
 hence do not affect the trajectory.
 :::
 
-```julia
+```{julia}
 #| echo: false
 #| label: fig-introduction-09-processed-cremovals
 #| fig-cap: "This is @fig-introduction-08-inactive-removals, but with accept/reject applied  to  \
-#|           `cremoval` marks to form `evol1_2`. Under the current seed (`Random.seed!(2)`)   \
+#|           `cremoval` marks to form `ev1_2`. Under the current seed (`Random.seed!(2)`)   \
 #|           only the first conditioned removal (at time `t=0.80`) has actually had its mark   \
 #|           changed (from `target=1` to `target=2`).                                         \
 #|           [`09-processed-cremovals`]" 
 depict("introduction-09-processed-cremovals", new_figure(
-    draw_evolution!(deepcopy(figure_zones), evol1_2, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure_zones), ev1_2, duration, theme=theme, select=BASIC),
     title="Marks for conditioned removals changed by accept/reject")
 )
 ```
@@ -738,14 +733,14 @@ with those proposed by the new `Innovation` structure:
 #| echo: false
 println(
     rpad("old infections:", 20), 
-        sprint(show, MIME("text/plain"), evol1.infections),
+        sprint(show, MIME("text/plain"), ev1.infections),
     "\n",
     rpad("new infections:", 20), 
-        sprint(show, MIME("text/plain"), innov_candidate.infections)
+        sprint(show, MIME("text/plain"), iv2c.infections)
 )
 ```
 @fig-introduction-10-with-all-new-infections displays
-the infection incidents from `innov_candidate` 
+the infection incidents from `iv2c` 
 superimposed on removals, active infections and epidemic and removal boundaries
 from @fig-introduction-09-processed-cremovals.
 Note that the new infection incidents have not yet been used to determine the 
@@ -753,22 +748,22 @@ new epidemic trajectory!
 ```julia
 #| echo: false
 #| label: fig-introduction-10-with-all-new-infections
-#| fig-cap: "This displays _all_ the new infections from `innov_candidate`, (replacing     \
+#| fig-cap: "This displays _all_ the new infections from `iv2c`, (replacing     \
 #|           all previous infections) together with re-marked conditional removals, new    \
 #|           inactivated removals, and activated (but non-labelled) infections all derived \
 #|           from @fig-introduction-09-processed-cremovals. Note that the new infections   \
 #|           would _not_ produce the old epidemic (still displayed on the figure together  \
 #|           with activated elements): indeed there is no guarantee that the new epidemic  \
 #|           would even satisfy the removals conditioning! [`10-with-all-new-infections`]"
-innov1_2a = Innovation(initial.n, 
-    innov_candidate.infections, innov1_2.removals, innov1_2.cremovals) ;
-evol1_2a  = CEvolution(initial, innov1_2a) ;
-evol1_2x  = CEvolution(initial, evol1_2.history; NFZ1=NFZ1, NFZ2=NFZ2) ;
+iv1_2a = Innovation(initial.n, 
+    iv2c.infections, iv1_2.removals, iv1_2.cremovals) ;
+ev1_2a  = CEvolution(initial, iv1_2a) ;
+ev1_2x  = CEvolution(initial, ev1_2.history; NFZ1=NFZ1, NFZ2=NFZ2) ;
 
-figure10  = draw_innovation!(deepcopy(figure_zones), innov1_2a, theme=theme)
+figure10  = draw_innovation!(deepcopy(figure_zones), iv1_2a, theme=theme)
 
 depict("introduction-10-with-all-new-infections", new_figure(
-    draw_evolution!(figure10, evol1_2x, duration, theme=theme),
+    draw_evolution!(figure10, ev1_2x, duration, theme=theme),
     title="New infections superimposed")
 )
 ```
@@ -789,19 +784,19 @@ We can then distinguish visually between infections occurring before and after r
 #|           gray. Note again  that the new infections would _not_ produce the              \
 #|           old epidemic (still displayed on the figure together with activated elements)  \
 #|           `[introduction-11-dividing-infections1]`"
-differentiated = EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate)
-innov1_2b = Innovation(initial.n, differentiated, innov1_2.removals, innov1_2.cremovals) ;
-figure11  = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
-figure11  = draw_evolution!(figure11, evol1_2x, duration, theme=theme)
+differentiated = EpidemicsCFTP.kill_irrelevant_infections(ev1_2, iv2c)
+iv1_2b = Innovation(initial.n, differentiated, iv1_2.removals, iv1_2.cremovals) ;
+figure11  = draw_innovation!(deepcopy(figure_zones), iv1_2b, theme=theme)
+figure11  = draw_evolution!(figure11, ev1_2x, duration, theme=theme)
 
 depict("introduction-11-dividing-infections1", new_figure(figure11,
     title="Distinguishing between new infections occurring before and after removal")
 )
 ```
 
-The \LFE is formed by the slowest possible chain of activatable infections from `evol1_2`,
-together with new infections from `innov_candidate`,
-that trigger all of the conditioned removals of `evol1_2`,
+The \LFE is formed by the slowest possible chain of activatable infections from `ev1_2`,
+together with new infections from `iv2c`,
+that trigger all of the conditioned removals of `ev1_2`,
 and this is achieved so long as the proposed chain triggers those 
 conditional removals for which the `target` field delivers
 an increase in the running supremum.
@@ -809,7 +804,7 @@ This observation helps us to consider which
 of the new infections _prior_ to removal
 ```julia
 #| echo: false
-[z for z in EpidemicsCFTP.kill_irrelevant_infections(evol1_2, innov_candidate) if 
+[z for z in EpidemicsCFTP.kill_irrelevant_infections(ev1_2, iv2c) if 
     z isa OperativeInfection]
 ```
 are relevant
@@ -821,7 +816,7 @@ and are depicted in @fig-introduction-12-with-relevant-infections.
 Note that the displayed set of relevant infections
 ```julia
 #| echo: false
-EpidemicsCFTP.relevant_infections(evol1_2, innov_candidate)
+EpidemicsCFTP.relevant_infections(ev1_2, iv2c)
 ```
 includes some infections that will not be considered for the \LFE,
 because their `target` marks are above the epidemic trajectory.
@@ -830,10 +825,10 @@ because their `target` marks are above the epidemic trajectory.
 #| echo: false
 #| label: fig-introduction-12-with-relevant-infections
 #| fig-cap: "This improves on @fig-introduction-11-dividing-infections1 by emphasizing the _relevant_ \
-#|           _relevant_ infections from `innov_candidate` (those which are additionally relevant      \
+#|           _relevant_ infections from `iv2c` (those which are additionally relevant      \
 #|            to the \"last feasible evolution\", which are coloured in hot-pink outline with text).  \
 #|           [`12-with-relevant-infections`]"
-relevant = EpidemicsCFTP.relevant_infections(evol1_2, innov_candidate)
+relevant = EpidemicsCFTP.relevant_infections(ev1_2, iv2c)
 figure12 = new_figure(figure11,
     Guide.annotation(compose(context(),
          draw_feasible_incident(relevant, 2, theme=theme))),
@@ -850,22 +845,22 @@ all the `CRemoval` events and none of the `Removal` events.
 This is most easily accomplished by computing
 in reverse time.
 We use the function `EpidemicsCFTP.last_feasible_evolution`.
-It first computes a new `chronology` by mixing the relevant infections from `innov_candidate`,
-the activated infections from `innov1_2`,
+It first computes a new `chronology` by mixing the relevant infections from `iv2c`,
+the activated infections from `iv1_2`,
 and the conditioned removals
 and then computes the reverse-initial state as the final state of the evolution
 (epidemic state at time `duration`).
 By this means we can compute and display the history of the \LFE using:
 ```julia
 last_feasible_history = 
-    EpidemicsCFTP.last_feasible_evolution(duration, evol1_2, innov_candidate)
+    EpidemicsCFTP.last_feasible_evolution(duration, ev1_2, iv2c)
 ```
 
 The next list comprehension is required to make sure that the list type is correct!
 ```julia
-last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ innov_candidate.infections]
-perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ evol1.infections]
-evol1_2y  = CEvolution(initial, evol1_2.history; LFE=last_feasible_history, NFZ1=NFZ1, NFZ2=NFZ2)
+last_feasible_new_infections = [z for z ∈ last_feasible_history ∩ iv2c.infections]
+perpetuated_infections       = [PInfection(z) for z ∈ last_feasible_history ∩ ev1.infections]
+ev1_2y  = CEvolution(initial, ev1_2.history; LFE=last_feasible_history, NFZ1=NFZ1, NFZ2=NFZ2)
 ```
 
 ::: {.callout-warning}
@@ -884,9 +879,9 @@ on @fig-introduction-12-with-relevant-infections.
 #|           new infections (outlined in deep pink). Note that the last feasible         \
 #|           differs from the actual evolution over two distinct periods in the first    \
 #|           half of the evolution.                         [`13-last-feasible-epidemic`]"
-figure13a = draw_innovation!(deepcopy(figure_zones), innov1_2b, theme=theme)
+figure13a = draw_innovation!(deepcopy(figure_zones), iv1_2b, theme=theme)
 figure13 = new_figure(
-    draw_evolution!(figure13a, evol1_2y, duration, select=BASIC | LFET, theme=theme),
+    draw_evolution!(figure13a, ev1_2y, duration, select=BASIC | LFET, theme=theme),
     Guide.annotation(compose(context(),
         draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
 )
@@ -908,15 +903,15 @@ See @fig-introduction-14-last-feasible-epidemic-bis.
 #|           by the \"last feasible evolution\": the only remaining old infections are those   \
 #|           involved in the \"last feasible evolution\", which are perpetuated. However the   \
 #|           original evolution trajectory is still depicted. [`14-last-feasible-epidemic-bis`]" 
-innov1_2c = Innovation(initial.n, differentiated ∪ perpetuated_infections,
-                    innov1_2.removals, innov1_2.cremovals) ;
+iv1_2c = Innovation(initial.n, differentiated ∪ perpetuated_infections,
+                    iv1_2.removals, iv1_2.cremovals) ;
 
-figure14a = draw_evolution!(deepcopy(figure_zones), evol1_2y, duration, select=BASIC | LFET, theme=theme)
+figure14a = draw_evolution!(deepcopy(figure_zones), ev1_2y, duration, select=BASIC | LFET, theme=theme)
 
 figure14 = new_figure(
-    draw_innovation!(deepcopy(figure14a), innov1_2c, theme=theme),
+    draw_innovation!(deepcopy(figure14a), iv1_2c, theme=theme),
     Guide.annotation(compose(context(),
-        draw_activated_elements(initial, innov1_2.cremovals, theme=theme))),
+        draw_activated_elements(initial, iv1_2.cremovals, theme=theme))),
 
     # last feasible infections
     Guide.annotation(compose(context(),
@@ -976,13 +971,13 @@ figure15 = new_figure(deepcopy(figure14a),
         EpidemicsUtilities.draw_connect(perpetuated_infections, activated=true, theme=theme))),
 
     Guide.annotation(compose(context(),
-         draw_feasible_incident(innov_candidate.infections, 1, inscribe=false, theme=theme))),
+         draw_feasible_incident(iv2c.infections, 1, inscribe=false, theme=theme))),
 
     Guide.annotation(compose(context(),
-        draw_incident(evol1_2.removals, theme=theme))),
+        draw_incident(ev1_2.removals, theme=theme))),
 
     Guide.annotation(compose(context(),
-        draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
+        draw_incident(ev1_2.cremovals, activated=true, theme=theme))),
 
    Guide.annotation(compose(context(),
        draw_activated_elements(initial, last_feasible_history, theme=theme))),
@@ -991,10 +986,10 @@ figure15 = new_figure(deepcopy(figure14a),
          draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
          
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ1) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ2) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ))),
     )
 depict("introduction-15-relevant-removals", new_figure(figure15,
@@ -1003,21 +998,21 @@ depict("introduction-15-relevant-removals", new_figure(figure15,
 ```
 
 We now move on to step (c).
-Note in the following that the vectors `evol1_2.start` and `evol1_2.finis` are 
+Note in the following that the vectors `ev1_2.start` and `ev1_2.finis` are 
 actually the vectors of infection and removal incidents for the original epidemic trajectory
-(which up to this point is the trajectory generated using all the modified `innov1_x`
+(which up to this point is the trajectory generated using all the modified `iv1_x`
 for `x=0..2`).
 ```julia
 #| echo: false
-println("Infection incidents : ", sprint(show, MIME("text/plain"), evol1_2.start))
-println("Removal incidents   : ", sprint(show, MIME("text/plain"), evol1_2.finis))
+println("Infection incidents : ", sprint(show, MIME("text/plain"), ev1_2.start))
+println("Removal incidents   : ", sprint(show, MIME("text/plain"), ev1_2.finis))
 ```
 Furthermore we must
 focus only on those infections in `current_infections` which extend beyond the original epidemic trajectory.
 
 ::: {.callout-note}
 # Exposition alert
-We deal with the _trajectory_ of `evol1_2`, which is the original trajectory:
+We deal with the _trajectory_ of `ev1_2`, which is the original trajectory:
 it needs careful explanation why we use this not some new trajectory.
 It is justified because our basic plan is to renew
 infections working backwards through time \ldots
@@ -1026,7 +1021,7 @@ infections working backwards through time \ldots
 Solely to serve the illustrative purposes of the intermediate graphic
 @fig-introduction-16-prior-relevant-removals,
 we reduce the set of
-`innov_candidate.infections` to the _current infections_,
+`iv2c.infections` to the _current infections_,
 with `target` lying in one of the susceptible or infectious zones.
 we further distinguish between `posterior_relevant_infections`, those infections whose `infectee`
 has already been already infected (and hence whose `infectee` will not yet be removed),
@@ -1038,12 +1033,12 @@ and `prior_relevant_infections`
 #| echo: false
 #| label: fig-introduction-16-prior-relevant-removals
 #| fig-cap: "First (steel blue) and second (light steel blue) iterations                \
-#|           of \"no-fly zone\", highlighting infections from `innov_candidate`         \
+#|           of \"no-fly zone\", highlighting infections from `iv2c`         \
 #|           which are not confined within original epidemic. These infections are      \
 #|           described as `prior_relevant_infections`. [`16-prior-relevant-removals`]"  
 current_infections = 
-    sort([z for z ∈ innov_candidate.infections if z < evol1_2.finis[z.target]])
-posterior_relevant_infections =  [z for z ∈ current_infections if z ≥ evol1_2.start[z.infectee]]
+    sort([z for z ∈ iv2c.infections if z < ev1_2.finis[z.target]])
+posterior_relevant_infections =  [z for z ∈ current_infections if z ≥ ev1_2.start[z.infectee]]
 prior_relevant_infections = setdiff(current_infections, posterior_relevant_infections)
 figure16 = new_figure(deepcopy(figure14a),
      Guide.annotation(compose(context(),
@@ -1053,18 +1048,18 @@ figure16 = new_figure(deepcopy(figure14a),
     Guide.annotation(compose(context(),
          draw_feasible_incident(posterior_relevant_infections, 1, inscribe=false, theme=theme))),
     Guide.annotation(compose(context(),
-        draw_incident(evol1_2.removals, theme=theme))),
+        draw_incident(ev1_2.removals, theme=theme))),
     Guide.annotation(compose(context(),
-        draw_incident(evol1_2.cremovals, activated=true, theme=theme))),
+        draw_incident(ev1_2.cremovals, activated=true, theme=theme))),
    Guide.annotation(compose(context(),
        draw_activated_elements(initial, last_feasible_history, theme=theme))),
     Guide.annotation(compose(context(),
          draw_feasible_incident(last_feasible_new_infections, 3, theme=theme))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ1) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ1))),
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ2) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ))),
     )
 depict("introduction-16-prior-relevant-removals", new_figure(figure16,
@@ -1076,12 +1071,12 @@ Now we perform a careful computation of the "true" boundary (`nofly_bound`
 using the function `EpidemicsCFTP.compute_NFZ`). 
 This is illustrated in @fig-introduction-17-no-fly-zone.
 ```julia
-processed_infections, nofly_bound = EpidemicsCFTP.compute_NFZ(evol1_2, innov_candidate) ;
+processed_infections, nofly_bound = EpidemicsCFTP.compute_NFZ(ev1_2, iv2c) ;
 innov2 = Innovation(initial.n, 
                 sort(processed_infections ∪ perpetuated_infections),
-                evol1_2.removals, evol1_2.cremovals) ;
+                ev1_2.removals, ev1_2.cremovals) ;
                 
-evol2 = CEvolution(initial, innov2; NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound) ;
+ev2 = CEvolution(initial, innov2; NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound) ;
 ```
 
 ```julia
@@ -1091,7 +1086,7 @@ evol2 = CEvolution(initial, innov2; NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound) ;
 #|           which would infect \"no-fly zone\" and illustrating trajectory and zones (by    \
 #|           shading) of the last feasible evolution. [`17-no-fly-zone`]"  
 depict("introduction-17-no-fly-zone", new_figure(
-        draw_evolution!(deepcopy(figure_zones), evol2, duration, theme=theme,
+        draw_evolution!(deepcopy(figure_zones), ev2, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | NFZ),
             title="Third (final) rendering of no-fly zone")
 )
@@ -1100,16 +1095,16 @@ depict("introduction-17-no-fly-zone", new_figure(
 
 ```julia
 # #| echo: false
-processed_infections, nofly_bound = EpidemicsCFTP.compute_NFZ(evol1_2, innov_candidate) ;
+processed_infections, nofly_bound = EpidemicsCFTP.compute_NFZ(ev1_2, iv2c) ;
     
 flow_nofly1 = DataFrame(t=nofly_bound, y=(1:initial.n).+1, top=(initial.n)+1)
 xy_flow_nofly1 = table_trajectories2(flow_nofly1; theme=theme)
-deleteat!(xy_flow_nofly1, [(2*evol1_2.initial.n)-1])
+deleteat!(xy_flow_nofly1, [(2*ev1_2.initial.n)-1])
 
 innov2 = Innovation(initial.n, 
                 sort(processed_infections ∪ perpetuated_infections),
-                evol1_2.removals, evol1_2.cremovals) ;
-evol2  = CEvolution(initial, innov2; NFZ1=NFZ1, NFZ2=NFZ2) ; 
+                ev1_2.removals, ev1_2.cremovals) ;
+ev2  = CEvolution(initial, innov2; NFZ1=NFZ1, NFZ2=NFZ2) ; 
 ```
 
 ```julia
@@ -1118,9 +1113,9 @@ evol2  = CEvolution(initial, innov2; NFZ1=NFZ1, NFZ2=NFZ2) ;
 #| fig-cap: "Third (final) iteration of \"no-fly zone\", removing potential infections       \
 #|           which would infect \"no-fly zone\" and illustrating trajectory and zones (by    \
 #|           shading) of the last feasible evolution. [`17-no-fly-zone`]"  
-figure14b = draw_evolution!(deepcopy(figure_zones), evol1_2y, duration, select=BASIC | LFE, theme=theme)
+figure14b = draw_evolution!(deepcopy(figure_zones), ev1_2y, duration, select=BASIC | LFE, theme=theme)
 figure17 = new_figure(
-    draw_evolution!(deepcopy(figure14b), evol2, duration, theme=theme, select=ELEMENTS),
+    draw_evolution!(deepcopy(figure14b), ev2, duration, theme=theme, select=ELEMENTS),
     
     # Draw activated incidents from last feasible evolution (derived from previous
     # `evolution`!), without inscriptions.
@@ -1129,12 +1124,12 @@ figure17 = new_figure(
 
     # Draw, for each time line, boundaries determined by early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ1) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ1))),
 
     # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ2) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ))),
     
     # Draw Nofly region and boundary
@@ -1151,7 +1146,7 @@ depict("introduction-17-no-fly-zone", new_figure(figure17,
 ```
 
 
-Finally we illustrate the resulting _new_ epidemic evolution `evol2`
+Finally we illustrate the resulting _new_ epidemic evolution `ev2`
 using the new innovation `innov2`.
 ```julia
 #| echo: false
@@ -1160,22 +1155,22 @@ using the new innovation `innov2`.
 #|           \"no-fly\" zone and last feasible zone as determined by previous step and  \
 #|           proposed innovation. Note that the infected region has altered to conform  \
 #|           to the new `Innovation` (`innov2`). [`18-one-iteration`]"  
-figure_zones2 = draw_regions!(deepcopy(incidents_template), duration, evol2, 
+figure_zones2 = draw_regions!(deepcopy(incidents_template), duration, ev2, 
                             theme=theme, select=BOUNDARIES | REGIONS)
-figure18a = draw_evolution!(deepcopy(figure_zones2), evol1_2y, duration, select=LFER, theme=theme)
+figure18a = draw_evolution!(deepcopy(figure_zones2), ev1_2y, duration, select=LFER, theme=theme)
 
 figure18 = new_figure(
     # Draw second algorithmic step of epidemic
-    draw_evolution!(deepcopy(figure18a), evol2, duration, theme=theme, select=BASIC),
+    draw_evolution!(deepcopy(figure18a), ev2, duration, theme=theme, select=BASIC),
 
     # Draw, for each time line, boundaries determined by early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ1) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ1) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ1))),
     
     # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.
     Guide.annotation(compose(context(),
-        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
+        line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(ev1_2.NFZ2) if z[2]>0]),
         linewidth(theme.boundary), stroke(theme.NFZ))),
         
     # Draw Nofly region and boundary

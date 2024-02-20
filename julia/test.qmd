@@ -396,14 +396,14 @@ Adding infections from the \LFE
 if EpidemicsCFTP.is_correct_LFE(ev2)
     Markdown.parse("""
 To determine how to replace infections, 
-we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`
+we could apply `EpidemicsCFTP.last_feasible_evolution` to `ev1_3`
 (in fact the resulting `ev1_4` yields the final `ev2.LFE`!).
 The construction of `ev1_4.LFE=ev2.LFE` in @fig-test-05-LFE has been checked using `EpidemicsCFTP.is_correct_LFE` and is **valid**.
 """)
 else
     Markdown.parse("""
 To determine how to replace infections, 
-we apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`
+we could apply `EpidemicsCFTP.last_feasible_evolution` to `ev1_3`
 (in fact the resulting `ev1_4`  yields the final `ev2.LFE`!),
 According to `EpidemicsCFTP.is_correct_LFE`, the construction of `ev1_4.LFE` is **not** valid.
 """)

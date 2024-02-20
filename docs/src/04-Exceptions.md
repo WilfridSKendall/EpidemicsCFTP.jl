@@ -27,11 +27,11 @@ NonMinimalLFE
 ```
 
 
-## Generic exception for `BadNFZ3`
+## Generic exception for `BadNFZ`
 ```@docs
-BadNFZ3
+BadNFZ
 ```
-### Particular case of `BadNFZ2`
+### Particular case of `BadNFZ`
 Here is an exception for a specific case.
 ```@docs
 ExpungedInfectionGivesValidTrajectory
@@ -43,5 +43,5 @@ Base.show(::IO, ::BadIncident)
 Base.show(::IO, ::MissedCRemoval)
 Base.show(::IO, ::EmployedRemoval)
 Base.show(::IO, ::BadLFE)
-Base.show(::IO, ::BadNFZ3)
+Base.show(::IO, ::BadNFZ)
 ```

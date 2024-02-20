@@ -150,7 +150,7 @@ begin ; title = "Expected evolution (I)"
         @test length(ev1.LFE)  == 0
         @test length(ev1.NFZ1) == 0
         @test length(ev1.NFZ2) == 0
-        @test length(ev1.NFZ3) == 0
+        @test length(ev1.NFZ)  == 0
     end
 end ;
 
@@ -218,7 +218,7 @@ nofly_envelope = accumulate(max, max_removal_time)
 #    @test xev2.LFE        == [I(1.5,1,2), C(2,2), I(3,2,3), C(4,2)]
 #    @test xev2.NFZ1       == [-Inf, 0.5, 2.0, 1.2, 4.5]
 #    @test xev2.NFZ2       == [-Inf, 0.5, 2.0, 2.0, 4.5]
-#    @test xev2.NFZ3       == [-Inf, 0.5, 2.0, 3.9, 4.5]
+#    @test xev2.NFZ        == [-Inf, 0.5, 2.0, 3.9, 4.5]
 #
 #    @test xev1_2.removals  == xev2.removals
 #    @test xev1_3.cremovals == xev1_4.cremovals == xev2.cremovals

@@ -967,7 +967,7 @@ to compute the `trajectory` and `history` fields,
 and the implicit use of [`interval`](@ref) to compute start and finish incidents
 for infectious intervals.
 
-It possesses extra fields `LFE`, `NFZ1`,  `NFZ2`, and `NFZ3` which are respectively
+It possesses extra fields `LFE`, `NFZ1`,  `NFZ2`, and `NFZ` which are respectively
 the incidents involved in the last feasible epidemic, the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, the monotonically increasing envelope of `NFZ1`, and the region which must
@@ -1008,7 +1008,7 @@ struct CEvolution <: AbstractEvolution
     LFE        ::Vector{AbstractIncident}
     NFZ1       ::Vector{Real}
     NFZ2       ::Vector{Real}
-    NFZ3       ::Vector{Real}
+    NFZ        ::Vector{Real}
 
 @doc """
         CEvolution(::AbstractEvolution, ::Innovation)::CEvolution
@@ -1027,7 +1027,7 @@ The procedure is as follows:
     * select out those `AbstractRemoval`s occurring before actual removal time on each time line;
     * compute `NFZ1`;
     * and generate `NFZ2`.
-6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ3`.
+6. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ`.
 
 
 ### Example
@@ -1108,12 +1108,12 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     end
     NFZ2 = accumulate(max, NFZ1)
  
-    # The hard work begins! We generate the NFZ3.
+    # The hard work begins! We generate the NFZ.
     # * The list `processed_infections` of processed `AbstractInfection`s will
     # eventually store (initially in reverse time order) an adjusted version of
     # each infection supplied by the new `Innovation` `iv`.
 	processed_infections = AbstractInfection[]
-	NFZ3 = deepcopy(NFZ2)
+	NFZ = deepcopy(NFZ2)
 	
 	# * Iteration: work backwards through `Infection`s supplied by `iv`
 	# together with perpetuated infections,
@@ -1137,7 +1137,7 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
 	    # At this stage of the iteration 
 	    @assert(z < ev.finis[z.target])
 	    #
-        if (z.t ≥ NFZ3[z.infectee])
+        if (z.t ≥ NFZ[z.infectee])
 	        push!(processed_infections, z)
 	        continue
 	    end
@@ -1148,9 +1148,9 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
         #
 	    # At this stage of the iteration 
 	    @assert(z < ev.finis[z.target])
-	    @assert(z.t < NFZ3[z.infectee])
+	    @assert(z.t < NFZ[z.infectee])
 	    #
-        if (z.t < NFZ3[z.infectee - 1])
+        if (z.t < NFZ[z.infectee - 1])
 	        push!(processed_infections, z)
 	        continue
 	    end
@@ -1159,8 +1159,8 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
         # if the level at `z.infectee - 1` were to become infected before `z.t`. 
         #
 	    # At this stage of the iteration 
-	    @assert(z.t < NFZ3[z.infectee])
-	    @assert(z.t ≥ NFZ3[z.infectee - 1])
+	    @assert(z.t < NFZ[z.infectee])
+	    @assert(z.t ≥ NFZ[z.infectee - 1])
 	    @assert(z < ev.finis[z.target])
 	    #
 	    # One of two cases must hold:
@@ -1178,7 +1178,7 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
         # `InoperativeInfection`.
 	    if (z ≥ ev.start[z.target])
             if (z < ev.start[z.infectee - 1])
-                NFZ3[z.infectee - 1] = z.t
+                NFZ[z.infectee - 1] = z.t
                 push!(processed_infections, NF(z))
                 # Uncomment for tracking information
                 # @info "Conversion of infection into $(NF(z))"
@@ -1192,8 +1192,8 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
 	    end
 	    
 	    # At this stage of the iteration 
-	    @assert(z.t < NFZ3[z.infectee])
-	    @assert(z.t ≥ NFZ3[z.infectee - 1])
+	    @assert(z.t < NFZ[z.infectee])
+	    @assert(z.t ≥ NFZ[z.infectee - 1])
 	    @assert(z < ev.start[z.target])
 	    # 
 	    # * Consider now that potential `Infection`s to be treated later in this
@@ -1205,7 +1205,7 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
         # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
         # to a `NoFlyInfection` when we add it to `processed_infections`, to
         # signal that it should never become infected.
-	    NFZ3[z.infectee - 1] = z.t 
+	    NFZ[z.infectee - 1] = z.t 
 	    push!(processed_infections, NF(z))
         # Uncomment for tracking information
         # @info "Conversion of infection into $(NF(z))"
@@ -1214,12 +1214,12 @@ function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
-    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
+    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ)
 end
 
 @doc """
         CEvolution(SIR, Vector{AbstractIncident}; 
-                LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])::CEvolution
+                LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])::CEvolution
 
 This is the second way to construct a [`CEvolution`](@ref): 
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
@@ -1240,18 +1240,18 @@ true
 ```
 """
 function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
-                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])
         innovation = Innovation(initial_state.n,
                     AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                     AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                     CRemoval[z for z ∈ chronology if z isa CRemoval]
                     )
-    return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ3=NFZ3)
+    return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ)
 end
 
 @doc """
     CEvolution(::SIR, ::Innovation; 
-            LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])::CEvolution
+            LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])::CEvolution
 
 This is the third way:
 employing an [`Innovation`](@ref).
@@ -1278,7 +1278,7 @@ history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 """
 function CEvolution(initial_state::SIR, innovation::Innovation;
-                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ3=Real[])
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])
     # Need to check population == sum of `initial_state` entries
     population          = innovation.population
     infections          = innovation.infections
@@ -1289,7 +1289,7 @@ function CEvolution(initial_state::SIR, innovation::Innovation;
     start, finis        = interval(trajectory, history)
         
     return new(population, infections, removals, cremovals, chronology, 
-        trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ3)
+        trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ)
 end
 
 end

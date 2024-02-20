@@ -19,13 +19,13 @@ An exception to report problems with an `LFE` as produced by
 abstract type BadLFE <: Exception end
 
 """
-    BadNFZ3
+    BadNFZ
 
-An exception to report problems with an `NFZ3` 
+An exception to report problems with an `NFZ` 
 (typically arising as a field of a 
 [`CEvolution`](@ref)).
 """
-abstract type BadNFZ3 <: Exception end
+abstract type BadNFZ <: Exception end
 
 # ### Specific `BadIncident` exceptions
 """
@@ -77,7 +77,7 @@ struct EmployedRemoval <: BadIncident
     incident ::AbstractIncident
 end
 
-# ### Specific `BadLFE` and `BadNFZ3` exceptions
+# ### Specific `BadLFE` and `BadNFZ` exceptions
 """
     NonMinimalLFE
 
@@ -102,9 +102,9 @@ end
 """
     ExpungedInfectionGivesValidTrajectory
     
-An exception to report a faulty `NFZ3`.
+An exception to report a faulty `NFZ`.
 """
-struct ExpungedInfectionGivesValidTrajectory <: BadNFZ3
+struct ExpungedInfectionGivesValidTrajectory <: BadNFZ
     ev ::CEvolution
     z  ::ExpungedInfection
 end
@@ -157,12 +157,12 @@ end
 
 
 
-# ### Display of `Exception`s based on `BadNFZ3`
+# ### Display of `Exception`s based on `BadNFZ`
 """
-    Base.show(io::IO, e::BadNFZ3)
+    Base.show(io::IO, e::BadNFZ)
     
-Printing a `BadNFZ3` exception.
+Printing a `BadNFZ` exception.
 """
-function Base.show(io::IO, e::BadNFZ3)
-    print(io, "[$(typeof(e))] The following NFZ3 is faulty at $(e.z):\n\t$(e.ev.NFZ3)")
+function Base.show(io::IO, e::BadNFZ)
+    print(io, "[$(typeof(e))] The following NFZ is faulty at $(e.z):\n\t$(e.ev.NFZ)")
 end

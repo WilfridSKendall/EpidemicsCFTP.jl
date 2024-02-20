@@ -194,7 +194,7 @@ Instances should always possess fields as given in the table.
 | `LFE `        | `Vector{SIR}`                | **computed** | `CEvolution`      | ordered list      |
 | `NFZ1`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 | `NFZ2`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
-| `NFZ3`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
+| `NFZ`         | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 
 #### Unconditioned `Evolution`
 

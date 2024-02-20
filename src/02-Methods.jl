@@ -906,7 +906,7 @@ initial = SIR(0,1,1,0)
 ev = CEvolution(initial, AI[C(4,1)])
 iv = Innovation(2, AI[I(4.2,1,2), R(4.9,2), C(4,1)])
 ev = ev ⋄ iv
-ev.NFZ3
+ev.NFZ
 
 # output
 2-element Vector{Real}:
@@ -1154,9 +1154,9 @@ end
 # then the `LFE` is genuinely minimal, so `true` is returned!
 
 """
-    EpidemicsCFTP.is_correct_NFZ3(ev::CEvolution)::Bool
+    EpidemicsCFTP.is_correct_NFZ(ev::CEvolution)::Bool
     
-Used primarily to check that the `NFZ3` field of a [`CEvolution`](@ref) is genuinely a 
+Used primarily to check that the `NFZ` field of a [`CEvolution`](@ref) is genuinely a 
 _no-fly zone_. The function works through the
 [`ExpungedInfection`](@ref)s in the `infections` field, checking that in each case if one started
 from a putative success for the `ExpungedInfection` then one
@@ -1167,18 +1167,18 @@ infections = AIF[XI(1.5,3,4), I(2.2,2,3), XI(2.3,1,4), XI(3.1,3,4), XI(3.2,3,4),
 removals   = AIR[R(3.4,4)]
 cremovals  = C[C(1,1)]
 chron      = sort(infections ∪ removals ∪ cremovals)
-NFZ3       = [-Inf, -Inf, -Inf, 3.4]
-ev         = CEvolution(SIR(0,3,1,0), chron; NFZ3=NFZ3)
-EpidemicsCFTP.is_correct_NFZ3(ev)
+NFZ        = [-Inf, -Inf, -Inf, 3.4]
+ev         = CEvolution(SIR(0,3,1,0), chron; NFZ=NFZ)
+EpidemicsCFTP.is_correct_NFZ(ev)
 
 # output
 true
 ```
 """
-function is_correct_NFZ3(ev::CEvolution)::Bool
+function is_correct_NFZ(ev::CEvolution)::Bool
 # import EpidemicsCFTP: evolution_history, EmployedRemoval, ExpungedInfection,
 #                       ExpungedInfectionGivesValidTrajectory
-    if all(t==-Inf for t in ev.NFZ3)                                                        # <1>
+    if all(t==-Inf for t in ev.NFZ)                                                        # <1>
         return true
     end
     expunged   = filter(z -> z isa ExpungedInfection, ev.infections)                        # <2>
@@ -1204,7 +1204,7 @@ function is_correct_NFZ3(ev::CEvolution)::Bool
         end
     end
 end
-# 1. Return `true` if `NFZ3` is filled with `-Inf`.
+# 1. Return `true` if `NFZ` is filled with `-Inf`.
 # 2. List the `ExpungedInfection`s in the `infections` field. Return `true` if this is empty.
 # 3. Construct a dictionary mapping `history` to `trajectory[2:end]` so that each incident in
 # `ev.history` is mapped to the state of the epidemic at the time of the incident.

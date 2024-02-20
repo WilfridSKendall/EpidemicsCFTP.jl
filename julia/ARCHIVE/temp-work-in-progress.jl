@@ -22,9 +22,9 @@ for i in 1:REPLICATES
     global count_tests, ev, state
     ev = ev ⋄ generate_innovation(iv0, duration)
     print("Step $i   \t")
-    println(EpidemicsCFTP.is_correct_NFZ3(ev))
+    println(EpidemicsCFTP.is_correct_NFZ(ev))
 
-    if !all(t==-Inf for t in ev.NFZ3) && any(z isa XI for z in ev.infections)
-        println(ev.NFZ3)
+    if !all(t==-Inf for t in ev.NFZ) && any(z isa XI for z in ev.infections)
+        println(ev.NFZ)
     end
 end

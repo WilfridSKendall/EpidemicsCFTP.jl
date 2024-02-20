@@ -166,7 +166,7 @@ Here is the resulting `CEvolution` of an epidemic (_conditioned_ on observed rem
 ```{julia}
 ev1 = CEvolution(initial, iv1)
 ```
-Notice that the fields `LFE`, `NFZ1`, `NFZ2`, `NFZ3` of this `CEvolution` 
+Notice that the fields `LFE`, `NFZ1`, `NFZ2`, `NFZ` of this `CEvolution` 
 are in fact empty lists.
 This particular `CEvolution` then corresponds to the state of the epidemic at step `0` of algorithmic time.
 Thus there is no `AbstractEvolution` acting as predecessor in the sense of algorithmic time,
@@ -453,7 +453,7 @@ Computing the \NFZ
 
 ```{julia}
 #| echo: false
-if EpidemicsCFTP.is_correct_NFZ3(ev2)
+if EpidemicsCFTP.is_correct_NFZ(ev2)
     Markdown.parse("""
 @fig-test-06-evolve depicts `ev2`, the
 trajectory of the `CEvolution` at the next step in algorithmic time.
@@ -461,7 +461,7 @@ Display options for the new evolution are chosen to give only the epidemic traje
 the removals trajectory boundary, and the 
 \\LFE (`LFE`) and 
 \\NFZ (`NFZ`) boundaries.
-`EpidemicsCFTP.is_correct_NFZ3` has verified the construction of `ev2.NFZ3` in @fig-test-06-evolve22.
+`EpidemicsCFTP.is_correct_NFZ` has verified the construction of `ev2.NFZ` in @fig-test-06-evolve22.
 """)
 else
     Markdown.parse("""
@@ -471,7 +471,7 @@ Display options for the new evolution are chosen to give only the epidemic traje
 the removals trajectory boundary, and the 
 \\LFE (`LFE`) and 
 \\NFZ (`NFZ`) boundaries.
-**Warning:** according to `EpidemicsCFTP.is_correct_NFZ3`, the construction of `ev2.NFZ3` is **not** valid.
+**Warning:** according to `EpidemicsCFTP.is_correct_NFZ`, the construction of `ev2.NFZ` is **not** valid.
 """)
 end
 ```
@@ -540,7 +540,7 @@ Examples of progress through algorithmic time
 Extremal conditional evolutions
 -------------------------------
 We now demonstrate how this construction leads to progressive development through algorithmic time,
-using `EpidemicsCFTP.is_correct_LFE` and `EpidemicsCFTP.is_correct_NFZ3` to verify each step.
+using `EpidemicsCFTP.is_correct_LFE` and `EpidemicsCFTP.is_correct_NFZ` to verify each step.
 We seed the random number generator so as to ensure repeatability.
 ```{julia}
 Random.seed!(2) ;
@@ -591,7 +591,7 @@ Progress starting with minimal (slowest) evolution
 We generate a short sequence of candidate innovations, starting with the minimal evolution,
 and use these to generate successive `CEvolution`s up to algorithmic time `ALG`.
 We use the expressive "diamond" infix operator `⋄`, as in `ev = ev ⋄ iv`, instead of `ev = CEvolution(ev, iv)`.
-Note that exceptions will be raised if `LFE` or `NFZ3` structures appear to be wrong.
+Note that exceptions will be raised if `LFE` or `NFZ` structures appear to be wrong.
 See the image sequence in @fig-test-09-minstep.
 ```{julia}
 ALG=12 ; α=0.2 ; β=0.1
@@ -604,7 +604,7 @@ ev, minimal = ev0_min, CEvolution[]
 for iv ∈ iv_seq[1:ALG]
     ev = ev ⋄ iv
     EpidemicsCFTP.is_correct_LFE(ev)
-    EpidemicsCFTP.is_correct_NFZ3(ev)
+    EpidemicsCFTP.is_correct_NFZ(ev)
     push!(minimal, ev)
 end ;
 ```
@@ -633,7 +633,7 @@ ev, maximal = ev0_max, CEvolution[]
 for iv ∈ iv_seq  
     ev = ev ⋄ iv
     EpidemicsCFTP.is_correct_LFE(ev)
-    EpidemicsCFTP.is_correct_NFZ3(ev)
+    EpidemicsCFTP.is_correct_NFZ(ev)
     push!(maximal, ev)
 end ;
 ```

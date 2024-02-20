@@ -1,0 +1,228 @@
+---
+title:  "Creating the `LFE` trajectory"
+author: "Wilfrid Kendall"
+date:   today
+---
+
+---
+toc: true
+
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+        \newcommand{\NFZ}{``no-fly zone"\xspace}
+        \newcommand{\LFE}{``last feasible epidemic"\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+jupyter:    julia-1.9
+---
+
+```{julia}
+#| include: false
+#| eval: true
+#| cache: false
+#| tags: [parameters]
+source = "LFE.qmd"
+
+using Random, Test
+import EpidemicsCFTP: EpidemicsCFTP, 
+    Innovation, CEvolution, SIR,
+    AbstractIncident,
+    AbstractInfection, OperativeInfection, Infection, PInfection, NoFlyInfection, ExpungedInfection,
+    AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
+    ⪯, ≃, ⋄, generate_innovation, extremal_evolution
+
+# ENV["JULIA_DEBUG"] = Main    
+```
+
+Here is a table of software used in the following computations:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+import Markdown
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+""")
+```
+
+{{< pagebreak >}}
+
+Basic Constructions
+===================
+```{julia}
+#| echo: false
+const REPLICATES = 1:60
+Markdown.md"The range of simulation replicates over algorithmic time is $REPLICATES. \
+We specify the duration of the epidemic, its population,  and two rate parameters."
+```
+```{julia}
+const duration = 10.0 ; const population = 10 ; const α=0.1 ; const β=0.05 ;
+```
+Parameter sets can be varied: here is another possibility that has been considered.
+```julia
+const duration = 5.0 ; const population = 5 ; const α=0.3 ; const β=0.2 ;
+```
+
+It is useful to
+have some abbreviations for various `AbstractIncident`s.
+```{julia}
+import EpidemicsCFTP: AI, I, P, R, C
+```
+```julia
+AI  = AbstractIncident;
+AIF = AbstractInfection; I = Infection; P = PInfection;
+ NF = NoFlyInfection;   XI = ExpungedInfection;
+AIR = AbstractRemoval;   R = Removal;   C = CRemoval;
+ KI = KilledInfection;  KR = KilledRemoval;
+```
+Here is the random seed used for random generation of `Innovation`s.
+```{julia}
+Random.seed!(44) ;
+```
+
+We will be using the following functions from `EpidemicsCFTP`:
+```{julia}
+import EpidemicsCFTP: last_feasible_evolution, is_correct_LFE, is_correct_NFZ ;
+```
+
+Conditional removal times (`cremoval_times`) are specified as 
+```{julia}
+#| echo: false
+cremoval_times = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0] 
+println(cremoval_times)
+
+@assert duration ≥ maximum(cremoval_times)
+```
+Other options for `cremoval_times` are `[1.0, 2.0, 3.0, 3.5, 4.0]`, `[1.0, 2.0]` or `[1.0, 2.0, 3.0]`.
+
+{{< pagebreak >}}
+
+Unit Tests for zero algorithmic time, many initial conditions
+=============================================================
+```{julia}
+#| echo: false
+Markdown.md"Unit tests are carried out in algorithmic time for a sample $REPLICATES, \
+using as initial states both the maximal conditioned evolution and the minimal conditioned \
+evolution. Simulations are conditioned on the specified `cremoval_times`. "
+```
+
+We first test the "zero step" (extending maximum and minimum conditioned evolutions
+using an essentially empty innovation) over a range of initial conditions.
+In this edge-case it is actually necessary to _construct_ the `CEvolution` from a
+null `Innovation` `iv` in order to ensure all fields are filled as required!
+Note the use of a monotonicity test for `ev_pair`.
+```{julia simulation1}
+iv = Innovation(population, I[], R[], C[C(t,population) for (r, t) ∈ enumerate(cremoval_times)])
+crcount = length(cremoval_times)
+traj_hi = [P(0, r, r+1) for r ∈ 1:population] ∪ iv.cremovals
+traj_lo = sort([P(t, r, r+1) for (r,t) ∈ enumerate(cremoval_times)][1:end-1] 
+                    ∪ [C(t, r) for (r,t) ∈ enumerate(cremoval_times)])
+for i ∈ 1:population                                                                # <1>
+    initial = SIR(0, population - i, i, 0)
+    startup = initial.i + initial.r
+    ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
+    ev_hi  = extremal_evolution(initial, duration, cremoval_times)
+    ev_pair = []
+    for (ev, traj) ∈ [(ev_lo, traj_lo), (ev_hi, traj_hi)]                           # <2>
+        computed_LFE = convert(Vector{AI}, [z for z ∈ traj if
+                ! (z isa OperativeInfection) || startup < z.infectee ≤ crcount])
+        LFE = last_feasible_evolution(duration, ev, iv)
+        @test CEvolution(ev.initial, LFE).history == LFE                            # <3>
+        @test computed_LFE == sort(ev.cremovals ∪ ev.removals ∪ [P(z) for z ∈ ev.infections 
+                if z isa OperativeInfection && startup < z.infectee ≤ crcount])     # <4>
+         
+        evx = ev ⋄ iv
+        deleteat!(evx.cremovals, 1:length(ev.cremovals))                            # <5>
+        append!(evx.cremovals, ev.cremovals)                                        # <5>
+
+        @test (ev.removals == evx.removals) && (ev.trajectory == evx.trajectory)    # <6> 
+        @test EpidemicsCFTP.is_correct_LFE(evx)                                     # <7>
+        push!(ev_pair, evx)
+    end
+    @test ⪯(ev_pair...)                                                             # <8>
+end ;
+```
+1. Iterate through all possible initial configurations with zero initial removals.
+2. Iterate through first the results of the minimal initial condition then the results of the maximal initial condition.
+3. Check that the \LFE will be the history (hence _a fortiori_ the `LFE`) of an epidemic
+generated using this `LFE` (This check should hold in all cases, not just the above edge-cases);
+4. Check the `LFE` computed from the trajectory (a rather trivial calculation in these edge-cases)
+agrees with the `LFE` computed using the resulting `CEvolution`;
+5. Fudge the result of `ev ⋄ iv` to restore the `cremovals` of `ev`.
+6. Also check `removals`, and `trajectory` fields are unchanged  (hence also the `infections` field) in this case of zero algorithmic time.
+7. Check that the \LFE is genuinely the least feasible evolution;
+8. Check that the constructed maximal and minimal `CEvolutions` are weakly monotonically related.
+
+Unit Tests for further steps in algorithmic time
+================================================
+```{julia}
+#| echo: false
+Markdown.md"We now simulate over the algorithmic time range for a sample $REPLICATES, \
+starting in turn from each of the defined initial configurations. \
+In this case the constructed `CEvolution` _will_ have an `LFE` field with the correct \LFE contents. \
+Note the monotonicity test using `ev_pair`."
+```
+```{julia}
+ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ REPLICATES]
+for i ∈ 1:population
+    initial = SIR(0, population - i, i, 0) 
+    println("\nInitial condition ", sprint(show, MIME("text/plain"), initial))
+    ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
+    ev_hi  = extremal_evolution(initial, duration, cremoval_times)
+    coalesced = ≃(ev_hi, ev_lo)
+    for j ∈ REPLICATES
+        ev_hi, ev_lo = ev_hi ⋄ ivl[j], ev_lo ⋄ ivl[j] 
+        for ev in [ev_hi, ev_lo]
+            @test CEvolution(ev.initial, ev.LFE).history == ev.LFE                          # <1>
+            @test EpidemicsCFTP.is_correct_LFE(ev)                                          # <2>
+            @test is_correct_LFE(ev)                                                        # <3>
+            @test is_correct_NFZ(ev)                                                        # <3>
+        end
+        @test ev_lo ⪯ ev_hi                                                                 # <4>
+
+        same_trajectory = ≃(ev_hi, ev_lo)
+        @test (! coalesced) || same_trajectory                                              # <5>
+        coalesced = same_trajectory    
+        print(same_trajectory ? "c"         : "-")
+        print((j % 10) == 0   ? " "         : "" )
+        print((j % 80) == 0   ? "\n       " : "" )
+    end
+end ;
+```
+1. Check the \LFE is the history of an epidemic generated using the self-same `LFE`
+(hence _a fortiori_ the `LFE` of this new epidemic);
+2. Check the \LFE is genuinely the least feasible evolution (otherwise an exception will be raised 
+by `EpidemicsCFTP.is_correct_LFE` which will be caught and reported on); 
+3. Check
+`LFE` and `NFZ` are correct for both `ev_lo` and `ev_hi`;
+4. Check `CEvolutions` arising from maximal and minimal starts are weakly monotonically related;
+5. Check that once coalescence is obtained then it persists! Coalescence times are printed out.
+ 

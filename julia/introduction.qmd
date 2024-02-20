@@ -985,7 +985,7 @@ figure15 = new_figure(deepcopy(figure14a),
         linewidth(theme.boundary), stroke(theme.NFZ1))),
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
-        linewidth(theme.boundary), stroke(theme.NFZ3))),
+        linewidth(theme.boundary), stroke(theme.NFZ))),
     )
 depict("introduction-15-relevant-removals", new_figure(figure15,
     title="First and second iterations of no-fly zones")
@@ -1055,7 +1055,7 @@ figure16 = new_figure(deepcopy(figure14a),
         linewidth(theme.boundary), stroke(theme.NFZ1))),
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
-        linewidth(theme.boundary), stroke(theme.NFZ3))),
+        linewidth(theme.boundary), stroke(theme.NFZ))),
     )
 depict("introduction-16-prior-relevant-removals", new_figure(figure16,
     title="First and second iterations of no-fly zones with prior relevant infections")
@@ -1102,11 +1102,11 @@ figure17 = new_figure(
     # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
-        linewidth(theme.boundary), stroke(theme.NFZ3))),
+        linewidth(theme.boundary), stroke(theme.NFZ))),
     
     # Draw Nofly region and boundary
     layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:hv),
-        style(line_width=theme.trail, default_color=theme.NFZ3)),
+        style(line_width=theme.trail, default_color=theme.NFZ)),
     layer(xy_flow_nofly1, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.NFZ1)),
 
@@ -1143,11 +1143,11 @@ figure18 = new_figure(
     # Draw, for each time line, boundaries determined by running maximum of early `Removal` times.
     Guide.annotation(compose(context(),
         line([ [(0.0, z[1]), (z[2], z[1])] for z ∈ enumerate(evol1_2.NFZ2) if z[2]>0]),
-        linewidth(theme.boundary), stroke(theme.NFZ3))),
+        linewidth(theme.boundary), stroke(theme.NFZ))),
         
     # Draw Nofly region and boundary
     layer(flow_nofly1, x=:t, y=:y,  Geom.step(direction=:hv),
-        style(line_width=theme.trail, default_color=theme.NFZ3)),
+        style(line_width=theme.trail, default_color=theme.NFZ)),
     layer(xy_flow_nofly1, x=:t, ymin=:y, ymax=:top, Geom.ribbon,
         alpha=[theme.opacity], style(default_color=theme.NFZ1)),
 

@@ -32,11 +32,13 @@ end
 
 This allows us to compare (weakly) two `AbstractEvolution`s
 with the same population `initial.n`, by comparing the `start` fields.
+Note that `ev1 ⪯ ev2` exactly when none of the activated infections of `ev1` precede
+the respective activated infections of `ev2`, so that `ev1` proceeds no faster than `ev2`.
 ### Example
 ```jldoctest
 initial = SIR(0.0, 2, 1, 0)
-iv1 = Innovation(2, I[I(1,1,2)], R[])
-iv2 = Innovation(2, I[I(2,1,2)], R[])
+iv1 = Innovation(2, I[I(2,1,2)], R[])
+iv2 = Innovation(2, I[I(1,1,2)], R[])
 Evolution(initial, iv1) ⪯ Evolution(initial, iv2)
 
 # output
@@ -45,7 +47,7 @@ true
 """
 function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
     ev1.initial.n == ev2.initial.n || return false
-    return all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+    return all(z1 ≥ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
 end
     
 """
@@ -56,12 +58,23 @@ This specializes
 by allowing us to compare weakly two `CEvolution`s
 with the same population `initial.n` _and_ the same `CRemoval` times,
 comparing not only the `start` fields as in the `AbstractEvolution` version, 
-but also the `CRemoval` `target` fields.  
-### Example
+but also checking that the `CRemoval` `target` fields in `ev1` are no higher
+than the respective `CRemoval` `target` fields in `ev2`.  
+### Examples
+```jldoctest
+initial = SIR(0.0, 2, 1, 0)
+civ1 = Innovation(2, I[I(2,1,2)], R[], [C(3,1)])
+civ2 = Innovation(2, I[I(1,1,2)], R[], [C(3,1)])
+CEvolution(initial, civ1) ⪯ CEvolution(initial, civ2)
+
+# output
+true
+```
+
 ```jldoctest
 initial = SIR(0.0, 2, 1, 0)
 civ1 = Innovation(2, I[I(1,1,2)], R[], [C(3,1)])
-civ2 = Innovation(2, I[I(2,1,2)], R[], [C(3,1)])
+civ2 = Innovation(2, I[I(1,1,2)], R[], [C(3,2)])
 CEvolution(initial, civ1) ⪯ CEvolution(initial, civ2)
 
 # output
@@ -72,8 +85,8 @@ function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
     any(ev1.initial.n != ev2.initial.n) && error("populations differ")
     pair = zip(ev1.cremovals, ev2.cremovals)
     any(z1.t != z2.t  for (z1, z2) ∈ pair) && error("cremoval times differ")
-    timelines_ok = all(z1 ≤ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
-    crtargets_ok = all(z1.target ≥ z2.target for (z1, z2) ∈ pair)
+    timelines_ok = all(z1 ≥ z2 for (z1, z2) ∈ zip(ev1.start, ev2.start))
+    crtargets_ok = all(z1.target ≤ z2.target for (z1, z2) ∈ pair)
     return timelines_ok && crtargets_ok 
 end
 

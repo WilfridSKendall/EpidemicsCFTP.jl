@@ -8,6 +8,7 @@ EpidemicsUtilities/
 image/introduction*
 image/production*
 image/test*
+image/CFTP*
 
 .directory
 .Rhistory

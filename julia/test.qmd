@@ -615,7 +615,7 @@ end ;
 for (i, ev) ∈ enumerate(minimal[1:6])
     depict("test-09-minstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
-                select=BOUNDARIES | ELEMENTS | ACTIVATED | NFZ),
+                select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET| NFZ),
             title="Min evolution, step $i")
         ) ;
 end
@@ -652,6 +652,10 @@ end
 
 Comparison of minimal and maximal sequences
 -------------------------------------------
+At this point we need to specify explicit colours.
+```{julia}
+using Colors
+```
 ```{julia}
 #| echo: false
 plot_range = 1:6
@@ -669,9 +673,11 @@ $(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "and then p
 ```{julia}
 #| echo: false   
 for k ∈ plot_range
-    work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, select=BOUNDARIES)                                                         
+    work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=colorant"red")                                                         
     depict("test-11step$k", new_figure(                                                  
-        draw_evolution!(work, maximal[k], duration, theme=theme, select=BOUNDARIES),                                                          
+        draw_evolution!(work, maximal[k], duration, theme=theme,
+                    select=BOUNDARIES, specified_color=colorant"blue"),                                                          
             title="Evolution at step $k")                                                     
         )
 end ;
@@ -733,7 +739,7 @@ with the maximal (fastest) `CEvolution`.
 ![Step 6.](image/test-11step6.pdf){#fig-test-11step6}
 
 Comparison of trajectories evolving in algorithmic time, starting
-with minimal and maximal `CEvolution`s.
+with minimal (red) and maximal (blue) `CEvolution`s.
 
 :::
 

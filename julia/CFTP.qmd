@@ -163,6 +163,11 @@ lines_plot = new_figure(axes_plot,
     Guide.ylabel("Time lines")) ;
 ```
 
+Here are spectra to be used in CFTP plots.
+```{julia}
+min_spectrum = range(colorant"red",  stop=colorant"yellow", length=12) ;
+max_spectrum = range(colorant"blue", stop=colorant"yellow", length=12) ;
+```
 
 Algorithmic evolution from minimal (slowest) evolution
 --------------------------------------------------
@@ -235,59 +240,6 @@ for (i, ev) ∈ enumerate(maximal[PLOTRANGE1])
 end
 ```
 
-Comparison of minimal and maximal sequences
--------------------------------------------
-```{julia}
-#| echo: false
-Markdown.parse("""
-Finally we display only the trajectories, comparing minimal (red) with maximal (blue)
-epidemic trajectories.
-To be specific, @fig-CFTP-03-stepA plots both minimal and maximal evolutions
-over the first range $PLOTRANGE1 of steps in algorithmic time. 
-@fig-CFTP-03-stepB plots them over the second range 
-$PLOTRANGE2 of steps in algorithmic time. 
-Monotonicity is checked and is
-$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "maintained throughout" : "**not** maintained"),
-while full coalescence (_including_ agreement of `CRemoval` `target` fields) occurs at 
-algorithmic time step $(findfirst(minimal .≃ maximal)) 
-$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "and then persists" : "but does **not** persist").
-""")
-```
-
-```{julia}
-#| echo: false
-Markdown.parse("""
-(Note that the _trajectories_ coincide at an earlier stage of algorithmic time,
-namely step 3: 
-however at this point the
-`CRemoval` `target` fields do not agree, so the trajectories are able to diverge later
-in algorithmic time.)
-""")
-```
-
-```{julia}
-#| echo: false   
-spectrum = range(colorant"red", stop=colorant"blue", length=15) ;
-
-for k ∈ SEQUENCE
-    work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=spectrum[1])
-    depict("CFTP-03-step$k", new_figure(                                                  
-        draw_evolution!(work, maximal[k], duration, theme=theme,
-                    select=BOUNDARIES, specified_color=spectrum[end]),                                                          
-            title="Evolution at step $k")                                                     
-        )
-end ;
-```
-
-```{julia}
-#| echo: false
-for k ∈ SEQUENCE
-    print(rpad("Step $k: ", 15),    sprint(show, MIME("text/plain"), minimal[k].cremovals))
-    println(rpad(minimal[k] ≃ maximal[k] ? "  coalesced with  " : "", 20), 
-                                    sprint(show, MIME("text/plain"), maximal[k].cremovals))
-end
-```
 
 ::: {#fig-CFTP-01-minstep layout-ncol=2 layout-nrow=3}
 
@@ -327,7 +279,64 @@ with the maximal (fastest) `CEvolution`.
 
 :::
 
-{{< pagebreak >}}
+
+
+Comparison of minimal and maximal sequences
+-------------------------------------------
+```{julia}
+#| echo: false
+Markdown.parse("""
+Finally we display only the trajectories, comparing minimal (red) with maximal (blue)
+epidemic trajectories.
+At full coalescence the trajectory is coloured black.
+To be specific, @fig-CFTP-03-stepA plots both minimal and maximal evolutions
+over the first range $PLOTRANGE1 of steps in algorithmic time. 
+@fig-CFTP-03-stepB plots them over the second range 
+$PLOTRANGE2 of steps in algorithmic time. 
+Monotonicity is checked and is
+$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "maintained throughout" : "**not** maintained"),
+while full coalescence (_including_ agreement of `CRemoval` `target` fields) occurs at 
+algorithmic time step $(findfirst(minimal .≃ maximal)) 
+$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "and then persists" : "but does **not** persist").
+""")
+```
+
+```{julia}
+#| echo: false
+Markdown.parse("""
+(Note that the _trajectories_ coincide at an earlier stage of algorithmic time,
+namely step 3: 
+however at this point the
+`CRemoval` `target` fields do not agree, so the trajectories are able to diverge later
+in algorithmic time.)
+""")
+```
+
+```{julia}
+#| echo: false
+for k ∈ SEQUENCE
+    print(rpad("Step $k: ", 15),    sprint(show, MIME("text/plain"), minimal[k].cremovals))
+    println(rpad(minimal[k] ≃ maximal[k] ? "  coalesced with" : "", 18), 
+                                    sprint(show, MIME("text/plain"), maximal[k].cremovals))
+end
+```
+
+```{julia}
+#| echo: false   
+for k ∈ SEQUENCE
+    work = deepcopy(lines_plot)
+    if minimal[k] ≃ maximal[k]
+        work = draw_evolution!(work, maximal[k], duration, theme=theme,
+                    select=BOUNDARIES, specified_color=colorant"black")
+    end
+    work = draw_evolution!(work, minimal[k], duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+    work = draw_evolution!(work, maximal[k], duration, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+    depict("CFTP-03-step$k", new_figure(work, title="Evolution at step $k"))
+end ;
+```
+
 
 
 ::: {#fig-CFTP-03-stepA layout-ncol=2 layout-nrow=2}
@@ -346,30 +355,134 @@ with the maximal (fastest) `CEvolution`.
 
 Comparison of trajectories evolving in algorithmic time (1:6), starting
 with minimal (red) and maximal (blue) `CEvolution`s.
+Coalescence of initial start is coloured black.
 
 :::
 
 
 
-{{< pagebreak >}}
 
 
 ::: {#fig-CFTP-03-stepB layout-ncol=2 layout-nrow=2}
 
-![Step 1.](image/CFTP-03-step7.pdf){#fig-CFTP-03-step1}
+![Step 7.](image/CFTP-03-step7.pdf){#fig-CFTP-03-step1}
 
-![Step 2.](image/CFTP-03-step8.pdf){#fig-CFTP-03-step2}
+![Step 8.](image/CFTP-03-step8.pdf){#fig-CFTP-03-step2}
 
-![Step 3.](image/CFTP-03-step9.pdf){#fig-CFTP-03-step3}
+![Step 9.](image/CFTP-03-step9.pdf){#fig-CFTP-03-step3}
 
-![Step 4.](image/CFTP-03-step10.pdf){#fig-CFTP-03-step4}
+![Step 10.](image/CFTP-03-step10.pdf){#fig-CFTP-03-step4}
 
-![Step 5.](image/CFTP-03-step11.pdf){#fig-CFTP-03-step5}
+![Step 11.](image/CFTP-03-step11.pdf){#fig-CFTP-03-step5}
 
-![Step 6.](image/CFTP-03-step12.pdf){#fig-CFTP-03-step6}
+![Step 12.](image/CFTP-03-step12.pdf){#fig-CFTP-03-step6}
 
 Continuation of @fig-CFTP-03-stepA over algorithmic time (7:12).
+Coalescence of initial start is coloured black.
 
 :::
 
+{{< pagebreak >}}
+
+Detailed graphical study of coalescence
+---------------------------------------
+```{julia}
+#| echo: false
+Markdown.parse("""
+For the purposes of understanding CFTP we need also to look at behaviours of maximal and minimal
+epidemic trajectories started at algorithmic times in the range $(2:(SEQUENCE[end-1])).
+These are plotted using colour-coding: later starts have lighter colours.
+Again at full coalescence of the earliest start, the common trajectory is plotted in black.
+Note that the coalesced trajectory captures earlier starts quite fast ...
+""")
+```
+
+```{julia}
+minimal_tally = Dict()
+for  start_time ∈ SEQUENCE
+    ev = ev0_min
+    minimal_tally[start_time] = []
+    for iv ∈ iv_seq[start_time:end]
+        ev = ev ⋄ iv
+        EpidemicsCFTP.is_correct_LFE(ev) && EpidemicsCFTP.is_correct_NFZ(ev)
+        push!(minimal_tally[start_time], ev)
+    end
+end
+
+
+maximal_tally = Dict()
+for  start_time ∈ SEQUENCE
+    ev = ev0_max
+    maximal_tally[start_time] = []
+    for iv ∈ iv_seq[start_time:end]
+        ev = ev ⋄ iv
+        EpidemicsCFTP.is_correct_LFE(ev) && EpidemicsCFTP.is_correct_NFZ(ev)
+        push!(maximal_tally[start_time], ev)
+    end
+end
+```
+
+```{julia}
+#| echo: false   
+for k ∈ SEQUENCE
+    work = deepcopy(lines_plot)
+    if minimal[k] ≃ maximal[k]
+        work = draw_evolution!(work, maximal[k], duration, theme=theme,
+                    select=BOUNDARIES, specified_color=colorant"black")
+    end
+    # First draw the relevant minimal starts
+    for r ∈ 1:k
+        work = draw_evolution!(work, minimal_tally[r][k-r+1], duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[r])
+    end
+    for r ∈ 1:k
+        work = draw_evolution!(work, maximal_tally[r][k-r+1], duration, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[r])
+    end
+    depict("CFTP-04-comb$k", new_figure(work, title="CFTP at step $k"))
+end ;
+```
+
+
+
+::: {#fig-CFTP-04-combA layout-ncol=2 layout-nrow=2}
+
+![Step 1.](image/CFTP-04-comb1.pdf){#fig-CFTP-04-comb1}
+
+![Step 2.](image/CFTP-04-comb2.pdf){#fig-CFTP-04-comb2}
+
+![Step 3.](image/CFTP-04-comb3.pdf){#fig-CFTP-04-comb3}
+
+![Step 4.](image/CFTP-04-comb4.pdf){#fig-CFTP-04-comb4}
+
+![Step 5.](image/CFTP-04-comb5.pdf){#fig-CFTP-04-comb5}
+
+![Step 6.](image/CFTP-04-comb6.pdf){#fig-CFTP-04-comb6}
+
+Comparison of CFTP starts in algorithmic time (1:6), coded
+as minimal (red) through to maximal (blue).
+Coalescence of initial start is coloured black.
+
+:::
+
+
+::: {#fig-CFTP-04-combB layout-ncol=2 layout-nrow=2}
+
+![Step 7.](image/CFTP-04-comb7.pdf){#fig-CFTP-04-comb7}
+
+![Step 8.](image/CFTP-04-comb8.pdf){#fig-CFTP-04-comb8}
+
+![Step 9.](image/CFTP-04-comb9.pdf){#fig-CFTP-04-comb9}
+
+![Step 10.](image/CFTP-04-comb10.pdf){#fig-CFTP-04-comb10}
+
+![Step 11.](image/CFTP-04-comb11.pdf){#fig-CFTP-04-comb11}
+
+![Step 12.](image/CFTP-04-comb12.pdf){#fig-CFTP-04-comb12}
+
+Comparison of CFTP starts in algorithmic time (7:12), coded
+as minimal (red) through to maximal (blue).
+Coalescence of initial start is coloured black.
+
+:::
 

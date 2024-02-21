@@ -1,5 +1,5 @@
 ---
-title:  "Example of perfect epidemic simulation for `julia` code"
+title:  "Perfect epidemic simulation with `julia`"
 author: "Wilfrid Kendall"
 date:   today
 ---
@@ -39,7 +39,7 @@ jupyter:    julia-1.9
 #| eval: true
 #| cache: false
 #| tags: [parameters]
-source = "test.qmd"
+source = "CFTP.qmd"
 
 using EpidemicsCFTP, EpidemicsCFTP.abbreviations, EpidemicsUtilities
 
@@ -52,7 +52,7 @@ using DataFrames
 using PrettyTables
 # `PrettyTables` documentation is to be found at <https://ronisbr.github.io/PrettyTables.jl/stable/>.
 
-import Random
+import Random: seed!
 ```
 
 Here is a table of software used in the following computations:
@@ -88,18 +88,18 @@ set_default_plot_size(theme.figwidth, theme.figheight)
 Initialization
 ==============
 We shall only use artificial examples, so there is no need to define rate parameters.
+The random `seed!` is chosen to deliver coalescence in first `12` iterations, but not too soon!
 ```{julia}
 const population = 5 ; 
 const duration   = 5.0 ;
 const α          = 0.2 ;
 const β          = 0.1 ;
+seed!(5) ;
 ```
 
-We generate a short sequence of candidate innovations, starting with the minimal evolution,
+We will generate a short sequence of candidate innovations, starting with the minimal evolution,
 and use these to generate successive `CEvolution`s up to algorithmic time `ALG`.
 We use the expressive "diamond" infix operator `⋄`, as in `ev = ev ⋄ iv`, instead of `ev = CEvolution(ev, iv)`.
-Note that exceptions will be raised if `LFE` or `NFZ` structures appear to be wrong.
-See the image sequence in @fig-CFTP-09-minstep.
 ```{julia}
 ALG=12
 
@@ -122,24 +122,18 @@ Tabular and graphical displays of epidemics
 `EpidemicsUtilities` supplies some constants 
 used for the plotting parameter `select`, namely
 ```{julia}
-import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFE, LFET, LFER, MOST, NFZ
+import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
 ```
 
-To set things up, we construct an `Innovation` and a corresponding `Evolution` as follows.
+To help set things up, we construct a prototype (_unconditioned_) `Evolution`.
 ```{julia}
-uiv1 = Innovation(initial.n, 
-    I[I(2t-1, t, t+1) for t ∈ [1,2]] ∪ AIF[I(0,3,4), I(2,4,5)], 
-    [R(2t, t) for t ∈ [1,2]] ∪ [R(1,5), R(3,5), R(4,5)])
-```
-The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follows:
-```{julia}
-uev1 = Evolution(initial, uiv1)
+trajectory = Evolution(initial, Innovation(initial.n, I[], [R(2t, t) for t ∈ [1,2]])).trajectory
 ```
 
 
 ```{julia}
 #| echo: false
-uflow = table_trajectories1(duration, uev1.trajectory) ;
+uflow = table_trajectories1(duration, trajectory) ;
 axes_plot = plot(uflow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
@@ -169,8 +163,11 @@ lines_plot = new_figure(axes_plot,
 
 Algorithmic evolution from minimal (slowest) evolution
 --------------------------------------------------
-
-
+We use this to generate successive `CEvolution`s
+in algorithmic time, starting from minimal `CEvolution`.
+See the image sequence in
+@fig-CFTP-01-minstep.
+Note that we check `LFE` and `NFZ` for validity.
 ```{julia}
 ev, minimal = ev0_min, CEvolution[]
 for iv ∈ iv_seq[1:ALG]
@@ -184,9 +181,9 @@ end ;
 ```{julia}
 #| echo: false
 for (i, ev) ∈ enumerate(minimal[1:6])
-    depict("CFTP-09-minstep$i", new_figure(
+    depict("CFTP-01-minstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
-                select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | LFER | NFZ),
+                select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
             title="Min evolution, step $i")
         ) ;
 end
@@ -198,7 +195,8 @@ Algorithmic evolution from maximal (fastest) evolution
 We now use this to generate successive `CEvolution`s
 in algorithmic time but starting from maximal `CEvolution`.
 See the image sequence in
-@fig-CFTP-10-maxstep.
+@fig-CFTP-02-maxstep.
+Note that we check `LFE` and `NFZ` for validity.
 ```{julia}
 ev, maximal = ev0_max, CEvolution[]
 for iv ∈ iv_seq  
@@ -213,7 +211,7 @@ end ;
 ```{julia}
 #| echo: false
 for (i, ev) ∈ enumerate(maximal[1:6])
-    depict("CFTP-10-maxstep$i", new_figure(
+    depict("CFTP-02-maxstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
             title="Max evolution, step $i")
@@ -223,12 +221,13 @@ end
 
 Comparison of minimal and maximal sequences
 -------------------------------------------
-
+Finally we display trajectories only, comparing minimal (red) and maximal (blue)
+epidemic trajectories.
 ```{julia}
 #| echo: false
 plot_range = 1:6
 Markdown.parse("""
-Finally, @fig-CFTP-11step plots the first 
+To be specific, @fig-CFTP-03-step plots the first 
 $(plot_range[end])
 steps of both minimal and maximal evolutions in algorithmic time. 
 Monotonicity is 
@@ -242,47 +241,47 @@ $(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "and then p
 #| echo: false   
 for k ∈ plot_range
     work = draw_evolution!(deepcopy(lines_plot), minimal[k], duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=colorant"red")                                                         
-    depict("CFTP-11step$k", new_figure(                                                  
+                    select=BOUNDARIES, specified_color=spectrum[1])                                                         
+    depict("CFTP-03-step$k", new_figure(                                                  
         draw_evolution!(work, maximal[k], duration, theme=theme,
-                    select=BOUNDARIES, specified_color=colorant"blue"),                                                          
+                    select=BOUNDARIES, specified_color=spectrum[end]),                                                          
             title="Evolution at step $k")                                                     
         )
 end ;
 ```
 
-::: {#fig-CFTP-09-minstep layout-ncol=2 layout-nrow=3}
+::: {#fig-CFTP-01-minstep layout-ncol=2 layout-nrow=3}
 
-![](image/CFTP-09-minstep1.pdf)
+![](image/CFTP-01-minstep1.pdf)
 
-![](image/CFTP-09-minstep2.pdf)
+![](image/CFTP-01-minstep2.pdf)
 
-![](image/CFTP-09-minstep3.pdf)
+![](image/CFTP-01-minstep3.pdf)
 
-![](image/CFTP-09-minstep4.pdf)
+![](image/CFTP-01-minstep4.pdf)
 
-![](image/CFTP-09-minstep5.pdf)
+![](image/CFTP-01-minstep5.pdf)
 
-![](image/CFTP-09-minstep6.pdf)
+![](image/CFTP-01-minstep6.pdf)
 
 Sequence of trajectories evolving in algorithmic time, starting
 with the minimal (slowest) `CEvolution`.
 
 :::
 
-::: {#fig-CFTP-10-maxstep layout-ncol=2 layout-nrow=3}
+::: {#fig-CFTP-02-maxstep layout-ncol=2 layout-nrow=3}
 
-![](image/CFTP-10-maxstep1.pdf)
+![](image/CFTP-02-maxstep1.pdf)
 
-![](image/CFTP-10-maxstep2.pdf)
+![](image/CFTP-02-maxstep2.pdf)
 
-![](image/CFTP-10-maxstep3.pdf)
+![](image/CFTP-02-maxstep3.pdf)
 
-![](image/CFTP-10-maxstep4.pdf)
+![](image/CFTP-02-maxstep4.pdf)
 
-![](image/CFTP-10-maxstep5.pdf)
+![](image/CFTP-02-maxstep5.pdf)
 
-![](image/CFTP-10-maxstep6.pdf)
+![](image/CFTP-02-maxstep6.pdf)
 
 Sequence of trajectories evolving in algorithmic time, starting
 with the maximal (fastest) `CEvolution`.
@@ -292,19 +291,19 @@ with the maximal (fastest) `CEvolution`.
 {{< pagebreak >}}
 
 
-::: {#fig-CFTP-11step layout-ncol=2 layout-nrow=2}
+::: {#fig-CFTP-03-step layout-ncol=2 layout-nrow=2}
 
-![Step 1.](image/CFTP-11step1.pdf){#fig-CFTP-11step1}
+![Step 1.](image/CFTP-03-step1.pdf){#fig-CFTP-03-step1}
 
-![Step 2.](image/CFTP-11step2.pdf){#fig-CFTP-11step2}
+![Step 2.](image/CFTP-03-step2.pdf){#fig-CFTP-03-step2}
 
-![Step 3.](image/CFTP-11step3.pdf){#fig-CFTP-11step3}
+![Step 3.](image/CFTP-03-step3.pdf){#fig-CFTP-03-step3}
 
-![Step 4.](image/CFTP-11step4.pdf){#fig-CFTP-11step4}
+![Step 4.](image/CFTP-03-step4.pdf){#fig-CFTP-03-step4}
 
-![Step 5.](image/CFTP-11step5.pdf){#fig-CFTP-11step5}
+![Step 5.](image/CFTP-03-step5.pdf){#fig-CFTP-03-step5}
 
-![Step 6.](image/CFTP-11step6.pdf){#fig-CFTP-11step6}
+![Step 6.](image/CFTP-03-step6.pdf){#fig-CFTP-03-step6}
 
 Comparison of trajectories evolving in algorithmic time, starting
 with minimal (red) and maximal (blue) `CEvolution`s.

@@ -611,7 +611,6 @@ end ;
 
 ```{julia}
 #| echo: false
-# use of `LFET` and/or `LFER` causes error of usage of `CRemoval(4.0,2)` at step 2????
 for (i, ev) ∈ enumerate(minimal[1:6])
     depict("test-09-minstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,

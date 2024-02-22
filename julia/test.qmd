@@ -44,39 +44,14 @@ source = "test.qmd"
 using EpidemicsCFTP, EpidemicsUtilities
 
 using Gadfly, Compose
-# `Gadfly` documentation is to be found at <http://gadflyjl.org/stable/>
-using DataFrames
-# `DataFrames` documentation is to be found at <https://dataframes.juliadata.org/stable/>
-using PrettyTables
-# `PrettyTables` documentation is to be found at <https://ronisbr.github.io/PrettyTables.jl/stable/>
+using DataFrames, PrettyTables
+
+import Markdown
 
 import Random
 ```
 
 {{< pagebreak >}}
-
-Here is a table of software used in the following computations:
-```{julia}
-#| echo: false
-#| eval: true
-#| cache: false
-import Markdown
-quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
-ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
-ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
-owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
-                        "Date:   " => "", " +0000" => "")
-
-Markdown.parse("""
-|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
-|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
-|Quarto                     |`$(quartoversion)`             | ---                          |                            |
-|Running under `julia`      |`$VERSION`                     | ---                          |                            |
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
-|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
-|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
-""")
-```
 
 ```{julia}
 #| include: false
@@ -743,3 +718,38 @@ with minimal (red) and maximal (blue) `CEvolution`s.
 :::
 
 
+Appendices {.unnumbered}
+==========
+
+\appendix
+
+Software
+========
+Here is a table of software used in the following computations:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
+""")
+```
+
+Package documentation
+=====================
+* `Gadfly`:       <http://gadflyjl.org/stable/>;
+* `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>;
+* `DataFrames`:   <https://dataframes.juliadata.org/stable/>;
+* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.

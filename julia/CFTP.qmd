@@ -493,6 +493,6 @@ Package documentation
 =====================
 * `Colors`:       <http://juliagraphics.github.io/Colors.jl/stable/>;
 * `Gadfly`:       <http://gadflyjl.org/stable/>;
-* `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>.
-* `DataFrames`:   <https://dataframes.juliadata.org/stable/>.
+* `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>;
+* `DataFrames`:   <https://dataframes.juliadata.org/stable/>;
 * `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.

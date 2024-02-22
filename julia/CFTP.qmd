@@ -42,40 +42,11 @@ jupyter:    julia-1.9
 source = "CFTP.qmd"
 
 using EpidemicsCFTP, EpidemicsCFTP.abbreviations, EpidemicsUtilities
-
+using DataFrames, PrettyTables
 using Colors, Gadfly, Compose
-# `Colors` documentation is to be found at <http://juliagraphics.github.io/Colors.jl/stable/>;
-# `Gadfly` documentation is to be found at <http://gadflyjl.org/stable/>;
-# `Compose` documentation is to be found at <https://docs.juliahub.com/General/Compose/stable/>.
-using DataFrames
-# `DataFrames` documentation is to be found at <https://dataframes.juliadata.org/stable/>.
-using PrettyTables
-# `PrettyTables` documentation is to be found at <https://ronisbr.github.io/PrettyTables.jl/stable/>.
 
 import Random: seed!
-```
-
-Here is a table of software used in the following computations:
-```{julia}
-#| echo: false
-#| eval: true
-#| cache: false
 import Markdown
-quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
-ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
-ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
-owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
-                        "Date:   " => "", " +0000" => "")
-
-Markdown.parse("""
-|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
-|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
-|Quarto                     |`$(quartoversion)`             | ---                          |                            |
-|Running under `julia`      |`$VERSION`                     | ---                          |                            |
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
-|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
-|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
-""")
 ```
 
 ```{julia}
@@ -163,10 +134,11 @@ lines_plot = new_figure(axes_plot,
     Guide.ylabel("Time lines")) ;
 ```
 
-Here are spectra to be used in CFTP plots.
+Here are colours to be used in CFTP plots.
 ```{julia}
-min_spectrum = range(colorant"red",  stop=colorant"yellow", length=12) ;
-max_spectrum = range(colorant"blue", stop=colorant"yellow", length=12) ;
+min_spectrum   = range(colorant"red",  stop=colorant"yellow", length=12) ;
+max_spectrum   = range(colorant"blue", stop=colorant"lightgreen", length=12) ;
+coalesce_color = range(colorant"red", stop=colorant"blue", length=3)[2] ;
 ```
 
 Algorithmic evolution from minimal (slowest) evolution
@@ -428,7 +400,7 @@ for k ∈ SEQUENCE
     work = deepcopy(lines_plot)
     if minimal[k] ≃ maximal[k]
         work = draw_evolution!(work, maximal[k], duration, theme=theme,
-                    select=BOUNDARIES, specified_color=colorant"black")
+                    select=BOUNDARIES, specified_color=coalesce_color)
     end
     # First draw the relevant minimal starts
     for r ∈ 1:k
@@ -482,7 +454,42 @@ Coalescence of initial start is coloured black.
 
 Comparison of CFTP starts in algorithmic time (7:12), coded
 as minimal (red) through to maximal (blue).
-Coalescence of initial start is coloured black.
+Coalescence of initial start is coloured purple.
 
 :::
 
+{{< pagebreak >}}
+
+# Appendices {.unnumbered}
+
+## Software {.unnumbered}
+
+Here is a table of software used in the following computations:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
+""")
+```
+
+Package documentation {.unnumbered}
+---------------------
+* `Colors`:       <http://juliagraphics.github.io/Colors.jl/stable/>;
+* `Gadfly`:       <http://gadflyjl.org/stable/>;
+* `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>.
+* `DataFrames`:   <https://dataframes.juliadata.org/stable/>.
+* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.

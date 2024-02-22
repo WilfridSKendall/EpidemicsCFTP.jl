@@ -52,35 +52,16 @@ using EpidemicsCFTP, EpidemicsCFTP.abbreviations, EpidemicsUtilities
 import EpidemicsUtilities: BOUNDARIES, REGIONS, TOP, ELEMENTS, BASIC, LFE, LFET, LFER # REMOVE THIS LATER
 import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, LFER, MOST, NFZ
 
+# Specific `Gadfly` and 'Compose' imports, to avoid clashes.
 import Compose: context, compose, line, text, fontsize, 
     hcenter, linewidth, stroke
 import Gadfly: Coord, Geom, Guide, Scale, Theme, Plot,
     plot, layer, style, set_default_plot_size, pt, mm
-# Specific `Gadfly` and 'Compose' imports, to avoid clashes.
-# `Gadfly` documentation <http://gadflyjl.org/stable/>
-using DataFrames                                     # WHY DO WE NEED THIS HERE?! ***
-# `DataFrames` documentation <https://dataframes.juliadata.org/stable/>
 using PrettyTables
-# `PrettyTables` documentation at <https://ronisbr.github.io/PrettyTables.jl/stable/>
 
 import Random
 
 import Markdown
-quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
-ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
-ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
-owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
-                        "Date:   " => "", " +0000" => "")
-
-Markdown.parse("""
-| _Software_                  | _Version_                      | _Branch_                      | _Date of last commit_       |
-|:----------------------------|:-------------------------------|:------------------------------|:----------------------------|
-| Quarto                      |`$(quartoversion)`              | ---                           |                             |
-| Running under `julia`       |`$VERSION`                      | ---                           |                             |
-| Quarto script `$(source)`   |`$(ownversion)`                 |`$(ownbranch)`                 |`$owndate`                   |
-| Module `EpidemicsUtilities` |`$(EpidemicsUtilities.version)` |`$(EpidemicsUtilities.branch)` |`$(EpidemicsUtilities.date)` |
-| Module `EpidemicsCFTP`      |`$(EpidemicsCFTP.version)`      |`$(EpidemicsCFTP.branch)`      |`$(EpidemicsCFTP.date)`      |
-""")
 ```
 
 ```{julia}
@@ -374,6 +355,8 @@ xy_flow = table_trajectories2(flow, theme=theme) ;
 Markdown.parse(pretty_table(String, xy_flow[:,header], 
   header=header, tf=tf_markdown, alignment=[:l, :c, :c, :c, :c]))
 ```
+
+
 ```{julia}
 #| echo: false
 #| label: fig-introduction-04-zones
@@ -554,9 +537,6 @@ The full algorithmic step is very simply obtained:
 new_ev2 = ev1 ⋄ iv2c
 ```
 We now illustrate the steps involved in this algorithmic step.
-
-
-***BORROW FROM `test.qmd`***
 
 Remove all inactive removals from previous `Innovation`
 -------------------------------------------------------
@@ -791,3 +771,39 @@ depict("introduction-11-no-fly-zone", new_figure(
         title="Second step including no-fly zone")
 ) 
 ```
+
+
+
+{{< pagebreak >}}
+
+
+Appendices {.unnumbered}
+==========
+
+\appendix
+
+Software versions
+=================
+```{julia}
+#| echo: false
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+| _Software_                  | _Version_                      | _Branch_                      | _Date of last commit_       |
+|:----------------------------|:-------------------------------|:------------------------------|:----------------------------|
+| Quarto                      |`$(quartoversion)`              | ---                           |                             |
+| Running under `julia`       |`$VERSION`                      | ---                           |                             |
+| Quarto script `$(source)`   |`$(ownversion)`                 |`$(ownbranch)`                 |`$owndate`                   |
+| Module `EpidemicsUtilities` |`$(EpidemicsUtilities.version)` |`$(EpidemicsUtilities.branch)` |`$(EpidemicsUtilities.date)` |
+| Module `EpidemicsCFTP`      |`$(EpidemicsCFTP.version)`      |`$(EpidemicsCFTP.branch)`      |`$(EpidemicsCFTP.date)`      |
+""")
+```
+
+Package documentation
+=====================
+* `Gadfly`:       <http://gadflyjl.org/stable/>;
+* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.

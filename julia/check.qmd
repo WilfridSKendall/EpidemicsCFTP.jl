@@ -47,51 +47,18 @@ source = "check.qmd"
 #| cache: false
 using EpidemicsCFTP, EpidemicsUtilities
 
-using Gadfly, Compose
-# `Gadfly` documentation <http://gadflyjl.org/stable/>
-using DataFrames
-# `DataFrames` documentation <https://dataframes.juliadata.org/stable/>
-using PrettyTables
-# `PrettyTables` documentation at <https://ronisbr.github.io/PrettyTables.jl/stable/>
-
-import Distributions: Normal, ccdf
-import Random
+#using Gadfly, Compose
+using DataFrames, PrettyTables
 
 import Markdown
-ownversion = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
-ownbranch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
-Markdown.parse("""
-| Software                     | Version                         | Branch                         |
-|:-----------------------------|:--------------------------------|-------------------------------:|
-| Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 |
-| Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
-| Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
-| Running under `julia`        | `$VERSION`                      | ---                            |
-
-This script takes 
-- 8 minutes to run on `jemima`; 
-- 5 minutes to run on `benjamin`.
-""")
+import Distributions: Normal, ccdf
+import Random
 ```
 
 
 ```{julia}
 #| include: false
 Random.seed!(2)
-
-theme = create_theme(load_theme("config/theme.yml"))
-
-gadfly_theme = Theme(
-    panel_fill=theme.blank,
-    default_color=theme.default,
-    background_color=theme.background,
-    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
-    minor_label_color=theme.legend, major_label_color=theme.legend,
-    major_label_font_size=8pt,     minor_label_font_size=6pt,
-    grid_line_width=0mm,
-)
-
-set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
 # Testing the generation of an `Innovation`
@@ -297,4 +264,37 @@ In a sequence of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is
 In a total of \(110\) independent \(Z\)-tests, one of the \(p\)-values is around or below level \(0.01\),
 and one other is around or below level \(0.05\).
 :::
+
+{{< pagebreak >}}
+
+Appendices {.unnumbered}
+==========
+
+\appendix
+
+Software versions
+-----------------
+```{julia}
+#| echo: false
+ownversion = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
+ownbranch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+Markdown.parse("""
+| Software                     | Version                         | Branch                         |
+|:-----------------------------|:--------------------------------|-------------------------------:|
+| Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 |
+| Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
+| Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
+| Running under `julia`        | `$VERSION`                      | ---                            |
+
+This script takes 
+- 8 minutes to run on `jemima`; 
+- 5 minutes to run on `benjamin`.
+""")
+```
+
+Package documentation
+---------------------
+* `Gadfly`:       <http://gadflyjl.org/stable/>;
+* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.
+
 

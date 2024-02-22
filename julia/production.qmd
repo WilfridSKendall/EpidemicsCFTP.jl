@@ -350,13 +350,14 @@ References {.unnumbered}
 
 {{< pagebreak >}}
 
+\appendix
+
+
 Appendices {.unnumbered}
 ==========
 
-\appendix
-
-Software
-========
+Software versions
+=================
 Here is a table of software used in the following computations:
 ```{julia}
 #| echo: false

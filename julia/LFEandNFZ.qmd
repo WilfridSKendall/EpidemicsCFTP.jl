@@ -49,31 +49,10 @@ import EpidemicsCFTP: EpidemicsCFTP,
     AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
     ⪯, ≃, ⋄, generate_innovation, extremal_evolution
 
+import Markdown
+
 # ENV["JULIA_DEBUG"] = Main    
 ```
-
-Here is a table of software used in the following computations:
-```{julia}
-#| echo: false
-#| eval: true
-#| cache: false
-import Markdown
-quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
-ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
-ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
-owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
-                        "Date:   " => "", " +0000" => "")
-
-Markdown.parse("""
-|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
-|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
-|Quarto                     |`$(quartoversion)`             | ---                          |                            |
-|Running under `julia`      |`$VERSION`                     | ---                          |                            |
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
-""")
-```
-
-{{< pagebreak >}}
 
 Basic Constructions
 ===================
@@ -222,3 +201,41 @@ end ;
 3. Check `CEvolutions` arising from maximal and minimal starts are weakly monotonically related;
 4. Check that once coalescence is obtained then it persists! Coalescence times are indicated.
  
+
+{{< pagebreak >}}
+
+Appendices {.unnumbered}
+==========
+
+\appendix
+
+Software versions
+=================
+Here is a table of software used in the following computations:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+""")
+```
+
+
+Package documentation
+=====================
+* `Colors`:       <http://juliagraphics.github.io/Colors.jl/stable/>;
+* `Gadfly`:       <http://gadflyjl.org/stable/>;
+* `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>;
+* `DataFrames`:   <https://dataframes.juliadata.org/stable/>;
+* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.

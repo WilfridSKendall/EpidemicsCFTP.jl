@@ -56,10 +56,12 @@ theme = create_theme(load_theme("config/test-theme.yml"))
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
+-----------------
+
 Initialization
 ==============
-We shall only use artificial examples, so there is no need to define rate parameters.
-The random `seed!` is chosen to deliver coalescence in first `12` iterations, but not too soon!
+Parameters are chosen simply to generate simple plots, and are not intended to be realistic!
+The random `seed!` is chosen to deliver coalescence in first `12` iterations, but not too soon.
 ```{julia}
 const population = 5 ; 
 const duration   = 5.0 ;
@@ -74,8 +76,9 @@ SEQUENCE=1:12
 Markdown.parse("""
 We will generate a short sequence of candidate innovations, starting with the minimal evolution,
 and use these to generate successive `CEvolution`s over an algorithmic time sequence `$SEQUENCE`.
-We use the expressive "diamond" infix operator `⋄`, as in `ev = ev ⋄ iv`, instead of
-the clumsier though equivalent notation `ev = CEvolution(ev, iv)`.
+We use an expressive infix notation based on the "diamond" operator `⋄`, as in `ev = ev ⋄ iv`,
+instead of
+the clumsier (but equivalent) notation `ev = CEvolution(ev, iv)`.
 """)
 ```
 ```{julia}
@@ -101,13 +104,13 @@ import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
 
 To help set things up, we construct a prototype (_unconditioned_) `Evolution`.
 ```{julia}
-trajectory = Evolution(initial, Innovation(initial.n, I[], [R(2t, t) for t ∈ [1,2]])).trajectory ;
+reference = Evolution(initial, Innovation(initial.n, I[], [R(2t, t) for t ∈ [1,2]])).trajectory ;
 ```
 
 
 ```{julia}
 #| echo: false
-uflow = table_trajectories1(duration, trajectory) ;
+uflow = table_trajectories1(duration, reference) ;
 axes_plot = plot(uflow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
@@ -136,9 +139,12 @@ lines_plot = new_figure(axes_plot,
 
 Here are colours to be used in CFTP plots.
 ```{julia}
-min_spectrum   = range(colorant"red",  stop=colorant"yellow", length=12) ;
-max_spectrum   = range(colorant"blue", stop=colorant"lightgreen", length=12) ;
-coalesce_color = range(colorant"red", stop=colorant"blue", length=3)[2] ;
+min_spectrum   = [colorant"red"] ;
+append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)) ;
+max_spectrum   = [colorant"green"] ;
+append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) ;
+joined_color   = colorant"gold" ;
+coalesce_color = colorant"purple" ;
 ```
 
 Algorithmic evolution from minimal (slowest) evolution
@@ -258,9 +264,9 @@ Comparison of minimal and maximal sequences
 ```{julia}
 #| echo: false
 Markdown.parse("""
-Finally we display only the trajectories, comparing minimal (red) with maximal (blue)
+Finally we display only the trajectories, comparing minimal (red) with maximal (green)
 epidemic trajectories.
-At full coalescence the trajectory is coloured black.
+At full coalescence the trajectory is coloured purple.
 To be specific, @fig-CFTP-03-stepA plots both minimal and maximal evolutions
 over the first range $PLOTRANGE1 of steps in algorithmic time. 
 @fig-CFTP-03-stepB plots them over the second range 
@@ -298,12 +304,12 @@ end
 for k ∈ SEQUENCE
     work = deepcopy(lines_plot)
     if minimal[k] ≃ maximal[k]
-        work = draw_evolution!(work, maximal[k], duration, theme=theme,
-                    select=BOUNDARIES, specified_color=colorant"black")
+        draw_evolution!(work, maximal[k], duration, theme=theme,
+                        select=BOUNDARIES, specified_color=coalesce_color)
     end
-    work = draw_evolution!(work, minimal[k], duration, theme=theme, 
+    draw_evolution!(work, minimal[k], duration, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
-    work = draw_evolution!(work, maximal[k], duration, theme=theme,
+    draw_evolution!(work, maximal[k], duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
     depict("CFTP-03-step$k", new_figure(work, title="Evolution at step $k"))
 end ;
@@ -326,8 +332,8 @@ end ;
 ![Step 6.](image/CFTP-03-step6.pdf){#fig-CFTP-03-step6}
 
 Comparison of trajectories evolving in algorithmic time (1:6), starting
-with minimal (red) and maximal (blue) `CEvolution`s.
-Coalescence of initial start is coloured black.
+with minimal (red) and maximal (green) `CEvolution`s.
+Coalescence from the initial start is coloured purple.
 
 :::
 
@@ -350,7 +356,7 @@ Coalescence of initial start is coloured black.
 ![Step 12.](image/CFTP-03-step12.pdf){#fig-CFTP-03-step6}
 
 Continuation of @fig-CFTP-03-stepA over algorithmic time (7:12).
-Coalescence of initial start is coloured black.
+Coalescence from the initial start is coloured purple.
 
 :::
 
@@ -361,10 +367,13 @@ Detailed graphical study of coalescence
 ```{julia}
 #| echo: false
 Markdown.parse("""
-For the purposes of understanding CFTP we need also to look at behaviours of maximal and minimal
+For the purposes of understanding CFTP we need also to look at behaviours of maximal (green) 
+and minimal (blue)
 epidemic trajectories started at algorithmic times in the range $(2:(SEQUENCE[end-1])).
-These are plotted using colour-coding: later starts have lighter colours.
-Again at full coalescence of the earliest start, the common trajectory is plotted in black.
+These are plotted using colour-coding: later starts have different colours.
+Again at full coalescence of the earliest start, the common trajectory is plotted in purple.
+Before full coalescence, the initial part of the common to both maximal and minimal earliest
+starts is coloured gold.
 Note that the coalesced trajectory captures earlier starts quite fast ...
 """)
 ```
@@ -399,16 +408,32 @@ end
 for k ∈ SEQUENCE
     work = deepcopy(lines_plot)
     if minimal[k] ≃ maximal[k]
-        work = draw_evolution!(work, maximal[k], duration, theme=theme,
-                    select=BOUNDARIES, specified_color=coalesce_color)
+        draw_evolution!(work, maximal[k], duration, theme=theme,
+                        select=BOUNDARIES, specified_color=coalesce_color)
     end
-    # First draw the relevant minimal starts
+    
+    paired = collect(zip(minimal[k].trajectory, maximal[k].trajectory))
+    ex = findfirst(z -> !==(z[1], z[2]), paired)
+    if isnothing(ex)
+        draw_evolution!(work, maximal[k], duration, theme=theme, 
+                        select=BOUNDARIES, specified_color=joined_color)
+    elseif ex > 1
+        conjoined = maximal[k].trajectory[1:(ex-1)]
+        mn, mx = minimal[k].trajectory[ex-1], maximal[k].trajectory[ex]
+        push!(conjoined, SIR(mx.t, mn.s, mn.i, mn.r))
+        df = table_trajectories1(conjoined[end].t, conjoined)
+        push!(work, layer(df, x=:t, y=:epidemic, Geom.step,
+                         style(line_width=theme.boundary, 
+                         default_color=joined_color)))
+    end
+    
+    # Now draw the relevant minimal and maximal starts at times later than the initial time.
     for r ∈ 1:k
-        work = draw_evolution!(work, minimal_tally[r][k-r+1], duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[r])
+        draw_evolution!(work, minimal_tally[r][k-r+1], duration, theme=theme, 
+                        select=BOUNDARIES, specified_color=min_spectrum[r])
     end
     for r ∈ 1:k
-        work = draw_evolution!(work, maximal_tally[r][k-r+1], duration, theme=theme,
+        draw_evolution!(work, maximal_tally[r][k-r+1], duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[r])
     end
     depict("CFTP-04-comb$k", new_figure(work, title="CFTP at step $k"))
@@ -431,9 +456,9 @@ end ;
 
 ![Step 6.](image/CFTP-04-comb6.pdf){#fig-CFTP-04-comb6}
 
-Comparison of CFTP starts in algorithmic time (1:6), coded
-as minimal (red) through to maximal (blue).
-Coalescence of initial start is coloured black.
+Comparing various CFTP starts in algorithmic time (1:6);
+minimal (red, grey hues) and maximal (green, grey hues).
+Coalescence is purple; partial coalescence is gold.
 
 :::
 
@@ -452,21 +477,24 @@ Coalescence of initial start is coloured black.
 
 ![Step 12.](image/CFTP-04-comb12.pdf){#fig-CFTP-04-comb12}
 
-Comparison of CFTP starts in algorithmic time (7:12), coded
-as minimal (red) through to maximal (blue).
-Coalescence of initial start is coloured purple.
+Comparison of CFTP starts in algorithmic time (7:12);
+minimal (red then grey hues) and maximal (green then grey hues).
+Coalescence is purple; partial coalescence is gold.
 
 :::
 
 {{< pagebreak >}}
 
-Appendices {.unnumbered}
-==========
 
 \appendix
 
-Software
-========
+
+
+Appendices {.unnumbered}
+==========
+
+Software versions
+=================
 Here is a table of software used in the following computations:
 ```{julia}
 #| echo: false
@@ -491,6 +519,8 @@ Markdown.parse("""
 
 Package documentation
 =====================
+Package documentation can be found as follows.
+
 * `Colors`:       <http://juliagraphics.github.io/Colors.jl/stable/>;
 * `Gadfly`:       <http://gadflyjl.org/stable/>;
 * `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>;

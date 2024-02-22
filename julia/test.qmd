@@ -60,16 +60,6 @@ theme = create_theme(load_theme("config/test-theme.yml"))
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-Useful abbreviations for some imports from `EpidemicsCFTP`:
-```{julia}
-#| echo: false
-labels   = [:AI  :AIF :I  :P  :R  :C]
-import EpidemicsCFTP: AI, AIF, I, P, R, C
-pretty_table(map(eval, labels), header=vec(labels), alignment = :l)
-```
-
-{{< pagebreak >}}
-
 Construction of epidemics
 =========================
 Parameters: initial state and duration
@@ -104,6 +94,14 @@ pretty_table(DataFrame(name=[fieldnames(Evolution)...], type=[fieldtypes(Evoluti
 
 :::
 
+
+Useful abbreviations for some imports from `EpidemicsCFTP`:
+```{julia}
+#| echo: false
+labels   = [:AI  :AIF :I  :P  :R  :C]
+import EpidemicsCFTP: AI, AIF, I, P, R, C
+pretty_table(map(eval, labels), header=vec(labels), alignment = :l)
+```
 
 
 We construct an `Innovation` and a corresponding `Evolution` as follows.
@@ -717,14 +715,18 @@ with minimal (red) and maximal (blue) `CEvolution`s.
 
 :::
 
+{{< pagebreak >}}
+
+\appendix
+
+{{< pagebreak >}}
 
 Appendices {.unnumbered}
 ==========
 
-\appendix
 
-Software
-========
+Software versions
+-----------------
 Here is a table of software used in the following computations:
 ```{julia}
 #| echo: false
@@ -748,7 +750,7 @@ Markdown.parse("""
 ```
 
 Package documentation
-=====================
+---------------------
 * `Gadfly`:       <http://gadflyjl.org/stable/>;
 * `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>;
 * `DataFrames`:   <https://dataframes.juliadata.org/stable/>;

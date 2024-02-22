@@ -273,7 +273,7 @@ Appendices {.unnumbered}
 \appendix
 
 Software versions
------------------
+=================
 ```{julia}
 #| echo: false
 ownversion = "$(read(Cmd(`git describe --tags`), String)[1:end-1])"
@@ -293,7 +293,7 @@ This script takes
 ```
 
 Package documentation
----------------------
+=====================
 * `Gadfly`:       <http://gadflyjl.org/stable/>;
 * `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.
 

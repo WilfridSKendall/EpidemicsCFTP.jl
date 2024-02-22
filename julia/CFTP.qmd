@@ -460,10 +460,13 @@ Coalescence of initial start is coloured purple.
 
 {{< pagebreak >}}
 
-# Appendices {.unnumbered}
+Appendices {.unnumbered}
+==========
 
-## Software {.unnumbered}
+\appendix
 
+Software
+========
 Here is a table of software used in the following computations:
 ```{julia}
 #| echo: false
@@ -486,8 +489,8 @@ Markdown.parse("""
 """)
 ```
 
-Package documentation {.unnumbered}
----------------------
+Package documentation
+=====================
 * `Colors`:       <http://juliagraphics.github.io/Colors.jl/stable/>;
 * `Gadfly`:       <http://gadflyjl.org/stable/>;
 * `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>.

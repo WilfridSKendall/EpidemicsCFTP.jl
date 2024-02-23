@@ -790,7 +790,7 @@ end ;
 
 Examines [`AbstractRemoval`](@ref)s from [`Innovation`](@ref) and determines which
 are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
-to [`KilledInfection`](@ref)s.`relevant_infections`
+to [`KilledRemoval`](@ref)s.
 """
 function kill_irrelevant_removals(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractRemoval}
     [ z ≤ ev.finis[z.target] ? z : KilledRemoval(z) for z ∈ iv.removals ]

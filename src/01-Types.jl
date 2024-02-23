@@ -212,7 +212,16 @@ end
 Implements a removal which can never be activated using a sub-type of [`AbstractRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
 
-The `KilledRemoval` is never realized. It should be the case that `KilledRemoval`s are precisely those
+A `KilledRemoval` should be created (by conversion) only in:
+
+* [`EpidemicsCFTP.kill_irrelevant_removals`](@ref) 
+* one of the constructors of 
+[`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
+* and 
+[`EpidemicsCFTP.inactive_removals`](@ref)
+(This list of functions should be reduced!),
+
+and it should be the case that `KilledRemoval`s are precisely those
 `AbstractRemoval`s which have `target` in the removal zone.
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledRemoval` as `KR`.
@@ -237,7 +246,8 @@ end
 @doc """
     KilledRemoval(::AbstractRemoval)::KilledRemoval
     
-Converts an [`AbstractRemoval`](@ref) to a `KilledRemoval`. This should happen _only_ at the
+Converts an [`AbstractRemoval`](@ref) to a `KilledRemoval`. **In the future**
+this should happen _only_ at the
 stage of creating an [`Innovation`](@ref) containing [`CRemoval`](@ref)s, in which case the `CRemoval`s
 determine the `finis` times of all actual infectious periods, so that we can ascertain
 precisely which `AbstractRemoval`s should be converted to `KilledRemoval`s.
@@ -330,12 +340,12 @@ struct Infection <: OperativeInfection
 @doc """
     Infection(z::AbstractInfection)::Infection
     
-Converts an [`AbstractInfection`](@ref) to a `KilledInfection`.
+Converts an [`AbstractInfection`](@ref) to an `Infection`.
 
 ### Example
 ```jldoctest
-julia> KilledInfection(I(0.2, 1, 2))
-𝒦₀.₂₀¹⁻²
+julia> Infection(I(0.2, 1, 2))
+ℐ₀.₂₀¹⁻²
 ```
 """
 function Infection(z::AbstractInfection)::Infection
@@ -445,7 +455,7 @@ struct NoFlyInfection <: OperativeInfection
 Converts an [`AbstractInfection`](@ref) to a `NoFlyInfection`.
 ### Example
 ```jldoctest
-julia> y = NoFlyInfection(I(0.2, 1, 2))
+julia> NoFlyInfection(I(0.2, 1, 2))
 𝒩₀.₂₀¹⁻²
 ```
 """
@@ -462,6 +472,16 @@ which is otherwise identical to `Infection` but with a different name.
 Intended to identify an `Infection` which 
 will never be activated because
 its `target` time line is not infected.
+
+A `KilledInfection` should be created (by conversion) only in the functions
+
+* [`EpidemicsCFTP.last_feasible_evolution`](@ref),
+* [`EpidemicsCFTP.kill_irrelevant_infections`](@ref),
+* one of the constructors of 
+[`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
+* and
+[`EpidemicsCFTP.compute_NFZ`](@ref)
+(This list of functions should be reduced!).
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledInfection` as `KI`.
 
@@ -528,14 +548,18 @@ which (being a [`NonOperativeInfection`](@ref))
 will never be activated.
 
 Ensure that it is the case that `ExpungedInfection`s arise **only** in this way!
-(This occurs in one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
-and later in a re-factoring of this using the function [`compute_NFZ`](@ref)).
+This occurs in:
+
+* one of the constructors of 
+[`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
+* and later in a re-factoring of this using the function 
+[`compute_NFZ`](@ref).
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `ExpungedInfection` as `XI`.
 
 ### Example
 ```jldoctest
-julia> y = ExpungedInfection(0.2, 1, 2)
+julia> ExpungedInfection(0.2, 1, 2)
 𝒳₀.₂₀¹⁻²
 ```
 """
@@ -1020,7 +1044,8 @@ The procedure is as follows:
 1. Test for compatibility between `ev` and `iv`:  
     * Check the `cremoval` lists have the same length;
     * Check the `cremoval` lists generate the same times ('t' field).
-2. Use [`inactive_removals`](@ref) to form the new `removals` list by selecting only those `AbstractRemoval`s from `iv.removals` which will not be activated. Type is changed to KilledRemoval` for an `AbstractRemoval` occurring after removal time for the corresponding time line. Note that the function discards `Removal`s (as opposed to `CRemoval`s) which _would_ be activated. 
+2. Use [`inactive_removals`](@ref) to form the new `removals` list by selecting only those `AbstractRemoval`s from `iv.removals` which will not be activated. Type is changed to [`KilledRemoval`](@ref)
+for an `AbstractRemoval` occurring after removal time for the corresponding time line. Note that the function discards `Removal`s (as opposed to `CRemoval`s) which _would_ be activated. 
 3. Form the new `cremovals` list using [`resulting_cremovals`](@ref), by choosing from `iv.cremovals` if activated, otherwise staying with `ev.cremovals`.
 4. Compute `LFE`. Note `cremovals` has already been computed in step 3. Compute `perpetuated_infections` as perpetuations of infections from `LFE` which are original infections.
 5. Compute time of last removal per time line (`NFZ1`) and monotonically non-decreasing envelope (`NFZ2`):  

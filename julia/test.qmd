@@ -726,7 +726,7 @@ Appendices {.unnumbered}
 
 
 Software versions
------------------
+=================
 Here is a table of software used in the following computations:
 ```{julia}
 #| echo: false
@@ -750,7 +750,7 @@ Markdown.parse("""
 ```
 
 Package documentation
----------------------
+=====================
 * `Gadfly`:       <http://gadflyjl.org/stable/>;
 * `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>;
 * `DataFrames`:   <https://dataframes.juliadata.org/stable/>;

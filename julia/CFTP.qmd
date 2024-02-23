@@ -45,6 +45,7 @@ using EpidemicsCFTP, EpidemicsCFTP.abbreviations, EpidemicsUtilities
 using DataFrames, PrettyTables
 using Colors, Gadfly, Compose
 
+import Test: @test
 import Random: seed!
 import Markdown
 ```
@@ -158,7 +159,7 @@ PLOTRANGE2 = (PLOTRANGE1[end]+1):SEQUENCE[end]
 Markdown.parse("""
 We generate successive `CEvolution`s in algorithmic time, starting from minimal `CEvolution`.
 @fig-CFTP-01-minstep depicts the first $(PLOTRANGE1[end]) algorithmic time steps.
-Note the checks for validity of `LFE` and `NFZ`.
+Checks made of `LFE` and `NFZ`.
 """)
 ```
 
@@ -190,10 +191,10 @@ Algorithmic evolution from maximal (fastest) evolution
 ```{julia}
 #| echo: false
 Markdown.parse("""
-We now generate successive `CEvolution`s in algorithmic time but 
-starting from maximal `CEvolution`. @fig-CFTP-02-maxstep depicts the first 
+We now generate successive `CEvolution`s in algorithmic time, 
+starting from _maximal_ `CEvolution`. @fig-CFTP-02-maxstep depicts the first 
 $(PLOTRANGE1[end]) algorithmic time steps.
-Note again the validity checks.
+Note checks on validity again.
 """)
 ```
 
@@ -264,30 +265,27 @@ Comparison of minimal and maximal sequences
 ```{julia}
 #| echo: false
 Markdown.parse("""
-Finally we display only the trajectories, comparing minimal (red) with maximal (green)
+Finally we compare minimal (red) with maximal (green)
 epidemic trajectories.
-At full coalescence the trajectory is coloured purple.
+Fully coalesced trajectories are coloured purple.
 To be specific, @fig-CFTP-03-stepA plots both minimal and maximal evolutions
-over the first range $PLOTRANGE1 of steps in algorithmic time. 
-@fig-CFTP-03-stepB plots them over the second range 
-$PLOTRANGE2 of steps in algorithmic time. 
+for the first $PLOTRANGE1 steps in algorithmic time. 
+@fig-CFTP-03-stepB plots the remaining steps. 
+
 Monotonicity is checked and is
-$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "maintained throughout" : "**not** maintained"),
+$(all(minimal .⪯ maximal) ? "**maintained** throughout" : "**not** maintained"),
 while full coalescence (_including_ agreement of `CRemoval` `target` fields) occurs at 
 algorithmic time step $(findfirst(minimal .≃ maximal)) 
-$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "and then persists" : "but does **not** persist").
-""")
-```
-
-```{julia}
-#| echo: false
-Markdown.parse("""
+$(all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ? "and then **persists**" : "but does **not** persist").
 (Note that the _trajectories_ coincide at an earlier stage of algorithmic time,
 namely step 3: 
 however at this point the
-`CRemoval` `target` fields do not agree, so the trajectories are able to diverge later
-in algorithmic time.)
+`CRemoval` `target` fields do not agree, so later trajectories are able to diverge.)
 """)
+```
+```{julia}
+@test all(minimal .⪯ maximal) ;                                      # monotonicity
+@test all((minimal .≃ maximal)[findfirst(minimal .≃ maximal):end]) ; # persistence
 ```
 
 ```{julia}
@@ -435,8 +433,20 @@ for k ∈ SEQUENCE
     for r ∈ 1:k
         draw_evolution!(work, maximal_tally[r][k-r+1], duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[r])
-    end
+
+    # Finally display the figure
     depict("CFTP-04-comb$k", new_figure(work, title="CFTP at step $k"))
+    end
+end ;
+```
+
+Here is an experimental check of monotonicity between starts at different time ("sandwiching").
+```{julia}
+for start_time ∈ SEQUENCE[2:end]
+    for s ∈ 1:(SEQUENCE[end] - start_time + 1)
+        @test maximal_tally[start_time - 1][s+1] ⪯ maximal_tally[start_time][s]
+        @test minimal_tally[start_time][s] ⪯ minimal_tally[start_time - 1][s+1]
+    end
 end ;
 ```
 

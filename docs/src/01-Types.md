@@ -67,9 +67,8 @@ CRemoval
 CRemoval(::AbstractRemoval)
 ```
 #### Two kinds of [`NonOperativeRemoval`](@ref)
-`KilledRemoval` is a further kind of removal which will _never_ be realized.
+`KilledRemoval` and `RemovalMarker` are further kinds of removal which will _never_ be realized.
 `RemovalMarker` occurs at the end of the epidemic for a time line which is never removed.
-It also is never realized.
 ```@docs
 KilledRemoval
 KilledRemoval(::AbstractRemoval)
@@ -121,10 +120,10 @@ NoFlyInfection(z::AbstractInfection)
 
 #### Three different kinds of `NonOperativeInfection`s
 `KilledInfection`,
-`ExpungedInfection` are specific non-operative infection incidents as tabulated.
+`ExpungedInfection`,
+`InfectionMarker`are specific non-operative infection incidents as tabulated.
 They are _never_ realized!
 `InfectionMarker` occurs at the start of the epidemic for a time line which is initially infected.
-It also is never realized.
 
 ```@docs
 KilledInfection

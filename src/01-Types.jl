@@ -1218,6 +1218,8 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
 
+    return one_step(ev, iv)
+        
     # Step 2.
     removals = inactive_removals(ev, iv)
     

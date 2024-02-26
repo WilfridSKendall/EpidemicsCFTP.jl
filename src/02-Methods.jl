@@ -3,7 +3,7 @@
 # The following simple notation enables concise expression of _CFTP_ algorithms.
 # ```
 """
-    Base.⋄(::CEvolution, ::Innovation) ::CEvolution (Use `\\diamond`.)
+    Base.⋄(::CEvolution, ::AbstractInnovation) ::CEvolution (Use `\\diamond`.)
 
 The succinct statement `cev ⋄ iv` is an expressive shorthand for 
 [`CEvolution(cev, iv)`](@ref CEvolution).
@@ -23,7 +23,7 @@ trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₅₀(0:2:0),SIR₁.₀₀(0:1:1)]
 history:    AbstractIncident[ℐ₀.₅₀¹⁻²,𝒞₁.₀₀¹])
 ```
 """
-function ⋄(cev::CEvolution, iv::Innovation)::CEvolution
+function ⋄(cev::CEvolution, iv::AbstractInnovation)::CEvolution
     return CEvolution(cev, iv)
 end
 
@@ -505,7 +505,7 @@ end
         ::Vector{AbstractIncident}
 
 Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
-an [`Innovation`](@ref). Returns
+an [`AbstractInnovation`](@ref). Returns
 only the _history_ of realized incidents `Vector{AbstractIncident}`.
 **NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
 
@@ -634,9 +634,9 @@ end
     EpidemicsCFTP.last_feasible_evolution(::Real, ::AbstractEvolution, ::AbstractInnovation) ::Vector{AbstractIncident}
 
 Computes the last feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
-by a [`Innovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
+by a [`AbstractInnovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
 from an [`AbstractEvolution`](@ref)
-and an [`Innovation`](@ref): see examples I and II. Example III gives an explicit use, in a partial correctness test 
+and an [`AbstractInnovation`](@ref): see examples I and II. Example III gives an explicit use, in a partial correctness test 
 (see [`is_correct_LFE`](@ref) for a complementary and more challenging test).
 
 ### Example I
@@ -681,7 +681,7 @@ true
 ```
 """
 function last_feasible_evolution(duration::Real, 
-    ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
+    ev::AbstractEvolution, iv::AbstractInnovation) ::Vector{AbstractIncident}
 # import EpidemicsCFTP: last_feasible_evolution, resulting_cremovals
         
     recomputed_cremovals = resulting_cremovals(ev, iv)                                              # <1>
@@ -792,39 +792,39 @@ end
 # Kill irrelevant infections and removals
 # -------------------------------
 """
-    kill_irrelevant_infections(::AbstractEvolution, ::Innovation)::Vector{AbstractInfection}
+    kill_irrelevant_infections(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractInfection}
 
-Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and determines which
+Examines [`AbstractInfection`](@ref)s from [`AbstractInnovation`](@ref) and determines which
 are irrelevant (occurring in removal zone for [`AbstractEvolution`](@ref)). converting these
 to [`KilledRemoval`](@ref)s.
 """
-function kill_irrelevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractInfection}
+function kill_irrelevant_infections(ev::AbstractEvolution, iv::AbstractInnovation)::Vector{AbstractInfection}
     [ z ≤ ev.finis[z.target] ? z : KilledInfection(z) for z ∈ iv.infections ]
 end ;
 
 """
-    kill_irrelevant_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
+    kill_irrelevant_removals(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractRemoval}
 
-Examines [`AbstractRemoval`](@ref)s from [`Innovation`](@ref) and determines which
+Examines [`AbstractRemoval`](@ref)s from [`AbstractInnovation`](@ref) and determines which
 are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
 to [`KilledRemoval`](@ref)s.
 """
-function kill_irrelevant_removals(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractRemoval}
+function kill_irrelevant_removals(ev::AbstractEvolution, iv::AbstractInnovation)::Vector{AbstractRemoval}
     [ z ≤ ev.finis[z.target] ? z : KilledRemoval(z) for z ∈ iv.removals ]
 end ;
 
 # Identify relevant infections
 # -------------------------------
 """
-    relevant_infections(::AbstractEvolution, ::Innovation)::Vector{AbstractInfection}
+    relevant_infections(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractInfection}
 
-Examines [`AbstractInfection`](@ref)s from [`Innovation`](@ref) and returns
+Examines [`AbstractInfection`](@ref)s from [`AbstractInnovation`](@ref) and returns
 those which are relevant to construction of the "last feasible epidemic",
 to wit, old infections in `ev.infections` used in `ev.history` plus new
 infections in `iv.infections` which are not irrelevant (see [`kill_irrelevant_infections`](@ref))
 and whose `target` is infected and whose `infectee` is susceptible.
 """
-function relevant_infections(ev::AbstractEvolution, iv::Innovation)::Vector{AbstractInfection}
+function relevant_infections(ev::AbstractEvolution, iv::AbstractInnovation)::Vector{AbstractInfection}
     unkilled = [z for z ∈ kill_irrelevant_infections(ev, iv) if z isa OperativeInfection]
     relevant_infections = [z for z ∈ ev.history if typeof(z) <: AbstractInfection]
     rsup = 0
@@ -842,7 +842,7 @@ end
 # Extract and classify inactive removals
 # -------------------------------
 """
-    inactive_removals(::AbstractEvolution, ::Innovation)::Vector{AbstractRemoval}
+    inactive_removals(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractRemoval}
     
 This function extracts and classifies the inactive [`AbstractRemoval`](@ref)s 
 from an [`AbstractEvolution`](@ref).
@@ -864,7 +864,7 @@ julia> EpidemicsCFTP.inactive_removals(ev, innov2)
 AbstractRemoval[𝒦₀.₅₆¹,𝒦₀.₅₇²,ℛ₀.₅₈⁶]
 ```
 """
-function inactive_removals(ev::AbstractEvolution, innov::Innovation)::Vector{AbstractRemoval}
+function inactive_removals(ev::AbstractEvolution, innov::AbstractInnovation)::Vector{AbstractRemoval}
     return [ev.finis[z.target] ≤ z ? KilledRemoval(z) : z for z ∈ innov.removals if 
             ! (ev.start[z.target] < z < ev.finis[z.target])]
 end    
@@ -886,18 +886,18 @@ function accept_reject(old_cremoval::CRemoval, proposed_cremoval::CRemoval,
 end
 
 """
-    resulting_cremovals(::AbstractEvolution, ::Innovation)::Vector{CRemoval}
+    resulting_cremovals(::AbstractEvolution, ::AbstractInnovation)::Vector{CRemoval}
     resulting_cremovals(::AbstractEvolution, ::Vector{CRemoval})::Vector{CRemoval}
 
 Uses [`accept_reject`](@ref) to determine re-sampled set of [`CRemoval`](@ref)s
-(perhaps extracted from [`Innovation`](@ref)).
+(perhaps extracted from [`AbstractInnovation`](@ref)).
 This uses the period markers
 listed in `start` and `finis` 
 from the [`AbstractEvolution`](@ref) `ev`.  
 Note that `start` and `finis` are generated by [`interval`](@ref))
 when `ev` is constructed.
 """
-function resulting_cremovals(ev::AbstractEvolution, iv::Innovation)::Vector{CRemoval}
+function resulting_cremovals(ev::AbstractEvolution, iv::AbstractInnovation)::Vector{CRemoval}
     resulting_cremovals(ev, iv.cremovals)
 end
 function resulting_cremovals(ev::AbstractEvolution, cr::Vector{CRemoval})::Vector{CRemoval}
@@ -910,7 +910,7 @@ end
 # # ------------------
 
 """
-    compute_NFZ(::CEvolution,::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
+    compute_NFZ(::CEvolution,::AbstractInnovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
     
 Performs a careful computation of the "true" boundary (`nofly_bound` in the code
 of function `compute_NFZ`):
@@ -933,7 +933,7 @@ ev.NFZ
 
 Note the source-code also contains many commented-out assertions!
 """
-function compute_NFZ(ev::CEvolution, iv::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
+function compute_NFZ(ev::CEvolution, iv::AbstractInnovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
 	nofly_bound = deepcopy(ev.NFZ2)                                            # <1>
 	
 	processed_infections = AbstractInfection[]                                 # <2>
@@ -997,7 +997,7 @@ end ;
 # 1. The boundary `nofly_bound` will be updated recursively.
 # 2. The list `processed_infections` of processed `AbstractInfection`s will
 # eventually store (initially in reverse time order) a transformation of
-# each infection supplied by the new `Innovation` `innov`.
+# each infection supplied by the new `AbstractInnovation` `innov`.
 # 3. Iteration: work backwards through `Infection`s supplied by `innov`,
 # determining in each case how to transform the supplied `Infection`
 # when adding it to the list `processed_infections`.

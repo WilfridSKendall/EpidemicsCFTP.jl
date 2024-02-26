@@ -787,7 +787,7 @@ end
 @doc """
     Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
     
-Variant of `Innovation` which omits `cremovals` list.
+Variant which omits `cremovals` list.
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -896,30 +896,6 @@ function CInnovation(population::Int, infections::Vector{S},
             sort(cremovals),
             convert(Vector{AI}, sort(infections ∪ removals ∪ cremovals)))
     end
-end
-
-@doc """
-    CInnovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
-    
-Variant of `CInnovation` which omits `cremovals` list.
-
-### Example
-```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
-population = 3
-infections = [I(0.7,1,2), P(0.5,1,2)]
-removals   = [R(0.2, 3), R(0.1, 2)]
-
-CInnovation(population, infections, removals)
-
-# output
-CInnovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]) 
-```
-"""
-function CInnovation(population::Int, infections::Vector{S},
-                    removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
-    return CInnovation(population, infections, removals, CRemoval[])
 end
 
 @doc """

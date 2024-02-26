@@ -144,6 +144,10 @@ EpidemicsCFTP.abbreviations
 ## Representing different kinds of environments
 `AbstractEnvironment` is a generic type for a collection of lists of `infections`,
 `removals` and `cremovals` (conditioned removals).
+There are two abstract sub-types:
+[`AbstractInnovation`](@ref)
+and
+[`AbstractEvolution`](@ref).
 
 Instances should always possess fields as given in the table. 
 
@@ -156,27 +160,37 @@ Instances should always possess fields as given in the table.
 
 ```@docs
 AbstractEnvironment
+AbstractInnovation
 AbstractEvolution
 ```
 
-### `AbstractInnovation` as an `AbstractEnvironment`
-`AbstractInnovation` has two subtypes:
+### Two kinds of `AbstractInnovation`
+[`AbstractInnovation`](@ref) has two subtypes:
 `Innovation` and `CInnovation` fill the lists of an abstract environment with (typically simulated) contents
 of lists of the requisite infections or removals. 
+Instances should always possess fields as given in the table. 
+
+| _Field name_ | _Type_                      |              | _Further remarks_                 |
+|:-------------|:----------------------------|:-------------|:----------------------------------|
+| `infections` | `Vector{AbstractInfection}` |              | ordered list                      |
+| `removals`   | `Vector{AbstractRemoval}`   |              | ordered list                      |
+| `cremovals`  | `Vector{CRemoval}`          |              | ordered list if nonempty          |
+| `chronology` | `Vector{AbstractIncident}`  | **computed** | ordered union of previous 3 lists |
+
 ```@docs
 Innovation
-Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
 Innovation(::Int, ::Vector{AbstractIncident})
+Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
 CInnovation
-CInnovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
 CInnovation(::Int, ::Vector{AbstractIncident})
 ```
 
 ### Two kinds of `AbstractEvolution`
+[`AbstractEvolution`](@ref) has two subtypes:
 `Evolution` carries out the simulation of an epidemic from a given initial `SIR` value,
-based on an `Innovation`. 
+based on an [`Innovation`](@ref). 
 `CEvolution` does the same, but returns an error if it violates conditioning 
-in the way it treats`AbstractRemoval`s.
+in the way it treats [`AbstractRemoval`](@ref)s.
 (This distinctive behaviour is implemented in the [`evolution`](@ref) function
 when keyword `conditioned` is `true`.)
 

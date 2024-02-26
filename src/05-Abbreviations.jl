@@ -3,7 +3,6 @@
 """
 The sub-module `EpidemicsCFTP.abbreviations` provides simple abbreviations for [`AbstractIncident`](@ref)s,
 at the cost of using one-, two- or three-letter capital abbreviations:
-
 ```
 AI  = AbstractIncident;
 AIF = AbstractInfection;   I = Infection; P = PInfection;

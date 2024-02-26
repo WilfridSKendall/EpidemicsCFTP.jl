@@ -947,7 +947,7 @@ for z ∈ [z for z ∈ inactive_removals(ev, iv) if z < ev.finis[z.target]]
     NFZ1[z.target] = max(NFZ1[z.target], z.t)
 end
 NFZ2 = accumulate(max, NFZ1)
-compute_NFZ(ev, iv, NFZ2)[2]
+compute_NFZ(ev, iv.infections, NFZ2)[2]
 
 # output
 2-element Vector{Float64}:
@@ -957,13 +957,12 @@ compute_NFZ(ev, iv, NFZ2)[2]
 
 Note the source-code also contains many commented-out assertions!
 """
-function compute_NFZ(ev::CEvolution, iv::AbstractInnovation, NFZ2::Vector{T}) ::Tuple{Vector{AbstractInfection},Vector{T}} where T <: Real
+function compute_NFZ(ev::CEvolution, infections::Vector{S}, NFZ2::Vector{T}) ::Tuple{Vector{AbstractInfection},Vector{T}} where {S<:AbstractInfection, T <: Real}
     
-	nofly_bound = deepcopy(ev.NFZ2)                                            # <1>
-	
+	nofly_bound = deepcopy(NFZ2)                                               # <1>
 	processed_infections = AbstractInfection[]                                 # <2>
 	 
-	for z ∈ reverse(sort(iv.infections))                                       # <3>
+	for z ∈ reverse(sort(infections))                                          # <3> 
 	    
 	    if (z ≥ ev.finis[z.target])                                            # <4>
 	        push!(processed_infections, KI(z))                                 # <4>
@@ -1053,64 +1052,65 @@ end ;
 # to a `NoFlyInfection` when we add it to `processed_infections`, to
 # signal that it should never become infected.
 
-"""
-    one_step(::AbstractEvolution, ::AbstractInnovation)::CEvolution
-    
-### Example
-```jldoctest CEvolution_setup
-import EpidemicsCFTP: one_step
-initial    = SIR(0.0, 2, 1, 0)
-population = initial.n
-infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
-removals   = [R(0.1, 1), KR(0.2, 3), R(0.1, 2)]
-cremovals  = [C(0.0, 1)]
-chronology = infections ∪ removals ∪ cremovals
-ev = CEvolution(initial, chronology) ;
-candidate = Innovation(population, I[], R[], cremovals) ;
-one_step(ev, candidate)
-
-# output
-CEvolution(3,
-infections: AbstractInfection[]
-removals:   AbstractRemoval[]
-cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: AbstractIncident[𝒞₀.₀₀¹]
-trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
-history:    AbstractIncident[𝒞₀.₀₀¹])
-```
-"""
-function one_step(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
-    # Step 2.
-    removals = inactive_removals(ev, iv)
-    
-    # Step 3.
-    recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
-    
-    # Step 4.
-    duration = maximum(z.t for z in recomputed_cremovals)
-    LFE = last_feasible_evolution(duration, ev, iv)
-    perpetuated_infections = [z for z ∈ LFE if z isa P] 
-    
-    # Step 5.
-    NFZ1 = repeat([-Inf], ev.initial.n)                                             # <1>
-    for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
-        NFZ1[z.target] = max(NFZ1[z.target], z.t)
-    end
-    NFZ2 = accumulate(max, NFZ1)
-    
-    # This step involves some careful logic!
-    processed_infections, nofly_bound = compute_NFZ(ev, iv, NFZ2)                   # <2>
-    
-    # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
-    iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
-    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound)
-end
-# 1. Initial computation of `NFZ2`, a **list of times**
-# indexed by time line ("level"), where each time is initially defined as
-# the running supremum of `NFZ1`, a list of times of **inactivated** `Removal`s at given level or
-# below. So the envelope increases monotonically with level.
-# 2. A deepcopy of `nofly_bound` will be updated recursively to generate a `nofly_bound`
-# which will be used as the `NFZ` argument for creating the updated `CEvolution`.
+# """
+#     one_step(::AbstractEvolution, ::AbstractInnovation)::CEvolution
+#     
+# ### Example
+# ```jldoctest CEvolution_setup
+# import EpidemicsCFTP: one_step
+# initial    = SIR(0.0, 2, 1, 0)
+# population = initial.n
+# infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
+# removals   = [R(0.1, 1), KR(0.2, 3), R(0.1, 2)]
+# cremovals  = [C(0.0, 1)]
+# chronology = infections ∪ removals ∪ cremovals
+# ev = CEvolution(initial, chronology) ;
+# candidate = Innovation(population, I[], R[], cremovals) ;
+# one_step(ev, candidate)
+# 
+# # output
+# CEvolution(3,
+# infections: AbstractInfection[]
+# removals:   AbstractRemoval[]
+# cremovals:  CRemoval[𝒞₀.₀₀¹]
+# chronology: AbstractIncident[𝒞₀.₀₀¹]
+# trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
+# history:    AbstractIncident[𝒞₀.₀₀¹])
+# ```
+# """
+# function one_step(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
+#     # Step 2.
+#     removals = inactive_removals(ev, iv)
+#     
+#     # Step 3.
+#     recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
+#     
+#     # Step 4.
+#     duration = maximum(z.t for z in recomputed_cremovals)
+#     LFE = last_feasible_evolution(duration, ev, iv)
+#     perpetuated_infections = [z for z ∈ LFE if z isa P] 
+#     
+#     # Step 5.
+#     NFZ1 = repeat([-Inf], ev.initial.n)                                             # <1>
+#     for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
+#         NFZ1[z.target] = max(NFZ1[z.target], z.t)
+#     end
+#     NFZ2 = accumulate(max, NFZ1)
+#     
+#     # This step involves some careful logic!
+#     processed_infections, nofly_bound = compute_NFZ(ev, iv.infections, NFZ2)        # <2>
+#     
+#     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
+#     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
+#     cev = CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound)
+#     return cev
+# end
+# # 1. Initial computation of `NFZ2`, a **list of times**
+# # indexed by time line ("level"), where each time is initially defined as
+# # the running supremum of `NFZ1`, a list of times of **inactivated** `Removal`s at given level or
+# # below. So the envelope increases monotonically with level.
+# # 2. A deepcopy of `nofly_bound` will be updated recursively to generate a `nofly_bound`
+# # which will be used as the `NFZ` argument for creating the updated `CEvolution`.
 
 # # Generate an innovation
 # # ----------------------

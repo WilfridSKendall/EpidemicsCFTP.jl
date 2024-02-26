@@ -22,6 +22,7 @@ makedocs(;
         "03-Methods-show.md",
         "04-Exceptions.md",
         "05-index.md",
+        "appendices.md",
     ],
 )
 

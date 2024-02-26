@@ -63,6 +63,7 @@ NonOperativeRemoval
 are always conditioned to happen).
 ```@docs
 Removal
+Removal(::AbstractRemoval)
 CRemoval
 CRemoval(::AbstractRemoval)
 ```
@@ -115,7 +116,7 @@ Infection(::AbstractInfection)
 PInfection
 PInfection(::AbstractInfection)
 NoFlyInfection
-NoFlyInfection(z::AbstractInfection)
+NoFlyInfection(AbstractInfection)
 ```
 
 #### Three different kinds of `NonOperativeInfection`s

@@ -18,6 +18,7 @@ makedocs(;
         "Methods for display"     => "03-Methods-show.md",
         "Exceptions"              => "04-Exceptions.md",
         "Index"                   => "05-index.md",
+        "appendices.md",
     ],
 )
 

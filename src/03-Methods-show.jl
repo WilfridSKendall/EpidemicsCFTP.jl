@@ -116,21 +116,24 @@ end
 Implementation of `show` for [`AbstractInnovation`](@ref) as three rows of lists of incidents
 -- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
 
-### Example
-```jldoctest
-julia> population = 3
-3
-julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [R(0.1, 2), R(0.2, 3)] 
-Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+### Example I
+```jldoctest abstractinnovation
+population = 3
+infections = [I(0.7,1,2), P(0.5,1,2)] 
+removals   = [R(0.1, 2), R(0.2, 3)] 
+Innovation(population, infections, removals, C[])
 
-julia> Innovation(population, infections, removals, C[])
+# output
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
+```
 
-julia> CInnovation(population, infections, removals, C[])
+### Example II
+```jldoctest abstractinnovation
+CInnovation(population, infections, removals, C[])
+
+# output
 CInnovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
@@ -149,14 +152,13 @@ end
     
 ### Example
 ```jldoctest
-julia> population = 3
-3
-julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
-julia> removals   = [R(0.1, 2), R(0.2, 3)]
-Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+population = 3
+infections = [I(0.7,1,2), P(0.5,1,2)] 
+removals   = [R(0.1, 2), R(0.2, 3)]
+print(Innovation(population, infections, removals, C[]))
 
-julia> print(Innovation(population, infections, removals, C[]))
+# output
+
 Innovation(3,
   OperativeInfection[PInfection(0.5, 1, 2), Infection(0.7, 1, 2)],
   Removal[Removal(0.1, 2), Removal(0.2, 3)])

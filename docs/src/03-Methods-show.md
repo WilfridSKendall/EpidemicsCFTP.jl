@@ -7,20 +7,23 @@ only two arguments, and are "vanilla" versions which will be applied for
 example when echo-ing the respective instance to the terminal.
 ```@docs
 Base.show(::IO, ::MIME"text/plain", ::AbstractRemoval)
-Base.show(io::IO, z::AbstractRemoval)
+Base.show(::IO, ::AbstractRemoval)
 
 Base.show(::IO, ::MIME"text/plain", ::AbstractInfection)
-Base.show(io::IO, z::AbstractInfection)
+Base.show(::IO, ::AbstractInfection)
 
-Base.show(io::IO, ::MIME"text/plain", ::Vector{T}; Int, ::String) where T <: AbstractTimedOccurrence
+Base.show(::IO, ::MIME"text/plain", ::Vector{T}; Int, ::String) where T <: AbstractTimedOccurrence
 ```
 
 ## Methods for displaying states, innovations, and evolutions
 ```@docs
 Base.show(::IO, ::MIME"text/plain", ::SIR)
 
+Base.show(::IO, ::MIME"text/plain", ::AbstractInnovation)
+Base.show(::IO, ::AbstractInnovation)
+
 Base.show(::IO, ::MIME"text/plain", ::Innovation)
-Base.show(io::IO, z::Innovation)
+Base.show(::IO, ::Innovation)
 
 Base.show(::IO, ::MIME"text/plain", ::AbstractEvolution)
 ```

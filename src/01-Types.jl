@@ -141,7 +141,7 @@ If activated in course of evolution of a conditioned epidemic then an error will
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `Removal` as `R`.
 
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
+```jldoctest
 julia> Removal(0.1, 4)
 ℛ₀.₁₀⁴
 ```
@@ -157,9 +157,20 @@ struct Removal <: OperativeRemoval
                 new("ℛ", float(t), target))
     end
 
-    function Removal(z::AbstractRemoval)
-        return Removal(z.t, z.target)
-    end
+@doc """
+    Removal(::AbstractRemoval)::Removal
+    
+Converts an [`AbstractRemoval`](@ref) into a `Removal`.
+
+### Example
+```jldoctest
+julia> Removal(KR(0.1, 4))
+ℛ₀.₁₀⁴
+```
+"""
+function Removal(z::AbstractRemoval)
+    return Removal(z.t, z.target)
+end
 end
 
 
@@ -794,7 +805,6 @@ Variant which omits `cremovals` list.
 population = 3
 infections = [I(0.7,1,2), P(0.5,1,2)]
 removals   = [R(0.2, 3), R(0.1, 2)]
-
 Innovation(population, infections, removals)
 
 # output
@@ -817,7 +827,6 @@ Variant of `Innovation` based on a time-ordered `chronology` of `AbstractInciden
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3
 chron      = [R(0.1, 2), R(0.2, 3), I(0.7,1,2), P(0.5,1,2), C(1,2)]
-
 Innovation(population, chron)
 
 # output
@@ -907,7 +916,6 @@ Variant of `CInnovation` based on a time-ordered `chronology` of `AbstractIncide
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3
 chron      = [R(0.1, 2), R(0.2, 3), I(0.7,1,2), P(0.5,1,2), C(1,2)]
-
 CInnovation(population, chron)
 
 # output
@@ -1136,7 +1144,7 @@ struct CEvolution <: AbstractEvolution
         CEvolution(::AbstractEvolution, ::AbstractInnovation)::CEvolution
 
 This is the first way to construct a [`CEvolution`](@ref): 
-updating an [`AbstractEvolution`](@ref) using a candidate `Innovation`.
+updating an [`AbstractEvolution`](@ref) using a candidate `AbstractInnovation`.
 The procedure is as follows:
 
 1. Test for compatibility between `ev` and `iv`:  
@@ -1204,11 +1212,12 @@ ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.
 function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
-    #                       last_feasible_evolution
+    #                       last_feasible_evolution,
+    #                       compute_NFZ
     # Step 1.
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
-    
+
     # Step 2.
     removals = inactive_removals(ev, iv)
     
@@ -1232,6 +1241,8 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     NFZ2 = accumulate(max, NFZ1)
  
     # The hard work begins! We generate the NFZ.
+    # processed_infections, NFZ = compute_NFZ(ev, iv, deepcopy(NFZ2))
+    # COMMENT OUT FROM HERE
     # * The list `processed_infections` of processed `AbstractInfection`s will
     # eventually store (initially in reverse time order) an adjusted version of
     # each infection supplied by the new `Innovation` `iv`.
@@ -1337,6 +1348,15 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
+    
+#     # DEBUGGING
+#     evdc = deepcopy(ev)
+#     compute_NFZ(ev, iv, NFZ2) # Just doing this throws everything off!
+# 	@assert ev.infections == evdc.infections
+# 	# END DEBUGGING
+	
+    #trial_ev = one_step(ev, iv) # Just doing this throws everything off!
+    #@assert actual_ev.NFZ == trial_ev.NFZ
     return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ)
 end
 
@@ -1386,7 +1406,6 @@ infections = [NF(0,2,3), XI(0.2, 2, 3), I(0.7,1,2), P(0.5,1,2)]
 removals   = [R(0.1, 1), KR(0.2, 3), R(0.1, 2)]
 cremovals  = [C(0.0, 1)]
 chronology = infections ∪ removals ∪ cremovals
-
 innov      = Innovation(population, infections, removals, cremovals) 
 CEvolution(initial, innov)
 

@@ -74,9 +74,9 @@ make pdf-format
 
 - [ ] `26-02-2024` Introduce type `CInnovation`.
   
-  - [ ] `24-02-2024` Add bare type.
+  - [x] `26-02-2024` Add bare type.
   
-  - [ ] `24-02-2024`  Arrange for this automatically to create `finis` field from `cremoval` list using `create_finis` (see below) and then render `KilledInfection`s in `infections` field and `KilledRemoval`s in `removals` field as appropriate.
+  - [ ] `26-02-2024`  Arrange for this automatically to create `finis` field from `cremoval` list using `create_finis` (see below) and then render `KilledInfection`s in `infections` field and `KilledRemoval`s in `removals` field as appropriate.
   - [ ] `26-02-2024` To this end, break up `interval` function into `create_finis` and `create_start` functions.
   - [ ] `26-02-2024` Then add  `CEvolution(::AbstractEvolution,::CInnovation)` , and make  `CEvolution(::AbstractEvolution,::Innovation)`  factor through the new function.  
   - [ ] `26-02-2024` Add a specific `CEvolution(::CEvolution,::CInnovation)` .

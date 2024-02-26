@@ -760,32 +760,111 @@ AbstractRemoval[ℳ⁺[-∞]¹,ℳ⁺[-∞]²,ℳ⁺[-∞]³,ℛ₀.₅₀⁴,�
 """
 function interval(trajectory::Vector{SIR},
                  history::Vector{AbstractIncident})::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
-    z0, z1 = trajectory[1], trajectory[end]
-    z0, z1 = SIR(-Inf, z0.s, z0.i, z0.r), SIR(+Inf, z1.s, z1.i, z1.r)
+#     z0, z1 = trajectory[1], trajectory[end]
+#     z0, z1 = SIR(-Inf, z0.s, z0.i, z0.r), SIR(+Inf, z1.s, z1.i, z1.r)
+#     
+#     # Compute initial infection and removal incidents.
+# #    start = AbstractInfection[(k ≥ z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
+# #                    InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
+#     # If time line `k` is strictly higher than the ultimate number infected,
+#     # then `start` time is `+Inf` (this is precisely when it will never be infected).
+#     start = AbstractInfection[(k > z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
+#                     InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
+#     # if time line `k` is lower than or equal to the initial number removed,
+#     # then `finis` time is `-Inf` (this is precisely when it has been removed before start).
+#     finis = AbstractRemoval[(k ≤ z0.r) ? RemovalMarker(z0.t, k) : 
+#                     RemovalMarker(z1.t, k)        for k in 1:z0.n]
+#     
+#     # Fill in infection incidents
+#     for x ∈ [z for z ∈ history if z isa OperativeInfection]
+#             start[x.infectee] = x
+#     end
+# 
+#     # Fill in removal incidents
+#     for (k, x) ∈ enumerate([z for z ∈ history if z isa OperativeRemoval])
+#             finis[z0.r + k] = x
+#     end
+#    
+#     return start, finis
+return create_start(trajectory, history), create_finis(trajectory, history) 
+end
+
+"""
+    create_start(::Vector{SIR}, ::Vector{AbstractIncident})::Vector{AbstractInfection}
     
-    # Compute initial infection and removal incidents.
-#    start = AbstractInfection[(k ≥ z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
-#                    InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
+Returns `AbstractIncident`s possibly using `InfectionMarker`
+to list the left-most ends of infectious intervals of time lines.
+
+Note that this currently presumes epidemic start and end incidents are marked
+out by first argument `trajectory`.
+
+### Example
+```jldoctest
+trajectory = [SIR(0.0, 2,2,3), SIR(0.5, 2,1,4), SIR(0.6, 1,2,4), SIR(1.0, 1,2,4)] 
+history    = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] 
+start      = EpidemicsCFTP.create_start(trajectory, history) 
+
+# output
+AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[-∞]¹⁻²,ℳ⁻[-∞]²⁻³,ℳ⁻[-∞]³⁻⁴,ℳ⁻[-∞]⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶,
+    ℳ⁻[∞]⁶⁻⁷]
+
+```
+"""
+function create_start(traj::Vector{SIR}, hist::Vector{AbstractIncident})::Vector{AbstractInfection}
+    # Use abbreviations (agrees with those in sub-module `abbreviations`).
+    AIF, OI, IM = AbstractInfection, OperativeInfection, InfectionMarker
+    z0 = traj[1]
+    
+    # Compute initial infection incidents:
     # If time line `k` is strictly higher than the ultimate number infected,
     # then `start` time is `+Inf` (this is precisely when it will never be infected).
-    start = AbstractInfection[(k > z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
-                    InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
-    # if time line `k` is lower than or equal to the initial number removed,
-    # then `finis` time is `-Inf` (this is precisely when it has been removed before start).
-    finis = AbstractRemoval[(k ≤ z0.r) ? RemovalMarker(z0.t, k) : 
-                    RemovalMarker(z1.t, k)        for k in 1:z0.n]
+    # Otherwise `finis` time is provisionally set to `-Inf`.
+    start = AIF[k > z0.r + z0.i ? IM(Inf, k-1, k) : IM(-Inf, k-1, k) for k in 1:z0.n]
     
-    # Fill in infection incidents
-    for x ∈ [z for z ∈ history if z isa OperativeInfection]
+    # Over-write for known infection incidents the history `hist`.
+    for x ∈ [z for z ∈ hist if z isa OI]
             start[x.infectee] = x
     end
 
-    # Fill in removal incidents
-    for (k, x) ∈ enumerate([z for z ∈ history if z isa OperativeRemoval])
-            finis[z0.r + k] = x
+    return start
+end
+    
+"""
+    create_finis(::Vector{SIR}, ::Vector{AbstractIncident})Vector{AbstractRemoval}
+    
+Returns `AbstractIncident`s (possibly using `RemovalMarker`) 
+to list the right-most ends of infectious intervals of time lines.
+
+Note that this currently presumes epidemic start and end incidents are marked
+out by first argument `trajectory`.
+
+### Example
+```jldoctest
+trajectory = [SIR(0.0, 2,2,3), SIR(0.5, 2,1,4), SIR(0.6, 1,2,4), SIR(1.0, 1,2,4)] 
+history    = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] 
+EpidemicsCFTP.create_finis(trajectory, history) 
+
+# output
+AbstractRemoval[ℳ⁺[-∞]¹,ℳ⁺[-∞]²,ℳ⁺[-∞]³,ℛ₀.₅₀⁴,ℳ⁺[∞]⁵,ℳ⁺[∞]⁶,ℳ⁺[∞]⁷]
+```
+"""
+function create_finis(traj::Vector{SIR}, hist::Vector{AbstractIncident})::Vector{AbstractRemoval}
+    # Use abbreviations (agrees with those in sub-module `abbreviations`).
+    AIR, OR, RM = AbstractRemoval, OperativeRemoval, RemovalMarker
+    z0 = traj[1]
+    
+    # Compute final removal times:
+    # If time line `k` is lower than or equal to the initial number removed,
+    # then `finis` time is `-Inf` (this is precisely when it has been removed before start).
+    # Otherwise `finis` time is provisionally set to `Inf`.
+    finis = AIR[k ≤ z0.r ? RM(-Inf, k) : RM(Inf, k) for k in 1:z0.n]
+    
+    # Over-write for known removal incidents using the history `hist`.
+    for (k, x) ∈ enumerate([z for z ∈ hist if z isa OR])
+        finis[z0.r + k] = x
     end
    
-    return start, finis
+    return finis
 end
 
 
@@ -877,7 +956,8 @@ end
 
 Performs an accept/reject procedure: accept the [`CRemoval`](@ref) `proposed_cremoval` only if it would actually
 be activated based on period `start`s and `finis`s
-generated by [`interval`](@ref): otherwise retain the [`CRemoval`](@ref) `old_cremoval`.
+(expected to be generated by [`create_start`](@ref) and [`create_finis`](@ref) respectively): 
+otherwise retain the [`CRemoval`](@ref) `old_cremoval`.
 """
 function accept_reject(old_cremoval::CRemoval, proposed_cremoval::CRemoval,
                        start::Vector{AbstractInfection}, finis::Vector{AbstractRemoval})::CRemoval
@@ -892,9 +972,9 @@ end
 Uses [`accept_reject`](@ref) to determine re-sampled set of [`CRemoval`](@ref)s
 (perhaps extracted from [`AbstractInnovation`](@ref)).
 This uses the period markers
-listed in `start` and `finis` 
+generated by [`create_start`](@ref) and [`create_finis`](@ref) respectively
 from the [`AbstractEvolution`](@ref) `ev`.  
-Note that `start` and `finis` are generated by [`interval`](@ref))
+Note that `start` and `finis` are generated
 when `ev` is constructed.
 """
 function resulting_cremovals(ev::AbstractEvolution, iv::AbstractInnovation)::Vector{CRemoval}

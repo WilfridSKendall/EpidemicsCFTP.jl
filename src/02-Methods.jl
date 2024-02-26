@@ -733,76 +733,16 @@ end
 # Compute infectious interval for each time line
 # ----------------------------------------------
 """
-    interval(::Vector{SIR}, ::Vector{AbstractIncident})
-        ::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
-    
-Returns `AbstractIncident`s (possibly started with `InfectionMarker`, possibly
-ending with `RemovalMarker`) to mark out infectious intervals of time lines.
-
-Note that this currently presumes epidemic start and end incidents are marked
-out by first argument `trajectory`.
-
-### Example
-```jldoctest
-julia> trajectory = [SIR(0.0, 2,2,3), SIR(0.5, 2,1,4), SIR(0.6, 1,2,4), SIR(1.0, 1,2,4)] ;
-
-julia> history = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] ;
-
-julia> start, finis = EpidemicsCFTP.interval(trajectory, history) ;
-
-julia> start
-AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[-∞]¹⁻²,ℳ⁻[-∞]²⁻³,ℳ⁻[-∞]³⁻⁴,ℳ⁻[-∞]⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶,
-    ℳ⁻[∞]⁶⁻⁷]
-
-julia> finis
-AbstractRemoval[ℳ⁺[-∞]¹,ℳ⁺[-∞]²,ℳ⁺[-∞]³,ℛ₀.₅₀⁴,ℳ⁺[∞]⁵,ℳ⁺[∞]⁶,ℳ⁺[∞]⁷]
-```
-"""
-function interval(trajectory::Vector{SIR},
-                 history::Vector{AbstractIncident})::Tuple{Vector{AbstractInfection}, Vector{AbstractRemoval}}
-#     z0, z1 = trajectory[1], trajectory[end]
-#     z0, z1 = SIR(-Inf, z0.s, z0.i, z0.r), SIR(+Inf, z1.s, z1.i, z1.r)
-#     
-#     # Compute initial infection and removal incidents.
-# #    start = AbstractInfection[(k ≥ z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
-# #                    InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
-#     # If time line `k` is strictly higher than the ultimate number infected,
-#     # then `start` time is `+Inf` (this is precisely when it will never be infected).
-#     start = AbstractInfection[(k > z1.r + z1.i) ? InfectionMarker(z1.t, k-1, k) : 
-#                     InfectionMarker(z0.t, k-1, k) for k in 1:z0.n]
-#     # if time line `k` is lower than or equal to the initial number removed,
-#     # then `finis` time is `-Inf` (this is precisely when it has been removed before start).
-#     finis = AbstractRemoval[(k ≤ z0.r) ? RemovalMarker(z0.t, k) : 
-#                     RemovalMarker(z1.t, k)        for k in 1:z0.n]
-#     
-#     # Fill in infection incidents
-#     for x ∈ [z for z ∈ history if z isa OperativeInfection]
-#             start[x.infectee] = x
-#     end
-# 
-#     # Fill in removal incidents
-#     for (k, x) ∈ enumerate([z for z ∈ history if z isa OperativeRemoval])
-#             finis[z0.r + k] = x
-#     end
-#    
-#     return start, finis
-return create_start(trajectory, history), create_finis(trajectory, history) 
-end
-
-"""
-    create_start(::Vector{SIR}, ::Vector{AbstractIncident})::Vector{AbstractInfection}
+    create_start(::SIR, ::Vector{AbstractIncident})::Vector{AbstractInfection}
     
 Returns `AbstractIncident`s possibly using `InfectionMarker`
 to list the left-most ends of infectious intervals of time lines.
 
-Note that this currently presumes epidemic start and end incidents are marked
-out by first argument `trajectory`.
-
 ### Example
 ```jldoctest
-trajectory = [SIR(0.0, 2,2,3), SIR(0.5, 2,1,4), SIR(0.6, 1,2,4), SIR(1.0, 1,2,4)] 
-history    = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] 
-start      = EpidemicsCFTP.create_start(trajectory, history) 
+initial = SIR(0.0, 2,2,3)
+history = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] 
+start   = EpidemicsCFTP.create_start(initial, history) 
 
 # output
 AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[-∞]¹⁻²,ℳ⁻[-∞]²⁻³,ℳ⁻[-∞]³⁻⁴,ℳ⁻[-∞]⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶,
@@ -810,10 +750,9 @@ AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[-∞]¹⁻²,ℳ⁻[-∞]²⁻³,�
 
 ```
 """
-function create_start(traj::Vector{SIR}, hist::Vector{AbstractIncident})::Vector{AbstractInfection}
+function create_start(z0::SIR, hist::Vector{AbstractIncident})::Vector{AbstractInfection}
     # Use abbreviations (agrees with those in sub-module `abbreviations`).
     AIF, OI, IM = AbstractInfection, OperativeInfection, InfectionMarker
-    z0 = traj[1]
     
     # Compute initial infection incidents:
     # If time line `k` is strictly higher than the ultimate number infected,
@@ -830,7 +769,7 @@ function create_start(traj::Vector{SIR}, hist::Vector{AbstractIncident})::Vector
 end
     
 """
-    create_finis(::Vector{SIR}, ::Vector{AbstractIncident})Vector{AbstractRemoval}
+    create_finis(::SIR, ::Vector{AbstractIncident})Vector{AbstractRemoval}
     
 Returns `AbstractIncident`s (possibly using `RemovalMarker`) 
 to list the right-most ends of infectious intervals of time lines.
@@ -840,18 +779,17 @@ out by first argument `trajectory`.
 
 ### Example
 ```jldoctest
-trajectory = [SIR(0.0, 2,2,3), SIR(0.5, 2,1,4), SIR(0.6, 1,2,4), SIR(1.0, 1,2,4)] 
-history    = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] 
-EpidemicsCFTP.create_finis(trajectory, history) 
+initial = SIR(0.0, 2,2,3)
+history = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)] 
+EpidemicsCFTP.create_finis(initial, history) 
 
 # output
 AbstractRemoval[ℳ⁺[-∞]¹,ℳ⁺[-∞]²,ℳ⁺[-∞]³,ℛ₀.₅₀⁴,ℳ⁺[∞]⁵,ℳ⁺[∞]⁶,ℳ⁺[∞]⁷]
 ```
 """
-function create_finis(traj::Vector{SIR}, hist::Vector{AbstractIncident})::Vector{AbstractRemoval}
+function create_finis(z0::SIR, hist::Vector{AbstractIncident})::Vector{AbstractRemoval}
     # Use abbreviations (agrees with those in sub-module `abbreviations`).
     AIR, OR, RM = AbstractRemoval, OperativeRemoval, RemovalMarker
-    z0 = traj[1]
     
     # Compute final removal times:
     # If time line `k` is lower than or equal to the initial number removed,

@@ -1047,8 +1047,8 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation)::Evolutio
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
-        start      = create_start(trajectory, history)
-        finis      = create_finis(trajectory, history)
+        start      = create_start(trajectory[1], history)
+        finis      = create_finis(trajectory[1], history)
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start, finis)
     end
@@ -1433,8 +1433,8 @@ function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
     cremovals           = innovation.cremovals   
     chronology          = innovation.chronology
     trajectory, history = evolution(initial_state, innovation, conditioned=true)
-    start               = create_start(trajectory, history)
-    finis               = create_finis(trajectory, history)
+    start               = create_start(trajectory[1], history)
+    finis               = create_finis(trajectory[1], history)
         
     return new(population, infections, removals, cremovals, chronology, 
         trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ)

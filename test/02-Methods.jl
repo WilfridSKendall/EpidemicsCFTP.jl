@@ -224,7 +224,7 @@ end
 
 ### Testing `create_start` and `create_finis` _via_ `CEvolution`
 # -------------------------------------------------------------
-@testset "EpidemicsCFTP: $(rpad(string(EpidemicsCFTP.interval), 23))" begin
+@testset "EpidemicsCFTP: $(rpad("interval computation", 23))" begin
     initial        = SIR(0.0, 2, 1, 0)
     n              = initial.n
     innov1         = Innovation(n, I[I(1,1,2), I(2,2,3)], R[], C[C(3,2)])

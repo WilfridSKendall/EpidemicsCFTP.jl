@@ -90,7 +90,7 @@ cremovals = C[C(t, population) for t ∈ [2,4]]
 ev0_min = extremal_evolution(initial, duration, [z.t for z ∈ cremovals]; maximal=false) ;
 ev0_max = extremal_evolution(initial, duration, [z.t for z ∈ cremovals]) ;
 
-iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
+iv_null  = CInnovation(initial.n, I[], R[], ev0_min.cremovals)
 iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i ∈ SEQUENCE] ;
 ```
 
@@ -105,7 +105,7 @@ import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
 
 To help set things up, we construct a prototype (_unconditioned_) `Evolution`.
 ```{julia}
-reference = Evolution(initial, Innovation(initial.n, I[], [R(2t, t) for t ∈ [1,2]])).trajectory ;
+reference = Evolution(initial, CInnovation(initial.n, I[], [R(2t, t) for t ∈ [1,2]])).trajectory ;
 ```
 
 

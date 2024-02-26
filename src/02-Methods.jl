@@ -393,11 +393,9 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
 """
     evolution(::SIR, ::Vector{T}; conditioned::Bool=false)          
         ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
-    evolution(::SIR, ::Innovation; conditioned::Bool=false)          
-        ::Tuple{Vector{SIR},Vector{AbstractIncident}}
 
 Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
-an [`Innovation`](@ref). Returns
+an [`AbstractIncident`](@ref) vector. Returns
 a list of `SIR` states and a history `Vector{AbstractIncident}` of realized incidents.
 **NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
 
@@ -409,7 +407,6 @@ Note that this method is employed in the construction of [`Evolution`](@ref)
 and (with the `conditioned` flag set to `true`) [`CEvolution`](@ref) objects.
 
 ### Example
-I: Basic use, unconditioned
 ```jldoctest evolution; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
 
@@ -423,44 +420,7 @@ SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 julia> history
 AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 ```
-
-II: Basic use, conditioned (A)
-```jldoctest evolution
-julia> evolution(initial_state, innovation, conditioned=true)
-ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.5, 4)
-
-julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[], [C(0.5, 4)]) ;
-
-julia> states, history = evolution(initial_state, innovation) ;
-
-julia> states
-SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
-
-julia> history
-AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
-```
-
-III: Basic use, conditioned (B)
-```jldoctest evolution
-julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[], [C(0.5, 1)]) ;
-
-julia> evolution(initial_state, innovation, conditioned=true) ;
-ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.5, 1)
-
-julia> initial_state = SIR(0.55, 1, 2, 3) ;
-
-julia> answer = evolution(initial_state, innovation, conditioned=true) ;
-
-julia> answer[1]
-SIR[SIR₀.₅₅(1:2:3),SIR₀.₆₀(0:3:3)]
-julia> answer[2]
-AbstractIncident[ℐ₀.₆₀⁵⁻⁶]
-```
 """
-function evolution(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
-    return evolution(initial_state, innovation.chronology; conditioned=conditioned)
-end
-
 function evolution(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
     trajectory, history = SIR[initial_state], AbstractIncident[]
     chron  = [x for x ∈ chronology if x.t ≥ initial_state.t]
@@ -482,9 +442,66 @@ function evolution(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=
 end
 
 """
+    evolution(::SIR, ::Vector{T}; conditioned::Bool=false)          
+        ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
+
+Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
+an [`Innovation`](@ref). Returns
+a list of `SIR` states and a history `Vector{AbstractIncident}` of realized incidents.
+**NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
+
+If the keyword argument `conditioned` is set to its non-default value of `true`
+then an error is raised when the function attempts to realize a [`Removal`](@ref)
+or fails to realize a [`CRemoval`](@ref).
+
+### Example
+I: Basic use, conditioned (A)
+```jldoctest cevolution; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
+
+julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[R(0.5, 4)], C[]) ;
+
+julia> evolution(initial_state, innovation, conditioned=true)
+ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.5, 4)
+
+julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[], [C(0.5, 4)]) ;
+
+julia> states, history = evolution(initial_state, innovation) ;
+
+julia> states
+SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
+
+julia> history
+AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+```
+
+II: Basic use, conditioned (B)
+```jldoctest cevolution
+julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[], [C(0.5, 1)]) ;
+
+julia> evolution(initial_state, innovation, conditioned=true) ;
+ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.5, 1)
+
+julia> initial_state = SIR(0.55, 1, 2, 3) ;
+
+julia> answer = evolution(initial_state, innovation, conditioned=true) ;
+
+julia> answer[1]
+SIR[SIR₀.₅₅(1:2:3),SIR₀.₆₀(0:3:3)]
+julia> answer[2]
+AbstractIncident[ℐ₀.₆₀⁵⁻⁶]
+```
+"""
+function evolution(initial_state::SIR, innovation::AbstractInnovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
+    return evolution(initial_state, innovation.chronology; conditioned=conditioned)
+end
+
+
+    
+"""
     evolution_history(::SIR, ::Vector{T}; conditioned::Bool=false)          
         ::Vector{AbstractIncident} where T <: AbstractIncident
-    evolution_history(::SIR, ::Innovation; conditioned::Bool=false)          
+    evolution_history(::SIR, ::AbstractInnovation; conditioned::Bool=false)          
         ::Vector{AbstractIncident}
 
 Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
@@ -534,7 +551,7 @@ julia> evolution_history(initial_state, innovation, conditioned=true)
 AbstractIncident[ℐ₀.₆₀⁵⁻⁶]
 ```
 """
-function evolution_history(initial_state::SIR, innovation::Innovation; conditioned::Bool=false) ::Vector{AbstractIncident}
+function evolution_history(initial_state::SIR, innovation::AbstractInnovation; conditioned::Bool=false) ::Vector{AbstractIncident}
     return evolution_history(initial_state, innovation.chronology; conditioned=conditioned)
 end
 
@@ -893,7 +910,7 @@ end
 # # ------------------
 
 """
-    compute_NFZ(CEvolution, Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
+    compute_NFZ(::CEvolution,::Innovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
     
 Performs a careful computation of the "true" boundary (`nofly_bound` in the code
 of function `compute_NFZ`):

@@ -215,7 +215,7 @@ The `target` field labels the timeline being considered as host for the removal 
 A `KilledRemoval` should be created (by conversion) only in:
 
 * [`EpidemicsCFTP.kill_irrelevant_removals`](@ref) 
-* one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
+* one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::AbstractInnovation));
 * and [`EpidemicsCFTP.inactive_removals`](@ref)  
 (This list of functions should be reduced!),
 
@@ -475,7 +475,7 @@ A `KilledInfection` should be created (by conversion) only in the functions
 
 * [`EpidemicsCFTP.last_feasible_evolution`](@ref),
 * [`EpidemicsCFTP.kill_irrelevant_infections`](@ref),
-* one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
+* one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::AbstractInnovation));
 * and [`EpidemicsCFTP.compute_NFZ`](@ref)  
 (This list of functions should be reduced!).
 
@@ -546,7 +546,7 @@ will never be activated.
 Ensure that it is the case that `ExpungedInfection`s arise **only** in this way!
 This occurs in:
 
-* one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::Innovation));
+* one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::AbstractInnovation));
 * and later in a re-factoring of this using the function [`compute_NFZ`](@ref).
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `ExpungedInfection` as `XI`.
@@ -706,16 +706,25 @@ end
 """
     AbstractEnvironment
 
-Represents variants of an entire innovation of environment 
+Represents variants of an entire innovation or environment structure
 for a single step of algorithmic time.
 """
 abstract type AbstractEnvironment end
 
 # ### Innovations
 """
+    AbstractInnovation
+
+Represents variants of an entire innovation
+for a single step of algorithmic time.
+It is a generic sub-type of [`AbstractEnvironment`](@ref)
+"""
+abstract type AbstractInnovation <: AbstractEnvironment end
+
+"""
     Innovation
 
-This represents an entire innovation corresponding to a single step of _algorithmic_ time,
+This represents an entire unconditioned innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals).
 
@@ -723,7 +732,7 @@ Note that there is a first argument `population` (an `Int`),
 and a computed field `chronology` holding a
 time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 """
-struct Innovation <: AbstractEnvironment
+struct Innovation <: AbstractInnovation
     population ::Int
     infections ::Vector{<:AbstractInfection}
     removals   ::Vector{<:AbstractRemoval}
@@ -827,6 +836,123 @@ end
 
 end
 
+
+"""
+    CInnovation
+
+This represents an entire conditioned innovation corresponding to a single step of _algorithmic_ time,
+stored as a sequence of three **time-ordered** lists 
+(realized and unrealized infections, unrealized removals, conditional removals).
+
+Note that there is a first argument `population` (an `Int`),
+and a computed field `chronology` holding a
+time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
+"""
+struct CInnovation <: AbstractInnovation
+    population ::Int
+    infections ::Vector{<:AbstractInfection}
+    removals   ::Vector{<:AbstractRemoval}
+    cremovals  ::Vector{CRemoval}
+    chronology ::Vector{<:AbstractIncident}
+
+@doc """
+    CInnovation(::Int, ::Vector{S}, ::Vector{T},
+               ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}    
+
+This is the usual basic creation of an `CInnovation`, specifying
+all of `infections`, `removals`, and `cremovals`.
+### Example
+```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+population = 3
+infections = [I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.2, 3), R(0.1, 2)]
+cremovals  = [C(0.0, 1), C(0.05, 2)]
+CInnovation(population, infections, removals, cremovals)
+
+# output
+CInnovation(3,
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])  
+```
+"""
+function CInnovation(population::Int, infections::Vector{S},
+                    removals::Vector{T},
+                    cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    noun = "CInnovation($population, $infections, $removals, $cremovals)"
+    if population ≤ 0
+        throw(DomainError(noun, "non-positive population size $population"))
+    elseif length(cremovals) > population
+        throw(ArgumentError("too many conditional removals in \n$noun"))
+    elseif any(cr.target > population for cr ∈ cremovals)
+        throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
+    elseif any(r.target > population for r ∈ removals)
+        throw(ArgumentError("some removal timelines too high in \n$noun"))
+    elseif any(i.target > population for i ∈ infections)
+        throw(ArgumentError("some infection targets too high in \n$noun"))
+    else
+        # chron = Iterators.flatten([infections, removals, cremovals])
+        return new(population, sort(infections), 
+            sort(removals), 
+            sort(cremovals),
+            convert(Vector{AI}, sort(infections ∪ removals ∪ cremovals)))
+            # [x::AbstractIncident for x ∈ sort(collect(chron))])
+    end
+end
+
+@doc """
+    CInnovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    
+Variant of `CInnovation` which omits `cremovals` list.
+
+### Example
+```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+population = 3
+infections = [I(0.7,1,2), P(0.5,1,2)]
+removals   = [R(0.2, 3), R(0.1, 2)]
+
+CInnovation(population, infections, removals)
+
+# output
+CInnovation(3,
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]) 
+```
+"""
+function CInnovation(population::Int, infections::Vector{S},
+                    removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    return CInnovation(population, infections, removals, CRemoval[])
+end
+
+@doc """
+    CInnovation(::Int, ::Vector{AbstractIncident})
+    
+Variant of `CInnovation` based on a time-ordered `chronology` of `AbstractIncident`s.
+
+### Example
+```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+population = 3
+chron      = [R(0.1, 2), R(0.2, 3), I(0.7,1,2), P(0.5,1,2), C(1,2)]
+
+CInnovation(population, chron)
+
+# output
+CInnovation(3,
+infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
+cremovals:  CRemoval[𝒞₁.₀₀²])
+```
+"""
+function CInnovation(population::Int, chronology::Vector{AbstractIncident})
+    infections = convert(Vector{AIF}, filter(z -> z isa AIF, chronology))
+    removals   = convert(Vector{AIR}, filter(z -> (z isa AIR) && !(z isa C), chronology))
+    cremovals  = C.(filter(z -> (z isa C), chronology))
+    return CInnovation(population, infections, removals, cremovals)
+end
+
+end
+
+    
 # ### Abstract evolution for an $\SIR$ epidemic
 """
     AbstractEvolution 
@@ -841,7 +967,7 @@ abstract type AbstractEvolution <: AbstractEnvironment end
     Evolution
 
 This represents an _unconditional_ evolution of an SIR epidemic 
-based on a given [`Innovation`](@ref) 
+based on a given [`AbstractInnovation`](@ref) 
 for innovations,
 and starting from a given [`SIR`](@ref) for initial state.
 
@@ -856,7 +982,7 @@ is used in the course of the constructions to compute the `trajectory` and `hist
 while [`interval`](@ref) is used in the course of the constructions to compute start and finish incidents
 for infectious intervals.
 
-See [`Evolution(::SIR,::Innovation)`](@ref Evolution(::SIR, ::Innovation)) 
+See [`Evolution(::SIR,::AbstractInnovation)`](@ref Evolution(::SIR, ::AbstractInnovation)) 
 and [`Evolution(::SIR,::Vector{AbstractIncident})`](@ref Evolution(::SIR, ::Vector{AbstractIncident})) 
 below for examples of construction.
 
@@ -890,10 +1016,10 @@ struct Evolution <: AbstractEvolution
     finis       ::Vector{AbstractRemoval}
 
 @doc """
-    Evolution(::SIR, ::Innovation)::Evolution
+    Evolution(::SIR, ::AbstractInnovation)::Evolution
 
 An `Evolution` can be constructed using only an `initial` state 
-and an `Innovation`.
+and an `AbstractInnovation`.
 ### Example
 ```jldoctest
 initial    = SIR(0, 2, 1, 0)
@@ -914,7 +1040,7 @@ trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 """
-function Evolution(initial_state::SIR, innovation::Innovation)::Evolution
+function Evolution(initial_state::SIR, innovation::AbstractInnovation)::Evolution
         # Need to check population == sum of initial.state entries
         population = innovation.population
         infections = innovation.infections
@@ -966,7 +1092,7 @@ end
                         
 # # ### (Conditioned) evolution for an $\SIR$ epidemic
 """
-    CEvolution
+    CEvolution::AbstractInnovation
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -1029,7 +1155,7 @@ struct CEvolution <: AbstractEvolution
     NFZ        ::Vector{Real}
 
 @doc """
-        CEvolution(::AbstractEvolution, ::Innovation)::CEvolution
+        CEvolution(::AbstractEvolution, ::AbstractInnovation)::CEvolution
 
 This is the first way to construct a [`CEvolution`](@ref): 
 updating an [`AbstractEvolution`](@ref) using a candidate `Innovation`.
@@ -1097,7 +1223,7 @@ CEvolution(initial, innov)
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
 """
-function CEvolution(ev::AbstractEvolution, iv::Innovation)::CEvolution
+function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
     #                       last_feasible_evolution
@@ -1260,7 +1386,7 @@ true
 """
 function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
                     LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])
-        innovation = Innovation(initial_state.n,
+        innovation = CInnovation(initial_state.n,
                     AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                     AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                     CRemoval[z for z ∈ chronology if z isa CRemoval]
@@ -1269,7 +1395,7 @@ function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident};
 end
 
 @doc """
-    CEvolution(::SIR, ::Innovation; 
+    CEvolution(::SIR, ::AbstractInnovation; 
             LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])::CEvolution
 
 This is the third way:
@@ -1296,7 +1422,7 @@ trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 """
-function CEvolution(initial_state::SIR, innovation::Innovation;
+function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
                     LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])
     # Need to check population == sum of `initial_state` entries
     population          = innovation.population

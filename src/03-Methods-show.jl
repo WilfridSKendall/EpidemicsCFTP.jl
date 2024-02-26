@@ -111,9 +111,9 @@ function Base.show(io::IO, z::AbstractInfection)
 end
 
 """
-    Base.show(io::IO, ::MIME"text/plain", z::Innovation)
+    Base.show(io::IO, ::MIME"text/plain", z::AbstractInnovation)
     
-Implementation of `show` for [`Innovation`](@ref) as three rows of lists of incidents
+Implementation of `show` for [`AbstractInnovation`](@ref) as three rows of lists of incidents
 -- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
 
 ### Example
@@ -129,9 +129,14 @@ julia> Innovation(population, infections, removals, C[])
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
+
+julia> CInnovation(population, infections, removals, C[])
+CInnovation(3,
+infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 ```
 """
-function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
+function Base.show(io::IO, ::MIME"text/plain", z::AbstractInnovation)
     println(io, "$(typeof(z))($(z.population),")
     println(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
     print(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
@@ -140,7 +145,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::Innovation)
 end
 
 """
-    Base.show(io::IO, z::Innovation)
+    Base.show(io::IO, z::AbstractInnovation)
     
 ### Example
 ```jldoctest
@@ -157,7 +162,7 @@ Innovation(3,
   Removal[Removal(0.1, 2), Removal(0.2, 3)])
 ```
 """
-function Base.show(io::IO, z::Innovation)
+function Base.show(io::IO, z::AbstractInnovation)
     if isempty(z.cremovals)
         printfmt(io, "{1}({2},\n  {3},\n  {4})",
                     typeof(z), z.population, z.infections, z.removals)

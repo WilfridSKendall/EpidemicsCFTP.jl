@@ -159,13 +159,17 @@ AbstractEnvironment
 AbstractEvolution
 ```
 
-### `Innovation` as an `AbstractEnvironment`
-`Innovation` fills the lists of an abstract environment with (typically simulated) contents
+### `AbstractInnovation` as an `AbstractEnvironment`
+`AbstractInnovation` has two subtypes:
+`Innovation` and `CInnovation` fill the lists of an abstract environment with (typically simulated) contents
 of lists of the requisite infections or removals. 
 ```@docs
 Innovation
 Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
 Innovation(::Int, ::Vector{AbstractIncident})
+CInnovation
+CInnovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+CInnovation(::Int, ::Vector{AbstractIncident})
 ```
 
 ### Two kinds of `AbstractEvolution`

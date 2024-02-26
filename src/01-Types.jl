@@ -891,12 +891,10 @@ function CInnovation(population::Int, infections::Vector{S},
     elseif any(i.target > population for i ∈ infections)
         throw(ArgumentError("some infection targets too high in \n$noun"))
     else
-        # chron = Iterators.flatten([infections, removals, cremovals])
         return new(population, sort(infections), 
             sort(removals), 
             sort(cremovals),
             convert(Vector{AI}, sort(infections ∪ removals ∪ cremovals)))
-            # [x::AbstractIncident for x ∈ sort(collect(chron))])
     end
 end
 

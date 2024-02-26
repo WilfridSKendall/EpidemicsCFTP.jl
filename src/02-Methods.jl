@@ -631,7 +631,7 @@ end
 # Computing the last feasible epidemic trajectory
 # -----------------------------------------------
 """
-    EpidemicsCFTP.last_feasible_evolution(::Real, ::AbstractEvolution, ::Innovation) ::Vector{AbstractIncident}
+    EpidemicsCFTP.last_feasible_evolution(::Real, ::AbstractEvolution, ::AbstractInnovation) ::Vector{AbstractIncident}
 
 Computes the last feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
 by a [`Innovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
@@ -681,8 +681,8 @@ true
 ```
 """
 function last_feasible_evolution(duration::Real, 
-# import EpidemicsCFTP: last_feasible_evolution, resulting_cremovals
     ev::AbstractEvolution, iv::Innovation) ::Vector{AbstractIncident}
+# import EpidemicsCFTP: last_feasible_evolution, resulting_cremovals
         
     recomputed_cremovals = resulting_cremovals(ev, iv)                                              # <1>
     previous_active_infections  = [P(z) for z in ev.history if z isa OperativeInfection]            # <2>
@@ -1039,9 +1039,9 @@ end ;
 # # Generate an innovation
 # # ----------------------
 """
-    generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
+    generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1)
 
-Generates a random [`Innovation`](@ref), borrowing some structure from its first argument.
+Generates a random [`AbstractInnovation`](@ref), borrowing some structure from its first argument.
 
 # # _Later work to be done:_
 
@@ -1052,7 +1052,7 @@ from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends
 2. Conduct a simulation study (in a separate `quarto` notebook) to verify that the Poisson intensity rates used by this function are correct.
 
 """
-function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::Real=0.1)
+function generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1)
     n = iv.population
     removals = ∪([AbstractRemoval[Removal(t, k) 
         for t ∈ rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
@@ -1063,12 +1063,12 @@ function generate_innovation(iv::Innovation, duration::Real; α::Real=0.2, β::R
                         rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
                     for k ∈ 2:n]...)
     if isempty(iv.cremovals)
-        return Innovation(n, infections, removals)
+        return typeof(iv)(n, infections, removals)
     else
         cremovals = CRemoval[alter(x...) 
             for x ∈ zip(iv.cremovals, 
                 rand(Distributions.DiscreteUniform(1, n), length(iv.cremovals)))]
-        return Innovation(n, infections, removals, cremovals)
+        return typeof(iv)(n, infections, removals, cremovals)
     end
 end
 

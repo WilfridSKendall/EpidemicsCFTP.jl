@@ -977,7 +977,8 @@ and also **computed** fields `chronology`, `trajectory` and `history`.
 
 Note that [`evolution`](@ref) (with the `conditioned` flag at default of `false`)
 is used in the course of the constructions to compute the `trajectory` and `history` fields,
-while [`interval`](@ref) is used in the course of the constructions to compute start and finish incidents
+while [`create_start`](@ref) and [`create_finis`](@ref) are used in the course of the constructions 
+to compute lists of start and finish incidents
 for infectious intervals.
 
 See [`Evolution(::SIR,::AbstractInnovation)`](@ref Evolution(::SIR, ::AbstractInnovation)) 
@@ -1046,7 +1047,8 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation)::Evolutio
         cremovals  = innovation.cremovals   
         chronology = innovation.chronology
         trajectory, history = evolution(initial_state, innovation)
-        start, finis        = interval(trajectory, history)
+        start      = create_start(trajectory, history)
+        finis      = create_finis(trajectory, history)
         return new(population, infections, removals, cremovals, chronology, 
             trajectory, history, initial_state, start, finis)
     end
@@ -1106,7 +1108,9 @@ initial state `initial`,
 and also **computed** fields `chronology`, `trajectory` and `history`.
 Note the implicit use of [`evolution`](@ref) (with the `conditioned` flag set to `true`)
 to compute the `trajectory` and `history` fields,
-and the implicit use of [`interval`](@ref) to compute start and finish incidents
+and the implicit use of [`create_start`](@ref)
+and [`create_finis`](@ref) 
+to compute start and finish incidents
 for infectious intervals.
 
 It possesses extra fields `LFE`, `NFZ1`,  `NFZ2`, and `NFZ` which are respectively
@@ -1429,7 +1433,8 @@ function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
     cremovals           = innovation.cremovals   
     chronology          = innovation.chronology
     trajectory, history = evolution(initial_state, innovation, conditioned=true)
-    start, finis        = interval(trajectory, history)
+    start               = create_start(trajectory, history)
+    finis               = create_finis(trajectory, history)
         
     return new(population, infections, removals, cremovals, chronology, 
         trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ)

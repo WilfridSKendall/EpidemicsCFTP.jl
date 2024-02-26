@@ -222,8 +222,8 @@ end
     @test ev_min.cremovals  == C[C(1.0, 1), C(2.0, 2), C(3.0, 3)]
 end 
 
-### Testing `interval`
-# -------------------
+### Testing `create_start` and `create_finis` _via_ `CEvolution`
+# -------------------------------------------------------------
 @testset "EpidemicsCFTP: $(rpad(string(EpidemicsCFTP.interval), 23))" begin
     initial        = SIR(0.0, 2, 1, 0)
     n              = initial.n

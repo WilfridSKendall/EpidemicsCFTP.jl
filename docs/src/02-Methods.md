@@ -43,6 +43,8 @@ also other helper functions:
 | [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)         |
 | [`EpidemicsCFTP.compute_NFZ`](@ref)        | Computes adapted [`Infection`](@ref)s and nofly zone   |
 | [`EpidemicsCFTP.interval`](@ref)           | Computes `start` and `finis` for infectious intervals  |
+| [`EpidemicsCFTP.create_start`](@ref)       | Computes `start` for infectious intervals              |
+| [`EpidemicsCFTP.create_finis`](@ref)       | Computes `finis` for infectious intervals              |
 | [`EpidemicsCFTP.inactive_removals`](@ref)  | Processes list of inactive removals from an epidemic   |
 | [`EpidemicsCFTP.accept_reject`](@ref)      | Performs accept/reject on proposed [`CRemoval`](@ref)  |
 | [`EpidemicsCFTP.resulting_cremovals`](@ref)| Determine set of re-sampled [`CRemoval`](@ref)s        |
@@ -68,6 +70,8 @@ extremal_evolution
 EpidemicsCFTP.last_feasible_evolution
 EpidemicsCFTP.compute_NFZ
 EpidemicsCFTP.interval
+EpidemicsCFTP.create_start
+EpidemicsCFTP.create_finis
 EpidemicsCFTP.inactive_removals
 EpidemicsCFTP.accept_reject
 EpidemicsCFTP.resulting_cremovals

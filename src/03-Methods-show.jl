@@ -1,5 +1,14 @@
 # # Compact printing
 # # -------------------------------
+# Format specifications.
+
+fspec0  = FormatSpec(".2f")
+fexpr3  = FormatExpr("{1}{2}{3}")
+fexpr4a = FormatExpr("{1}{2}{3}⁻{4}")
+fexpr4b = FormatExpr("{1}({2},\n  {3},\n  {4})")
+fexpr4c = FormatExpr("SIR{1}({2}:{3}:{4})")
+fexpr5  = FormatExpr("{1}({2},\n  {3},\n  {4},\n  {5})")
+
 ### Helper functions and format specifications for subscripts and superscripts
 subs = split("₀₁₂₃₄₅₆₇₈₉._ ", "")
 sups = split("⁰¹²³⁴⁵⁶⁷⁸⁹˙¯ ", "")
@@ -15,15 +24,13 @@ function uppers(x::String)::String
     join(upps[c] for c ∈ split(x, ""))
 end
 
-fspec = FormatSpec(".2f")
-
 function timespec(t::Float64)::String
     if t == -Inf
         "[-∞]"
     elseif t == Inf
         "[∞]"
     else
-        lowers(fmt(fspec, t))
+        lowers(pyfmt(fspec0, t))
     end
 end
 
@@ -46,7 +53,7 @@ julia> C(0.10, 3)
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
     t = timespec(z.t)
-    printfmt(io, "{1}{2}{3}", z.kind, t, uppers(string(z.target)))
+    printfmt(io, fexpr3, z.kind, t, uppers(string(z.target)))
 end
 
 """
@@ -87,7 +94,7 @@ julia> P(0.10, 3, 4)
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
     t = timespec(z.t)
-    printfmt(io, "{1}{2}{3}⁻{4}", z.kind, t, uppers(string(z.target)), uppers(string(z.infectee)))
+    printfmt(io, fexpr4a, z.kind, t, uppers(string(z.target)), uppers(string(z.infectee)))
 end
 
 """
@@ -139,7 +146,7 @@ removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractInnovation)
     println(io, "$(typeof(z))($(z.population),")
     println(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
-    print(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
+    print(io,   rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
     isempty(z.cremovals) ? nothing : print(io, rpad("\ncremovals:",12," "),sprint(show, MIME("text/plain"), z.cremovals))
     print(io, ")")
 end
@@ -164,10 +171,10 @@ Innovation(3,
 """
 function Base.show(io::IO, z::AbstractInnovation)
     if isempty(z.cremovals)
-        printfmt(io, "{1}({2},\n  {3},\n  {4})",
+        printfmt(io, fexpr4b,
                     typeof(z), z.population, z.infections, z.removals)
     else
-        printfmt(io, "{1}({2},\n  {3},\n  {4},\n  {5})",
+        printfmt(io, fexpr5,
                     typeof(z), z.population, z.infections, z.removals, z.cremovals)
     end
 end
@@ -187,7 +194,7 @@ SIR[-∞](1:2:3)
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::SIR)
-    printfmt(io, "SIR{1}({2}:{3}:{4})", timespec(z.t), z.s, z.i, z.r)
+    printfmt(io, fexpr4c, timespec(z.t), z.s, z.i, z.r)
 end
 
 
@@ -216,7 +223,7 @@ infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 
 julia> Evolution(initial, innovation) 
-Evolution(3,
+Evolution(SIR₀.₀₀(2:1:0),
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
@@ -230,7 +237,7 @@ removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₆₀²])
 
 julia> Evolution(initial, innovation)
-Evolution(3,
+Evolution(SIR₀.₀₀(2:1:0),
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₆₀²]
@@ -240,14 +247,14 @@ history:    AbstractIncident[𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²])
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution) 
-    println(io, "$(typeof(z))($(z.population),")
+    println(io, "$(typeof(z))(", sprint(show, MIME("text/plain"), z.initial), ",")
     println(io, rpad("infections:",12," "), sprint(show, MIME("text/plain"), z.infections))
     println(io, rpad("removals:",12," "), sprint(show, MIME("text/plain"), z.removals))
     isempty(z.cremovals) ? nothing : println(io, rpad("cremovals:",12," "), sprint(show, MIME("text/plain"), z.cremovals))
     println(io, rpad("chronology:",12," "), sprint(show, MIME("text/plain"), z.chronology))
     println(io, rpad("trajectory:",12," "), sprint(show, MIME("text/plain"), z.trajectory))
-    print(io, rpad("history:",12," "), sprint(show, MIME("text/plain"), z.history))
-    print(io, ")")
+    print(io,   rpad("history:",12," "), sprint(show, MIME("text/plain"), z.history))
+    print(io,   ")")
 end
 
 """

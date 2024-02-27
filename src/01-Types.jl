@@ -1006,7 +1006,7 @@ innov      = Innovation(population, infections, removals, cremovals)
 Evolution(initial, innov)
 
 # output
-Evolution(3,
+Evolution(SIR₀.₀₀(2:1:0),
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
@@ -1045,7 +1045,7 @@ cremovals  = [C(0.0, 1), C(0.05, 2)]
 Evolution(initial, infections ∪ removals ∪ cremovals)
 
 # output
-Evolution(3,
+Evolution(SIR₀.₀₀(2:1:0),
 infections: AbstractInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
@@ -1068,7 +1068,7 @@ end
                         
 # # ### (Conditioned) evolution for an $\SIR$ epidemic
 """
-    CEvolution::AbstractInnovation
+    CEvolution::AbstractEvolution
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -1166,7 +1166,7 @@ candidate = Innovation(population, I[], R[], cremovals) ;
 CEvolution(ev, candidate)
 
 # output
-CEvolution(3,
+CEvolution(SIR₀.₀₀(2:1:0),
 infections: AbstractInfection[]
 removals:   AbstractRemoval[]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
@@ -1218,7 +1218,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     # Step 4.
     duration = maximum(z.t for z in recomputed_cremovals)
     LFE = last_feasible_evolution(duration, ev, iv)
-    perpetuated_infections = [z for z ∈ LFE if z isa P] 
+    perpetuated_infections = P[z for z ∈ LFE if z isa P] 
     
     # Step 5.
     # * Initial computation of `NFZ2`, a **list of times** 
@@ -1391,7 +1391,7 @@ innov      = Innovation(population, infections, removals, cremovals)
 CEvolution(initial, innov)
 
 # output
-CEvolution(3,
+CEvolution(SIR₀.₀₀(2:1:0),
 infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]

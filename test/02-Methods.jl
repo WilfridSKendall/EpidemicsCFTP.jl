@@ -270,4 +270,19 @@ end
 
 ### Testing `LFE` construction
 # ----------------------------
-# _TO BE COMPLETED_
+@testset "EpidemicsCFTP: $(rpad("Developing one_step", 23))" begin
+    initial = SIR(0,4,1,0,5)
+    ev1 = CEvolution(initial, AI[I(2,1,2), C(2,1), C(4,2)],)
+    iv1 = CInnovation(5,
+  AIF[I(0.5,2,4),I(0.65,2,3),I(0.7,2,3),I(1,3,4),I(1.3,1,4),I(1.4,1,4),I(1.5,2,3),I(1.55,1,3),I(2.3,2,5),I(2.8,2,5),I(2.9,1,3),I(3.1,1,5),I(3.5,1,5),I(3.7,1,2),I(4.4,3,5),I(4.5,2,5),I(4.7,1,2),I(4.9,2,3),I(4.93,1,5),I(4.95,1,3)],
+  AIR[R(1.1,4), R(1.8,4), R(4.1,1)],
+  C[C(2,4),C(4,5)])
+    chron2 = AI[I(0.5,2,4),I(0.65,2,3),NF(0.7,2,3),I(1,3,4),R(1.1,4),I(1.3,1,4),NF(1.4,1,4),I(1.5,2,3),I(1.55,1,3),R(1.8,4),P(2,1,2),C(2,1),I(2.3,2,5),I(2.8,2,5),KI(2.9,1,3),KI(3.1,1,5),KI(3.5,1,5),KI(3.7,1,2),C(4,2),KR(4.1,1),I(4.4,3,5),KI(4.5,2,5),KI(4.7,1,2),KI(4.9,2,3),KI(4.93,1,5),KI(4.95,1,3)]
+    ev2 = CEvolution(initial, chron2)
+    ev_new = ev1 ⋄ iv1
+    @test(setdiff(chron2, ev_new.chronology) == AI[])
+    @test(setdiff(ev_new.chronology, chron2) == AI[])
+    #a,b = 11, 20
+    #@test chron2[a:b] == ev_new.chronology[a:b]
+    @test chron2 == ev_new.chronology
+end

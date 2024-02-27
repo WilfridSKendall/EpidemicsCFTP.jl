@@ -12,8 +12,8 @@ summary = "EpidemicsCFTP version $version, checked in on $date"
 
 # # Imports
 # # -------
-# # The `Formatting` module is required in order to define `show` methods for the various types.
-using Formatting
+# # The `Format` module is required in order to define `show` methods for the various types.
+using Format
 # # The `Distributions` module is required in order to simulate new `Innovation`s.
 import Distributions
 # # The `DataFrames` module is required in order to provide placeholders for trajectory flows.

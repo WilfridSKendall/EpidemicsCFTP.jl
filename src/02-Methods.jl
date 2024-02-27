@@ -1484,6 +1484,7 @@ function compute_NFZ1(ev::CEvolution, infections::Vector{S}, NFZ2::Vector{T}) ::
 	    if (z ≥ ev.finis[z.target])                                            # <4>
 	        push!(processed_infections, KI(z))                                 # <4>
             # @info "$(KI(z))"                                                 # <4>
+            continue
 	    end                                                                    # <4>
 	    
 	    # @assert(z < ev.finis[z.target])

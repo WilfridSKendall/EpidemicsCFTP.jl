@@ -1230,110 +1230,111 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
         NFZ1[z.target] = max(NFZ1[z.target], z.t)
     end
     NFZ2 = accumulate(max, NFZ1)
- 
-    # The hard work begins! We generate the NFZ.
-    # * The list `processed_infections` of processed `AbstractInfection`s will
-    # eventually store (initially in reverse time order) an adjusted version of
-    # each infection supplied by the new `Innovation` `iv`.
-	processed_infections = AbstractInfection[]
-	nofly_bound = deepcopy(NFZ2)
-	
-	# * Iteration: work backwards through `Infection`s supplied by `iv`
-	# together with perpetuated infections,
-    # determining in each case how to transform the supplied `Infection`
-    # when adding it to the list `processed_infections`.
-	for z ∈ reverse(sort(iv.infections ∪ perpetuated_infections))
-	    
-	    # * If the `Infection` `z` has `target` on the removed portion of a level
-        # then it will never be activated, so add `z` as a `KilledInfection`.
-	    if (z ≥ ev.finis[z.target])
-	        push!(processed_infections, KI(z))
-	        continue
-	    end
-	    
-	    # * If the `Infection` `z` potentially infects a level at a _later time_ 
-        # than the current `NFZ2` at that level, then its activation will
-        # never break the conditioning (**needs proof!**), so add `z` as-is.
-        # (I think the point is: since we are working backwards in time, once
-        # `z.t` is considered then `NFZ2` is frozen from time `t` onwards.)
-	    #
-	    # At this stage of the iteration 
-	    @assert(z < ev.finis[z.target])
-	    #
-        if (z.t ≥ nofly_bound[z.infectee])
-	        push!(processed_infections, z)
-	        continue
-	    end
-	    
-	    # * However if `z.t < NFZ2[z.infectee - 1]` then no issue can arise, as 
-        # infection of the level immediately below `z.infectee` will then not be
-        # allowed at this time. So again add `z` as-is.
-        #
-	    # At this stage of the iteration 
-	    @assert(z < ev.finis[z.target])
-	    @assert(z.t < nofly_bound[z.infectee])
-	    #
-        if (z.t < nofly_bound[z.infectee - 1])
-	        push!(processed_infections, z)
-	        continue
-	    end
-	    
-	    # * Suppose `z ≥ ev.start[z.target]`: then an issue would arise
-        # if the level at `z.infectee - 1` were to become infected before `z.t`. 
-        #
-	    # At this stage of the iteration 
-	    @assert(z.t < nofly_bound[z.infectee])
-	    @assert(z.t ≥ nofly_bound[z.infectee - 1])
-	    @assert(z < ev.finis[z.target])
-	    #
-	    # One of two cases must hold:
-	    #
-	    # * Case (a): Suppose `z < ev.start[z.infectee - 1]`.
-        # Then **increase** `NFZ2[z.infectee - 1]` to `z.t` in order to
-        # preclude the time line getting infected, and also transform `z` to a
-        # `NoFlyInfection` when added to `processed_infections`, to signal
-        # that it should never become infected.  
-        # Case (b): Alternatively, suppose `z ≥ ev.start[z.infectee - 1]`.
-        # Then increasing `NFZ2[z.infectee - 1]` to `z.t` would lead to a
-        # problem, since this level is infected at time `z.t`. Therefore we
-        # transform `z` to a `ExpungedInfection` when we add it to 
-        # `processed_infections`, so that it is treated as an
-        # `InoperativeInfection`.
-	    if (z ≥ ev.start[z.target])
-            if (z < ev.start[z.infectee - 1])
-                nofly_bound[z.infectee - 1] = z.t
-                push!(processed_infections, NF(z))
-                # Uncomment for tracking information
-                # @info "Conversion of infection into $(NF(z))"
-                continue
-            else 
-                push!(processed_infections, XI(z))
-                # Uncomment for tracking information
-                # @info "Conversion of infection into $(XI(z))"
-                continue 
-            end 
-	    end
-	    
-	    # At this stage of the iteration 
-	    @assert(z.t < nofly_bound[z.infectee])
-	    @assert(z.t ≥ nofly_bound[z.infectee - 1])
-	    @assert(z < ev.start[z.target])
-	    # 
-	    # * Consider now that potential `Infection`s to be treated later in this
-        # iteration must have time mark earlier than `z.t`. If one of these were
-        # to infect the level `z.infectee - 1` then it would follow by monotonicity
-        # that the `z.target` level would become infected by that time `z.t`; and 
-        # thus would create an infection of the `z.infectee` level at time `z.t`. 
-        # In order for this to be prevented, we need to extend the `NFZ2` 
-        # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
-        # to a `NoFlyInfection` when we add it to `processed_infections`, to
-        # signal that it should never become infected.
-	    nofly_bound[z.infectee - 1] = z.t 
-	    push!(processed_infections, NF(z))
-        # Uncomment for tracking information
-        # @info "Conversion of infection into $(NF(z))"
-	
-	end
+
+    processed_infections, nofly_bound = EpidemicsCFTP.compute_NFZ1(ev, iv.infections ∪ perpetuated_infections, NFZ2)
+#     # The hard work begins! We generate the NFZ.
+#     # * The list `processed_infections` of processed `AbstractInfection`s will
+#     # eventually store (initially in reverse time order) an adjusted version of
+#     # each infection supplied by the new `Innovation` `iv`.
+# 	processed_infections = AbstractInfection[]
+# 	nofly_bound = deepcopy(NFZ2)
+# 	
+# 	# * Iteration: work backwards through `Infection`s supplied by `iv`
+# 	# together with perpetuated infections,
+#     # determining in each case how to transform the supplied `Infection`
+#     # when adding it to the list `processed_infections`.
+# 	for z ∈ reverse(sort(iv.infections ∪ perpetuated_infections))
+# 	    
+# 	    # * If the `Infection` `z` has `target` on the removed portion of a level
+#         # then it will never be activated, so add `z` as a `KilledInfection`.
+# 	    if (z ≥ ev.finis[z.target])
+# 	        push!(processed_infections, KI(z))
+# 	        continue
+# 	    end
+# 	    
+# 	    # * If the `Infection` `z` potentially infects a level at a _later time_ 
+#         # than the current `NFZ2` at that level, then its activation will
+#         # never break the conditioning (**needs proof!**), so add `z` as-is.
+#         # (I think the point is: since we are working backwards in time, once
+#         # `z.t` is considered then `NFZ2` is frozen from time `t` onwards.)
+# 	    #
+# 	    # At this stage of the iteration 
+# 	    @assert(z < ev.finis[z.target])
+# 	    #
+#         if (z.t ≥ nofly_bound[z.infectee])
+# 	        push!(processed_infections, z)
+# 	        continue
+# 	    end
+# 	    
+# 	    # * However if `z.t < NFZ2[z.infectee - 1]` then no issue can arise, as 
+#         # infection of the level immediately below `z.infectee` will then not be
+#         # allowed at this time. So again add `z` as-is.
+#         #
+# 	    # At this stage of the iteration 
+# 	    @assert(z < ev.finis[z.target])
+# 	    @assert(z.t < nofly_bound[z.infectee])
+# 	    #
+#         if (z.t < nofly_bound[z.infectee - 1])
+# 	        push!(processed_infections, z)
+# 	        continue
+# 	    end
+# 	    
+# 	    # * Suppose `z ≥ ev.start[z.target]`: then an issue would arise
+#         # if the level at `z.infectee - 1` were to become infected before `z.t`. 
+#         #
+# 	    # At this stage of the iteration 
+# 	    @assert(z.t < nofly_bound[z.infectee])
+# 	    @assert(z.t ≥ nofly_bound[z.infectee - 1])
+# 	    @assert(z < ev.finis[z.target])
+# 	    #
+# 	    # One of two cases must hold:
+# 	    #
+# 	    # * Case (a): Suppose `z < ev.start[z.infectee - 1]`.
+#         # Then **increase** `NFZ2[z.infectee - 1]` to `z.t` in order to
+#         # preclude the time line getting infected, and also transform `z` to a
+#         # `NoFlyInfection` when added to `processed_infections`, to signal
+#         # that it should never become infected.  
+#         # Case (b): Alternatively, suppose `z ≥ ev.start[z.infectee - 1]`.
+#         # Then increasing `NFZ2[z.infectee - 1]` to `z.t` would lead to a
+#         # problem, since this level is infected at time `z.t`. Therefore we
+#         # transform `z` to a `ExpungedInfection` when we add it to 
+#         # `processed_infections`, so that it is treated as an
+#         # `InoperativeInfection`.
+# 	    if (z ≥ ev.start[z.target])
+#             if (z < ev.start[z.infectee - 1])
+#                 nofly_bound[z.infectee - 1] = z.t
+#                 push!(processed_infections, NF(z))
+#                 # Uncomment for tracking information
+#                 # @info "Conversion of infection into $(NF(z))"
+#                 continue
+#             else 
+#                 push!(processed_infections, XI(z))
+#                 # Uncomment for tracking information
+#                 # @info "Conversion of infection into $(XI(z))"
+#                 continue 
+#             end 
+# 	    end
+# 	    
+# 	    # At this stage of the iteration 
+# 	    @assert(z.t < nofly_bound[z.infectee])
+# 	    @assert(z.t ≥ nofly_bound[z.infectee - 1])
+# 	    @assert(z < ev.start[z.target])
+# 	    # 
+# 	    # * Consider now that potential `Infection`s to be treated later in this
+#         # iteration must have time mark earlier than `z.t`. If one of these were
+#         # to infect the level `z.infectee - 1` then it would follow by monotonicity
+#         # that the `z.target` level would become infected by that time `z.t`; and 
+#         # thus would create an infection of the `z.infectee` level at time `z.t`. 
+#         # In order for this to be prevented, we need to extend the `NFZ2` 
+#         # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
+#         # to a `NoFlyInfection` when we add it to `processed_infections`, to
+#         # signal that it should never become infected.
+# 	    nofly_bound[z.infectee - 1] = z.t 
+# 	    push!(processed_infections, NF(z))
+#         # Uncomment for tracking information
+#         # @info "Conversion of infection into $(NF(z))"
+# 	
+# 	end
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)

@@ -1236,7 +1236,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     # eventually store (initially in reverse time order) an adjusted version of
     # each infection supplied by the new `Innovation` `iv`.
 	processed_infections = AbstractInfection[]
-	NFZ = deepcopy(NFZ2)
+	nofly_bound = deepcopy(NFZ2)
 	
 	# * Iteration: work backwards through `Infection`s supplied by `iv`
 	# together with perpetuated infections,
@@ -1260,7 +1260,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
 	    # At this stage of the iteration 
 	    @assert(z < ev.finis[z.target])
 	    #
-        if (z.t ≥ NFZ[z.infectee])
+        if (z.t ≥ nofly_bound[z.infectee])
 	        push!(processed_infections, z)
 	        continue
 	    end
@@ -1271,9 +1271,9 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
         #
 	    # At this stage of the iteration 
 	    @assert(z < ev.finis[z.target])
-	    @assert(z.t < NFZ[z.infectee])
+	    @assert(z.t < nofly_bound[z.infectee])
 	    #
-        if (z.t < NFZ[z.infectee - 1])
+        if (z.t < nofly_bound[z.infectee - 1])
 	        push!(processed_infections, z)
 	        continue
 	    end
@@ -1282,8 +1282,8 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
         # if the level at `z.infectee - 1` were to become infected before `z.t`. 
         #
 	    # At this stage of the iteration 
-	    @assert(z.t < NFZ[z.infectee])
-	    @assert(z.t ≥ NFZ[z.infectee - 1])
+	    @assert(z.t < nofly_bound[z.infectee])
+	    @assert(z.t ≥ nofly_bound[z.infectee - 1])
 	    @assert(z < ev.finis[z.target])
 	    #
 	    # One of two cases must hold:
@@ -1301,7 +1301,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
         # `InoperativeInfection`.
 	    if (z ≥ ev.start[z.target])
             if (z < ev.start[z.infectee - 1])
-                NFZ[z.infectee - 1] = z.t
+                nofly_bound[z.infectee - 1] = z.t
                 push!(processed_infections, NF(z))
                 # Uncomment for tracking information
                 # @info "Conversion of infection into $(NF(z))"
@@ -1315,8 +1315,8 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
 	    end
 	    
 	    # At this stage of the iteration 
-	    @assert(z.t < NFZ[z.infectee])
-	    @assert(z.t ≥ NFZ[z.infectee - 1])
+	    @assert(z.t < nofly_bound[z.infectee])
+	    @assert(z.t ≥ nofly_bound[z.infectee - 1])
 	    @assert(z < ev.start[z.target])
 	    # 
 	    # * Consider now that potential `Infection`s to be treated later in this
@@ -1328,7 +1328,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
         # at level `z.infectee - 1` up to time `z.t`. We also transform `z`
         # to a `NoFlyInfection` when we add it to `processed_infections`, to
         # signal that it should never become infected.
-	    NFZ[z.infectee - 1] = z.t 
+	    nofly_bound[z.infectee - 1] = z.t 
 	    push!(processed_infections, NF(z))
         # Uncomment for tracking information
         # @info "Conversion of infection into $(NF(z))"
@@ -1337,7 +1337,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
-    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ)
+    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound)
 end
 
 @doc """

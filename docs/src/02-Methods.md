@@ -41,7 +41,7 @@ also other helper functions:
 | [`extremal_evolution`](@ref)               | Generates extremal [`Evolution`](@ref) from `CRemoval`s|
 |                                            |                                                        |
 | [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)         |
-| [`EpidemicsCFTP.compute_NFZ`](@ref)        | Computes adapted [`Infection`](@ref)s and nofly zone   |
+| [`EpidemicsCFTP.compute_nofly`](@ref)      | Computes adapted [`Infection`](@ref)s and nofly zone   |
 | [`EpidemicsCFTP.create_start`](@ref)       | Computes `start` for infectious intervals              |
 | [`EpidemicsCFTP.create_finis`](@ref)       | Computes `finis` for infectious intervals              |
 | [`EpidemicsCFTP.inactive_removals`](@ref)  | Processes list of inactive removals from an epidemic   |
@@ -67,7 +67,7 @@ extremal_evolution
 
 ```@docs 
 EpidemicsCFTP.last_feasible_evolution
-EpidemicsCFTP.compute_NFZ
+EpidemicsCFTP.compute_nofly
 EpidemicsCFTP.create_start
 EpidemicsCFTP.create_finis
 EpidemicsCFTP.inactive_removals

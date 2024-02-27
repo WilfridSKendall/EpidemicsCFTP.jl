@@ -476,7 +476,7 @@ A `KilledInfection` should be created (by conversion) only in the functions
 * [`EpidemicsCFTP.last_feasible_evolution`](@ref),
 * [`EpidemicsCFTP.kill_irrelevant_infections`](@ref),
 * one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::AbstractInnovation));
-* and [`EpidemicsCFTP.compute_NFZ`](@ref)  
+* and [`EpidemicsCFTP.compute_nofly`](@ref)  
 (This list of functions should be reduced!).
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledInfection` as `KI`.
@@ -546,8 +546,7 @@ will never be activated.
 Ensure that it is the case that `ExpungedInfection`s arise **only** in this way!
 This occurs in:
 
-* one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::AbstractInnovation));
-* and later in a re-factoring of this using the function [`compute_NFZ`](@ref).
+* the function [`compute_nofly`](@ref).
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `ExpungedInfection` as `XI`.
 

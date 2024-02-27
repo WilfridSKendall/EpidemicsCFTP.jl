@@ -32,7 +32,7 @@ make introduction.pdf
 
 ## TODO list
 
-- [ ] `[24/02/2024]`Update `*.qmd` to use  `CInnovation` type.
+- [x] `[24/02/2024]`Update `*.qmd` to use  `CInnovation` type.
 
   > [!NOTE]
   >

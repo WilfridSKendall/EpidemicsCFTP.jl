@@ -650,8 +650,8 @@ Markdown.parse("""
 Replacement is permitted exactly if
 the new conditioned removal will still be activated by the `CEvolution` under consideration.
 This happens if it lies in the infectivity interval (`start[k]`, `finis[k]`)
-using the lists `start`, `finis` computed by `interval(ev1_2)`,
-which is invoked by the function `EpidemicsCFTP.resulting_cremovals`.
+using the `CEvolution` lists `start`, `finis` used by `EpidemicsCFTP.create_start` and `EpidemicsCFTP.create_finis`,
+invoked by the function `EpidemicsCFTP.resulting_cremovals`.
 
 @fig-introduction-09-processed-cremovals graphs the resulting evolution `ev1_3`:
 Note we need some envelope calculations (later to be incorporated!).

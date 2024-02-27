@@ -105,7 +105,7 @@ import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
 
 To help set things up, we construct a prototype (_unconditioned_) `Evolution`.
 ```{julia}
-reference = Evolution(initial, CInnovation(initial.n, I[], [R(2t, t) for t ∈ [1,2]])).trajectory ;
+reference = Evolution(initial, Innovation(initial.n, I[], [R(2t, t) for t ∈ [1,2]])).trajectory ;
 ```
 
 
@@ -378,24 +378,54 @@ Note that the coalesced trajectory captures earlier starts quite fast ...
 
 ```{julia}
 minimal_tally = Dict()
-for  start_time ∈ SEQUENCE
+for start_time ∈ SEQUENCE
     ev = ev0_min
     minimal_tally[start_time] = []
-    for iv ∈ iv_seq[start_time:end]
-        ev = ev ⋄ iv
-        EpidemicsCFTP.is_correct_LFE(ev) && EpidemicsCFTP.is_correct_NFZ(ev)
+    for (index, iv) ∈ enumerate(iv_seq[start_time:end])
+        ev_old = deepcopy(ev)
+        try
+            ev = ev ⋄ iv
+            EpidemicsCFTP.is_correct_LFE(ev) && EpidemicsCFTP.is_correct_NFZ(ev)
+        catch e
+            if (e isa ExpungedInfectionGivesValidTrajectory) || (e isa MissedCRemoval)
+                println("MINIMAL $start_time:$index")
+                println(sprint(show, MIME("text/plain"), e))
+                println(sprint(show, MIME("text/plain"), ev_old))
+                println(sprint(show, MIME("text/plain"), iv))
+                println()
+                println(e)
+                println(ev_old)
+                println(iv)
+            end
+            rethrow()
+        end
         push!(minimal_tally[start_time], ev)
     end
 end
 
 
 maximal_tally = Dict()
-for  start_time ∈ SEQUENCE
+for start_time ∈ SEQUENCE
     ev = ev0_max
     maximal_tally[start_time] = []
-    for iv ∈ iv_seq[start_time:end]
-        ev = ev ⋄ iv
-        EpidemicsCFTP.is_correct_LFE(ev) && EpidemicsCFTP.is_correct_NFZ(ev)
+    for (index, iv) ∈ enumerate(iv_seq[start_time:end])
+        ev_old = deepcopy(ev)
+        try
+            ev = ev ⋄ iv
+            EpidemicsCFTP.is_correct_LFE(ev) && EpidemicsCFTP.is_correct_NFZ(ev)
+        catch e
+            if e isa ExpungedInfectionGivesValidTrajectory || e isa MissedCRemoval
+                println("MAXIMAL $start_time:$index")
+                println(sprint(show, MIME("text/plain"), e))
+                println(sprint(show, MIME("text/plain"), ev_old))
+                println(sprint(show, MIME("text/plain"), iv))
+                println()
+                println(e)
+                println(ev_old)
+                println(iv)
+            end
+            rethrow()
+        end
         push!(maximal_tally[start_time], ev)
     end
 end

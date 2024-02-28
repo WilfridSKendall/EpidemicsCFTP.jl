@@ -81,7 +81,7 @@ make pdf-format
   - [ ] `26-02-2024` Then add  `CEvolution(::AbstractEvolution,::CInnovation)` , and make  `CEvolution(::AbstractEvolution,::Innovation)`  factor through the new function.  
   - [ ] `26-02-2024` Add a specific `CEvolution(::CEvolution,::CInnovation)` .
   
-- [ ] `26-02-2024` Refactor `CEvolution(::AbstractEvolution,::Innovation)` to compute `NFZ` in a separate function, using `compute_NFZ(::CEvolution,::Innovation)`.
+- [x] `26-02-2024` Refactor `CEvolution(::AbstractEvolution,::Innovation)` to compute `NFZ` in a separate function, using `compute_NFZ(::CEvolution,::Innovation)`.
 
 - [ ] `26-02-2024` Refactor `CEvolution(::AbstractEvolution,::Innovation)` to be efficient about use of `resulting_cremovals(::AbstractEvolution,::Innovation)` function.
 

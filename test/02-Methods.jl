@@ -268,9 +268,9 @@ struct FakeIncident <: AbstractIncident end
 end
 
 
-### Testing `LFE` construction
-# ----------------------------
-@testset "EpidemicsCFTP: $(rpad("Developing one_step", 23))" begin
+### Testing updating of a `CEvolution` by an `Innovaton`
+# -----------------------------------------------------
+@testset "EpidemicsCFTP: $(rpad("Testing one-step (A)", 23))" begin
     initial = SIR(0,4,1,0,5)
     ev1 = CEvolution(initial, AI[I(2,1,2), C(2,1), C(4,2)],)
     iv1 = CInnovation(5,
@@ -282,7 +282,66 @@ end
     ev_new = ev1 ⋄ iv1
     @test(setdiff(chron2, ev_new.chronology) == AI[])
     @test(setdiff(ev_new.chronology, chron2) == AI[])
-    #a,b = 11, 20
-    #@test chron2[a:b] == ev_new.chronology[a:b]
     @test chron2 == ev_new.chronology
 end
+
+
+# Produced from `CFTP.qmd` at index=4
+@testset "EpidemicsCFTP: Testing one-step (B)  " begin
+    initial = SIR(0,4,1,0,5)
+
+    dev1 = CEvolution(initial,
+        AI[I(1,3,5),I(2,1,3),I(7,1,2),I(8,1,2),I(9,2,3),I(11,2,3),I(13,2,5),I(14,1,4),C(15,1),I(16,2,4),KI(17,1,2),I(18,2,5),KI(19,1,4),I(24,3,4),KI(25,1,3),I(26,2,4),I(27,4,5),C(31,5),KI(32,1,2),KI(33,2,5),KI(35,2,3),KI(38,2,3),KI(41,1,2),KI(44,1,5)]
+        )
+
+    div2 = CInnovation(5,
+        AIF[I(3,2,4),I(4,1,3),I(6,1,2),I(10,3,5),I(12,1,4),I(20,1,5),I(21,1,2),I(22,2,5),I(23,1,2),I(28,2,4),I(30,1,3),I(36,1,3),I(37,2,3),I(39,1,3),I(40,1,4),I(42,1,2),I(43,2,3),I(45,1,2),I(46,3,4),I(47,1,4)],
+        AIR[R(5,2),R(29,5),R(34,1)],
+        C[C(15,2),C(31,1)]
+        )
+
+    dev2 = CEvolution(initial,
+        AI[I(3,2,4),I(4,1,3),R(5,2),I(6,1,2),P(7,1,2),P(9,2,3),I(10,3,5),I(12,1,4),P(14,1,4),C(15,2),KI(20,1,5),KI(21,1,2),I(22,2,5),KI(23,1,2),I(28,2,4),KI(30,1,3),C(31,5),KR(34,1),KI(36,1,3),KI(37,2,3),KI(39,1,3),KI(40,1,4),KI(42,1,2),KI(43,2,3),KI(45,1,2),I(46,3,4),KI(47,1,4)];
+        LFE=AI[P(7,1,2),P(9,2,3),P(14,1,4),C(15,2),I(22,2,5),C(31,5)],
+        NFZ=Real[-Inf,5,5,5,5]
+        )
+
+    ddev2 = dev1 ⋄ div2
+
+    @test dev2.infections == ddev2.infections
+    @test dev2.removals   == ddev2.removals
+    @test dev2.cremovals  == ddev2.cremovals
+    @test dev2.LFE        == ddev2.LFE
+    @test dev2.NFZ        == ddev2.NFZ
+end
+
+
+# Produced from `CFTP.qmd` at index=12
+@testset "EpidemicsCFTP: Testing one-step (C)    " begin
+    initial = SIR(0,4,1,0,5)
+
+    dev1 = CEvolution(initial,
+        AI[XI(1,1,2),I(2,2,3),R(3,2),I(5,2,3),R(8,2),I(9,3,4),I(10,3,4),I(11,1,3),I(12,2,3),I(15,1,2),I(16,2,4),I(17,3,4),I(18,1,3),I(19,1,3),I(22,1,2),I(23,1,2),C(24,3),I(32,4,5),KI(33,1,2),KI(35,1,4),KI(39,1,2),I(40,2,4),I(42,2,4),KI(43,1,4),KI(45,1,3),I(46,2,3),KI(48,1,4),KI(49,1,4),C(50,4),KI(51,1,3),KI(52,2,3),KI(53,2,3),KI(55,2,3),KI(56,1,3),KI(58,1,3),KR(59,2),I(60,4,5)]
+        )
+
+    div2 = CInnovation(5,
+        AIF[I(4,3,4),I(6,2,3),I(7,2,3),I(14,3,4),I(20,1,3),I(21,1,3),I(25,1,2),I(26,1,2),I(28,1,3),I(29,1,3),I(30,1,3),I(31,2,3),I(34,1,4),I(37,1,3),I(41,4,5),I(44,4,5),I(47,1,4),I(54,1,3),I(57,2,4)],
+        AIR[R(13,3),R(27,2),R(36,4),R(38,1)],
+        C[C(24,3),C(50,4)]
+        )
+
+    dev2 = CEvolution(initial,
+        AI[I(4,3,4),I(6,2,3),NF(7,2,3),R(13,3),NF(14,3,4),P(15,1,2),I(20,1,3),I(21,1,3),C(24,3),KI(25,1,2),KI(26,1,2),KI(28,1,3),KI(29,1,3),KI(30,1,3),I(31,2,3),KI(34,1,4),R(36,4),KI(37,1,3),KR(38,1),P(40,2,4),I(41,4,5),I(44,4,5),KI(47,1,4),C(50,4),KI(54,1,3),KI(57,2,4)];
+        LFE=AI[P(15,1,2),I(21,1,3),C(24,3),P(40,2,4),C(50,4)],
+        NFZ=Real[-Inf,7,14,36,36]
+        )
+
+    ddev2 = dev1 ⋄ div2
+
+    @test dev2.infections == ddev2.infections
+    @test dev2.removals   == ddev2.removals
+    @test dev2.cremovals  == ddev2.cremovals
+    @test dev2.LFE        == ddev2.LFE
+    @test dev2.NFZ        == ddev2.NFZ
+end
+

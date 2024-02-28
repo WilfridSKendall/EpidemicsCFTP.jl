@@ -523,6 +523,115 @@ Coalescence is purple; partial coalescence is gold.
 
 :::
 
+Creation of a unit test
+=======================
+We select one of the sequences `minimal` and `maximal` driven by `iv_seq`,
+and one particular `index > 1`.
+```{julia}
+ev_seq = minimal
+index = 12
+ev1 = ev_seq[index - 1]
+iv2 = iv_seq[index]
+ev2 = ev_seq[index] ;
+```
+
+Now the act of updating a `CEvolution` is actually invariant under monotonic transformation
+of the time axis. Thus we can replace the set of all times arising
+in either of `ev1`, `iv2` (and therefore, by construction, `ev2`), by their integer ranks,
+so producing discretized versions `dev1`, div2` and `dev2`:
+```{julia}
+compendium = sort([z.t for z in ev1.chronology ∪ iv2.infections ∪ iv2.removals])
+rank_time = Dict()
+rank_time[ Inf] =  Inf
+rank_time[-Inf] = -Inf
+@test allunique(compendium)
+for (r, t) in enumerate(compendium)
+    rank_time[t] = r
+end
+
+function rank_incident(z::AbstractInfection)
+    return typeof(z)(rank_time[z.t], z.target, z.infectee)
+end
+function rank_incident(z::AbstractRemoval)
+    return typeof(z)(rank_time[z.t], z.target)
+end
+dev1 = CEvolution(ev1.initial, [rank_incident(z) for z in ev1.chronology])
+div2 = CInnovation(iv2.population, [rank_incident(z) for z in iv2.chronology])
+dev2 = CEvolution(ev2.initial, [rank_incident(z) for z in ev2.chronology],
+    LFE=[rank_incident(z) for z in ev2.LFE], NFZ=[rank_time[t] for t in ev2.NFZ]) ;
+```
+Note there will be no need to fill the `LFE` and `NFZ` fields for `dev1`.
+
+Now update `dev1` using `dev2` to produce `ddev2`:
+```{julia}
+ddev2 = dev1 ⋄ div2 ;
+```
+Then `ddev2` is the same as `dev2`:
+```{julia}
+@test dev2.chronology == ddev2.chronology ;
+@test dev2.LFE == ddev2.LFE ;
+@test dev2.NFZ == ddev2.NFZ ;
+```
+
+So we can print off `dev1`, `iv2` and dev2` to produce the data for a unit test.
+
+```{julia}
+unit_test_string = """
+
+# Produced from `CFTP.qmd` at index=$index
+@testset "EpidemicsCFTP: $(rpad("Testing one-step ()", 23))" begin
+    initial = $(dev1.initial)
+
+    dev1 = CEvolution(initial,
+        $(sprint(show, dev1.chronology))
+        )
+
+    div2 = CInnovation($(div2.population),
+        $(sprint(show, div2.infections)),
+        $(sprint(show, div2.removals)),
+        $(sprint(show, div2.cremovals))
+        )
+
+    dev2 = CEvolution(initial,
+        $(sprint(show, dev2.chronology));
+        LFE=$(sprint(show, dev2.LFE)),
+        NFZ=$(sprint(show, dev2.NFZ))
+        )
+
+    ddev2 = dev1 ⋄ div2
+
+    @test dev2.infections == ddev2.infections
+    @test dev2.removals   == ddev2.removals
+    @test dev2.cremovals  == ddev2.cremovals
+    @test dev2.LFE        == ddev2.LFE
+    @test dev2.NFZ        == ddev2.NFZ
+end
+
+"""
+
+unit_test_string = replace(unit_test_string,
+    "AbstractIncident"   => "AI",
+    "AbstractInfection"  => "AIF",
+    "PInfection"         => "P",
+    "NoFlyInfection"     => "NF",
+    "ExpungedInfection"  => "XI",
+    "KilledInfection"    => "KI",
+    "Infection"          => "I",
+
+    "AbstractRemoval"    => "AIR",
+    "KilledRemoval"      => "KR",
+    "CRemoval"           => "C",
+    "Removal"            => "R",
+
+    ".0"                 => "",
+    ", "                 => ",",
+    )
+
+open("CFTP-unit.txt", "w") do file
+    write(file, unit_test_string)
+end
+```
+
 {{< pagebreak >}}
 
 

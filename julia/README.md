@@ -44,6 +44,8 @@ make introduction.pdf
 
 - [ ] `[24/02/2024]`Extend `production.qmd` to use more recent code and to cover more figures.
 
+- [ ] `[28/04/2024]` Engage `CFTP.qmd` generating graphics to help validate automatic unit tests.
+
 ## Checking whether any changes of code alter figures
 
 Illustrative figures are produced in the `image` subdirectory, such as

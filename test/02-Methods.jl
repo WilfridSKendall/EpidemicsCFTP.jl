@@ -270,7 +270,8 @@ end
 
 ### Testing updating of a `CEvolution` by an `Innovaton`
 # -----------------------------------------------------
-@testset "EpidemicsCFTP: $(rpad("Testing one-step (A)", 23))" begin
+@testset "EpidemicsCFTP: $(rpad("Testing one-step", 23))" begin
+begin
     initial = SIR(0,4,1,0,5)
     ev1 = CEvolution(initial, AI[I(2,1,2), C(2,1), C(4,2)],)
     iv1 = CInnovation(5,
@@ -287,7 +288,7 @@ end
 
 
 # Produced from `CFTP.qmd` at index=4, maximal
-@testset "EpidemicsCFTP: $(rpad("Testing one-step (B)", 23))" begin
+begin
     initial = SIR(0,4,1,0,5)
 
     dev1 = CEvolution(initial,
@@ -317,7 +318,7 @@ end
 
 
 # Produced from `CFTP.qmd` at index=12, minimal
-@testset "EpidemicsCFTP: $(rpad("Testing one-step (C)", 23))" begin
+begin
     initial = SIR(0,4,1,0,5)
 
     dev1 = CEvolution(initial,
@@ -346,7 +347,7 @@ end
 end
 
 # Produced from `CFTP.qmd` at index=5, minimal
-@testset "EpidemicsCFTP: $(rpad("Testing one-step (D)", 23))" begin
+begin
     initial = SIR(0,4,1,0,5)
 
     dev1 = CEvolution(initial,
@@ -375,7 +376,7 @@ end
 end
 
 # Produced from `CFTP.qmd` at index=8,maximal
-@testset "EpidemicsCFTP: $(rpad("Testing one-step (E)", 23))" begin
+begin
     initial = SIR(0,4,1,0,5)
 
     dev1 = CEvolution(initial,
@@ -402,4 +403,4 @@ end
     @test dev2.LFE        == ddev2.LFE
     @test dev2.NFZ        == ddev2.NFZ
 end
-
+end

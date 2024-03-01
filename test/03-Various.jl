@@ -207,7 +207,7 @@ nofly_envelope = accumulate(max, max_removal_time)
 #                                    P(3.0,2,3), XI(3.3,3,4), I(3.6,4,5), NF(3.9,4,5), 
 #                                    I(4.4,3,4), KI(4.5,1,3)]))
 #
-#begin ; title = "Expected evolution (III)"
+# begin ; title = "Expected evolution (III)"
 #    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
 #    @test xev2.NFZ2       == nofly_envelope
 #    @test xev2.infections == [I(0.75,1,2), I(0.8,3,4), I(1.5,1,2), XI(1.5,2,3), KI(2.5,1,2), 
@@ -219,7 +219,7 @@ nofly_envelope = accumulate(max, max_removal_time)
 #    @test xev2.NFZ1       == [-Inf, 0.5, 2.0, 1.2, 4.5]
 #    @test xev2.NFZ2       == [-Inf, 0.5, 2.0, 2.0, 4.5]
 #    @test xev2.NFZ        == [-Inf, 0.5, 2.0, 3.9, 4.5]
-#
+# 
 #    @test xev1_2.removals  == xev2.removals
 #    @test xev1_3.cremovals == xev1_4.cremovals == xev2.cremovals
 #    @test xev1.LFE   == AbstractIncident[]
@@ -229,4 +229,4 @@ nofly_envelope = accumulate(max, max_removal_time)
 #    @test xev1_4.LFE == AbstractIncident[I(1.5,1,2), C(2.0,2), I(3.0,2,3), C(4.0,2)]
 #    @test xev2.LFE   == AbstractIncident[I(1.5,1,2), C(2.0,2), I(3.0,2,3), C(4.0,2)]
 #    end
-#end ;
+# end ;

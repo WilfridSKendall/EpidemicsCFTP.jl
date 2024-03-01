@@ -153,13 +153,11 @@ Algorithmic evolution from minimal (slowest) evolution
 
 ```{julia}
 #| echo: false
-PLOTRANGE1 = 1:6
-PLOTRANGE2 = (PLOTRANGE1[end]+1):SEQUENCE[end]
-
 Markdown.parse("""
 We generate successive `CEvolution`s in algorithmic time, starting from minimal `CEvolution`.
-@fig-CFTP-01-minstep depicts the first $(PLOTRANGE1[end]) algorithmic time steps.
-Checks made of `LFE` and `NFZ`.
+@fig-CFTP-01-minstepA and 
+@fig-CFTP-01-minstepB depict the first $(SEQUENCE[end]) algorithmic time steps.
+Checks made on `LFE` and `NFZ`.
 """)
 ```
 
@@ -176,7 +174,7 @@ end ;
 
 ```{julia}
 #| echo: false
-for (i, ev) ∈ enumerate(minimal[PLOTRANGE1])
+for (i, ev) ∈ enumerate(minimal[SEQUENCE])
     depict("CFTP-01-minstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
@@ -192,9 +190,10 @@ Algorithmic evolution from maximal (fastest) evolution
 #| echo: false
 Markdown.parse("""
 We now generate successive `CEvolution`s in algorithmic time, 
-starting from _maximal_ `CEvolution`. @fig-CFTP-02-maxstep depicts the first 
-$(PLOTRANGE1[end]) algorithmic time steps.
-Note checks on validity again.
+starting from _maximal_ `CEvolution`. @fig-CFTP-02-maxstepA
+and @fig-CFTP-02-maxstepB depict the first 
+$(SEQUENCE[end]) algorithmic time steps.
+Checks made an `LFE` and `NFZ` again.
 """)
 ```
 
@@ -210,7 +209,7 @@ end ;
 
 ```{julia}
 #| echo: false
-for (i, ev) ∈ enumerate(maximal[PLOTRANGE1])
+for (i, ev) ∈ enumerate(maximal[SEQUENCE])
     depict("CFTP-02-maxstep$i", new_figure(
         draw_evolution!(deepcopy(lines_plot), ev, duration, theme=theme,
                 select=BOUNDARIES | ELEMENTS | ACTIVATED | LFET | NFZ),
@@ -220,7 +219,7 @@ end
 ```
 
 
-::: {#fig-CFTP-01-minstep layout-ncol=2 layout-nrow=3}
+::: {#fig-CFTP-01-minstepA layout-ncol=2 layout-nrow=3}
 
 ![](image/CFTP-01-minstep1.pdf)
 
@@ -234,12 +233,37 @@ end
 
 ![](image/CFTP-01-minstep6.pdf)
 
-Sequence of trajectories evolving in algorithmic time, starting
-with the minimal (slowest) `CEvolution`.
+Sequence of trajectories
+starting
+with the minimal (slowest) `CEvolution`,
+evolving over algorithmic time 1:6.
 
 :::
 
-::: {#fig-CFTP-02-maxstep layout-ncol=2 layout-nrow=3}
+::: {#fig-CFTP-01-minstepB layout-ncol=2 layout-nrow=3}
+
+![](image/CFTP-01-minstep7.pdf)
+
+![](image/CFTP-01-minstep8.pdf)
+
+![](image/CFTP-01-minstep9.pdf)
+
+![](image/CFTP-01-minstep10.pdf)
+
+![](image/CFTP-01-minstep11.pdf)
+
+![](image/CFTP-01-minstep12.pdf)
+
+Sequence of trajectories
+starting
+with the minimal (slowest) `CEvolution`,
+evolving over algorithmic time 7:12.
+
+:::
+
+
+
+::: {#fig-CFTP-02-maxstepA layout-ncol=2 layout-nrow=3}
 
 ![](image/CFTP-02-maxstep1.pdf)
 
@@ -253,11 +277,33 @@ with the minimal (slowest) `CEvolution`.
 
 ![](image/CFTP-02-maxstep6.pdf)
 
-Sequence of trajectories evolving in algorithmic time, starting
-with the maximal (fastest) `CEvolution`.
+Sequence of trajectories starting
+with the maximal (fastest) `CEvolution`,
+evolving over algorithmic time 1:6.
 
 :::
 
+
+
+::: {#fig-CFTP-02-maxstepB layout-ncol=2 layout-nrow=3}
+
+![](image/CFTP-02-maxstep7.pdf)
+
+![](image/CFTP-02-maxstep8.pdf)
+
+![](image/CFTP-02-maxstep9.pdf)
+
+![](image/CFTP-02-maxstep10.pdf)
+
+![](image/CFTP-02-maxstep11.pdf)
+
+![](image/CFTP-02-maxstep12.pdf)
+
+Sequence of trajectories
+with the maximal (fastest) `CEvolution`,
+evolving over algorithmic time 7:12.
+
+:::
 
 
 Comparison of minimal and maximal sequences
@@ -269,7 +315,7 @@ Finally we compare minimal (red) with maximal (green)
 epidemic trajectories.
 Fully coalesced trajectories are coloured purple.
 To be specific, @fig-CFTP-03-stepA plots both minimal and maximal evolutions
-for the first $PLOTRANGE1 steps in algorithmic time. 
+for the first six steps in algorithmic time. 
 @fig-CFTP-03-stepB plots the remaining steps. 
 
 Monotonicity is checked and is
@@ -329,7 +375,7 @@ end ;
 
 ![Step 6.](image/CFTP-03-step6.pdf){#fig-CFTP-03-step6}
 
-Comparison of trajectories evolving in algorithmic time (1:6), starting
+Comparison of trajectories evolving over algorithmic time 1:6, starting
 with minimal (red) and maximal (green) `CEvolution`s.
 Coalescence from the initial start is coloured purple.
 
@@ -353,7 +399,7 @@ Coalescence from the initial start is coloured purple.
 
 ![Step 12.](image/CFTP-03-step12.pdf){#fig-CFTP-03-step6}
 
-Continuation of @fig-CFTP-03-stepA over algorithmic time (7:12).
+Continuation of @fig-CFTP-03-stepA over algorithmic time 7:12.
 Coalescence from the initial start is coloured purple.
 
 :::
@@ -529,7 +575,7 @@ We select one of the sequences `minimal` and `maximal` driven by `iv_seq`,
 and one particular `index > 1`.
 ```{julia}
 ev_seq = minimal
-index = 12
+index = 8
 ev1 = ev_seq[index - 1]
 iv2 = iv_seq[index]
 ev2 = ev_seq[index] ;
@@ -538,7 +584,7 @@ ev2 = ev_seq[index] ;
 Now the act of updating a `CEvolution` is actually invariant under monotonic transformation
 of the time axis. Thus we can replace the set of all times arising
 in either of `ev1`, `iv2` (and therefore, by construction, `ev2`), by their integer ranks,
-so producing discretized versions `dev1`, div2` and `dev2`:
+so producing discretized versions `dev1`, `div2` and `dev2`:
 ```{julia}
 compendium = sort([z.t for z in ev1.chronology ∪ iv2.infections ∪ iv2.removals])
 rank_time = Dict()
@@ -578,7 +624,7 @@ So we can print off `dev1`, `iv2` and dev2` to produce the data for a unit test.
 ```{julia}
 unit_test_string = """
 
-# Produced from `CFTP.qmd` at index=$index
+# Produced from `CFTP.qmd` at index=$index, maximal
 @testset "EpidemicsCFTP: $(rpad("Testing one-step ()", 23))" begin
     initial = $(dev1.initial)
 

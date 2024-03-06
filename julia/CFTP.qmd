@@ -721,7 +721,7 @@ coalesce_color = colorant"purple" ;
 
 ```{julia}
 #| echo: false
-set_default_plot_size(2theme.figwidth, theme.figheight)
+set_default_plot_size(2theme.figwidth, 0.8theme.figheight)
 ylines = 0:5:initial.n
 
 uflow = table_trajectories1(duration2, evmin.trajectory) ;
@@ -1035,6 +1035,29 @@ draw_evolution!(work, evmin, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
+if evmin ≃ evmax
+    println("Coalescence!")
+end
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
+```
+
+
+```{julia}
+#| echo: false
+while iteration < 600
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
+work = deepcopy(lines_plot2)
+draw_evolution!(work, evmin, duration2, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+draw_evolution!(work, evmax, duration2, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+if evmin ≃ evmax
+    println("Coalescence!")
+end
 depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 

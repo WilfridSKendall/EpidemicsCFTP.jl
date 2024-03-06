@@ -687,7 +687,8 @@ Here is an example from @ONeillRoberts-1999. Removals are observed with the foll
 interremoval times (adjusted to avoid coincidences):
 ```{julia}
 interremovals = 
-    [13, 7, 2, 3, 0.1, 0.1, 1, 4, 5, 3, 2, 0.1, 2, 0.1, 5, 3, 1, 4, 0.1, 1, 1, 1, 2, 0.1, 1, 5, 0.1, 5, 5] ;
+    [13, 7, 2, 3, 0.1, 0.1, 1, 4, 5, 3, 2, 0.1, 2, 0.1, 5, 3, 1, 4, 0.1, 1, 1, 1, 2, 
+    0.1, 1, 5, 0.1, 5, 5] ;
 ```
 We compute actual times of removals, assuming initial removal to take place `5` units of time after start
 (this is an arbitrary choice):
@@ -696,25 +697,36 @@ cremoval_times = accumulate(+,interremovals,init=5) ;
 ```
 
 We create maximal and minimal initial evolutions: note that total population should really be `120`
-but we make it `30` in order to be manageable. We also fix infectivity `α0` to speed things up.
+but we make it `50` in order to be manageable. We also fix infectivity `α0` to compensate.
 ```{julia}
-initial   = SIR(0, 30-1, 1, 0)
-duration2 = 5 + maximum(cremoval_times)
-α0=4 * 0.0008
+pop = 120
+initial   = SIR(0, pop-1, 1, 0)
+duration2 = 20 + maximum(cremoval_times)
+α0=(120 / pop) * 0.0008
 β0=0.08
 evmin = extremal_evolution(initial, duration2, cremoval_times, maximal=false) ;
 evmax = extremal_evolution(initial, duration2, cremoval_times, maximal=true) ;
 ```
 
+Revised colours.
+```{julia}
+min_spectrum   = [colorant"red"] ;
+append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)) ;
+max_spectrum   = [colorant"blue"] ;
+append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) ;
+joined_color   = colorant"gold" ;
+coalesce_color = colorant"purple" ;
+```
 
 
 ```{julia}
 #| echo: false
-set_default_plot_size(2theme.figwidth, 0.75 * theme.figheight)
+set_default_plot_size(2theme.figwidth, theme.figheight)
+ylines = 0:5:initial.n
 
 uflow = table_trajectories1(duration2, evmin.trajectory) ;
 axes_plot2 = plot(uflow, 
-    yintercept=1:initial.n,
+    yintercept=ylines,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration2, ymin=0, ymax=initial.n + 0.25),
     Guide.xlabel("Process time", orientation=:horizontal),
@@ -725,18 +737,19 @@ axes_plot2 = plot(uflow,
         background_color=theme.background,
         major_label_font="CMU Serif",   minor_label_font="CMU Serif",
         minor_label_color=theme.legend, major_label_color=theme.legend,
-        major_label_font_size=8pt,     minor_label_font_size=6pt,
+        major_label_font_size=6pt,     minor_label_font_size=4pt,
+        plot_padding = [4pt, 2pt, 4pt, 4pt],
         grid_line_width=0mm,
 )) ;
 
-push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
-    style(line_width=2theme.trail, default_color=theme.scaffold))) ;
+push!(axes_plot2, layer(uflow, x=:t, y=:empty, Geom.line,
+    style(line_width=theme.trail, default_color=theme.scaffold))) ;
 
 lines_plot2 = new_figure(axes_plot2,
     Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
         i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
         i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
-    Guide.yticks(ticks=collect(1:(initial.n))),
+    Guide.yticks(ticks=ylines),
     Guide.ylabel("Time lines")) ;
 ```
 
@@ -748,7 +761,7 @@ draw_evolution!(work, evmin, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 0"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step 0"))
 ```
 
 Now we create an `Innovation` and evolve the two extreme evolutions by one step of algorithmic time,
@@ -764,12 +777,13 @@ evmax = evmax ⋄ iv ;
 
 ```{julia}
 #| echo: false
+iteration = 1 
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 1"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 ```{julia} 
@@ -777,12 +791,13 @@ depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 1"))
 iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
 evmin = evmin ⋄ iv ;
 evmax = evmax ⋄ iv ;
+iteration += 1
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 2"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
@@ -791,12 +806,13 @@ depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 2"))
 iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
 evmin = evmin ⋄ iv ;
 evmax = evmax ⋄ iv ;
+iteration += 1
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 3"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
@@ -805,27 +821,13 @@ depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 3"))
 iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
 evmin = evmin ⋄ iv ;
 evmax = evmax ⋄ iv ;
+iteration += 1
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 4"))
-```
-
-
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 5"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
@@ -835,516 +837,205 @@ depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 5"))
 iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
 evmin = evmin ⋄ iv ;
 evmax = evmax ⋄ iv ;
+iteration += 1
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 6"))
-```
-
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 7"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 10
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 8"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 20
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 9"))
-```
-
-
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 10"))
-```
-
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 11"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 30
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 12"))
-```
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 13"))
-```
-
-
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 14"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 40
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 15"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 50
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 20"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
+```
+
+
+```{julia}
+#| echo: false
+while iteration < 100
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
+work = deepcopy(lines_plot2)
+draw_evolution!(work, evmin, duration2, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+draw_evolution!(work, evmax, duration2, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 150
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 30"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
+```
+
+```{julia}
+#| echo: false
+while iteration < 200
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
+work = deepcopy(lines_plot2)
+draw_evolution!(work, evmin, duration2, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+draw_evolution!(work, evmax, duration2, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 300
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 40"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 400
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 50"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
-
 
 
 ```{julia}
 #| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
+while iteration < 500
+    iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
+    evmin = evmin ⋄ iv ;
+    evmax = evmax ⋄ iv ;
+    iteration += 1
+end
 work = deepcopy(lines_plot2)
 draw_evolution!(work, evmin, duration2, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration2, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 70"))
-```
-
-
-
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 90"))
-```
-
-
-
-
-
-```{julia}
-#| echo: false
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-iv    = generate_innovation(iv_null, duration2, α=α0, β=β0) ;
-evmin = evmin ⋄ iv ;
-evmax = evmax ⋄ iv ;
-work = deepcopy(lines_plot2)
-draw_evolution!(work, evmin, duration2, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration2, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at step 110"))
+depict("CFTP-bigdata", new_figure(work, title="Min/max Evolutions at algorithmic time step $iteration"))
 ```
 
 

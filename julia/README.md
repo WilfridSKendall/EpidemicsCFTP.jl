@@ -40,7 +40,7 @@ make introduction.pdf
 
 - [x] `[24/02/2024]`Extend `CFTP.qmd` to cover a more extensive example using more `CRemoval`s.
 
-- [ ] `13/03/24]` Extend `CFTP.qmd` to use `AbstractInnovation`s which forbid `Infection`s (and `Removal`s) affecting time lines above a given threshold (most typically, the highest threshold experiencing a `CRemoval`). (Alter `EpidemicsCFTP` module.)
+- [x] `13/03/24]` Extend `CFTP.qmd` to use `AbstractInnovation`s which forbid `Infection`s (and `Removal`s) affecting time lines above a given threshold (most typically, the highest threshold experiencing a `CRemoval`). (Alter `EpidemicsCFTP` module.)
 
 - [ ] `13/03/24]` Extend `CFTP.qmd` to vary  `AbstractInnovation`s to allow for change in initial infectives, and to do _CFTP_ in this case. (Alter `EpidemicsCFTP` module.)
 

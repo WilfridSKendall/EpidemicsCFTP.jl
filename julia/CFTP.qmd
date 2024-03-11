@@ -692,13 +692,14 @@ interremovals =
 ```
 We compute actual times of removals, assuming initial removal takes place `10` days after infection
 (this is an arbitrary choice, and perhaps CFTP needs to be extended to deal with uncertainty about number of initial infectives?).
-Also we bodge the first observed removal to happen just after time zero,
+Also we bodge the first observed removal to happen somewhat after time zero,
 ```{julia}
 cremoval_times = accumulate(+,interremovals, init=10) ;
 ```
+though this should be superseded once we allow for CFTP to vary initial number of infectives as welL!
 
-We create maximal and minimal initial evolutions. Here `duration` is extended to `40` days after final removal,
-which is also an arbitrary choice.
+We create maximal and minimal initial evolutions. Here `duration` is extended to `10` days after final removal,
+which is primarily a photogenic choice.
 ```{julia}
 pop = 120
 initial   = SIR(0, pop-1, 1, 0)
@@ -950,12 +951,12 @@ Package documentation can be found as follows.
 #| eval: true
 #| cache: false
 Markdown.parse("""
-|_Software_      | _Documentation link_                                 |
-|:---------------|:-----------------------------------------------------|
-| `Colors`       | <http://juliagraphics.github.io/Colors.jl/stable/>   |
-| `Gadfly`       | <http://gadflyjl.org/stable/>                        |
-| `Compose`      | <https://docs.juliahub.com/General/Compose/stable/>  |
-| `DataFrames`   | <https://dataframes.juliadata.org/stable/>           |
-| `PrettyTables` | <https://ronisbr.github.io/PrettyTables.jl/stable/>  |
+|_Software_      | _Documentation link_                                                                          |
+|:---------------|:----------------------------------------------------------------------------------------------|
+| `Colors`       | [juliagraphics.github.io/Colors.jl/stable](https://juliagraphics.github.io/Colors.jl/stable/) |
+| `Gadfly`       | [gadflyjl.org/stable](https://gadflyjl.org/stable/)                                           |
+| `Compose`      | [docs.juliahub.com/General/Compose](https://docs.juliahub.com/General/Compose/stable/)        |
+| `DataFrames`   | [dataframes.juliadata.org](https://dataframes.juliadata.org/stable/)                          |
+| `PrettyTables` | [ronisbr.github.io/PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/)        |
 """)
 ```

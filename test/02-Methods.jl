@@ -220,6 +220,11 @@ end
     @test ev_min.infections == AIF[I(1.0, 1, 2), I(2.0, 2, 3)]
     @test isempty(ev_min.removals)
     @test ev_min.cremovals  == C[C(1.0, 1), C(2.0, 2), C(3.0, 3)]
+
+    ev_max1  = extremal_evolution(initial, 4.0, [1.0, 2.0], all_cremovals_observed=true)
+    @test ev_max1.infections == AIF[I(0.0, 1, 2)]
+    @test isempty(ev_max1.removals)
+    @test ev_max1.cremovals  == C[C(1.0, 2), C(2.0, 2)]
 end 
 
 ### Testing `create_start` and `create_finis` _via_ `CEvolution`

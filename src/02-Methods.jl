@@ -626,16 +626,17 @@ function extremal_evolution(initial::SIR, duration::S, times::Vector{T};
     beginning  = initial.t
     population = initial.n
     if maximal
-        if all_cremovals_observed:
-            infections = [Infection(beginning,i,i+1) for i ∈ initial.i:(length(times)-1)]
+        if all_cremovals_observed
+            infections = [Infection(beginning,i,i+1) for i ∈ (initial.i):(length(times)-1)]
+            cremovals  = [C(t, length(times)) for t in times]
         else
-            infections = [Infection(beginning,i,i+1) for i ∈ initial.i:(population-1)]
+            infections = [I(beginning,i,i+1) for i ∈ (initial.i):(population-1)]
+            cremovals  = [C(t, population) for t in times]
         end
-        cremovals  = [CRemoval(t, population) for t in times]
     else
         sort(deepcopy(times))
-        infections = [Infection(times[i],i,i+1) for i ∈ initial.i:(length(times)-1)]
-        cremovals  = [CRemoval(t, i) for (i, t) in enumerate(times)]
+        infections = [I(times[i],i,i+1) for i ∈ (initial.i):(length(times)-1)]
+        cremovals  = [C(t, i) for (i, t) in enumerate(times)]
     end
     return CEvolution(initial, infections ∪ cremovals)
 end

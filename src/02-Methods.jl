@@ -624,18 +624,19 @@ history:    AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀�
 function extremal_evolution(initial::SIR, duration::S, times::Vector{T}; 
                 maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution where {S,T <: Real}
     beginning  = initial.t
+    starter    = initial.r + initial.i
     population = initial.n
     if maximal
         if all_cremovals_observed
-            infections = [Infection(beginning,i,i+1) for i ∈ (initial.i):(length(times)-1)]
+            infections = [Infection(beginning,i,i+1) for i ∈ starter:(length(times)-1)]
             cremovals  = [C(t, length(times)) for t in times]
         else
-            infections = [I(beginning,i,i+1) for i ∈ (initial.i):(population-1)]
+            infections = [I(beginning,i,i+1) for i ∈ starter:(population-1)]
             cremovals  = [C(t, population) for t in times]
         end
     else
         sort(deepcopy(times))
-        infections = [I(times[i],i,i+1) for i ∈ (initial.i):(length(times)-1)]
+        infections = [I(times[i],i,i+1) for i ∈ starter:(length(times)-1)]
         cremovals  = [C(t, i) for (i, t) in enumerate(times)]
     end
     return CEvolution(initial, infections ∪ cremovals)

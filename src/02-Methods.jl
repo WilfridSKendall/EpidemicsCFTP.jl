@@ -577,12 +577,20 @@ end
 # Creating an extremal `CEvolution`
 # ---------------------------------
 """
-    extremal_evolution(::SIR, ::S, ::Vector{T}; maximal::Bool=true)::CEvolution where {S,T <: Real}
+    extremal_evolution(::SIR, ::S, ::Vector{T}; 
+        maximal::Bool=true, all_cremovals_observed::Bool=false)::CEvolution where {S,T <: Real}
     
 Creates an extremal `CEvolution`, placing `CRemoval`s at the times specified by the third argument,
 and giving them targets which are maximal (`initial.n`) if keyword `maximal=true`, otherwise
 minimal (`i`-th `CRemoval` has target `i`). Infections are placed at the time of each `CRemoval`
 hence immediately prior in time, because of the defined total ordering for `AbstractIncident`s.
+
+If the keyword `all_cremovals_observed=true` then the number of `Infection`s in the
+maximal version is limited to the number of `CRemoval`s less the initial number infected.
+
+Note also that, strictly speaking, in the minimal version there should be an infinitely dense
+arrangement of `Removal`s on uninfected parts of the time lines. We omit this because these
+would be immediately removed in the first step of evolution in algorithmic time.
 
 ### Example (maximal)
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -614,15 +622,19 @@ history:    AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀�
 ```
 """
 function extremal_evolution(initial::SIR, duration::S, times::Vector{T}; 
-                            maximal::Bool=true) ::CEvolution where {S,T <: Real}
+                maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution where {S,T <: Real}
     beginning  = initial.t
     population = initial.n
     if maximal
-        infections = [Infection(beginning,i,i+1) for i ∈ 1:(population-1)]
+        if all_cremovals_observed:
+            infections = [Infection(beginning,i,i+1) for i ∈ initial.i:(length(times)-1)]
+        else
+            infections = [Infection(beginning,i,i+1) for i ∈ initial.i:(population-1)]
+        end
         cremovals  = [CRemoval(t, population) for t in times]
     else
         sort(deepcopy(times))
-        infections = [Infection(times[i],i,i+1) for i ∈ 1:(length(times)-1)]
+        infections = [Infection(times[i],i,i+1) for i ∈ initial.i:(length(times)-1)]
         cremovals  = [CRemoval(t, i) for (i, t) in enumerate(times)]
     end
     return CEvolution(initial, infections ∪ cremovals)

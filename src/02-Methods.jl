@@ -1074,9 +1074,13 @@ end ;
 # # Generate an innovation
 # # ----------------------
 """
-    generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1)
+    generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1,
+        threshold::Int=0)
 
 Generates a random [`AbstractInnovation`](@ref), borrowing some structure from its first argument.
+
+If the keyword parameter `threshold` is a positive integer then `Infection`s have `infectee ≤ threshold` 
+while `Removal`s and `CRemoval`s have `target ≤ threshold`.
 
 # # _Later work to be done:_
 
@@ -1087,41 +1091,46 @@ from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends
 2. Conduct a simulation study (in a separate `quarto` notebook) to verify that the Poisson intensity rates used by this function are correct.
 
 """
-function generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1)
+function generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1,
+        threshold::Int=0)
     n = iv.population
+    m = threshold > 0 ? threshold : n
     removals = ∪([AbstractRemoval[Removal(t, k) 
         for t ∈ rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
-        for k ∈ 1:n]...)
+        for k ∈ 1:m]...)
     infections = ∪(Vector{AbstractInfection}[[
                         Infection(t, rand(Distributions.DiscreteUniform(1, k-1)), k)
                     for t ∈ rand(Distributions.Uniform(0, duration), 
                         rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
-                    for k ∈ 2:n]...)
+                    for k ∈ 2:m]...)
     if isempty(iv.cremovals)
         return typeof(iv)(n, infections, removals)
     else
         cremovals = CRemoval[alter(x...) 
             for x ∈ zip(iv.cremovals, 
-                rand(Distributions.DiscreteUniform(1, n), length(iv.cremovals)))]
+                rand(Distributions.DiscreteUniform(1, m), length(iv.cremovals)))]
         return typeof(iv)(n, infections, removals, cremovals)
     end
 end
 
     
 """
-    generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
+    generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1,
+        threshold::Int=0)
 
 Generates a random [`Innovation`](@ref) (with empty `cremoval` list), using first argument for population size.
 """
-function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1)
+function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1,
+        threshold::Int=0)
+    m = threshold > 0 ? threshold : n
     removals = ∪([AbstractRemoval[Removal(t, k) 
         for t ∈ rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
-        for k ∈ 1:n]...)
+        for k ∈ 1:m]...)
     infections = ∪(Vector{AbstractInfection}[[
                         Infection(t, rand(Distributions.DiscreteUniform(1, k-1)), k)
                     for t ∈ rand(Distributions.Uniform(0, duration), 
                         rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
-                    for k ∈ 2:n]...)
+                    for k ∈ 2:m]...)
     return Innovation(n, infections, removals)
 end
 

@@ -1080,8 +1080,8 @@ end ;
 
 Generates a random [`AbstractInnovation`](@ref), borrowing some structure from its first argument.
 
-If the keyword parameter `threshold` is a positive integer then `Infection`s have `infectee ≤ threshold` 
-while `Removal`s and `CRemoval`s have `target ≤ threshold`.
+If the keyword parameter `threshold` is a positive integer then `Infection`s are restricted by `infectee ≤ threshold` 
+while `Removal`s and `CRemoval`s are restricted by `target ≤ threshold`.
 
 # # _Later work to be done:_
 

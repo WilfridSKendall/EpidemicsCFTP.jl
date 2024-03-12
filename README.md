@@ -83,5 +83,5 @@ make pdf-format
 - [x] `26-02-2024` Refactor `CEvolution(::AbstractEvolution,::Innovation)` to compute `NFZ` in a separate function, using `compute_NFZ(::CEvolution,::Innovation)`.
 - [ ] `26-02-2024` Refactor `CEvolution(::AbstractEvolution,::Innovation)` to be efficient about use of `resulting_cremovals(::AbstractEvolution,::Innovation)` function.
 - [ ] `26-02-2024` Check for functions which can be deprecated (use `@warn`) then removed.
-- [ ] `13/03/24]`Introduce `AbstractInnovation`s which forbid `Infection`s (and `Removal`s) affecting time lines above a given threshold (most typically, the highest threshold experiencing a `CRemoval`).
+- [x] `13/03/24]`Introduce `AbstractInnovation`s which forbid `Infection`s (and `Removal`s) affecting time lines above a given threshold (most typically, the highest threshold experiencing a `CRemoval`).
 - [ ] `13/03/24]` Introduce  `AbstractInnovation`s to allow for change in initial infectives, and to do _CFTP_ in this case.

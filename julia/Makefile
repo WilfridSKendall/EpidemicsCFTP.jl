@@ -70,6 +70,12 @@ listings: $(PRODUCTS) ; make --directory=PRINTING listings
 include $(HOME)/lib/makefiles/listing-makefile.mak
 
 
+# ====================
+# Creating animation of PNG images in `animation` directory
+# --------------------
+animation.gif: ; convert -delay 20 -loop 0 animation/*.png animation.gif
+
+
 # --------------------
 # README.pdf
 README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)

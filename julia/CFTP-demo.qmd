@@ -1,0 +1,423 @@
+---
+title:  "Perfect epidemic simulation IRL with `julia`"
+author: "Wilfrid Kendall"
+date:   today
+bibliography: references.bib
+csl: /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
+---
+
+---
+toc: true
+
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+    - text: |
+        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
+        \newcommand{\NFZ}{``no-fly zone"\xspace}
+        \newcommand{\LFE}{``last feasible epidemic"\xspace}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+jupyter:    julia-1.9
+---
+
+```{julia}
+#| include: false
+#| eval: true
+#| cache: false
+#| tags: [parameters]
+source = "CFTP_demo.qmd"
+
+using EpidemicsCFTP, EpidemicsCFTP.abbreviations, EpidemicsUtilities
+using DataFrames, PrettyTables
+using Colors, Gadfly, Compose
+
+import Test: @test
+import Random: seed!
+import Markdown
+```
+
+```{julia}
+#| include: false
+theme = create_theme(load_theme("config/test-theme.yml"))
+
+set_default_plot_size(2theme.figwidth, 0.9theme.figheight)
+```
+
+-----------------
+
+Introduction
+============
+We follow @ONeillRoberts-1999 in considering a data set obtained from a smallpox outbreak 
+in a closed community of 120
+individuals in Abakaliki, Nigeria [see @Bailey-1975, p. 125]. 
+Removals are separated by the following 
+interremoval times (measured in days, but with `0` adjusted to `ε > 0` in order to avoid coincidences).
+Specific infectivity and removal rates are defined according to suggestions in @ONeillRoberts-1999
+derived from an analysis communicated to them by Frank Ball.
+```{julia}
+population     = 120
+ε              = 0.001 
+interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε, 1, 
+      1, 1, 2, ε, 1, 5, ε, 5, 5] ;
+α, β           = 0.0008, 0.088 ;
+THRESHOLD      = length(interremovals) + 1 ;
+cremoval_times = accumulate(+, interremovals) ;
+```
+We create maximal and minimal initial evolutions, deriving from minimal and maximal initial conditions. 
+The `duration` is set at `10` days after the final removal,
+a choice made for purely photogenic reasons.
+```{julia}
+initial     = SIR(0, population - 1, 1, 0)
+initial_min = SIR(0, population - 1, 1, 0)
+initial_max = SIR(0, THRESHOLD, population - THRESHOLD, 0)
+duration = 10 + maximum(cremoval_times)
+
+evmin = extremal_evolution(initial_min, duration, cremoval_times, 
+    maximal=false) ;
+evmax = extremal_evolution(initial_max, duration, cremoval_times, 
+    maximal=true, all_cremovals_observed=true) ;
+```
+
+The random `seed!` is chosen to ensure repeatability.
+```{julia}
+seed!(6) ;
+```
+
+Tabular and graphical displays of epidemics
+===========================================
+`EpidemicsUtilities` supplies some constants 
+used for the plotting parameter `select`, namely
+```{julia}
+import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
+```
+
+Chosen colours.
+```{julia}
+min_spectrum    = [colorant"red"] ;
+append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)) ;
+max_spectrum    = [colorant"blue"] ;
+append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) ;
+joined_colour   = colorant"gold" ;
+coalesce_colour = colorant"purple" ;
+```
+
+
+```{julia}
+
+uflow = table_trajectories1(duration, evmin.trajectory) ;
+axes_plot = plot(uflow, 
+    yintercept=0:5:THRESHOLD,
+    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=THRESHOLD + 0.25),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    style(default_color=theme.background),
+    Theme(
+        panel_fill=theme.blank,
+        default_color=theme.default,
+        background_color=theme.background,
+        major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+        minor_label_color=theme.legend, major_label_color=theme.legend,
+        major_label_font_size=6pt,     minor_label_font_size=4pt,
+        plot_padding = [4pt, 2pt, 4pt, 4pt],
+        grid_line_width=0mm,
+)) ;
+
+push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
+    style(line_width=theme.trail, default_color=theme.scaffold))) ;
+
+lines_plot = new_figure(axes_plot,
+    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
+    Guide.yticks(ticks=0:5:THRESHOLD),
+    Guide.ylabel("Time lines")) ;
+```
+
+
+
+Implementation
+==============
+We assume the first observed removal to happen at time zero, and
+we assume a good Bayesian justification for a prior distribution of numbers of infectives at this time
+which is uniform over the range of possibilities assuming that no removals take place after the
+last `CRemoval` (and therefore that no infectives survive beyond this time!).
+
+
+A function `repetition_and_display` uses the template `Innovation` `iv_null`
+and updates minimal and maximal `CEvolution`s by a specified number of algorithmic steps.
+Note that here we vary the initial number of infectives: I suspect we could equally
+vary the number of `Infection`s at time zero.
+```{julia}
+#| echo: false
+import Distributions
+min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
+iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;
+threshold = length(min_cremovals)
+function repetition_and_display(evmin, evmax, n; duration=duration, iv_null=iv_null,
+                    α=α, β=β, lines_plot=lines_plot)
+    for i in 1:n
+        iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold) ;
+        evmin = evmin ⋄ iv ;
+        evmax = evmax ⋄ iv ;
+        
+        # Start of proposal to check a new initial condition.
+        # IRL we'd use a distribution with Bayesian justification!
+        proposed_start = rand(Distributions.DiscreteUniform(evmin.initial.r + 1, threshold))
+        
+        new_initial = SIR(evmin.initial.t, 
+            evmin.initial.n - proposed_start, proposed_start - evmin.initial.r, evmin.initial.r)
+        try
+            new_evmin = CEvolution(new_initial, evmin.chronology)
+            evmin = new_evmin
+        catch e
+            if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
+                rethrow()
+            end
+        end
+        
+        new_initial = SIR(evmax.initial.t, 
+            evmax.initial.n - proposed_start, proposed_start - evmax.initial.r, evmax.initial.r)
+        try
+            new_evmax = CEvolution(new_initial, evmax.chronology)
+            evmax = new_evmax
+        catch e
+            if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
+                rethrow()
+            end
+        end
+        # End of proposal to check a new initial condition.
+        
+    end
+    slogan = (evmin ≃ evmax) ? " [COALESCENCE]" : ""
+    work = deepcopy(lines_plot)
+    if evmin  ≃  evmax
+        draw_evolution!(work, evmin, duration, theme=theme, 
+                        select=BOUNDARIES, specified_color=joined_colour)
+    else
+        draw_evolution!(work, evmin, duration, theme=theme, 
+                        select=BOUNDARIES, specified_color=min_spectrum[1])
+        draw_evolution!(work, evmax, duration, theme=theme,
+                        select=BOUNDARIES, specified_color=max_spectrum[1])
+    end
+    return work, evmin, evmax, slogan
+end ;
+```
+
+We use this to plot a sequence of updates in algorithmic time.
+
+### References {.unnumbered}
+
+::: {#refs}
+:::
+
+
+{{< pagebreak >}}
+
+```{julia}
+#| echo: false
+iteration = 0
+slogan    = ""
+
+work = deepcopy(lines_plot)
+draw_evolution!(work, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration  = 1
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration += 1
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work,
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration += 1
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work,
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration += 1
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work,
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration += 1
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work,
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 10
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work,
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 20
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work,
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 30
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work,
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 40
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 50
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 100
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 150
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 200
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+```{julia}
+#| echo: false
+iteration0 = iteration
+iteration = 250
+(work, evmin, evmax, slogan) = repetition_and_display(evmin, evmax, iteration-iteration0)
+depict("", new_figure(work, 
+    title="Minimum and maximum evolutions at algorithmic time step $iteration $slogan"))
+```
+
+
+\appendix
+
+
+
+Appendices {.unnumbered}
+==========
+
+Software versions
+=================
+Here is a table of software used in the following computations:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
+                        "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
+""")
+```
+
+Package documentation
+=====================
+Package documentation can be found as follows.
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+Markdown.parse("""
+|_Software_       | _Documentation link_                                                                          |
+|:----------------|:----------------------------------------------------------------------------------------------|
+| `Colors`        | [juliagraphics.github.io/Colors.jl/stable](https://juliagraphics.github.io/Colors.jl/stable/) |
+| `Gadfly`        | [gadflyjl.org/stable](https://gadflyjl.org/stable/)                                           |
+| `Compose`       | [docs.juliahub.com/General/Compose](https://docs.juliahub.com/General/Compose/stable/)        |
+| `DataFrames`    | [dataframes.juliadata.org](https://dataframes.juliadata.org/stable/)                          |
+| `Distributions` | [dataframes.juliadata.org](https://dataframes.juliadata.org/stable/)                          |
+| `PrettyTables`  | [juliastats.org/Distributions.jl](https://juliastats.org/Distributions.jl/stable/)            |
+""")
+```

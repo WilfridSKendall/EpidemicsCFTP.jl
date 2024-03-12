@@ -2,7 +2,7 @@
 SHELL           := /usr/bin/bash
 LOCATION        := $(shell pwd)
 
-PRODUCTS        := production.pdf introduction.pdf check.pdf test.pdf LFEandNFZ.pdf CFTP.pdf CFTP_demo.pdf
+PRODUCTS        := production.pdf introduction.pdf check.pdf test.pdf LFEandNFZ.pdf CFTP.pdf CFTP-demo.pdf
 
 CSL             := $(HOME)/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 

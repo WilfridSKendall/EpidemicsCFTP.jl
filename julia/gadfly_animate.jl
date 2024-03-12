@@ -1,5 +1,6 @@
 using Gadfly
 import Cairo, Fontconfig
+import Compose
 using Printf
 using FFMPEG
 
@@ -123,13 +124,13 @@ end
 
 # #################################### Example usage. 
 # # The for loop inner-block should return a plot for the current frame
-# @gif for i=0:0.01:1
-#     p = plot(
-#         x=[cos(2pi*i)*(1-i)], y=[sin(2pi*i)*(1-i)], Geom.point, 
-#         Coord.cartesian(xmin=-1, xmax=1, ymin=-1, ymax=1), 
-#     )
-#     p = vstack(p, p)
-#     hstack(p, p)
-# end (fps=50, dpi=100)
+@gif for i=0:0.01:1
+    p = plot(
+        x=[cos(2pi*i)*(1-i)], y=[sin(2pi*i)*(1-i)], Geom.point,
+        Coord.cartesian(xmin=-1, xmax=1, ymin=-1, ymax=1),
+    )
+    p = vstack(p, p)
+    hstack(p, p)
+end (fps=50, dpi=100)
 
 # Note that kwargs are passed through the macro. This is done to be able to pass arguments to the PNG function when creating frames. Otherwise you are not able to change the resolution of the PNGs and the GIF ends up looking 96dpi bad...

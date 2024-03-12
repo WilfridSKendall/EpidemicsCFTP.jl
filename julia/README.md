@@ -42,15 +42,15 @@ make introduction.pdf
 
 - [x] `13/03/24]` Extend `CFTP.qmd` to use `AbstractInnovation`s which forbid `Infection`s (and `Removal`s) affecting time lines above a given threshold (most typically, the highest threshold experiencing a `CRemoval`). (Alter `EpidemicsCFTP` module.)
 
-- [ ] `13/03/24]` Extend `CFTP.qmd` to vary  `AbstractInnovation`s to allow for change in initial infectives, and to do _CFTP_ in this case. (Alter `EpidemicsCFTP` module.)
+- [ ] `13/03/24]` Extend `CFTP.qmd` to vary  `AbstractInnovation`s to allow for change in initial infectives, and to do _CFTP_ in this case. (Alter `EpidemicsCFTP` module?) **BETTER?** introduce / remove initial `Infection`s at time zero?
 
-- [ ] `[13/03/24]` Extend `CFTP.qmd` to generate a `GIF`. (Alter `EpidemicsUtilities` module.)
+- [ ] `[13/03/24]` Extend `CFTP.qmd` to generate a `GIF`. For this, use `gadfly_animate.jl`. (Alter `EpidemicsUtilities` module?)
 
 - [ ] `[24/02/2024]`Move unit tests from `test.qmd` to `EpidemicsCFTP/test`. 
 
 - [ ] `[24/02/2024]`Extend `production.qmd` to use more recent code and to cover more figures.
 
-- [ ] `[28/04/2024]` Engage `CFTP.qmd` generating graphics to help validate automatic unit tests.
+- [ ] `[28/04/2024]` Generate graphics with `CFTP.qmd` to help validate automatic unit tests.
 
 ## Checking whether any changes of code alter figures
 

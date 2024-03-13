@@ -69,8 +69,9 @@ individuals in Abakaliki, Nigeria [see @Bailey-1975, p. 125].
 Removals are separated by the following 
 interremoval times (measured in days, but with `0` adjusted to `ε > 0` in order to avoid coincidences).
 Specific infectivity and removal rates are defined according to suggestions in @ONeillRoberts-1999
-derived from an analysis communicated to them by Frank Ball.
+derived from a maximum likelihood analysis communicated by Frank Ball.
 ```{julia}
+#| label: initialization
 population     = 120
 ε              = 0.001 
 interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε, 1, 
@@ -79,9 +80,11 @@ interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε,
 THRESHOLD      = length(interremovals) + 1 ;
 cremoval_times = accumulate(+, interremovals) ;
 ```
-We create maximal and minimal initial evolutions, deriving from minimal and maximal initial conditions. 
-The `duration` is set at `10` days after the final removal,
-a choice made for purely photogenic reasons.
+We create maximal and minimal initial evolutions, deriving from minimal and maximal initial conditions,
+and based on the assumption that all actual removals have been observed  as `CRemoval`s by the end of the plot `duration`,
+so that no time line above index `{julia} THRESHOLD` will become infectious. 
+The plot `duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
+a choice based on photogenic reasons.
 ```{julia}
 initial     = SIR(0, population - 1, 1, 0)
 initial_min = SIR(0, population - 1, 1, 0)
@@ -119,12 +122,13 @@ coalesce_colour = colorant"purple" ;
 
 
 ```{julia}
-
+#| label: basic-graphics
 uflow = table_trajectories1(duration, evmin.trajectory) ;
 axes_plot = plot(uflow, 
     yintercept=0:5:THRESHOLD,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=THRESHOLD + 0.25),
+    Guide.yticks(ticks=0:10:duration),
     Guide.xlabel("Process time", orientation=:horizontal),
     style(default_color=theme.background),
     Theme(
@@ -161,9 +165,9 @@ last `CRemoval` (and therefore that no infectives survive beyond this time!).
 
 A function `repetition_and_display` uses the template `Innovation` `iv_null`
 and updates minimal and maximal `CEvolution`s by a specified number of algorithmic steps.
-Note that here we vary the initial number of infectives: I suspect we could equally
-vary the number of `Infection`s at time zero.
+Note that we vary the initial number of infectives using a separate accept/reject step.
 ```{julia}
+#| label: definition-of-`repetition_and_display`
 #| echo: false
 import Distributions
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
@@ -229,6 +233,7 @@ We use this to plot a sequence of updates in algorithmic time.
 {{< pagebreak >}}
 
 ```{julia}
+#| label: initiating-plots
 #| echo: false
 iteration = 0
 legend = lpad(iteration, 4, "0")

@@ -2,7 +2,7 @@
 SHELL           := /usr/bin/bash
 LOCATION        := $(shell pwd)
 
-PRODUCTS        := production.pdf introduction.pdf check.pdf test.pdf LFEandNFZ.pdf CFTP.pdf CFTP-demo.pdf
+PRODUCTS        := production.pdf introduction.pdf check.pdf test.pdf LFEandNFZ.pdf CFTP.pdf CFTP-demo.pdf CFTP-animate.pdf
 
 CSL             := $(HOME)/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 
@@ -68,12 +68,6 @@ listings: $(PRODUCTS) ; make --directory=PRINTING listings
 # --------------------
 ## List Makefile
 include $(HOME)/lib/makefiles/listing-makefile.mak
-
-
-# ====================
-# Creating animation of PNG images in `animation` directory
-# --------------------
-animation.gif: ; convert -delay 20 -loop 0 animation/*.png animation.gif
 
 
 # --------------------

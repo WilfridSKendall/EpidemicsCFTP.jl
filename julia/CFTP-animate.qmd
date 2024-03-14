@@ -89,7 +89,6 @@ The plot `duration` is set at `{julia} duration - maximum(cremoval_times)` days 
 a choice based on photogenic reasons.
 ```{julia}
 #| label: setting up extremal evolutions
-initial     = SIR(0, population - 1, 1, 0)
 initial_min = SIR(0, population - 1, 1, 0)
 initial_max = SIR(0, THRESHOLD, population - THRESHOLD, 0)
 
@@ -152,9 +151,9 @@ push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
     style(line_width=theme.trail, default_color=theme.scaffold))) ;
 
 lines_plot = new_figure(axes_plot,
-    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
-        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
-        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
+    Scale.y_continuous(labels=(initial_min.n ≤ EpidemicsUtilities.MAXPOP ?
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial_min.n) :
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial_min.n))),
     Guide.yticks(ticks=0:5:THRESHOLD),
     Guide.ylabel("Time lines")) ;
 ```
@@ -173,45 +172,85 @@ A function `repetition_and_display` uses the template `Innovation` `iv_null`
 and updates minimal and maximal `CEvolution`s by a specified number of algorithmic steps.
 Note that we vary the initial number of infectives using a separate accept/reject step.
 ```{julia}
-#| echo: false
 #| label: definition of `repetition_and_display`
 import Distributions
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
-iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;
-threshold = length(min_cremovals)
+iv_null  = CInnovation(initial_min.n, Infection[], Removal[], min_cremovals) ;
+
+function rework_initial(ev, proposal)
+    new_initial = SIR(ev.initial.t, 
+        ev.initial.n - proposal, proposal - ev.initial.r, ev.initial.r)
+    try
+        ev = CEvolution(new_initial, ev.chronology)
+    catch e
+        if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
+            rethrow()
+            return ev
+        end
+    end
+    return ev
+end
+
+import EpidemicsCFTP: ⋄
+"""
+    ⋄(::CEvolution, ::SIR) ::CEvolution (Use `\\diamond`.)
+
+The succinct statement `cev ⋄ sir` checks whether one can replace
+`cev.initial` by `sir` (but using time `cev.initial.t`). 
+If so, then the resulting `CEvolution` is returned. 
+If not, then the original `CEvolution` is returned.
+### Example
+\`\`\`{jldoctest}
+cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
+sir = SIR(0, 2, 0, 0)
+cev ⋄ sir
+
+# output
+CEvolution(SIR₀.₀₀(1:1:0),
+infections: AbstractInfection[ℐ₀.₀₀¹⁻²]
+removals:   AbstractRemoval[]
+cremovals:  CRemoval[𝒞₁.₀₀²]
+chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²]
+trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
+history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
+\`\`\`
+"""
+function ⋄(cev::CEvolution, sir::SIR)::CEvolution
+    new_initial = SIR(cev.initial.t, sir.s, sir.i, sir.r)
+    try
+        cev = CEvolution(new_initial, cev.chronology)
+        return cev
+    catch e
+        if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
+            rethrow()
+        end
+        return cev
+    end
+end
+
+cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
+sir = SIR(0, 2, 0, 0)
+cev ⋄ sir
+```
+
+```{julia}
 function repetition_and_display(evmin, evmax, n; duration=duration, iv_null=iv_null,
                     α=α, β=β, lines_plot=lines_plot)
     for i in 1:n
-        iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold) ;
-        evmin = evmin ⋄ iv ;
-        evmax = evmax ⋄ iv ;
         
+        iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=THRESHOLD) ;
+
         # Start of proposal to check a new initial condition.
-        # IRL we'd use a distribution with Bayesian justification!
-        proposed_start = rand(Distributions.DiscreteUniform(evmin.initial.r + 1, threshold))
-        
-        new_initial = SIR(evmin.initial.t, 
-            evmin.initial.n - proposed_start, proposed_start - evmin.initial.r, evmin.initial.r)
-        try
-            new_evmin = CEvolution(new_initial, evmin.chronology)
-            evmin = new_evmin
-        catch e
-            if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
-                rethrow()
-            end
-        end
-        
-        new_initial = SIR(evmax.initial.t, 
-            evmax.initial.n - proposed_start, proposed_start - evmax.initial.r, evmax.initial.r)
-        try
-            new_evmax = CEvolution(new_initial, evmax.chronology)
-            evmax = new_evmax
-        catch e
-            if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
-                rethrow()
-            end
-        end
+        # IRL we'd use a distribution with a genuine Bayesian justification!
+        i_new = rand(Distributions.DiscreteUniform(1, THRESHOLD - evmin.initial.r))
+        proposed_start = SIR(evmin.initial.t, 
+            evmin.initial.n - i_new - evmin.initial.r, i_new, evmin.initial.r)
         # End of proposal to check a new initial condition.
+
+        evmin = evmin ⋄ iv ⋄ proposed_start
+        evmax = evmax ⋄ iv ⋄ proposed_start
+        
+
         
     end
     work = deepcopy(lines_plot)
@@ -230,11 +269,11 @@ end ;
 
 We use this to plot a sequence of updates in algorithmic time.
 
-![[Animation](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation.gif) of CFTP coalescence](animation/0000.png)
+![[Animation](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation.gif) of CFTP coalescence](animation/0004.png)
 
 
 
-### References {.unnumbered}
+# References {.unnumbered}
 
 ::: {#refs}
 :::
@@ -244,7 +283,7 @@ We use this to plot a sequence of updates in algorithmic time.
 
 ```{julia}
 #| echo: false
-#| label: initiating plots
+#| label: fig-0
 iteration = 0
 legend = lpad(iteration, 4, "0")
 work = deepcopy(lines_plot)
@@ -252,16 +291,14 @@ draw_evolution!(work, evmin, duration, theme=theme,
                     select=BOUNDARIES, specified_color=min_spectrum[1]) ;
 draw_evolution!(work, evmax, duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1]) ;
-```
 
-```{julia}
-#| echo: false
 depict(legend, new_figure(work;
     title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
 ```
 
 ```{julia}
 #| echo: false
+#| label: fig-1
 iteration0 = iteration
 iteration  = 1
 legend = lpad(iteration, 4, "0")
@@ -272,6 +309,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-2
 iteration0 = iteration
 iteration += 1
 legend = lpad(iteration, 4, "0")
@@ -282,6 +320,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-3
 iteration0 = iteration
 iteration += 1
 legend = lpad(iteration, 4, "0")
@@ -292,6 +331,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-4
 iteration0 = iteration
 iteration += 1
 legend = lpad(iteration, 4, "0")
@@ -302,6 +342,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-5
 iteration0 = iteration
 iteration += 1
 legend = lpad(iteration, 4, "0")
@@ -313,6 +354,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-10
 iteration0 = iteration
 iteration = 10
 legend = lpad(iteration, 4, "0")
@@ -323,6 +365,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-20
 iteration0 = iteration
 iteration = 20
 legend = lpad(iteration, 4, "0")
@@ -333,6 +376,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-30
 iteration0 = iteration
 iteration = 30
 legend = lpad(iteration, 4, "0")
@@ -343,6 +387,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-40
 iteration0 = iteration
 iteration = 40
 legend = lpad(iteration, 4, "0")
@@ -353,6 +398,7 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-50
 iteration0 = iteration
 iteration = 50
 legend = lpad(iteration, 4, "0")
@@ -363,39 +409,9 @@ depict(legend, new_figure(work;
 
 ```{julia}
 #| echo: false
+#| label: fig-100
 iteration0 = iteration
 iteration = 100
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict(legend, new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-
-```{julia}
-#| echo: false
-iteration0 = iteration
-iteration = 150
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict(legend, new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| echo: false
-iteration0 = iteration
-iteration = 200
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict(legend, new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| echo: false
-iteration0 = iteration
-iteration = 250
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
 depict(legend, new_figure(work; 

@@ -21,7 +21,8 @@ MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1'
 # ====================
 # Main targets
 main: $(PRODUCTS)
-verify: $(PRODUCTS) $(wildcard image/VERIFY_*.png)
+verify: $(PRODUCTS) $(wildcard image/VERIFY_*.png) $(wildcard animation/VERIFY_*.png)
+verify-animation: $(wildcard animation/VERIFY_*.png)
 
 # ====================
 # Clean-up
@@ -60,6 +61,21 @@ image/VERIFY_%.png: image/%.png
 	    rm $(<D)/.diff.$(<F) ;                                         \
 	fi
 
+set-up-verify-animation: ; for f in animation/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
+reset-verify-animation:  ; for f in animation/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
+animation/VERIFY_%.png: animation/%.png
+	@if /usr/bin/cmp -s $@ $<  ;                                       \
+	then                                                               \
+	    echo No change in $< ;                                         \
+	    touch $@ ;                                                     \
+	else                                                               \
+	    echo **Issue** in $< ;                                         \
+	    /usr/bin/compare $< $@ $(<D)/.diff.$(<F) ;                     \
+	    $(MONTAGE) $< $(<D)/.diff.$(<F) $@ miff:- | /usr/bin/display ; \
+	    rm $(<D)/.diff.$(<F) ;                                         \
+	fi
+
+	
 # ====================
 # Creating PDFs of listings in `PRINTING` directory
 listings: $(PRODUCTS) ; make --directory=PRINTING listings

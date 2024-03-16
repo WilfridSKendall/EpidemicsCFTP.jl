@@ -208,7 +208,7 @@ end
 
 function proposed_sir(sir, proposed_i)
     return SIR(sir.t, sir.s - (proposed_i - sir.i), proposed_i, sir.r)
-end
+end ;
 ```
 
 A function `repetition_and_display` uses the template `Innovation` `iv_null`

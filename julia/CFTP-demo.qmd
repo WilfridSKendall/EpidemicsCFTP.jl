@@ -178,7 +178,7 @@ The succinct statement `cev ⋄ sir` checks whether one can replace
 If so, then the resulting `CEvolution` is returned. 
 If not, then the original `CEvolution` is returned.
 ### Example
-\`\`\`{jldoctest}
+{jldoctest}
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
 sir = SIR(0, 2, 0, 0)
 cev ▷ sir
@@ -191,7 +191,7 @@ cremovals:  CRemoval[𝒞₁.₀₀²]
 chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²]
 trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
 history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
-\`\`\`
+
 """
 function ▷(cev::CEvolution, sir::SIR)::CEvolution
     new_initial = SIR(cev.initial.t, sir.s, sir.i, sir.r)
@@ -206,6 +206,12 @@ function ▷(cev::CEvolution, sir::SIR)::CEvolution
     end
 end
 
+"""
+    proposed_sir(::SIR, ::Int)
+
+Returns a modification of its first argument such that
+the `i` field equals the second argument.
+"""
 function proposed_sir(sir, proposed_i)
     return SIR(sir.t, sir.s - (proposed_i - sir.i), proposed_i, sir.r)
 end ;
@@ -216,7 +222,6 @@ and updates minimal and maximal `CEvolution`s by a specified number of algorithm
 Note that we vary the initial number of infectives using a separate accept/reject step.
 ```{julia}
 #| label: function `repetition_and_display`
-#| echo: false
 import Distributions
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
 iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;

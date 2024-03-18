@@ -97,10 +97,10 @@ evmin = extremal_evolution(initial_min, duration, cremoval_times,
 evmax = extremal_evolution(initial_max, duration, cremoval_times, 
     maximal=true, all_cremovals_observed=true) ;
 ```
-The plot `duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
-a choice based on photogenic reasons.
+Plot `duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
+a choice based on purely photogenic reasons.
 
-The random `seed!` is chosen to ensure repeatability.
+The random `seed!` is fixed, in order to ensure repeatability.
 ```{julia}
 #| label: initializing random seed
 seed!(6) ;
@@ -169,7 +169,7 @@ which is uniform over the range of possibilities assuming that no removals take 
 last `CRemoval` (and therefore that no infectives survive beyond this time!).
 
 ```{julia}
-#| label: function `▷`
+#| label: operators
 """
     ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\diamond`.)
 
@@ -194,9 +194,8 @@ history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
 
 """
 function ▷(cev::CEvolution, sir::SIR)::CEvolution
-    new_initial = SIR(cev.initial.t, sir.s, sir.i, sir.r)
     try
-        new_cev = CEvolution(new_initial, cev.chronology)
+        new_cev = CEvolution(sir, cev.chronology)
         return new_cev
     catch e
         if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
@@ -217,16 +216,16 @@ function proposed_sir(sir, proposed_i)
 end ;
 ```
 
-A function `repetition_and_display` uses the template `Innovation` `iv_null`
+A function `repetition` uses the template `Innovation` `iv_null`
 and updates minimal and maximal `CEvolution`s by a specified number of algorithmic steps.
 Note that we vary the initial number of infectives using a separate accept/reject step.
 ```{julia}
-#| label: function `repetition_and_display`
+#| label: function `repetition`
 import Distributions
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
 iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;
 threshold = length(min_cremovals)
-function repetition_and_display(evmin, evmax, n; duration=duration, iv_null=iv_null,
+function repetition(evmin, evmax, n; duration=duration, iv_null=iv_null,
                     α=α, β=β, lines_plot=lines_plot)
     for i in 1:n
         iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold) ;
@@ -259,209 +258,6 @@ We use this to plot a sequence of updates in algorithmic time.
 
 ::: {#refs}
 :::
-
-
-{{< pagebreak >}}
-
-```{julia}
-#| label: fig-0
-#| echo: false
-iteration = 0
-legend = lpad(iteration, 4, "0")
-work = deepcopy(lines_plot)
-draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-1
-#| echo: false
-iteration0 = iteration
-iteration  = 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-2
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-3
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-4
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-5
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-
-```{julia}
-#| label: fig-10
-#| echo: false
-iteration0 = iteration
-iteration = 10
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-20
-#| echo: false
-iteration0 = iteration
-iteration = 20
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-30
-#| echo: false
-iteration0 = iteration
-iteration = 30
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-40
-#| echo: false
-iteration0 = iteration
-iteration = 40
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-50
-#| echo: false
-iteration0 = iteration
-iteration = 50
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-100
-#| echo: false
-iteration0 = iteration
-iteration = 100
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-
-```{julia}
-#| label: fig-150
-#| echo: false
-iteration0 = iteration
-iteration = 150
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-200
-#| echo: false
-iteration0 = iteration
-iteration = 200
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-250
-#| echo: false
-iteration0 = iteration
-iteration = 250
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-300
-#| echo: false
-iteration0 = iteration
-iteration = 300
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-350
-#| echo: false
-iteration0 = iteration
-iteration = 350
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition_and_display(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work; 
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-
-```{julia}
-#| label: creating GIF
-#| echo: false
-run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
-```
-
 
 
 \appendix
@@ -516,3 +312,209 @@ Markdown.parse("""
 | `PrettyTables`  | [juliastats.org/Distributions.jl](https://juliastats.org/Distributions.jl/stable/)            |
 """)
 ```
+
+Figures
+=======
+
+
+{{< pagebreak >}}
+
+```{julia}
+#| label: fig-0
+#| echo: false
+iteration = 0
+legend = lpad(iteration, 4, "0")
+work = deepcopy(lines_plot)
+draw_evolution!(work, evmin, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-1
+#| echo: false
+iteration0 = iteration
+iteration  = 1
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-2
+#| echo: false
+iteration0 = iteration
+iteration += 1
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-3
+#| echo: false
+iteration0 = iteration
+iteration += 1
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-4
+#| echo: false
+iteration0 = iteration
+iteration += 1
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-5
+#| echo: false
+iteration0 = iteration
+iteration += 1
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+
+```{julia}
+#| label: fig-10
+#| echo: false
+iteration0 = iteration
+iteration = 10
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-20
+#| echo: false
+iteration0 = iteration
+iteration = 20
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-30
+#| echo: false
+iteration0 = iteration
+iteration = 30
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-40
+#| echo: false
+iteration0 = iteration
+iteration = 40
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-50
+#| echo: false
+iteration0 = iteration
+iteration = 50
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-100
+#| echo: false
+iteration0 = iteration
+iteration = 100
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+
+```{julia}
+#| label: fig-150
+#| echo: false
+iteration0 = iteration
+iteration = 150
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-200
+#| echo: false
+iteration0 = iteration
+iteration = 200
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-250
+#| echo: false
+iteration0 = iteration
+iteration = 250
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-300
+#| echo: false
+iteration0 = iteration
+iteration = 300
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+```{julia}
+#| label: fig-350
+#| echo: false
+iteration0 = iteration
+iteration = 350
+legend = lpad(iteration, 4, "0")
+(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+depict("demo-$legend", new_figure(work;
+    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+```
+
+
+```{julia}
+#| label: creating GIF
+#| echo: false
+run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
+```
+

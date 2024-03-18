@@ -257,12 +257,20 @@ function single_frame(evmin, evmax; duration=duration, iv_null=iv_null,
                     α=α, β=β, lines_plot=lines_plot)
     iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold) ;
         
-    # Build proposal to check a new initial condition.
+    # Next statement builds a proposal to check a new initial condition.
     # IRL we'd use a distribution with Bayesian justification!
+    # In later development we'll generate this together with `iv` as part of
+    # an innovation structure -- and may differentiate between this (independence
+    # sampler) and simple-RWM MCMC.
     proposed_i = rand(Distributions.DiscreteUniform(1, threshold - evmin.initial.r))
         
     evmin = evmin ⋄ iv ▷ proposed_sir(evmin.initial, proposed_i) ;
     evmax = evmax ⋄ iv ▷ proposed_sir(evmax.initial, proposed_i) ;
+    
+    # Omit next conditional statement once thoroughly tested!
+    if !(evmin ⪯ evmax)
+        error("Monotonicity fails")
+    end
 
     work = deepcopy(lines_plot)
     draw_evolution!(work, evmin, duration, theme=theme, 
@@ -271,6 +279,21 @@ function single_frame(evmin, evmax; duration=duration, iv_null=iv_null,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
                     
     return work, evmin, evmax
+end ;
+```
+```{julia}
+#| label: function `depict_frame`
+function depict_frame(title::String, image::Any; animation::Bool=false)
+  if isempty(title)
+    return image
+  elseif animation
+    draw(PNG("animation/$title.png"), image)
+    return image
+  else
+    draw(PNG("image/$title.png"), image)
+    draw(PDF("image/$title.pdf"), image)
+    return image
+  end
 end ;
 ```
 
@@ -340,12 +363,18 @@ Figures {#sec-figures}
 =======
 
 In this appendix we display a _forwards_ coalescence, starting with minimal and maximal evolutions
-for the specified `CRemoval`s.
+for the specified `CRemoval`s. Here is the initial state in algorithmic time.
+
+![Starting position](animation/demo-0000.pdf)
+
+
+
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the forwards coalescence evolving in logical time!
 
+There follow a selection of figures illustrating the animation, sampled at every ten steps from step `10` onwards up to step `150`.
 
 ```{julia}
-#| label: fig-0
+#| label: initial state
 #| echo: false
 iteration = 0
 legend = lpad(iteration, 4, "0")
@@ -354,207 +383,76 @@ draw_evolution!(work, evmin, duration, theme=theme,
                     select=BOUNDARIES, specified_color=min_spectrum[1])
 draw_evolution!(work, evmax, duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+title = "Minimum and maximum evolutions at algorithmic time step $legend"
+image = new_figure(work; title=title)
+draw(PNG("animation/demo-$legend.png"), image)
+draw(PDF("animation/demo-$legend.pdf"), image)
 ```
 
 
 ```{julia}
-#| label: fig-1
+#| label: building figures
 #| echo: false
-iteration0 = iteration
-iteration  = 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-2
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
-```
-
-```{julia}
-#| label: fig-3
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-4
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-5
-#| echo: false
-iteration0 = iteration
-iteration += 1
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
+for iteration ∈ 1:150
+    legend = lpad(iteration, 4, "0")
+    (work, evmin, evmax) = single_frame(evmin, evmax)
+    coalesced = (evmin ≃ evmax) ? "[COALESCED]" : ""
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"
+    image = new_figure(work; title=title)
+    draw(PNG("animation/demo-$legend.png"), image)
+    if mod(iteration, 10) == 0
+        draw(PDF("animation/demo-$legend.pdf"), image)
+    end
+end
 ```
 
 
 ```{julia}
-#| label: fig-10
-#| echo: false
-iteration0 = iteration
-iteration = 10
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-20
-#| echo: false
-iteration0 = iteration
-iteration = 20
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-30
-#| echo: false
-iteration0 = iteration
-iteration = 30
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-40
-#| echo: false
-iteration0 = iteration
-iteration = 40
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-50
-#| echo: false
-iteration0 = iteration
-iteration = 50
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-100
-#| echo: false
-iteration0 = iteration
-iteration = 100
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-
-```{julia}
-#| label: fig-150
-#| echo: false
-iteration0 = iteration
-iteration = 150
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-200
-#| echo: false
-iteration0 = iteration
-iteration = 200
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-250
-#| echo: false
-iteration0 = iteration
-iteration = 250
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-300
-#| echo: false
-iteration0 = iteration
-iteration = 300
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-```{julia}
-#| label: fig-350
-#| echo: false
-iteration0 = iteration
-iteration = 350
-legend = lpad(iteration, 4, "0")
-(work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
-coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
-depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
-```
-
-
-```{julia}
-#| label: creating GIF
+#| label: creating GIF using CLI
 #| echo: false
 run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
 ```
 
+::: {layout-nrow=3}
+![](animation/demo-0010.pdf)
+
+![](animation/demo-0020.pdf)
+
+![](animation/demo-0030.pdf)
+:::
+
+
+::: {layout-nrow=3}
+![](animation/demo-0040.pdf)
+
+![](animation/demo-0050.pdf)
+
+![](animation/demo-0060.pdf)
+:::
+
+
+::: {layout-nrow=3}
+![](animation/demo-0070.pdf)
+
+![](animation/demo-0080.pdf)
+
+![](animation/demo-0090.pdf)
+:::
+
+
+::: {layout-nrow=3}
+![](animation/demo-0100.pdf)
+
+![](animation/demo-0110.pdf)
+
+![](animation/demo-0120.pdf)
+:::
+
+
+::: {layout-nrow=3}
+![](animation/demo-0130.pdf)
+
+![](animation/demo-0140.pdf)
+
+![](animation/demo-0150.pdf)
+:::

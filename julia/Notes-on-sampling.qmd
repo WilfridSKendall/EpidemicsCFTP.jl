@@ -1,0 +1,259 @@
+---
+title:  "Notes on sampling for perfect epidemic simulation"
+author: "Wilfrid Kendall"
+date:   today
+bibliography: references.bib
+---
+
+
+---
+toc: true
+
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+from: markdown+tex_math_single_backslash
+
+include-before-body:
+  - text: |
+      \newcommand{\Expect}[1]{\operatorname{\mathbb{E}}\left[#1\right]}
+      \newcommand{\Prob}[1]{\operatorname{\mathbb{E}}\left[#1\right]}
+
+format:
+  html:
+    code-fold: true
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+
+
+jupyter:    julia-1.9
+---
+
+The inferential problem
+=======================
+We can now sample perfectly from an S-I-R epidemic
+obeying the stochastic dynamics
+\[
+\begin{aligned}
+\text{\emph{Infection: }} & &\text{transition }S\to S-1\,,\; I \to I+1 & \text{ occurs at rate }
+    & \alpha \, S\, I\,,
+\\
+\text{\emph{Removal: }}   & &\text{transition }I\to I-1\,,\; R \to R+1 & \text{ occurs at rate }
+    & \beta \, I\,.
+\end{aligned}
+\]
+if we know the population size, the rates \(\alpha\) and \(\beta\),
+and all the removal times (the times of "conditioned removals" `CRemoval`).
+Our CFTP method then generates a perfect sample of times of actual `Infection`s
+conditioned on what we know.
+
+But for practical purposes we'd want to be able to draw inferences about \(\alpha\) and \(\beta\)
+given the `C` times.
+
+A discrete caricature
+=====================
+Consider a random system of discrete random variables \(X\), \(Z\) and \(\theta\)
+corresponding respectively to
+
+* the `Infection` times (represented by \(X\));
+* the `CRemoval` times (represented by \(Z\));
+* and unknown parameters \(\alpha\) (specific pair-wise infectivity) and \(\beta\) (removal rate),
+and perhaps also the initial number of infectives. These parameters are represented collectively by
+a list \(\theta\).
+
+(we assume the total population size is known, for the sake of simplicity.)
+
+So we are able to sample from the conditional probability mass function
+given \(Z=z_0\) and \(\theta=\theta_0\):
+\[
+f(x | z_0, \theta_0) \quad=\quad
+\frac{p(x, z_0, \theta_0)}{p(z_0, \theta_0)}\,,
+\]
+based on the definition of conditional probability and using
+conventional Bayesian notation of \(f\) for conditional
+probabilities and \(p\) for absolute probabilities, and allowing
+the (typically lower-case) variable names to indicate the random variables concerned.
+We can then write an expression for the conditional probability given
+a general \(\theta\) rather than the \(\theta_0\) chosen for our simulation:
+\[\begin{aligned}
+f(x | z_0, \theta_0)
+\quad&=\quad
+p(x, z_0, \theta)\times
+\frac{1}{p(z_0,\theta_0)}\times
+\left(\frac{p(x, z_0, \theta_0)}{p(x, z_0, \theta)}\right)
+\\
+\quad&=\quad
+\frac{f(x, \theta| z_0)\times p(z_0)}{p(z_0,\theta_0)}
+\times
+\left(\frac{f(x, z_0| \theta_0) \times p(\theta_0)}{f(x, z_0| \theta)\times p(\theta)}\right)
+\\
+\quad&=\quad
+f(x, \theta| z_0)\times
+\left(\frac{p(z_0)}{p(z_0,\theta_0)}\right)\times
+\left(\frac{f(x, z_0| \theta_0)}{f(x, z_0| \theta)}\right)\times
+\left(\frac{p(\theta_0)}{p(\theta)}\right)
+\,.
+\end{aligned}\]
+
+Consider the three bracketed expressions in reverse order:
+
+1. \(p(\theta_0)/p(\theta)\) is simply a ratio of prior probabilities for
+two different values \(\theta_0\) and \(\theta\) for the (two-dimensional vector of)
+unknown parameters of interest. This will be specified deriving from expert judgement
+of the circumstances in which the data has arisen, and hence is known.
+
+2. \(f(x, z_0| \theta_0)/f(x, z_0| \theta)\) is the likelihood ratio
+of \(\theta_0\) and \(\theta\) for a given system of
+simulations and observations \(x\) and \(z_0\).
+It should be possible to calculate and then to compute this using the pattern of observed
+`CRemoval` times and simulated `Infection` times, as a function of
+\(\theta_0\) and \(\theta\). We can view it as an inverse weight to apply to
+the sample \(x\) from \(f(x | z_0, \theta_0)\).
+
+3. Finally consider \(p(z_0)/p(z_0,\theta_0)\): for a fixed reference parameter \(\theta_0\)
+this can be treated as an unknown constant of proportionality.
+
+Perfect simulation with weights
+===============================
+So the plan is to fix a particular parameter value \(\theta_0\),
+and make perfect draws of unobserved infection patterns from \(f(x | z_0, \theta_0)\)
+(conditioned on \(z_0\) the observed pattern of `CRemoval`s).
+
+For varying \(\theta\), weight each draw \(x\) by
+\[
+\left(\frac{f(x, z_0| \theta)}{f(x, z_0| \theta_0)}\right)\times
+\left(\frac{p(\theta)}{p(\theta_0)}\right)
+\]
+where the first factor can be computed for each \(\theta\) as a function of \(x\)
+and \(z_0\), while the second factor is a ratio of priors for \(\theta\) and \(\theta_0\).
+So each draw \(x\) corresponds to a particular function of \(\theta\).
+
+If my idea is correct, averaging over a number of draws and summing out the marginal values of the
+sample \(x\)
+we then obtain
+a (random) function whose expectation is an unknown multiple
+\(p(z_0)/p(z_0,\theta_0)\)
+of
+the posterior distribution for \(\theta\), namely \(f(\theta| z_0)\).
+But unknown constants of proportionality can be determined by choosing them so
+that the random function integrates to \(1\): not infeasible numerically, since in the target
+problem the argument is two-dimensional.
+
+This is of course perhaps limited to values of \(\theta\) close to \(\theta_0\):
+too far away and the weight may be very small
+(and just occasionally very large). However we only need local information
+in order to establish a steepest-ascent method (or second-order variant)
+to find a _maximum a posterior_ estimate of the unknown parameters \(\theta\).
+
+On the other hand in our problem we know
+\(\theta\) is two-dimensional, so it does not seem overly burdensome
+to split the two-dimensional region of interest into smaller patches
+within which the variance of weight is controlled. Of course then one
+needs some kind of patching argument to get at the unknown normalizer.
+There may be interesting things to be said about this patching process,
+but we set this aside for now.
+
+What needs to be done
+=====================
+* Check I have got this right! Conditional probability is tricky stuff. \(\surd\)
+* Re-write for continuous random variables for the parameters!
+* Figure out in detail how to compute the weights -- haven't yet tried this at all.
+* Are similar tricks known to Bayesians? I think they may be: I dimly recall
+something known (I think) as the exchange formula.
+* Work out the patching argument. Even without this, one could develop a procedure
+of how to change \(\theta_0\) to maximize the _a posteriori_ probability.
+* Implement it. It will need quite a bit of computation: however `Julia`
+code is fast!
+* Can we do better by doing more sophisticated CFTP? For example, if we can
+additionally draw exactly from the posterior distribution of _one_ of the parameters
+then this should significantly ease the computational task.
+
+
+Update from SBC (8 March 2024)
+==============================
+[From email conversation, 05/03/2024]
+
+> As a refinement of what I suggest, here is the easiest simplest thing to do:
+> 
+> 1. Use perfect samples to conduct a plain Monte Carlo estimation of \(f(\theta | z_0)\) and also the gradient \(f'(\theta | z_0)\) and perhaps the Hessian \(f''(\theta | z_0)\);
+>
+> 2. Use these estimates to carry out a single step of gradient descent (or conjugate gradient, which would also employ the Hessian) towards the minimum of the function \(\theta \mapsto - f(\theta | z_0)\);
+>
+> 3. Repeat using the new \(\theta\) till (by standard criteria) we have got (approximately) to the minimum of \(- f(\theta | z_0)\), which is the MLE equivalently the maximum a-posteriori estimator of \(\theta\) based on a uniform prior.
+
+Sticking to the above notation, let \(x\) denote the (unobserved) infection times, \(z_0\) the observed removal times, and \(\theta = (\alpha, \beta)\) the unknown rate parameters driving the infection. Let \(I_t\) and \(S_t\) denote the numbers of infected and susceptible individuals at time \(t\in[0,T]\). Thus (adding in notation from the draft paper) \(z=(\rho^1,\dots,\rho^n)\) with \(0<\rho^1<\rho^2<\dots<\rho^n\le T\). Let us write \(x = (\tau^1,\dots,\tau^n)\), where \(\tau^i\) is the time of the \(i\)^th^ infection: we are implicitly working under the assumption that exactly one person is infected at time 0, i.e. that \(I_0=1\), and thus \(\tau^1\le 0< \tau^2\).
+
+Varying the expression found in @ONeillRoberts-1999, we can write:
+
+\[\begin{aligned}
+f(x, z_0, | \theta)
+\quad&=\quad
+ \left(\prod_{i=1}^n\beta I_{\rho^i-}\right)\left(\prod_{j=2}^n \alpha S_{\tau^j-}I_{\tau^j-}\right)
+\exp \left(-\int_0^T(\alpha S_tI_t + \beta I_t) \mathrm{d}t \right) \,,
+\end{aligned}
+\]
+
+and so
+\[\begin{aligned}
+\frac{f(x, z_0, | \theta)}{f(x, z_0, | \theta_0)}
+\quad&=\quad
+ \left(\frac{\alpha}{\alpha_0}\right)^{n-1} \left(\frac{\beta}{\beta_0}\right)^n 
+e^{-(\alpha-\alpha_0)\int_0^T S_tI_t \mathrm{d}t}e^{-(\beta-\beta_0)\int_0^T I_t \mathrm{d}t} \,.
+\end{aligned}
+\]
+
+Now write
+\[
+w(\theta | x, z_0) = f(x, z_0 | \theta)p(\theta)
+\]
+for the unnormalised posterior of \(\theta\) given a realisation \(x\) of the infection times. As explained above, the idea is to fix \(\theta_0\) and make \(N\) perfect draws of the unobserved infection times from \(f(x| z_0, \theta_0)\). Each draw can then be _weighted_ by \[
+\left(\frac{f(x, z_0| \theta)}{f(x, z_0| \theta_0)}\right)\times
+\left(\frac{p(\theta)}{p(\theta_0)}\right) = \frac{w(\theta | x, z_0)}{w(\theta_0 | x, z_0)}
+\]
+to produce a Monte Carlo estimate of \(f(\theta|z_0)\), up to an unknown constant of proportionality \(p(z_0)/p(z_0,\theta_0)\):
+
+\[\begin{aligned}
+f(\theta|z_0) 
+\quad&\approx \quad
+\frac{1}{N} \sum_{k=1}^N f(x_k, \theta | z_0) \\
+&= \quad \left(\frac{p(z_0)}{p(z_0,\theta_0)}\right)
+\frac{1}{N} \sum_{k=1}^N f(x_k|z_0, \theta_0)\frac{w(\theta | x_k, z_0)}{w(\theta_0 | x_k, z_0)} \,.
+\end{aligned}
+\]
+
+Note that \(\theta\) only features in the above via the weight ratio, which takes a simple form, as explained above. Thus to calculate the gradient \(f'(\theta | z_0)\) and the Hessian \(f''(\theta | z_0)\) we just need the corresponding properties of \(w(\theta|x,z_0)\). To ease notation, write \(\langle S,I\rangle = \int_0^TS_tI_t\mathrm{d}t \) and \(\langle I\rangle = \int_0^TI_t\mathrm{d}t \). (Note that these depend implicitly upon the sets of infection and removal times.) 
+
+Assuming that the prior distribution \(p(\theta)\) is sufficiently smooth, I think that we obtain the following:
+
+\[\begin{aligned}
+w_\alpha(\theta | x, z_0)
+&=\frac{\partial}{\partial\alpha}w(\theta | x, z_0) \\
+&= f(x,z_0|\theta)\left(p_\alpha(\theta) + p(\theta)\left[\frac{n-1}{\alpha} - \langle S,I\rangle\right]\right) \\
+&= w(\theta | x, z_0)\left(\frac{\partial}{\partial\alpha}\log p(\theta) + \frac{n-1}{\alpha} - \langle S,I\rangle  \right) \,;\\
+w_\beta(\theta | x, z_0)
+&= w(\theta | x, z_0)\left(\frac{\partial}{\partial\beta}\log p(\theta) + \frac{n}{\beta} - \langle I\rangle  \right)\,.
+\end{aligned}
+\]
+
+Similarly,
+\[\begin{aligned}
+w_{\alpha\alpha}(\theta | x, z_0)
+&= w_\alpha(\theta | x, z_0)\left(\frac{\partial}{\partial\alpha}\log p(\theta) + \frac{n-1}{\alpha} - \langle S,I\rangle  \right) \\
+&\qquad + w(\theta | x, z_0)\left(\frac{\partial}{\partial\alpha^2}\log p(\theta) - \frac{n-1}{\alpha^2}\right) \,; \\
+w_{\beta\beta}(\theta | x, z_0)
+&= w_\beta(\theta | x, z_0)\left(\frac{\partial}{\partial\beta}\log p(\theta) + \frac{n}{\beta} - \langle I\rangle  \right) \\
+&\qquad + w(\theta | x, z_0)\left(\frac{\partial}{\partial\beta^2}\log p(\theta) - \frac{n}{\beta^2}\right) \,; \\
+w_{\alpha\beta}(\theta | x, z_0)
+&=  w_\beta(\theta | x, z_0)\left(\frac{\partial}{\partial\alpha}\log p(\theta) + \frac{n-1}{\alpha} - \langle S,I\rangle  \right) \\
+&\qquad + w(\theta | x, z_0)\left(\frac{\partial}{\partial\alpha\partial\beta}\log p(\theta)\right) \\
+&= \frac{w_\alpha(\theta | x, z_0)w_\beta(\theta | x, z_0)}{w(\theta | x, z_0)}+ w(\theta | x, z_0) \frac{\partial}{\partial\alpha\partial\beta}\log p(\theta)\,.
+\end{aligned}
+\]
+

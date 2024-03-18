@@ -76,20 +76,25 @@ derived from a maximum likelihood analysis devised by Frank Ball.
 #| label: initialization
 population     = 120
 ε              = 0.001 
-interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε, 1, 
-      1, 1, 2, ε, 1, 5, ε, 5, 5] ;
+interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3,
+                   2, ε, 2, ε, 5, 3, 1, 4, ε, 1, 
+                   1, 1, 2, ε, 1, 5, ε, 5, 5] ;
 α, β           = 0.0008, 0.088 ;
 THRESHOLD      = length(interremovals) + 1 ;
 cremoval_times = accumulate(+, interremovals) ;
+# pushfirst!(interremovals, 0) ;
 ```
 We create maximal and minimal initial evolutions, deriving from minimal and maximal initial conditions,
 and based on the assumption that all actual removals have been observed  as `CRemoval`s by the end of the plot `duration`,
 so that no time line above index `{julia} THRESHOLD` will become infectious. 
 ```{julia}
 #| label: setting up extremal evolutions
+#initial     = SIR(0, population, 1, 1)
+#initial_min = SIR(0, population, 1, 1)
+#initial_max = SIR(0, population - THRESHOLD - 1, THRESHOLD, 1)
 initial     = SIR(0, population - 1, 1, 0)
 initial_min = SIR(0, population - 1, 1, 0)
-initial_max = SIR(0, THRESHOLD, population - THRESHOLD, 0)
+initial_max = SIR(0, population - THRESHOLD + 1, THRESHOLD - 1, 0)
 duration = 10 + maximum(cremoval_times)
 
 evmin = extremal_evolution(initial_min, duration, cremoval_times, 
@@ -123,7 +128,7 @@ append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)
 max_spectrum    = [colorant"blue"] ;
 append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) ;
 joined_colour   = colorant"deeppink" ;
-coalesce_colour = colorant"purple" ;
+coalesce_colour = colorant"maroon" ;
 ```
 
 
@@ -133,8 +138,8 @@ uflow = table_trajectories1(duration, evmin.trajectory) ;
 axes_plot = plot(uflow, 
     yintercept=0:5:THRESHOLD,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=THRESHOLD + 0.25),
-    Guide.yticks(ticks=0:10:duration),
+    Coord.cartesian(xmin=0-0.1, xmax=duration, ymin=0, ymax=THRESHOLD + 0.25),
+    Guide.yticks(ticks=0:10:THRESHOLD),
     Guide.xlabel("Process time", orientation=:horizontal),
     style(default_color=theme.background),
     Theme(
@@ -155,7 +160,6 @@ lines_plot = new_figure(axes_plot,
     Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
         i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
         i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
-    Guide.yticks(ticks=0:5:THRESHOLD),
     Guide.ylabel("Time lines")) ;
 ```
 
@@ -230,7 +234,7 @@ function repetition(evmin, evmax, n; duration=duration, iv_null=iv_null,
     for i in 1:n
         iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold) ;
         
-        # Start of proposal to check a new initial condition.
+        # Build proposal to check a new initial condition.
         # IRL we'd use a distribution with Bayesian justification!
         proposed_i = rand(Distributions.DiscreteUniform(1, threshold - evmin.initial.r))
         
@@ -239,31 +243,48 @@ function repetition(evmin, evmax, n; duration=duration, iv_null=iv_null,
 
     end
     work = deepcopy(lines_plot)
-    if evmin  ≃  evmax
-        draw_evolution!(work, evmin, duration, theme=theme, 
-                        select=BOUNDARIES, specified_color=joined_colour)
-    else
-        draw_evolution!(work, evmin, duration, theme=theme, 
-                        select=BOUNDARIES, specified_color=min_spectrum[1])
-        draw_evolution!(work, evmax, duration, theme=theme,
-                        select=BOUNDARIES, specified_color=max_spectrum[1])
-    end
+    draw_evolution!(work, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+    draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
     return work, evmin, evmax
 end ;
 ```
 
-We use this to plot a sequence of updates in algorithmic time.
+```{julia}
+#| label: function `single_frame`
+function single_frame(evmin, evmax; duration=duration, iv_null=iv_null,
+                    α=α, β=β, lines_plot=lines_plot)
+    iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold) ;
+        
+    # Build proposal to check a new initial condition.
+    # IRL we'd use a distribution with Bayesian justification!
+    proposed_i = rand(Distributions.DiscreteUniform(1, threshold - evmin.initial.r))
+        
+    evmin = evmin ⋄ iv ▷ proposed_sir(evmin.initial, proposed_i) ;
+    evmax = evmax ⋄ iv ▷ proposed_sir(evmax.initial, proposed_i) ;
 
-### References {.unnumbered}
+    work = deepcopy(lines_plot)
+    draw_evolution!(work, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+    draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+                    
+    return work, evmin, evmax
+end ;
+```
+
+We use this to plot a sequence of updates in algorithmic time: see [Appendix @sec-figures].
+
+References {.unnumbered}
+----------
 
 ::: {#refs}
 :::
 
+{{< pagebreak >}}
 
 \appendix
-
-
-
 
 Appendices {.unnumbered}
 ==========
@@ -302,7 +323,7 @@ Package documentation can be found as follows.
 #| eval: true
 #| cache: false
 Markdown.parse("""
-|_Software_       | _Documentation link_                                                                          |
+|_Julia package_  | _Link to documentation_                                                                       |
 |:----------------|:----------------------------------------------------------------------------------------------|
 | `Colors`        | [juliagraphics.github.io/Colors.jl/stable](https://juliagraphics.github.io/Colors.jl/stable/) |
 | `Gadfly`        | [gadflyjl.org/stable](https://gadflyjl.org/stable/)                                           |
@@ -313,11 +334,15 @@ Markdown.parse("""
 """)
 ```
 
-Figures
+{{< pagebreak >}}
+
+Figures {#sec-figures}
 =======
 
+In this appendix we display a _forwards_ coalescence, starting with minimal and maximal evolutions
+for the specified `CRemoval`s.
+An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the forwards coalescence evolving in logical time!
 
-{{< pagebreak >}}
 
 ```{julia}
 #| label: fig-0
@@ -332,6 +357,7 @@ draw_evolution!(work, evmax, duration, theme=theme,
 depict("demo-$legend", new_figure(work;
     title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
 ```
+
 
 ```{julia}
 #| label: fig-1
@@ -362,8 +388,9 @@ iteration0 = iteration
 iteration += 1
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -373,8 +400,9 @@ iteration0 = iteration
 iteration += 1
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -384,8 +412,9 @@ iteration0 = iteration
 iteration += 1
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 
@@ -396,8 +425,9 @@ iteration0 = iteration
 iteration = 10
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -407,8 +437,9 @@ iteration0 = iteration
 iteration = 20
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -418,8 +449,9 @@ iteration0 = iteration
 iteration = 30
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -429,8 +461,9 @@ iteration0 = iteration
 iteration = 40
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -440,8 +473,9 @@ iteration0 = iteration
 iteration = 50
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -451,8 +485,9 @@ iteration0 = iteration
 iteration = 100
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 
@@ -463,8 +498,9 @@ iteration0 = iteration
 iteration = 150
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -474,8 +510,9 @@ iteration0 = iteration
 iteration = 200
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -485,8 +522,9 @@ iteration0 = iteration
 iteration = 250
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -496,8 +534,9 @@ iteration0 = iteration
 iteration = 300
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 ```{julia}
@@ -507,8 +546,9 @@ iteration0 = iteration
 iteration = 350
 legend = lpad(iteration, 4, "0")
 (work, evmin, evmax) = repetition(evmin, evmax, iteration-iteration0)
+coalesced = evmin ≃ evmax ? "(COALESCED)" : ""
 depict("demo-$legend", new_figure(work;
-    title="Minimum and maximum evolutions at algorithmic time step $legend"); animation=true)
+    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"); animation=true)
 ```
 
 

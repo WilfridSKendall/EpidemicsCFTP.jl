@@ -82,19 +82,19 @@ interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3,
 α, β           = 0.0008, 0.088 ;
 THRESHOLD      = length(interremovals) + 1 ;
 cremoval_times = accumulate(+, interremovals) ;
-# pushfirst!(interremovals, 0) ;
+pushfirst!(cremoval_times, 0) ;
 ```
+Note that the first `CRemoval` happens at time `0`.
+
 We create maximal and minimal initial evolutions, deriving from minimal and maximal initial conditions,
 and based on the assumption that all actual removals have been observed  as `CRemoval`s by the end of the plot `duration`,
 so that no time line above index `{julia} THRESHOLD` will become infectious. 
 ```{julia}
 #| label: setting up extremal evolutions
-#initial     = SIR(0, population, 1, 1)
-#initial_min = SIR(0, population, 1, 1)
-#initial_max = SIR(0, population - THRESHOLD - 1, THRESHOLD, 1)
 initial     = SIR(0, population - 1, 1, 0)
 initial_min = SIR(0, population - 1, 1, 0)
-initial_max = SIR(0, population - THRESHOLD + 1, THRESHOLD - 1, 0)
+#initial_max = SIR(0, population - THRESHOLD + 1, THRESHOLD - 1, 0)
+initial_max = SIR(0, population - THRESHOLD, THRESHOLD, 0)
 duration = 10 + maximum(cremoval_times)
 
 evmin = extremal_evolution(initial_min, duration, cremoval_times, 
@@ -359,19 +359,19 @@ Markdown.parse("""
 
 {{< pagebreak >}}
 
-Figures {#sec-figures}
-=======
+Graphical illustration of forwards coalescence {#sec-figures}
+==============================================
 
 In this appendix we display a _forwards_ coalescence, starting with minimal and maximal evolutions
 for the specified `CRemoval`s. Here is the initial state in algorithmic time.
 
-![Starting position](animation/demo-0000.pdf)
+![Configuration of maximal and minimal evolutions at time `0`.](animation/demo-0000.pdf)
 
 
 
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the forwards coalescence evolving in logical time!
 
-There follow a selection of figures illustrating the animation, sampled at every ten steps from step `10` onwards up to step `150`.
+There follow a selection of figures illustrating the animation, sampled at every ten steps from step `10` onwards up to step `300`.
 
 ```{julia}
 #| label: initial state
@@ -393,7 +393,7 @@ draw(PDF("animation/demo-$legend.pdf"), image)
 ```{julia}
 #| label: building figures
 #| echo: false
-for iteration ∈ 1:150
+for iteration ∈ 1:300
     legend = lpad(iteration, 4, "0")
     (work, evmin, evmax) = single_frame(evmin, evmax)
     coalesced = (evmin ≃ evmax) ? "[COALESCED]" : ""
@@ -421,7 +421,6 @@ run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
 ![](animation/demo-0030.pdf)
 :::
 
-
 ::: {layout-nrow=3}
 ![](animation/demo-0040.pdf)
 
@@ -439,7 +438,6 @@ run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
 ![](animation/demo-0090.pdf)
 :::
 
-
 ::: {layout-nrow=3}
 ![](animation/demo-0100.pdf)
 
@@ -448,11 +446,50 @@ run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
 ![](animation/demo-0120.pdf)
 :::
 
-
 ::: {layout-nrow=3}
 ![](animation/demo-0130.pdf)
 
 ![](animation/demo-0140.pdf)
 
 ![](animation/demo-0150.pdf)
+:::
+
+::: {layout-nrow=3}
+![](animation/demo-0160.pdf)
+
+![](animation/demo-0170.pdf)
+
+![](animation/demo-0180.pdf)
+:::
+
+::: {layout-nrow=3}
+![](animation/demo-0190.pdf)
+
+![](animation/demo-0200.pdf)
+
+![](animation/demo-0210.pdf)
+:::
+
+::: {layout-nrow=3}
+![](animation/demo-0220.pdf)
+
+![](animation/demo-0230.pdf)
+
+![](animation/demo-0240.pdf)
+:::
+
+::: {layout-nrow=3}
+![](animation/demo-0250.pdf)
+
+![](animation/demo-0260.pdf)
+
+![](animation/demo-0270.pdf)
+:::
+
+::: {layout-nrow=3}
+![](animation/demo-0280.pdf)
+
+![](animation/demo-0290.pdf)
+
+![](animation/demo-0300.pdf)
 :::

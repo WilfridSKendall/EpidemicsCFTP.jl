@@ -54,11 +54,11 @@ make introduction.pdf
   - [ ] Generate code for automatic extension of CFTP.
   - [ ] How to speed up by doing more in memory?!
   - [ ] Previous cycles would be better plotted as greyed out.
-  - [ ] Modify code so times are displayed as negative running up to time 0.
+  - [x] Modify code so times are displayed as negative running up to time 0.
 
-- [ ] `24/02/2024`Move unit tests from `test.qmd` to `EpidemicsCFTP/test`. 
+- [ ] `24/02/2024` Move unit tests from `test.qmd` to `EpidemicsCFTP/test`. 
 
-- [ ] `24/02/2024`Extend `production.qmd` to use more recent code and to cover more figures.
+- [ ] `24/02/2024` Extend `production.qmd` to use more recent code and to cover more figures.
 
 - [ ] `28/04/2024` Generate graphics with `CFTP.qmd` to help validate automatic unit tests.
 

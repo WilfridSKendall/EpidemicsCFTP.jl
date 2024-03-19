@@ -193,7 +193,7 @@ at present its employment corresponds to an independence sampler move
 though it should be possible to vary this to be a simple Random Walk Metropolis
 sampler (_simple RWM_).
 In general, care needs to be taken that monotonicity is maintained!
-[See @KendallMoeller-2000 for discussion of a similar situation.]
+[A similar situation is discussed in @KendallMoeller-2000.]
 ```{julia}
 #| label: operators
 """
@@ -301,12 +301,13 @@ function cycle(stream, canvas;
     evmin = deepcopy(evmin0)
     evmax = deepcopy(evmax0)
     iteration = 0
-    legend = lpad(iteration, 4, "0")
+    legend  = lpad(iteration, 4, "0")
+    legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
     draw_evolution!(work, evmin, duration, theme=theme,
                     select=BOUNDARIES, specified_color=min_spectrum[1])
     draw_evolution!(work, evmax, duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-    title = "Minimum and maximum evolutions at algorithmic time step $legend"
+    title = "Minimum and maximum evolutions at algorithmic time step $legend2"
     image = new_figure(work; title=title)
     draw(PNG("animation/demo-$tag-$legend.png"), image)
     draw(PDF("animation/demo-$tag-$legend.pdf"), image)
@@ -316,8 +317,9 @@ function cycle(stream, canvas;
         (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
         
         legend = lpad(iteration, 4, "0")
+        legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
         coalesced = (evmin ≃ evmax) ? "[COALESCED]" : ""
-        title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"
+        title="Minimum and maximum evolutions at algorithmic time step $legend2 $coalesced"
         
         image = new_figure(canvas[iteration]; title=title)
         draw(PNG("animation/$tag-$legend.png"), image)
@@ -331,8 +333,11 @@ end ;
 This code is used to plot an entire CFTP sequence of sequences of updates in algorithmic time: see [Appendix @sec-figures].
 I suspect that considerable speed-up could be achieved by _not_ plotting each frame of each cycle!
 
+{{< pagebreak >}}
+
+
 References {.unnumbered}
-----------
+==========
 
 ::: {#refs}
 :::
@@ -390,8 +395,8 @@ Markdown.parse("""
 
 {{< pagebreak >}}
 
-Graphical illustration of forwards coalescence {#sec-figures}
-==============================================
+Graphical illustration of CFTP {#sec-figures}
+==============================
 
 In this appendix we display an entire evolution of a CFTP run, always starting with minimal and maximal evolutions
 `evmin0` and `evmax0` given above. 
@@ -438,7 +443,7 @@ It would also be better to display previous cycles as greyed out. Note however t
 would be immediately visually apparent if sandwiching were to fail!
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0000.pdf)
+![](animation/demo-f-0001.png)
 
 ![](animation/demo-f-0010.pdf)
 

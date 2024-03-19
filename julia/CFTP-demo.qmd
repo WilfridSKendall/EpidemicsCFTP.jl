@@ -99,9 +99,9 @@ initial_min = SIR(0, population - 1, 1, 0)
 initial_max = SIR(0, population - THRESHOLD, THRESHOLD, 0)
 duration = 10 + maximum(cremoval_times)
 
-evmin = extremal_evolution(initial_min, duration, cremoval_times, 
+evmin0 = extremal_evolution(initial_min, duration, cremoval_times, 
     maximal=false) ;
-evmax = extremal_evolution(initial_max, duration, cremoval_times, 
+evmax0 = extremal_evolution(initial_max, duration, cremoval_times, 
     maximal=true, all_cremovals_observed=true) ;
 ```
 Plot `duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
@@ -130,13 +130,13 @@ append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)
 max_spectrum    = [colorant"blue"] ;
 append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) ;
 joined_colour   = colorant"deeppink" ;
-coalesce_colour = colorant"maroon" ;
+coalesce_colour = colorant"black" ;
 ```
 
 
 ```{julia}
 #| label: basic graphics
-uflow = table_trajectories1(duration, evmin.trajectory) ;
+uflow = table_trajectories1(duration, evmin0.trajectory) ;
 axes_plot = plot(uflow, 
     yintercept=0:5:THRESHOLD,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
@@ -233,7 +233,7 @@ and updates minimal and maximal `CEvolution`s by a single algorithmic step.
 Note that we vary the initial number of infectives using a separate accept/reject step.
 ```{julia}
 #| label: functions for plotting CFTP cycles
-function innovation_stream(cycle_length; evmin=evmin, iv_null=iv_null, duration=duration, α=α, β=β, threshold=threshold)
+function innovation_stream(cycle_length; evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, threshold=threshold)
     stream = []
     for iteration ∈ 1:cycle_length
         # `Innovation`
@@ -245,7 +245,7 @@ function innovation_stream(cycle_length; evmin=evmin, iv_null=iv_null, duration=
     return stream
 end
 
-function single_frame(evmin, evmax, iv, proposed_i; duration=duration, lines_plot=lines_plot, theme=theme)
+function single_frame(work, evmin, evmax, iv, proposed_i; duration=duration, theme=theme)
     evmin = evmin ⋄ iv ▷ proposed_sir(evmin.initial, proposed_i) ;
     evmax = evmax ⋄ iv ▷ proposed_sir(evmax.initial, proposed_i) ;
     
@@ -254,26 +254,45 @@ function single_frame(evmin, evmax, iv, proposed_i; duration=duration, lines_plo
         error("Monotonicity fails")
     end
 
-    work = deepcopy(lines_plot)
-    draw_evolution!(work, evmin, duration, theme=theme, 
+    if evmin ≃ evmax
+        draw_evolution!(work, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=coalesce_colour)
+    else
+        draw_evolution!(work, evmin, duration, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
-    draw_evolution!(work, evmax, duration, theme=theme,
+        draw_evolution!(work, evmax, duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-                    
-    return work, evmin, evmax
+    end
+
+    return evmin, evmax
 end ;
 ```
 ```{julia}
 #| label: function `cycle`
-function cycle(stream; evmin=evmin, evmax=evmax, tag="demo-f")
+function cycle(stream, canvas; evmin0=evmin0, evmax0=evmax0, tag="demo-f", lines_plot=lines_plot, theme=theme)
+    work = deepcopy(lines_plot)
+    evmin = deepcopy(evmin0)
+    evmax = deepcopy(evmax0)
+    iteration = 0
+    legend = lpad(iteration, 4, "0")
+    draw_evolution!(work, evmin, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=min_spectrum[1])
+    draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=max_spectrum[1])
+    title = "Minimum and maximum evolutions at algorithmic time step $legend"
+    image = new_figure(work; title=title)
+    draw(PNG("animation/demo-$tag-$legend.png"), image)
+    draw(PDF("animation/demo-$tag-$legend.pdf"), image)
+
     for (iteration, pair) ∈ enumerate(stream)
-        (work, evmin, evmax) = single_frame(evmin, evmax, pair...)
+        #(work, evmin, evmax) = single_frame(evmin, evmax, pair...)
+        (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
         
         legend = lpad(iteration, 4, "0")
         coalesced = (evmin ≃ evmax) ? "[COALESCED]" : ""
         title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"
         
-        image = new_figure(work; title=title)
+        image = new_figure(canvas[iteration]; title=title)
         draw(PNG("animation/$tag-$legend.png"), image)
         if mod(iteration, 10) == 0
             draw(PDF("animation/$tag-$legend.pdf"), image)
@@ -347,44 +366,45 @@ Graphical illustration of forwards coalescence {#sec-figures}
 ==============================================
 
 In this appendix we display a _forwards_ coalescence, starting with minimal and maximal evolutions
-for the specified `CRemoval`s. Here is the initial state in algorithmic time.
+for the specified `CRemoval`s. 
+An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the entire CFTP,
+evolving in logical time and re-starting earlier and earlier till coalescence is achieved!
 
-![Configuration of maximal and minimal evolutions at time `0`.](animation/demo-f-0000.pdf)
-
-An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the forwards coalescence evolving in logical time!
-
-There follow a selection of figures illustrating the animation, sampled at every ten steps from step `10` onwards up to step `250`.
-
-```{julia}
-#| label: initial state
-iteration = 0
-legend = lpad(iteration, 4, "0")
-work = deepcopy(lines_plot)
-draw_evolution!(work, evmin, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-title = "Minimum and maximum evolutions at algorithmic time step $legend"
-image = new_figure(work; title=title)
-draw(PNG("animation/demo-f-$legend.png"), image)
-draw(PDF("animation/demo-f-$legend.pdf"), image)
-```
-
-The function `cycle` which does all the work!
-```{julia}
+There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
+sampled at every ten steps from step `10` onwards up to step `250` and also displaying runs of previous cycles
+where appropriate. 
+The work is all done by the function `cycle`.
+```julia
 #| label: building figures
 stream = innovation_stream(256)
 cycle(stream)
+```
+```{julia}
+#| label: building figures
+max_length = 256
+stream = innovation_stream(max_length)
+canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
+for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e", 128), ("f", 256),]
+    cycle(stream[max_length - cycle_length + 1:max_length], 
+        canvas[max_length - cycle_length + 1:max_length], 
+        tag="demo-$epithet")
+end
 ```
 
 Now we create a `GIF`, working with `ImageMagick` on the command-line.
 (Construction might be quicker if run in memory!)
 ```{julia}
 #| label: creating GIF using CLI
-run(`convert -delay 5 -loop 1 animation/demo-f-\*.png animation-demo.gif`) ;
+for epithet ∈ ["a", "b", "c", "d", "e", "f"]
+    run(`convert -delay 10 -loop 1 animation/demo-$epithet-\*.png animation-demo-$epithet.gif`)
+end
 ```
 
+::: {layout-nrow=3}
+![Configuration of maximal and minimal evolutions at time `0`.](animation/demo-f-0000.pdf)
+
 ![](animation/demo-f-0010.pdf)
+:::
 
 ::: {layout-nrow=3}
 ![](animation/demo-f-0020.pdf)

@@ -355,7 +355,6 @@ There follow a selection of figures illustrating the animation, sampled at every
 
 ```{julia}
 #| label: initial state
-#| echo: false
 iteration = 0
 legend = lpad(iteration, 4, "0")
 work = deepcopy(lines_plot)
@@ -369,10 +368,9 @@ draw(PNG("animation/demo-$legend.png"), image)
 draw(PDF("animation/demo-$legend.pdf"), image)
 ```
 
-
+Here is the function `cycle` which does all the work!
 ```{julia}
 #| label: building figures
-#| echo: false
 function cycle(cycle_length; evmin=evmin, evmax=evmax)
     for iteration ∈ 1:cycle_length
         (work, evmin, evmax) = single_frame(evmin, evmax)
@@ -391,11 +389,11 @@ end
 cycle(256)
 ```
 
-
+Now we create a `GIF`, working with `ImageMagick` on the command-line.
+(Construction might be quicker if run in memory!)
 ```{julia}
 #| label: creating GIF using CLI
-#| echo: false
-run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
+run(`convert -delay 5 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
 ```
 
 ::: {layout-nrow=3}

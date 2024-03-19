@@ -53,8 +53,11 @@ make introduction.pdf
   - [ ] Produce simple RWM variant for proposal of new initial state. Check requirements if monotonicity is to be maintained.
   - [ ] Generate code for automatic extension of CFTP.
   - [ ] How to speed up by doing more in memory?!
+  - [ ] More unit tests are needed!
+  - [ ] Clean up the code!
   - [ ] Previous cycles would be better plotted as greyed out.
   - [x] Modify code so times are displayed as negative running up to time 0.
+  - [ ] Adapt to search out _maximum a posteriori_ estimates for the parameters.
 
 - [ ] `24/02/2024` Move unit tests from `test.qmd` to `EpidemicsCFTP/test`. 
 

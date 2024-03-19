@@ -91,7 +91,7 @@ Note that the first `CRemoval` is deemed to have happened at time `0`.
 
 We create maximal and minimal initial evolutions `evmin0` and `evmax0`, deriving from the most
 minimal and maximal initial conditions possible,
-under the reasonable assumption that all actual removals have been observed  as `CRemoval`s by `{julia}duration`,
+under the reasonable assumption that all actual removals have been observed  as `CRemoval`s by time `{julia} duration`,
 when our plots end,
 (This considerably speeds up the simulation.)
 ```{julia}
@@ -105,7 +105,7 @@ evmin0 = extremal_evolution(initial_min, duration, cremoval_times,
 evmax0 = extremal_evolution(initial_max, duration, cremoval_times, 
     maximal=true, all_cremovals_observed=true) ;
 ```
-Plot `duration =` `{julia}duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
+Plot `duration =` `{julia} duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
 a choice based on purely photogenic reasons.
 
 The random `seed!` is fixed, in order to ensure repeatability.
@@ -183,7 +183,7 @@ given α and β.
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]                                                                                                                                                          
 iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) 
 threshold = THRESHOLD 
-@test threshold == length(cremoval_times)
+@test threshold == length(cremoval_times) ; # This test could be removed now!
 ```
 
 Here is an operator which allows us succinctly to propose a change in the initial condition
@@ -193,6 +193,7 @@ at present its employment corresponds to an independence sampler move
 though it should be possible to vary this to be a simple Random Walk Metropolis
 sampler (_simple RWM_).
 In general, care needs to be taken that monotonicity is maintained!
+[See @KendallMoeller-2000 for discussion of a similar situation.]
 ```{julia}
 #| label: operators
 """
@@ -328,6 +329,7 @@ end ;
 ```
 
 This code is used to plot an entire CFTP sequence of sequences of updates in algorithmic time: see [Appendix @sec-figures].
+I suspect that considerable speed-up could be achieved by _not_ plotting each frame of each cycle!
 
 References {.unnumbered}
 ----------
@@ -399,7 +401,8 @@ evolving in logical time and re-starting earlier and earlier till coalescence is
 There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
 sampled at every ten steps from step `10` onwards up to step `250` and also displaying runs of previous cycles
 where appropriate. 
-The work opf ech CFTP cycle is carried out by the function `cycle`.
+The work of each CFTP cycle is carried out by the function `cycle`. Note that we have not yet automated 
+how CFTP works through cycles.
 ```{julia}
 #| label: building figures
 max_length = 256
@@ -421,80 +424,89 @@ lexicon = ["a", "b", "c", "d", "e", "f"]
 for epithet ∈ lexicon
     run(`convert -delay 15 animation/demo-$epithet-\*.png -layers Optimize animation-demo-$epithet.gif`)
 end
-intermediates = [("-delay", "50", "animation/demo-$epithet-0001.png", "-delay", "5", "animation-demo-$epithet.gif") 
-    for epithet ∈ lexicon]
+intermediates = [("-delay", "50", "animation/demo-$epithet-0001.png", "-delay", "5",
+                    "animation-demo-$epithet.gif") for epithet ∈ lexicon]
 sequence = collect(Iterators.flatten(intermediates))
 run(`convert -loop 1 $sequence -layers Optimize animation-demo.gif`)
-run(`rm animation-demo-\*.gif`) ;
+run(`rm $(["animation-demo-$epithet.gif" for epithet in lexicon])`) ;
 ```
+We start with the initial configuration of maximal and minimal evolutions at time `0`,
+and then plot continuation of the final CFTP cycle. Note that it would be helpful to
+display times as _negative_ terminating at time `0`!
+
+It would also be better to display previous cycles as greyed out. Note however that it 
+would be immediately visually apparent if sandwiching were to fail!
 
 ::: {layout-nrow=3}
-![Configuration of maximal and minimal evolutions at time `0`.](animation/demo-f-0000.pdf)
+![](animation/demo-f-0000.pdf)
 
 ![](animation/demo-f-0010.pdf)
+
+![](animation/demo-f-0020.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0020.pdf)
-
 ![](animation/demo-f-0030.pdf)
 
 ![](animation/demo-f-0040.pdf)
+
+![](animation/demo-f-0050.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0050.pdf)
-
 ![](animation/demo-f-0060.pdf)
 
 ![](animation/demo-f-0070.pdf)
+
+![](animation/demo-f-0080.pdf)
 :::
 
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0080.pdf)
-
 ![](animation/demo-f-0090.pdf)
 
 ![](animation/demo-f-0100.pdf)
+
+![](animation/demo-f-0110.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0110.pdf)
-
 ![](animation/demo-f-0120.pdf)
 
 ![](animation/demo-f-0130.pdf)
+
+![](animation/demo-f-0140.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0140.pdf)
-
 ![](animation/demo-f-0150.pdf)
 
 ![](animation/demo-f-0160.pdf)
+
+![](animation/demo-f-0170.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0170.pdf)
-
 ![](animation/demo-f-0180.pdf)
 
 ![](animation/demo-f-0190.pdf)
+
+![](animation/demo-f-0200.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0200.pdf)
-
 ![](animation/demo-f-0210.pdf)
 
 ![](animation/demo-f-0220.pdf)
+
+![](animation/demo-f-0230.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0230.pdf)
 
 ![](animation/demo-f-0240.pdf)
 
 ![](animation/demo-f-0250.pdf)
+
+![](animation/demo-f-0256.png)
 :::

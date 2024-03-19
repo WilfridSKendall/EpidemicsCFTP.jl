@@ -285,7 +285,6 @@ References {.unnumbered}
 ::: {#refs}
 :::
 
-{{< pagebreak >}}
 
 \appendix
 
@@ -396,71 +395,69 @@ Now we create a `GIF`, working with `ImageMagick` on the command-line.
 run(`convert -delay 5 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
 ```
 
-::: {layout-nrow=3}
 ![](animation/demo-0010.pdf)
 
+::: {layout-nrow=3}
 ![](animation/demo-0020.pdf)
 
 ![](animation/demo-0030.pdf)
+
+![](animation/demo-0040.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-0040.pdf)
-
 ![](animation/demo-0050.pdf)
 
 ![](animation/demo-0060.pdf)
+
+![](animation/demo-0070.pdf)
 :::
 
 
 ::: {layout-nrow=3}
-![](animation/demo-0070.pdf)
-
 ![](animation/demo-0080.pdf)
 
 ![](animation/demo-0090.pdf)
+
+![](animation/demo-0100.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-0100.pdf)
-
 ![](animation/demo-0110.pdf)
 
 ![](animation/demo-0120.pdf)
+
+![](animation/demo-0130.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-0130.pdf)
-
 ![](animation/demo-0140.pdf)
 
 ![](animation/demo-0150.pdf)
+
+![](animation/demo-0160.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-0160.pdf)
-
 ![](animation/demo-0170.pdf)
 
 ![](animation/demo-0180.pdf)
+
+![](animation/demo-0190.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-0190.pdf)
-
 ![](animation/demo-0200.pdf)
 
 ![](animation/demo-0210.pdf)
+
+![](animation/demo-0220.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-0220.pdf)
-
 ![](animation/demo-0230.pdf)
 
 ![](animation/demo-0240.pdf)
-:::
 
-::: {layout-nrow=3}
 ![](animation/demo-0250.pdf)
 :::

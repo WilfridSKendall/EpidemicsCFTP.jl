@@ -48,7 +48,9 @@ using EpidemicsCFTP, EpidemicsCFTP.abbreviations, EpidemicsUtilities
 using DataFrames, PrettyTables
 using Colors, Gadfly, Compose
 
-import Test: @test
+
+import Distributions        
+# import Test: @test
 import Random: seed!
 import Markdown
 ```
@@ -171,6 +173,12 @@ We assume the first observed removal to happen at time zero, and
 we assume a good Bayesian justification for a prior distribution of numbers of infectives at this time
 which is uniform over the range of possibilities assuming that no removals take place after the
 last `CRemoval` (and therefore that no infectives survive beyond this time!).
+```{julia}
+#| label: setup simulation                                                                                                                                                                                                    
+min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]                                                                                                                                                          
+iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;                                                                                                                                                        
+threshold = length(min_cremovals)
+```
 
 ```{julia}
 #| label: operators
@@ -221,36 +229,8 @@ end ;
 ```
 
 A function `repetition` uses the template `Innovation` `iv_null`
-and updates minimal and maximal `CEvolution`s by a specified number of algorithmic steps.
+and updates minimal and maximal `CEvolution`s by a single algorithmic step.
 Note that we vary the initial number of infectives using a separate accept/reject step.
-```{julia}
-#| label: function `repetition`
-import Distributions
-min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
-iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;
-threshold = length(min_cremovals)
-function repetition(evmin, evmax, n; duration=duration, iv_null=iv_null,
-                    α=α, β=β, lines_plot=lines_plot)
-    for i in 1:n
-        iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold) ;
-        
-        # Build proposal to check a new initial condition.
-        # IRL we'd use a distribution with Bayesian justification!
-        proposed_i = rand(Distributions.DiscreteUniform(1, threshold - evmin.initial.r))
-        
-        evmin = evmin ⋄ iv ▷ proposed_sir(evmin.initial, proposed_i) ;
-        evmax = evmax ⋄ iv ▷ proposed_sir(evmax.initial, proposed_i) ;
-
-    end
-    work = deepcopy(lines_plot)
-    draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
-    draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
-    return work, evmin, evmax
-end ;
-```
-
 ```{julia}
 #| label: function `single_frame`
 function single_frame(evmin, evmax; duration=duration, iv_null=iv_null,
@@ -371,7 +351,7 @@ for the specified `CRemoval`s. Here is the initial state in algorithmic time.
 
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the forwards coalescence evolving in logical time!
 
-There follow a selection of figures illustrating the animation, sampled at every ten steps from step `10` onwards up to step `300`.
+There follow a selection of figures illustrating the animation, sampled at every ten steps from step `10` onwards up to step `250`.
 
 ```{julia}
 #| label: initial state
@@ -393,17 +373,22 @@ draw(PDF("animation/demo-$legend.pdf"), image)
 ```{julia}
 #| label: building figures
 #| echo: false
-for iteration ∈ 1:300
-    legend = lpad(iteration, 4, "0")
-    (work, evmin, evmax) = single_frame(evmin, evmax)
-    coalesced = (evmin ≃ evmax) ? "[COALESCED]" : ""
-    title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"
-    image = new_figure(work; title=title)
-    draw(PNG("animation/demo-$legend.png"), image)
-    if mod(iteration, 10) == 0
-        draw(PDF("animation/demo-$legend.pdf"), image)
+function cycle(cycle_length; evmin=evmin, evmax=evmax)
+    for iteration ∈ 1:cycle_length
+        (work, evmin, evmax) = single_frame(evmin, evmax)
+        
+        legend = lpad(iteration, 4, "0")
+        coalesced = (evmin ≃ evmax) ? "[COALESCED]" : ""
+        title="Minimum and maximum evolutions at algorithmic time step $legend $coalesced"
+        
+        image = new_figure(work; title=title)
+        draw(PNG("animation/demo-$legend.png"), image)
+        if mod(iteration, 10) == 0
+            draw(PDF("animation/demo-$legend.pdf"), image)
+        end
     end
 end
+cycle(256)
 ```
 
 
@@ -480,16 +465,4 @@ run(`convert -delay 20 -loop 1 animation/demo-\*.png animation-demo.gif`) ;
 
 ::: {layout-nrow=3}
 ![](animation/demo-0250.pdf)
-
-![](animation/demo-0260.pdf)
-
-![](animation/demo-0270.pdf)
-:::
-
-::: {layout-nrow=3}
-![](animation/demo-0280.pdf)
-
-![](animation/demo-0290.pdf)
-
-![](animation/demo-0300.pdf)
 :::

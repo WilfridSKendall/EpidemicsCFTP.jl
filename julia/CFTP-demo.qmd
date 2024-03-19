@@ -50,9 +50,10 @@ using Colors, Gadfly, Compose
 
 
 import Distributions        
-# import Test: @test
 import Random: seed!
 import Markdown
+
+import Test: @test
 ```
 
 ```{julia}
@@ -78,33 +79,33 @@ derived from a maximum likelihood analysis devised by Frank Ball.
 #| label: initialization
 population     = 120
 ε              = 0.001 
-interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3,
-                   2, ε, 2, ε, 5, 3, 1, 4, ε, 1, 
-                   1, 1, 2, ε, 1, 5, ε, 5, 5] ;
-α, β           = 0.0008, 0.088 ;
+interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε, 1, 
+                   1, 1, 2, ε, 1, 5, ε, 5, 5] 
+α, β           = 0.0008, 0.088 
 THRESHOLD      = length(interremovals) + 1 ;
-cremoval_times = accumulate(+, interremovals) ;
-pushfirst!(cremoval_times, 0) ;
+cremoval_times = accumulate(+, interremovals) 
+pushfirst!(cremoval_times, 0) 
+duration = 10 + maximum(cremoval_times) ;
 ```
-Note that the first `CRemoval` happens at time `0`.
+Note that the first `CRemoval` is deemed to have happened at time `0`.
 
-We create maximal and minimal initial evolutions, deriving from minimal and maximal initial conditions,
-and based on the assumption that all actual removals have been observed  as `CRemoval`s by the end of the plot `duration`,
-so that no time line above index `{julia} THRESHOLD` will become infectious. 
+We create maximal and minimal initial evolutions `evmin0` and `evmax0`, deriving from the most
+minimal and maximal initial conditions possible,
+under the reasonable assumption that all actual removals have been observed  as `CRemoval`s by `{julia}duration`,
+when our plots end,
+(This considerably speeds up the simulation.)
 ```{julia}
 #| label: setting up extremal evolutions
 initial     = SIR(0, population - 1, 1, 0)
 initial_min = SIR(0, population - 1, 1, 0)
-#initial_max = SIR(0, population - THRESHOLD + 1, THRESHOLD - 1, 0)
 initial_max = SIR(0, population - THRESHOLD, THRESHOLD, 0)
-duration = 10 + maximum(cremoval_times)
 
 evmin0 = extremal_evolution(initial_min, duration, cremoval_times, 
     maximal=false) ;
 evmax0 = extremal_evolution(initial_max, duration, cremoval_times, 
     maximal=true, all_cremovals_observed=true) ;
 ```
-Plot `duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
+Plot `duration =` `{julia}duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
 a choice based on purely photogenic reasons.
 
 The random `seed!` is fixed, in order to ensure repeatability.
@@ -115,28 +116,30 @@ seed!(6) ;
 
 Tabular and graphical displays of epidemics
 ===========================================
-`EpidemicsUtilities` supplies some constants 
+Here are some rather unimportant details about construction of plots,
+which in due course may be incorporated in the module `EpidemicsUtilities` 
+in a more generalized form. In particular it is convenient to import from `EpidemicsUtilities` some constants 
 used for the plotting parameter `select`, namely
 ```{julia}
 #| label: imports from `EpidemicsUtilities`
 import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
 ```
 
-Chosen colours.
+Here are specialized colours used in the plots.
 ```{julia}
 #| label: choice of colours
-min_spectrum    = [colorant"red"] ;
-append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)) ;
-max_spectrum    = [colorant"blue"] ;
-append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) ;
-joined_colour   = colorant"deeppink" ;
+min_spectrum    = [colorant"red"] 
+append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)) 
+max_spectrum    = [colorant"blue"] 
+append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) 
+joined_colour   = colorant"deeppink" 
 coalesce_colour = colorant"black" ;
 ```
 
-
+Here are some more plotting technicalities.
 ```{julia}
 #| label: basic graphics
-uflow = table_trajectories1(duration, evmin0.trajectory) ;
+uflow = table_trajectories1(duration, evmin0.trajectory) 
 axes_plot = plot(uflow, 
     yintercept=0:5:THRESHOLD,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
@@ -153,10 +156,10 @@ axes_plot = plot(uflow,
         major_label_font_size=6pt,     minor_label_font_size=4pt,
         plot_padding = [4pt, 2pt, 4pt, 4pt],
         grid_line_width=0mm,
-)) ;
+)) 
 
 push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
-    style(line_width=theme.trail, default_color=theme.scaffold))) ;
+    style(line_width=theme.trail, default_color=theme.scaffold))) 
 
 lines_plot = new_figure(axes_plot,
     Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
@@ -169,17 +172,27 @@ lines_plot = new_figure(axes_plot,
 
 Implementation
 ==============
-We assume the first observed removal to happen at time zero, and
-we assume a good Bayesian justification for a prior distribution of numbers of infectives at this time
+We have assumed the first observed removal to happen at time zero, and
+we further assume a Bayesian prior distribution for the numbers of infectives at this time
 which is uniform over the range of possibilities assuming that no removals take place after the
 last `CRemoval` (and therefore that no infectives survive beyond this time!).
+This is unduly pessimistic: it should be possible to _compute_ the prior distribution
+given α and β.
 ```{julia}
 #| label: setup simulation                                                                                                                                                                                                    
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]                                                                                                                                                          
-iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;                                                                                                                                                        
-threshold = length(min_cremovals)
+iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) 
+threshold = THRESHOLD 
+@test threshold == length(cremoval_times)
 ```
 
+Here is an operator which allows us succinctly to propose a change in the initial condition
+for a `CEvolution`, which will be accepted only if it leads to a valid `CEvolution`.
+Eventually this will be included in the module `EpidemicsCFTP` --
+at present its employment corresponds to an independence sampler move
+though it should be possible to vary this to be a simple Random Walk Metropolis
+sampler (_simple RWM_).
+In general, care needs to be taken that monotonicity is maintained!
 ```{julia}
 #| label: operators
 """
@@ -228,12 +241,14 @@ function proposed_sir(sir, proposed_i)
 end ;
 ```
 
-A function `repetition` uses the template `Innovation` `iv_null`
-and updates minimal and maximal `CEvolution`s by a single algorithmic step.
-Note that we vary the initial number of infectives using a separate accept/reject step.
+The function `innovation_stream` supplies a single stream of tuples each giving
+an `Innovation` and a proposal to change initial condition.
+For now we simply ensure this is long enough to fuel the entire CFTP process,
+though in principle it would be easy to extend this as required!
 ```{julia}
-#| label: functions for plotting CFTP cycles
-function innovation_stream(cycle_length; evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, threshold=threshold)
+#| label: function `innovation_stream`
+function innovation_stream(cycle_length; 
+    evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, threshold=threshold)
     stream = []
     for iteration ∈ 1:cycle_length
         # `Innovation`
@@ -243,8 +258,14 @@ function innovation_stream(cycle_length; evmin=evmin0, iv_null=iv_null, duration
         push!(stream, (iv, proposed_i))
     end
     return stream
-end
+end ;
+```
 
+A function `single_frame` updates minimal and maximal `CEvolution`s by a single algorithmic step.
+Note that we vary the initial number of infectives using a separate accept/reject step
+in the update.
+```{julia}
+#| label: function `single_frame`
 function single_frame(work, evmin, evmax, iv, proposed_i; duration=duration, theme=theme)
     evmin = evmin ⋄ iv ▷ proposed_sir(evmin.initial, proposed_i) ;
     evmax = evmax ⋄ iv ▷ proposed_sir(evmax.initial, proposed_i) ;
@@ -267,9 +288,14 @@ function single_frame(work, evmin, evmax, iv, proposed_i; duration=duration, the
     return evmin, evmax
 end ;
 ```
+
+Most of the work of the CFTP algorithm will be done by the `cycle` function.
+Note that previous cycles are included in the plots as relevant. Ideally we should plot
+these as greyed out, but this is a matter for later.
 ```{julia}
 #| label: function `cycle`
-function cycle(stream, canvas; evmin0=evmin0, evmax0=evmax0, tag="demo-f", lines_plot=lines_plot, theme=theme)
+function cycle(stream, canvas; 
+        evmin0=evmin0, evmax0=evmax0, tag="demo-f", lines_plot=lines_plot, theme=theme)
     work = deepcopy(lines_plot)
     evmin = deepcopy(evmin0)
     evmax = deepcopy(evmax0)
@@ -298,10 +324,10 @@ function cycle(stream, canvas; evmin0=evmin0, evmax0=evmax0, tag="demo-f", lines
             draw(PDF("animation/$tag-$legend.pdf"), image)
         end
     end
-end 
+end ;
 ```
 
-We use this to plot a sequence of updates in algorithmic time: see [Appendix @sec-figures].
+This code is used to plot an entire CFTP sequence of sequences of updates in algorithmic time: see [Appendix @sec-figures].
 
 References {.unnumbered}
 ----------
@@ -317,7 +343,7 @@ Appendices {.unnumbered}
 
 Software versions
 =================
-Here is a table of software used in the following computations:
+Here is a table of major software components used in our computations:
 ```{julia}
 #| label: software-versions
 #| echo: false
@@ -342,7 +368,7 @@ Markdown.parse("""
 
 Package documentation
 =====================
-Package documentation can be found as follows.
+Julia package documentation can be found as follows.
 ```{julia}
 #| label: package-documentation
 #| echo: false
@@ -365,25 +391,21 @@ Markdown.parse("""
 Graphical illustration of forwards coalescence {#sec-figures}
 ==============================================
 
-In this appendix we display a _forwards_ coalescence, starting with minimal and maximal evolutions
-for the specified `CRemoval`s. 
+In this appendix we display an entire evolution of a CFTP run, always starting with minimal and maximal evolutions
+`evmin0` and `evmax0` given above. 
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the entire CFTP,
 evolving in logical time and re-starting earlier and earlier till coalescence is achieved!
 
 There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
 sampled at every ten steps from step `10` onwards up to step `250` and also displaying runs of previous cycles
 where appropriate. 
-The work is all done by the function `cycle`.
-```julia
-#| label: building figures
-stream = innovation_stream(256)
-cycle(stream)
-```
+The work opf ech CFTP cycle is carried out by the function `cycle`.
 ```{julia}
 #| label: building figures
 max_length = 256
 stream = innovation_stream(max_length)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
+
 for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e", 128), ("f", 256),]
     cycle(stream[max_length - cycle_length + 1:max_length], 
         canvas[max_length - cycle_length + 1:max_length], 
@@ -391,13 +413,19 @@ for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e"
 end
 ```
 
-Now we create a `GIF`, working with `ImageMagick` on the command-line.
+Now we create a `GIF` of the entire CFTP run, working with `ImageMagick` on the command-line.
 (Construction might be quicker if run in memory!)
 ```{julia}
 #| label: creating GIF using CLI
-for epithet ∈ ["a", "b", "c", "d", "e", "f"]
-    run(`convert -delay 10 -loop 1 animation/demo-$epithet-\*.png animation-demo-$epithet.gif`)
+lexicon = ["a", "b", "c", "d", "e", "f"]
+for epithet ∈ lexicon
+    run(`convert -delay 15 animation/demo-$epithet-\*.png -layers Optimize animation-demo-$epithet.gif`)
 end
+intermediates = [("-delay", "50", "animation/demo-$epithet-0001.png", "-delay", "5", "animation-demo-$epithet.gif") 
+    for epithet ∈ lexicon]
+sequence = collect(Iterators.flatten(intermediates))
+run(`convert -loop 1 $sequence -layers Optimize animation-demo.gif`)
+run(`rm animation-demo-\*.gif`) ;
 ```
 
 ::: {layout-nrow=3}

@@ -176,7 +176,7 @@ We have assumed the first observed removal to happen at time zero, and
 we further assume a Bayesian prior distribution for the numbers of infectives at this time
 which is uniform over the range of possibilities assuming that no removals take place after the
 last `CRemoval` (and therefore that no infectives survive beyond this time!).
-This is unduly pessimistic: it should be possible to _compute_ the prior distribution
+This is unduly pessimistic: it is possible to _compute_ the prior distribution
 given α and β.
 ```{julia}
 #| label: setup simulation                                                                                                                                                                                                    
@@ -186,6 +186,39 @@ threshold = THRESHOLD
 @test threshold == length(cremoval_times) ; # This test could be removed now!
 ```
 
+(Digression.) In fact one can make a case for a simple prior distribution for the initial
+number of infectives, based on the assumption that there is one index case and that all 
+actual removals at _whatever_ time
+are observed and are registered as `CRemoval`s. For in that case the relevant distribution 
+(which is to say, pertaining to the _unconditioned_ epidemic!) for the
+number of infectives at time `0` is the total number who have been infected up to the first actual
+removal, less one (the removal!). Now the relevant process here undergoes a sequence of 
+infection/removal transitions,
+finishing when the first removal occurs. Rates after \(m\) infections (including the index infection),
+in a population of size \(n\), are:
+\[
+\begin{aligned}
+\text{infection at rate }& (n-m) m \alpha \\
+\text{removal at rate }  &  m \beta
+\end{aligned}
+\]
+and so the chance that the next transition is an infection is 
+\[
+\frac{(n-m) m \alpha}{(n-m) m \alpha + m \beta}
+\quad=\quad
+\frac{1}{1+ \frac{1}{n-m}\frac{\beta}{\alpha}}\,.
+\]
+Now we are dealing with \(n=`{julia} population`\) 
+and \(\alpha = `{julia} α`\), \(\beta = `{julia} β`\), so
+the chance of the next transition being an infection starts at
+\[
+\frac{1}{1+ \frac{1}{n-1}\frac{\beta}{\alpha}}\quad=\quad
+`{julia} 1/(1+ β/((population-1)α))`
+\]
+and then decays. So the number of `Infection`s at time `0` is sub-Geometric
+(version with smallest value is `1`, since we require at least one `Infection` at time zero!)
+with this success parameter.
+
 Here is an operator which allows us succinctly to propose a change in the initial condition
 for a `CEvolution`, which will be accepted only if it leads to a valid `CEvolution`.
 Eventually this will be included in the module `EpidemicsCFTP` --
@@ -193,7 +226,7 @@ at present its employment corresponds to an independence sampler move
 though it should be possible to vary this to be a simple Random Walk Metropolis
 sampler (_simple RWM_).
 In general, care needs to be taken that monotonicity is maintained!
-[A similar situation is discussed in @KendallMoeller-2000.]
+[A similar situation concerning spatial point processes is discussed in @KendallMoeller-2000.]
 ```{julia}
 #| label: operators
 """

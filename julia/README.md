@@ -64,10 +64,10 @@ make introduction.pdf
 
 - [ ] Improve animation.
   - [x] Modify code so times are displayed as negative running up to time 0.
-  - [ ] Highlight coalescence in animation.
+  - [x] Highlight coalescence in animation.
   - [x] Pause at end of each CFTP cycle in animation.
   - [ ] Previous cycles would be better plotted as greyed out.
-  - [ ] Coalesced trajectory as opaque black.
+  - [x] Coalesced trajectory as opaque black.
   
 - [ ] Statistical application:
   - [ ] Adapt to search out _maximum a posteriori_ estimates for the parameters.

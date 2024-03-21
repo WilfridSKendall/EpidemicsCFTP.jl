@@ -129,9 +129,9 @@ Here are specialized colours used in the plots.
 ```{julia}
 #| label: choice of colours
 min_spectrum    = [colorant"red"] 
-append!(min_spectrum, range(colorant"grey5",   stop=colorant"grey99", length=11)) 
+append!(min_spectrum, range(colorant"grey5", stop=colorant"grey99", length=11)) 
 max_spectrum    = [colorant"blue"] 
-append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99",   length=11)) 
+append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99", length=11)) 
 joined_colour   = colorant"deeppink" 
 coalesce_colour = colorant"black" ;
 ```
@@ -311,7 +311,7 @@ function single_frame(work, evmin, evmax, iv, proposed_i; duration=duration, the
 
     if evmin ≃ evmax
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=coalesce_colour)
+                    select=BOUNDARIES, specified_color=coalesce_colour, specified_opacity=1.0)
     else
         draw_evolution!(work, evmin, duration, theme=theme, 
                     select=BOUNDARIES, specified_color=min_spectrum[1])
@@ -335,13 +335,21 @@ function cycle(stream, canvas;
     evmax = deepcopy(evmax0)
     iteration = 0
     legend  = lpad(iteration, 4, "0")
-    legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
+    if iteration < length(stream)
+        legend2 = "-$(lpad(length(stream)-iteration, 4, "0")):"
+    else
+        legend2 = "$(lpad(length(stream)-iteration, 4, "0")): "
+    end
     draw_evolution!(work, evmin, duration, theme=theme,
                     select=BOUNDARIES, specified_color=min_spectrum[1])
     draw_evolution!(work, evmax, duration, theme=theme,
                     select=BOUNDARIES, specified_color=max_spectrum[1])
-    title = "Minimum and maximum evolutions at algorithmic time step $legend2"
-    image = new_figure(work; title=title)
+    logo  = "Minimum and maximum evolutions at algorithmic time step"
+    title = "$logo $legend2"
+    about = "Cycle at time $legend2 begun at $(-length(stream))"
+    info  = Guide.annotation(compose(context(), font("Helvetica"), fontsize(12pt), 
+                    text(0.4w, 0.95h, about), fill("tomato")))
+    image = new_figure(work, info; title=title)
     draw(PNG("animation/demo-$tag-$legend.png"), image)
     draw(PDF("animation/demo-$tag-$legend.pdf"), image)
 
@@ -349,15 +357,25 @@ function cycle(stream, canvas;
         (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
         
         legend = lpad(iteration, 4, "0")
-        legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
-        coalesced = (evmin ≃ evmax)
-        if coalesced
-            title="Minimum and maximum evolutions at algorithmic time step $legend2 [COALESCED]"
+        if iteration < length(stream)
+            legend2 = "-$(lpad(length(stream)-iteration, 4, "0")):"
         else
-            title="Minimum and maximum evolutions at algorithmic time step $legend2"
+            legend2 = "$(lpad(length(stream)-iteration, 4, "0")): "
         end
         
-        image = new_figure(canvas[iteration]; title=title)
+        about = "Cycle at time $legend2 begun at $(-length(stream))"
+        info  = Guide.annotation(compose(context(), font("Helvetica"), fontsize(12pt), 
+                        text(0.4w, 0.95h, about), fill("tomato")))
+        
+        if (evmin ≃ evmax)
+            title  = "$logo $legend2 [COALESCED]"
+            signal = Guide.annotation(compose(context(), font("Helvetica-Bold"), fontsize(14pt), 
+                        text(0.4w, 0.8h, "COALESCED"), fill("tomato")))
+            image  = new_figure(canvas[iteration], info, signal; title=title)
+        else
+            title  = "$logo $legend2"
+            image  = new_figure(canvas[iteration], info; title=title)
+        end
         draw(PNG("animation/$tag-$legend.png"), image)
         if mod(iteration, 10) == 0
             draw(PDF("animation/$tag-$legend.pdf"), image)
@@ -441,31 +459,7 @@ In this appendix we display an entire evolution of a CFTP run, always starting w
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the entire CFTP,
 evolving in logical time and re-starting earlier and earlier till coalescence is achieved!
 
-**We are working on the following display mechanism**
-```{julia}
-function new_figure1(template, gadfly_list...; title="", coalesced=false)
-    figure = deepcopy(template)
-    if ! isempty(gadfly_list)
-      push!(figure, gadfly_list...)
-    end
-    if title !== ""
-      if coalesced
-        push!(figure, Guide.title("$title ***[COALESCED]***"))
-#        push!(figure, Guide.annotation(compose(context(),
-#                                               Compose.text("###[COALESCED]###"), 
-#                                               fontsize(40pt), font("Helvetica"),
-#                                               fill(colorant"red")))) # Need to use `theme`!
-      else
-        push!(figure, Guide.title(title))
-      end
-    end
-    return figure
-end
-```
 
-There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
-sampled at every ten steps from step `10` onwards up to step `250` and also displaying runs of previous cycles
-where appropriate. 
 The work of each CFTP cycle is carried out by the function `cycle`. Note that we have not yet automated 
 how CFTP works through cycles.
 ```{julia}
@@ -489,20 +483,27 @@ lexicon = ["a", "b", "c", "d", "e", "f"]
 pause1 = 15
 pause2 = 300
 for epithet ∈ lexicon
-    run(`convert -delay $pause1 animation/demo-$epithet-\*.png -delay $pause2 animation/demo-$epithet.png -layers Optimize animation-demo-$epithet.gif`)
+    prefix = "animation/demo-$epithet"
+    run(`convert -delay $pause1 $prefix-\*.png -delay $pause2 $prefix.png -layers Optimize $prefix.gif`)
 end
-run(`convert -loop 1 animation-demo-\*.gif -layers Optimize animation-demo.gif`)
-run(`rm $(["animation-demo-$epithet.gif" for epithet in lexicon])`) ;
+run(`convert -loop 1 animation/demo-\*.gif -layers Optimize animation-demo.gif`)
+run(`rm $(["animation/demo-$epithet.gif" for epithet in lexicon])`) ;
 ```
+
+Final (coalescent) cycle
+------------------------
+There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
+sampled at every ten steps from step `10` onwards up to step `250` and also displaying runs of previous cycles
+where appropriate.
 We start with the initial configuration of maximal and minimal evolutions at time `0`,
 and then plot continuation of the final CFTP cycle. Note that times are displayed
 as _negative_, counting up to time `0`!
 
-It would also be better to display previous cycles as greyed out. Note however that it 
-would be immediately visually apparent if sandwiching were to fail!
+It would also be better to display previous cycles as greyed out. Note however that 
+coalescence is visually evident: the coalesced trajectory is drawn in black.
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0001.png)
+![](animation/demo-f-0000.pdf)
 
 ![](animation/demo-f-0010.pdf)
 
@@ -572,5 +573,27 @@ would be immediately visually apparent if sandwiching were to fail!
 
 ![](animation/demo-f-0250.pdf)
 
-![](animation/demo-f-0256.png)
+![](animation/demo-f.pdf)
+:::
+
+{{< pagebreak >}}
+
+
+End states of all the cycles up to coalescence
+----------------------------------------------
+
+::: {layout-nrow=3}
+![](animation/demo-a.pdf)
+
+![](animation/demo-b.pdf)
+
+![](animation/demo-c.pdf)
+:::
+
+::: {layout-nrow=3}
+![](animation/demo-d.pdf)
+
+![](animation/demo-e.pdf)
+
+![](animation/demo-f.pdf)
 :::

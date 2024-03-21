@@ -21,8 +21,7 @@ MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1'
 # ====================
 # Main targets
 main: $(PRODUCTS)
-verify: $(PRODUCTS) $(wildcard image/VERIFY_*.png) $(wildcard animation/VERIFY_*.png)
-verify-animation: $(wildcard animation/VERIFY_*.png)
+verify: main verify-image verify-animation
 
 # ====================
 # Clean-up
@@ -45,10 +44,9 @@ install:
 
 # ====================
 # Verification
-set-up-verify: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
-
-reset-verify:  ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
-
+verify-image: $(wildcard image/VERIFY_*.png) $(wildcard animation/VERIFY_*.png)
+set-up-verify-image: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
+reset-verify-image:  ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 image/VERIFY_%.png: image/%.png
 	@if /usr/bin/cmp -s $@ $<  ;                                       \
 	then                                                               \
@@ -61,6 +59,7 @@ image/VERIFY_%.png: image/%.png
 	    rm $(<D)/.diff.$(<F) ;                                         \
 	fi
 
+verify-animation: $(wildcard animation/VERIFY_*.png)
 set-up-verify-animation: ; for f in animation/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 reset-verify-animation:  ; for f in animation/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 animation/VERIFY_%.png: animation/%.png

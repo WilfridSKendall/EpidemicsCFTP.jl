@@ -346,13 +346,16 @@ function cycle(stream, canvas;
     draw(PDF("animation/demo-$tag-$legend.pdf"), image)
 
     for (iteration, pair) ∈ enumerate(stream)
-        #(work, evmin, evmax) = single_frame(evmin, evmax, pair...)
         (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
         
         legend = lpad(iteration, 4, "0")
         legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
-        coalesced = (evmin ≃ evmax) ? "[COALESCED]" : ""
-        title="Minimum and maximum evolutions at algorithmic time step $legend2 $coalesced"
+        coalesced = (evmin ≃ evmax)
+        if coalesced
+            title="Minimum and maximum evolutions at algorithmic time step $legend2 [COALESCED]"
+        else
+            title="Minimum and maximum evolutions at algorithmic time step $legend2"
+        end
         
         image = new_figure(canvas[iteration]; title=title)
         draw(PNG("animation/$tag-$legend.png"), image)
@@ -360,6 +363,8 @@ function cycle(stream, canvas;
             draw(PDF("animation/$tag-$legend.pdf"), image)
         end
     end
+    draw(PNG("animation/$tag.png"), image)
+    draw(PDF("animation/$tag.pdf"), image)
 end ;
 ```
 
@@ -436,6 +441,28 @@ In this appendix we display an entire evolution of a CFTP run, always starting w
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the entire CFTP,
 evolving in logical time and re-starting earlier and earlier till coalescence is achieved!
 
+**We are working on the following display mechanism**
+```{julia}
+function new_figure1(template, gadfly_list...; title="", coalesced=false)
+    figure = deepcopy(template)
+    if ! isempty(gadfly_list)
+      push!(figure, gadfly_list...)
+    end
+    if title !== ""
+      if coalesced
+        push!(figure, Guide.title("$title ***[COALESCED]***"))
+#        push!(figure, Guide.annotation(compose(context(),
+#                                               Compose.text("###[COALESCED]###"), 
+#                                               fontsize(40pt), font("Helvetica"),
+#                                               fill(colorant"red")))) # Need to use `theme`!
+      else
+        push!(figure, Guide.title(title))
+      end
+    end
+    return figure
+end
+```
+
 There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
 sampled at every ten steps from step `10` onwards up to step `250` and also displaying runs of previous cycles
 where appropriate. 
@@ -459,18 +486,17 @@ Now we create a `GIF` of the entire CFTP run, working with `ImageMagick` on the 
 ```{julia}
 #| label: creating GIF using CLI
 lexicon = ["a", "b", "c", "d", "e", "f"]
+pause1 = 15
+pause2 = 300
 for epithet ∈ lexicon
-    run(`convert -delay 15 animation/demo-$epithet-\*.png -layers Optimize animation-demo-$epithet.gif`)
+    run(`convert -delay $pause1 animation/demo-$epithet-\*.png -delay $pause2 animation/demo-$epithet.png -layers Optimize animation-demo-$epithet.gif`)
 end
-intermediates = [("-delay", "50", "animation/demo-$epithet-0001.png", "-delay", "5",
-                    "animation-demo-$epithet.gif") for epithet ∈ lexicon]
-sequence = collect(Iterators.flatten(intermediates))
-run(`convert -loop 1 $sequence -layers Optimize animation-demo.gif`)
+run(`convert -loop 1 animation-demo-\*.gif -layers Optimize animation-demo.gif`)
 run(`rm $(["animation-demo-$epithet.gif" for epithet in lexicon])`) ;
 ```
 We start with the initial configuration of maximal and minimal evolutions at time `0`,
-and then plot continuation of the final CFTP cycle. Note that it would be helpful to
-display times as _negative_ terminating at time `0`!
+and then plot continuation of the final CFTP cycle. Note that times are displayed
+as _negative_, counting up to time `0`!
 
 It would also be better to display previous cycles as greyed out. Note however that it 
 would be immediately visually apparent if sandwiching were to fail!

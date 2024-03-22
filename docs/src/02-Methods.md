@@ -1,13 +1,14 @@
 # Methods for computation
 
 ## Helpful operators
-Notation that is useful for concise expression of CFTP algorithms.
+Notation that is useful for concise expression of CFTP algorithms at the level of `CEvolution`
+or `Evolution` objects.
 ```@docs
 ⪯
 ≃
 ⋄
 ▷
-proposed_sir
+EpidemicsCFTP.proposed_sir
 ```
 
 ## A total ordering for incidents

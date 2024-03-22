@@ -19,8 +19,8 @@ Base.show(io::IO, ::MIME"text/plain", ::Vector{T}; Int, ::String) where T <: Abs
 ```@docs
 Base.show(::IO, ::MIME"text/plain", ::SIR)
 
-Base.show(::IO, ::MIME"text/plain", ::Innovation)
-Base.show(io::IO, z::Innovation)
+Base.show(::IO, ::MIME"text/plain", ::AbstractInnovation)
+Base.show(io::IO, z::AbstractInnovation)
 
 Base.show(::IO, ::MIME"text/plain", ::AbstractEvolution)
 ```

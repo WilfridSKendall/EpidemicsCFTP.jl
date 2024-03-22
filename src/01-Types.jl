@@ -958,6 +958,9 @@ for infectious intervals.
 
 The field `size` currently plays no role.
 
+The fundamental constructor of `Evolution` uses `deepcopy` for the fields `infections`, 
+`removals`, and `cremovals` to avoid embarrassing bugs if the source lists are later modified!
+
 See [`Evolution(::SIR,::AbstractInnovation)`](@ref Evolution(::SIR, ::AbstractInnovation)) 
 and [`Evolution(::SIR,::Vector{AbstractIncident})`](@ref Evolution(::SIR, ::Vector{AbstractIncident})) 
 below for examples of construction.
@@ -1028,8 +1031,8 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation)::Evolutio
         trajectory, history = evolution(initial_state, innovation)
         start      = create_start(trajectory[1], history)
         finis      = create_finis(trajectory[1], history)
-        return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis, 0::Int)
+        return new(population, deepcopy(infections), deepcopy(removals), deepcopy(cremovals), 
+                   chronology, trajectory, history, initial_state, start, finis, 0::Int)
     end
     
 @doc """
@@ -1100,6 +1103,9 @@ not be infected if we are not to violate conditioning on removals.
 
 If field `size` is positive (in fact, no smaller than the total number of `CRemoval`s)
 then this serves as a further constraint on the `initial` field.
+
+The fundamental constructor of `CEvolution` uses `deepcopy` for the fields `infections`, 
+`removals`, and `cremovals` to avoid embarrassing bugs if the source lists are later modified!
 
 There are three different derived constructors discussed below:
 
@@ -1318,8 +1324,8 @@ function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
     start               = create_start(trajectory[1], history)
     finis               = create_finis(trajectory[1], history)
         
-    return new(population, infections, removals, cremovals, chronology, 
-        trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ, size)
+    return new(population, deepcopy(infections), deepcopy(removals), deepcopy(cremovals),
+               chronology, trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ, size)
 end
 
 end

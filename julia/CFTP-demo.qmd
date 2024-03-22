@@ -245,8 +245,6 @@ prior = Categorical(priorprob)
 
 prior_df = DataFrame(k=1:length(priorprob), probability=priorprob)
 draw(PDF("image/prior.pdf"), plot(prior_df, x=:k, y=:probability, Geom.bar))
-
-1 - sum(priorprob)
 ```
 
 ![Probability mass function for prior for number of initial infectives.](image/prior.pdf)
@@ -270,9 +268,9 @@ function innovation_stream(cycle_length;
         # `Innovation`
         iv = generate_innovation(iv_null, duration; α=α, β=β, size=size)
         # Proposed initial infection level: distribution `prior` constructed above.
-        # proposed_i = rand(prior)
+        proposed_i = rand(prior)
         # Pessimistic alternative commented out in next line.
-         proposed_i = rand(DiscreteUniform(1, size - evmin.initial.r))
+        # proposed_i = rand(DiscreteUniform(1, size - evmin.initial.r))
         push!(stream, (iv, proposed_sir(initial, proposed_i)))
     end
     return stream
@@ -308,9 +306,11 @@ function single_frame(work, evmin, evmax, iv, proposed_sir; duration=duration, t
                     select=BOUNDARIES, specified_color=coalesce_colour, specified_opacity=1.0)
     else
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
+                    #select=BOUNDARIES, specified_color=min_spectrum[1])
+                    select=BOUNDARIES, specified_color=min_spectrum[1], specified_opacity=0.2)
         draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
+                    #select=BOUNDARIES, specified_color=max_spectrum[1])
+                    select=BOUNDARIES, specified_color=max_spectrum[1], specified_opacity=0.2)
     end
 
     return evmin, evmax
@@ -323,7 +323,7 @@ these as greyed out, but this is a matter for later.
 ```{julia}
 #| label: function `cycle`
 function cycle(stream, canvas; 
-        evmin0=evmin0, evmax0=evmax0, tag="demo-f", lines_plot=lines_plot, theme=theme)
+        evmin0=evmin0, evmax0=evmax0, tag="demo-e", lines_plot=lines_plot, theme=theme)
     work = deepcopy(lines_plot)
     evmin = deepcopy(evmin0)
     evmax = deepcopy(evmax0)
@@ -344,8 +344,8 @@ function cycle(stream, canvas;
     info  = Guide.annotation(compose(context(), font("Helvetica"), fontsize(12pt), 
                     text(0.4w, 0.95h, about), fill("tomato")))
     image = new_figure(work, info; title=title)
-    draw(PNG("animation/demo-$tag-$legend.png"), image)
-    draw(PDF("animation/demo-$tag-$legend.pdf"), image)
+    draw(PNG("animation/$tag-$legend.png"), image)
+    draw(PDF("animation/$tag-$legend.pdf"), image)
 
     for (iteration, pair) ∈ enumerate(stream)
         (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
@@ -462,7 +462,7 @@ max_length = 256
 stream = innovation_stream(max_length)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 
-for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e", 128), ("f", 256),]
+for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e", 128)] 
     cycle(stream[max_length - cycle_length + 1:max_length], 
         canvas[max_length - cycle_length + 1:max_length], 
         tag="demo-$epithet")
@@ -473,12 +473,12 @@ Now we create a `GIF` of the entire CFTP run, working with `ImageMagick` on the 
 (Construction might be quicker if run in memory!)
 ```{julia}
 #| label: creating GIF using CLI
-lexicon = ["a", "b", "c", "d", "e", "f"]
-pause1 = 15
-pause2 = 300
+lexicon = ["a", "b", "c", "d", "e"] 
+dt1 = 15
+dt2 = 300
 for epithet ∈ lexicon
     prefix = "animation/demo-$epithet"
-    run(`convert -delay $pause1 $prefix-\*.png -delay $pause2 $prefix.png -layers Optimize $prefix.gif`)
+    run(`convert -delay $dt1 $prefix-\*.png -delay $dt2 $prefix.png -layers Optimize $prefix.gif`)
 end
 run(`convert -loop 1 animation/demo-\*.gif -layers Optimize animation-demo.gif`)
 run(`rm $(["animation/demo-$epithet.gif" for epithet in lexicon])`) ;
@@ -497,77 +497,42 @@ It would also be better to display previous cycles as greyed out. Note however t
 coalescence is visually evident: the coalesced trajectory is drawn in black.
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0000.pdf)
+![](animation/demo-e-0000.pdf)
 
-![](animation/demo-f-0010.pdf)
+![](animation/demo-e-0010.pdf)
 
-![](animation/demo-f-0020.pdf)
+![](animation/demo-e-0020.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0030.pdf)
+![](animation/demo-e-0030.pdf)
 
-![](animation/demo-f-0040.pdf)
+![](animation/demo-e-0040.pdf)
 
-![](animation/demo-f-0050.pdf)
+![](animation/demo-e-0050.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0060.pdf)
+![](animation/demo-e-0060.pdf)
 
-![](animation/demo-f-0070.pdf)
+![](animation/demo-e-0070.pdf)
 
-![](animation/demo-f-0080.pdf)
+![](animation/demo-e-0080.pdf)
 :::
 
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0090.pdf)
+![](animation/demo-e-0090.pdf)
 
-![](animation/demo-f-0100.pdf)
+![](animation/demo-e-0100.pdf)
 
-![](animation/demo-f-0110.pdf)
+![](animation/demo-e-0110.pdf)
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-f-0120.pdf)
+![](animation/demo-e-0120.pdf)
 
-![](animation/demo-f-0130.pdf)
-
-![](animation/demo-f-0140.pdf)
-:::
-
-::: {layout-nrow=3}
-![](animation/demo-f-0150.pdf)
-
-![](animation/demo-f-0160.pdf)
-
-![](animation/demo-f-0170.pdf)
-:::
-
-::: {layout-nrow=3}
-![](animation/demo-f-0180.pdf)
-
-![](animation/demo-f-0190.pdf)
-
-![](animation/demo-f-0200.pdf)
-:::
-
-::: {layout-nrow=3}
-![](animation/demo-f-0210.pdf)
-
-![](animation/demo-f-0220.pdf)
-
-![](animation/demo-f-0230.pdf)
-:::
-
-::: {layout-nrow=3}
-
-![](animation/demo-f-0240.pdf)
-
-![](animation/demo-f-0250.pdf)
-
-![](animation/demo-f.pdf)
+![](animation/demo-e.pdf)
 :::
 
 {{< pagebreak >}}
@@ -577,17 +542,15 @@ End states of all the cycles up to coalescence
 ----------------------------------------------
 
 ::: {layout-nrow=3}
-![](animation/demo-a.pdf){ width=85% }
+![](animation/demo-a.pdf){ width=80% }
 
-![](animation/demo-b.pdf){ width=85% }
+![](animation/demo-b.pdf){ width=80% }
 
-![](animation/demo-c.pdf){ width=85% }
+![](animation/demo-c.pdf){ width=80% }
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-d.pdf){ width=85% }
+![](animation/demo-d.pdf){ width=80% }
 
-![](animation/demo-e.pdf){ width=85% }
-
-![](animation/demo-f.pdf){ width=85% }
+![](animation/demo-e.pdf){ width=80% }
 :::

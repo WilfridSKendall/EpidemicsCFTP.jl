@@ -31,10 +31,12 @@ end
     ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\diamond`.)
 
 The succinct statement `cev ▷ sir` checks whether one can replace
-`cev.initial` by `sir` (but using `cev.initial.t` for the `t` field). 
+`cev.initial` by `sir` (but using `cev.initial.t` for the `t` field).
+This _includes_ checking whether the epidemic size, `cev.size` will not be exceeded,
+if it is positive.
 If so, then the resulting `CEvolution` is returned. 
 If not, then the original `CEvolution` is returned.
-### Example
+### Example 1
 ```{jldoctest}
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
 sir = SIR(0, 2, 0, 0)
@@ -49,8 +51,34 @@ chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²]
 trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
 history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
 ```
+### Example 2 (maximal)
+```{jldoctest}
+julia> cev = extremal_evolution(SIR(0, 2, 1, 0), 3.0, [1.0, 2.0], all_cremovals_observed=true) ;
+
+julia> sir = SIR(0, 1, 2, 0) ; (cev.initial, cev.size)
+(SIR(0.0, 2, 1, 0, 3), 2)
+julia> ((cev ▷ sir).initial, cev.size)
+(SIR(0.0, 1, 2, 0, 3), 2)
+julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
+(SIR(0.0, 2, 1, 0, 3), 2)
+```
+### Example 2 (minimal)
+```{jldoctest}
+julia> cev = extremal_evolution(SIR(0, 2, 1, 0), 3.0, [1.0, 2.0], all_cremovals_observed=true, maximal=false) ;
+
+julia> sir = SIR(0, 1, 2, 0) ; (cev.initial, cev.size)
+(SIR(0.0, 2, 1, 0, 3), 2)
+julia> ((cev ▷ sir).initial, cev.size)
+((cev ▷ sir).initial, cev.size)
+julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
+(SIR(0.0, 2, 1, 0, 3), 2)
+```
 """
 function ▷(cev::CEvolution, sir::SIR)::CEvolution
+    new_sir = proposed_sir(cev.initial, sir.i)
+    if (new_sir == cev.initial) || (new_sir.i + new_sir.r > cev.size > 0)
+        return cev
+    end
     try
         new_cev = CEvolution(sir, cev.chronology)
         return new_cev
@@ -67,16 +95,24 @@ end
 
 Returns a modification of its first argument such that
 the `i` field equals the second argument.
-## Example
+### Example 1
 ```{jldoctest}
 sir = SIR(0, 2, 0, 0)
-proposed_sir(sir, SIR(1, 1, 1, 0)
+proposed_sir(sir, 1)
 
 # output
+SIR₀.₀₀(1:1:0)
+```
+### Example 2```{jldoctest}
+sir = SIR(0, 2, 0, 0)
+proposed_sir(sir, 1)
 
+# output
+ERROR: DomainError with SIR(0.0, -1, 3, 0):
+negative number -1 of susceptibles
 ```
 """
-function proposed_sir(sir, proposed_i)
+function proposed_sir(sir::SIR, proposed_i::Int)::SIR
     return SIR(sir.t, sir.s - (proposed_i - sir.i), proposed_i, sir.r)
 end
 
@@ -673,6 +709,24 @@ chronology: AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀�
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₁.₀₀(1:2:0),SIR₁.₀₀(1:1:1),SIR₂.₀₀(1:0:2)]
 history:    AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀₀²])
 ```
+### Example (size, maximal)
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> initial = SIR(0.0, 2, 1, 0) ;
+
+julia> cev = extremal_evolution(initial, 3.0, [1.0, 2.0], all_cremovals_observed=true) ;
+
+julia> cev.size
+2
+```
+### Example (size, minimal)
+```jldoctest; setup = :(using EpidemicsCFTP)
+julia> initial = SIR(0.0, 2, 1, 0) ;
+
+julia> cev = extremal_evolution(initial, 3.0, [1.0, 2.0], all_cremovals_observed=true, maximal=false) ;
+
+julia> cev.size
+2
+```
 """
 function extremal_evolution(initial::SIR, duration::S, times::Vector{T}; 
                 maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution where {S,T <: Real}
@@ -691,8 +745,12 @@ function extremal_evolution(initial::SIR, duration::S, times::Vector{T};
         sort(deepcopy(times))
         infections = [I(times[i],i,i+1) for i ∈ starter:(length(times)-1)]
         cremovals  = [C(t, i) for (i, t) in enumerate(times)]
+        if all_cremovals_observed
+            size       = length(cremovals) + initial.r
+        end
     end
-    return CEvolution(initial, convert(Vector{AI}, infections ∪ cremovals))
+    size = all_cremovals_observed ? length(cremovals) + initial.r : 0
+    return CEvolution(initial, convert(Vector{AI}, infections ∪ cremovals), size=size)
 end
 
 # Computing the last feasible epidemic trajectory

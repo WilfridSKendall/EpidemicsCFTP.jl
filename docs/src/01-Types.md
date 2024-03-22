@@ -212,6 +212,7 @@ Instances should always possess fields as given in the table.
 | `NFZ1`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 | `NFZ2`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 | `NFZ`         | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
+| `size`        | `Int`                        |              | `                 | no effect if `0`  |
 
 #### Unconditioned `Evolution`
 

@@ -3,7 +3,7 @@
 # The following simple notation enables concise expression of _CFTP_ algorithms.
 # ```
 """
-    Base.⋄(::CEvolution, ::AbstractInnovation) ::CEvolution (Use `\\diamond`.)
+    ⋄(::CEvolution, ::AbstractInnovation) ::CEvolution (Use `\\diamond`.)
 
 The succinct statement `cev ⋄ iv` is an expressive shorthand for 
 [`CEvolution(cev, iv)`](@ref CEvolution).
@@ -639,7 +639,7 @@ function extremal_evolution(initial::SIR, duration::S, times::Vector{T};
         infections = [I(times[i],i,i+1) for i ∈ starter:(length(times)-1)]
         cremovals  = [C(t, i) for (i, t) in enumerate(times)]
     end
-    return CEvolution(initial, infections ∪ cremovals)
+    return CEvolution(initial, convert(Vector{AI}, infections ∪ cremovals))
 end
 
 # Computing the last feasible epidemic trajectory
@@ -1075,13 +1075,16 @@ end ;
 # # Generate an innovation
 # # ----------------------
 """
-    generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1,
-        threshold::Int=0)
+    generate_innovation(::AbstractInnovation, ::Real; α::Real, β::Real, size::Int)
 
 Generates a random [`AbstractInnovation`](@ref), borrowing some structure from its first argument.
 
-If the keyword parameter `threshold` is a positive integer then `Infection`s are restricted by `infectee ≤ threshold` 
-while `Removal`s and `CRemoval`s are restricted by `target ≤ threshold`.
+If the keyword parameter `size` is a positive integer then 
+`Infection`s are restricted by `infectee ≤ size` 
+while `Removal`s and `CRemoval`s are restricted by `target ≤ size`.
+
+Note use of keyword argument `size`
+to reflect possible conditioning on size of envisaged epidemic.
 
 # # _Later work to be done:_
 
@@ -1092,10 +1095,10 @@ from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends
 2. Conduct a simulation study (in a separate `quarto` notebook) to verify that the Poisson intensity rates used by this function are correct.
 
 """
-function generate_innovation(iv::AbstractInnovation, duration::Real; α::Real=0.2, β::Real=0.1,
-        threshold::Int=0)
+function generate_innovation(iv::AbstractInnovation, duration::Real;
+                                α::Real=0.2, β::Real=0.1, size::Int=0)
     n = iv.population
-    m = threshold > 0 ? threshold : n
+    m = size > 0 ? size : n
     removals = ∪([AbstractRemoval[Removal(t, k) 
         for t ∈ rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
         for k ∈ 1:m]...)
@@ -1116,14 +1119,15 @@ end
 
     
 """
-    generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1,
-        threshold::Int=0)
+    generate_innovation(::Integer, ::Real; α::Real, β::Real, size::Int)
 
-Generates a random [`Innovation`](@ref) (with empty `cremoval` list), using first argument for population size.
+Generates a random [`Innovation`](@ref) (with empty `cremoval` list), 
+population given by first argument. Note use of keyword argument `size`
+to reflect possible conditioning on size of envisaged epidemic.
 """
-function generate_innovation(n::Integer, duration::Real; α::Real=0.2, β::Real=0.1,
-        threshold::Int=0)
-    m = threshold > 0 ? threshold : n
+function generate_innovation(n::Integer, duration::Real;
+                                α::Real=0.2, β::Real=0.1, size::Int=0)
+    m = size > 0 ? size : n
     removals = ∪([AbstractRemoval[Removal(t, k) 
         for t ∈ rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
         for k ∈ 1:m]...)

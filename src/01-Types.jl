@@ -956,6 +956,8 @@ while [`create_start`](@ref) and [`create_finis`](@ref) are used in the course o
 to compute lists of start and finish incidents
 for infectious intervals.
 
+The field `size` currently plays no role.
+
 See [`Evolution(::SIR,::AbstractInnovation)`](@ref Evolution(::SIR, ::AbstractInnovation)) 
 and [`Evolution(::SIR,::Vector{AbstractIncident})`](@ref Evolution(::SIR, ::Vector{AbstractIncident})) 
 below for examples of construction.
@@ -988,12 +990,14 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
+    size        ::Int
 
 @doc """
     Evolution(::SIR, ::AbstractInnovation)::Evolution
 
 An `Evolution` can be constructed using only an `initial` state 
 and an `AbstractInnovation`.
+
 ### Example
 ```jldoctest
 initial    = SIR(0, 2, 1, 0)
@@ -1025,7 +1029,7 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation)::Evolutio
         start      = create_start(trajectory[1], history)
         finis      = create_finis(trajectory[1], history)
         return new(population, infections, removals, cremovals, chronology, 
-            trajectory, history, initial_state, start, finis)
+            trajectory, history, initial_state, start, finis, 0::Int)
     end
     
 @doc """
@@ -1094,6 +1098,9 @@ of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, the monotonically increasing envelope of `NFZ1`, and the region which must
 not be infected if we are not to violate conditioning on removals.
 
+If field `size` is positive (in fact, no smaller than the total number of `CRemoval`s)
+then this serves as a further constraint on the `initial` field.
+
 There are three different derived constructors discussed below:
 
 * updating an [`AbstractEvolution`](@ref) using a candidate `Innovation` (preferred),
@@ -1130,9 +1137,10 @@ struct CEvolution <: AbstractEvolution
     NFZ1       ::Vector{Real}
     NFZ2       ::Vector{Real}
     NFZ        ::Vector{Real}
+    size       ::Int
 
 @doc """
-        CEvolution(::AbstractEvolution, ::AbstractInnovation)::CEvolution
+        CEvolution(::AbstractEvolution, ::AbstractInnovation; size::Int=0)::CEvolution
 
 This is the first way to construct a [`CEvolution`](@ref): 
 updating an [`AbstractEvolution`](@ref) using a candidate `Innovation`.
@@ -1201,7 +1209,7 @@ CEvolution(initial, innov)
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
 """
-function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
+function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation; size::Int=0)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
     #                       last_feasible_evolution,
@@ -1228,7 +1236,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation)::CEvolution
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
-    return CEvolution(ev.initial, iv_mod, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound)
+    return CEvolution(ev.initial, iv_mod; LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound, size=size)
 end
 # 1. Initial computation of `NFZ2`, a **list of times** 
 # indexed by time line ("level"), where each time is initially defined as
@@ -1238,8 +1246,9 @@ end
 # very careful attention!
 
 @doc """
-        CEvolution(SIR, Vector{AbstractIncident}; 
-                LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])::CEvolution
+        CEvolution(SIR, Vector{AbstractIncident};
+                LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[],
+                size::Int=0)::CEvolution
 
 This is the second way to construct a [`CEvolution`](@ref): 
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
@@ -1260,18 +1269,18 @@ true
 ```
 """
 function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
-                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], size::Int=0)
         innovation = CInnovation(initial_state.n,
                     AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                     AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                     CRemoval[z for z ∈ chronology if z isa CRemoval]
                     )
-    return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ)
+    return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ, size=size)
 end
 
 @doc """
     CEvolution(::SIR, ::AbstractInnovation; 
-            LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])::CEvolution
+            LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], size::Int=0)::CEvolution
 
 This is the third way:
 employing an [`Innovation`](@ref).
@@ -1298,7 +1307,7 @@ history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 """
 function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
-                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[])
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], size::Int=0)
     # Need to check population == sum of `initial_state` entries
     population          = innovation.population
     infections          = innovation.infections
@@ -1310,7 +1319,7 @@ function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
     finis               = create_finis(trajectory[1], history)
         
     return new(population, infections, removals, cremovals, chronology, 
-        trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ)
+        trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ, size)
 end
 
 end

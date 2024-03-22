@@ -6,6 +6,8 @@ Notation that is useful for concise expression of CFTP algorithms.
 ⪯
 ≃
 ⋄
+▷
+proposed_sir
 ```
 
 ## A total ordering for incidents

@@ -49,7 +49,7 @@ using DataFrames, PrettyTables
 using Colors, Gadfly, Compose
 
 
-import Distributions        
+import Distributions: Categorical, DiscreteUniform
 import Random: seed!
 import Markdown
 
@@ -173,25 +173,32 @@ lines_plot = new_figure(axes_plot,
 Implementation
 ==============
 We have assumed the first observed removal to happen at time zero, and
-we further assume a Bayesian prior distribution for the numbers of infectives at this time
-which is uniform over the range of possibilities assuming that no removals take place after the
-last `CRemoval` (and therefore that no infectives survive beyond this time!).
-This is unduly pessimistic: it is possible to _compute_ the prior distribution
+we need further to assume a Bayesian prior distribution for the numbers of infectives at this time.
+Under the assumption that all removals are observed, we know the size of the epidemic
+must equal the number of `CRemoval`s plus the initial removal which triggered the data collection
+exercise.
+
+One possible prior distribution would be a uniform prior
+over the range of possibilities which would not be able to lead to further removals being observed
+after the completion of the observation period.
+(This means that no removals can take place after the
+last `CRemoval` (and therefore that no infectives can occur after the last `CRemoval`!).
+This seems unduly pessimistic: it is possible to _compute_ a reasonable prior distribution
 given α and β.
 ```{julia}
-#| label: setup simulation                                                                                                                                                                                                    
-min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]                                                                                                                                                          
+#| label: setup simulation
+min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
 iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) 
-@test size == length(cremoval_times) ; # This test could be removed now!
 ```
 
-(Digression.) In fact one can make a case for a simple prior distribution for the initial
-number of infectives, based on the assumption that there is one index case and that all 
+The argument runs as follows. Assume that there is one index case and that all 
 actual removals at _whatever_ time
-are observed and are registered as `CRemoval`s. For in that case the relevant distribution 
+are observed and are registered as `CRemoval`s. 
+In that case one can argue that the relevant distribution 
 (which is to say, pertaining to the _unconditioned_ epidemic!) for the
 number of infectives at time `0` is the total number who have been infected up to the first actual
-removal, less one (the removal!). Now the relevant process here undergoes a sequence of 
+removal, less one (the removal!). Now before the initial observation
+the relevant process undergoes a sequence of 
 infection/removal transitions,
 finishing when the first removal occurs. Rates after \(m\) infections (including the index infection),
 in a population of size \(n\), are:
@@ -203,109 +210,94 @@ in a population of size \(n\), are:
 \]
 and so the chance that the next transition is an infection is 
 \[
-\frac{(n-m) m \alpha}{(n-m) m \alpha + m \beta}
+\frac{(n-m) m \alpha}{(n-m) m \alpha + m \beta}\quad=\quad
+\frac{(n-m)\alpha }{(n-m)\alpha + \beta}
 \quad=\quad
 \frac{1}{1+ \frac{1}{n-m}\frac{\beta}{\alpha}}\,.
 \]
-Now we are dealing with \(n=`{julia} population`\) 
+In the particular case being considered, we are dealing with \(n=`{julia} population`\) 
 and \(\alpha = `{julia} α`\), \(\beta = `{julia} β`\), so
-the chance of the next transition being an infection starts at
+the chance of the next transition being an infection is (for the first transition)
 \[
 \frac{1}{1+ \frac{1}{n-1}\frac{\beta}{\alpha}}\quad=\quad
 `{julia} 1/(1+ β/((population-1)α))`
 \]
-and then decays. So the number of `Infection`s at time `0` is sub-Geometric
-(version with smallest value is `1`, since we require at least one `Infection` at time zero!)
+and then monotonically decays for further transitions up to the point of the first removal. 
+So one can argue that the number of `Infection`s at time `0` is sub-Geometric
+(version with smallest value equal to `1`, since we require at least one `Infection` at time zero!)
 with this success parameter.
 
-Here is an operator which allows us succinctly to propose a change in the initial condition
-for a `CEvolution`, which will be accepted only if it leads to a valid `CEvolution`.
-Eventually this will be included in the module `EpidemicsCFTP` --
-at present its employment corresponds to an independence sampler move
-though it should be possible to vary this to be a simple Random Walk Metropolis
-sampler (_simple RWM_).
-In general, care needs to be taken that monotonicity is maintained!
-[A similar situation concerning spatial point processes is discussed in @KendallMoeller-2000.]
+This needs a little more Bayesian justification, based on some prior for the (negative) time 
+at which the index case is infected, but we omit this for now.
+
+Working with the `julia` `Distributions` package,
+we define our prior as a `Categorical` distribution,
+with vector of probabilities given as products of transition probabilities as above.
 ```{julia}
-#| label: operators
-"""
-    ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\diamond`.)
-
-The succinct statement `cev ⋄ sir` checks whether one can replace
-`cev.initial` by `sir` (but using time `cev.initial.t`). 
-If so, then the resulting `CEvolution` is returned. 
-If not, then the original `CEvolution` is returned.
-### Example
-{jldoctest}
-cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
-sir = SIR(0, 2, 0, 0)
-cev ▷ sir
-
-# output
-CEvolution(SIR₀.₀₀(1:1:0),
-infections: AbstractInfection[ℐ₀.₀₀¹⁻²]
-removals:   AbstractRemoval[]
-cremovals:  CRemoval[𝒞₁.₀₀²]
-chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²]
-trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
-history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
-
-"""
-function ▷(cev::CEvolution, sir::SIR)::CEvolution
-    try
-        new_cev = CEvolution(sir, cev.chronology)
-        return new_cev
-    catch e
-        if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
-            rethrow()
-        end
-        return cev
-    end
+#| label: prior distribution 
+function transition_probability(k)
+    return ((population - k) * α) / ((population - k) * α + β)
 end
+survival = [transition_probability(k) for k in 1:length(min_cremovals)]
+priorprob = (1 .- survival) .* pushfirst!(accumulate(*, survival[1:(end-1)]), 1)
+push!(priorprob, 1 - sum(priorprob))
+prior = Categorical(priorprob)
 
-"""
-    proposed_sir(::SIR, ::Int)
+prior_df = DataFrame(k=1:length(priorprob), probability=priorprob)
+draw(PDF("image/prior.pdf"), plot(prior_df, x=:k, y=:probability, Geom.bar))
 
-Returns a modification of its first argument such that
-the `i` field equals the second argument.
-"""
-function proposed_sir(sir, proposed_i)
-    return SIR(sir.t, sir.s - (proposed_i - sir.i), proposed_i, sir.r)
-end ;
+1 - sum(priorprob)
 ```
 
+![Probability mass function for prior for number of initial infectives.](image/prior.pdf)
+
+
+We'll need a stream of tuples of `Innovation`s and proposals to change `initial` conditions.
 The function `innovation_stream` supplies a single stream of tuples each giving
 an `Innovation` and a proposal to change initial condition.
 For now we simply ensure this is long enough to fuel the entire CFTP process,
 though in principle it would be easy to extend this as required!
 Note that `generate_innovation` uses the `size` keyword parameter to exclude
-`Infection`s which is activated would cause epidemic size to rise above the 
+`Infection`s which if activated would cause epidemic size to rise above the
 specified `size`.
 ```{julia}
 #| label: function `innovation_stream`
-function innovation_stream(cycle_length; 
-    evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
-    stream = []
+import EpidemicsCFTP: proposed_sir
+function innovation_stream(cycle_length;
+            evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
+    stream, initial = [], evmin0.initial
     for iteration ∈ 1:cycle_length
         # `Innovation`
-        iv    = generate_innovation(iv_null, duration; α=α, β=β, size=size)
-        # Proposed initial infection level
-        proposed_i = rand(Distributions.DiscreteUniform(1, size - evmin.initial.r))
-        push!(stream, (iv, proposed_i))
+        iv = generate_innovation(iv_null, duration; α=α, β=β, size=size)
+        # Proposed initial infection level: distribution `prior` constructed above.
+        # proposed_i = rand(prior)
+        # Pessimistic alternative commented out in next line.
+         proposed_i = rand(DiscreteUniform(1, size - evmin.initial.r))
+        push!(stream, (iv, proposed_sir(initial, proposed_i)))
     end
     return stream
 end ;
 ```
 
-A function `single_frame` updates minimal and maximal `CEvolution`s by a single algorithmic step.
+Our update proposes a change in the initial condition
+for a `CEvolution`, which will be accepted only if it leads to a valid `CEvolution`.
+At present this corresponds to an independence sampler move
+though it should be possible to vary this to be a simple Random Walk Metropolis
+sampler (_simple RWM_).
+In general, care needs to be taken that monotonicity is maintained!
+[A similar situation concerning spatial point processes is discussed in @KendallMoeller-2000.]
+
+Using this, 
+a function `single_frame` updates minimal and maximal `CEvolution`s by a single algorithmic step.
 Note that we vary the initial number of infectives using a separate accept/reject step
-in the update.
+in the update. Note that `proposed_sir` here simply supplies a proposed initial number
+of `Infection`s; other aspects do not affect the result.
 ```{julia}
 #| label: function `single_frame`
-function single_frame(work, evmin, evmax, iv, proposed_i; duration=duration, theme=theme)
-    evmin = evmin ⋄ iv ▷ proposed_sir(evmin.initial, proposed_i) ;
-    evmax = evmax ⋄ iv ▷ proposed_sir(evmax.initial, proposed_i) ;
-    
+function single_frame(work, evmin, evmax, iv, proposed_sir; duration=duration, theme=theme)
+    evmin = evmin ⋄ iv ▷ proposed_sir 
+    evmax = evmax ⋄ iv ▷ proposed_sir 
+
     # Omit next conditional statement once thoroughly tested!
     if !(evmin ⪯ evmax)
         error("Monotonicity fails")
@@ -357,18 +349,18 @@ function cycle(stream, canvas;
 
     for (iteration, pair) ∈ enumerate(stream)
         (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
-        
+
         legend = lpad(iteration, 4, "0")
         if iteration < length(stream)
             legend2 = "-$(lpad(length(stream)-iteration, 4, "0")):"
         else
             legend2 = "$(lpad(length(stream)-iteration, 4, "0")): "
         end
-        
+
         about = "Cycle at time $legend2 begun at $(-length(stream))"
         info  = Guide.annotation(compose(context(), font("Helvetica"), fontsize(12pt), 
                         text(0.4w, 0.95h, about), fill("tomato")))
-        
+
         if (evmin ≃ evmax)
             title  = "$logo $legend2 [COALESCED]"
             signal = Guide.annotation(compose(context(), font("Helvetica-Bold"), fontsize(14pt), 
@@ -391,7 +383,6 @@ end ;
 This code is used to plot an entire CFTP sequence of sequences of updates in algorithmic time: see [Appendix @sec-figures].
 I suspect that considerable speed-up could be achieved by _not_ plotting each frame of each cycle!
 
-{{< pagebreak >}}
 
 
 References {.unnumbered}
@@ -406,8 +397,10 @@ References {.unnumbered}
 Appendices {.unnumbered}
 ==========
 
+Software details
+================
 Software versions
-=================
+-----------------
 Here is a table of major software components used in our computations:
 ```{julia}
 #| label: software-versions
@@ -432,7 +425,7 @@ Markdown.parse("""
 ```
 
 Package documentation
-=====================
+---------------------
 Julia package documentation can be found as follows.
 ```{julia}
 #| label: package-documentation
@@ -440,14 +433,14 @@ Julia package documentation can be found as follows.
 #| eval: true
 #| cache: false
 Markdown.parse("""
-|_Julia package_  | _Link to documentation_                                                                       |
-|:----------------|:----------------------------------------------------------------------------------------------|
-| `Colors`        | [juliagraphics.github.io/Colors.jl/stable](https://juliagraphics.github.io/Colors.jl/stable/) |
-| `Gadfly`        | [gadflyjl.org/stable](https://gadflyjl.org/stable/)                                           |
-| `Compose`       | [docs.juliahub.com/General/Compose](https://docs.juliahub.com/General/Compose/stable/)        |
-| `DataFrames`    | [dataframes.juliadata.org](https://dataframes.juliadata.org/stable/)                          |
-| `Distributions` | [dataframes.juliadata.org](https://dataframes.juliadata.org/stable/)                          |
-| `PrettyTables`  | [juliastats.org/Distributions.jl](https://juliastats.org/Distributions.jl/stable/)            |
+|_Julia package_  | _Link to documentation_                                                               |
+|:----------------|:--------------------------------------------------------------------------------------|
+| `Colors`        | [juliagraphics.github.io/Colors.jl](https://juliagraphics.github.io/Colors.jl/stable) |
+| `Gadfly`        | [gadflyjl.org](https://gadflyjl.org/stable)                                           |
+| `Compose`       | [docs.juliahub.com/General/Compose](https://docs.juliahub.com/General/Compose/stable) |
+| `DataFrames`    | [dataframes.juliadata.org](https://dataframes.juliadata.org/stable)                   |
+| `Distributions` | [juliastats.org/Distributions.jl](https://juliastats.org/Distributions.jl/stable)     |
+| `PrettyTables`  | [ronisbr.github.io/PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable) |
 """)
 ```
 
@@ -460,7 +453,6 @@ In this appendix we display an entire evolution of a CFTP run, always starting w
 `evmin0` and `evmax0` given above. 
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the entire CFTP,
 evolving in logical time and re-starting earlier and earlier till coalescence is achieved!
-
 
 The work of each CFTP cycle is carried out by the function `cycle`. Note that we have not yet automated 
 how CFTP works through cycles.
@@ -585,17 +577,17 @@ End states of all the cycles up to coalescence
 ----------------------------------------------
 
 ::: {layout-nrow=3}
-![](animation/demo-a.pdf)
+![](animation/demo-a.pdf){ width=85% }
 
-![](animation/demo-b.pdf)
+![](animation/demo-b.pdf){ width=85% }
 
-![](animation/demo-c.pdf)
+![](animation/demo-c.pdf){ width=85% }
 :::
 
 ::: {layout-nrow=3}
-![](animation/demo-d.pdf)
+![](animation/demo-d.pdf){ width=85% }
 
-![](animation/demo-e.pdf)
+![](animation/demo-e.pdf){ width=85% }
 
-![](animation/demo-f.pdf)
+![](animation/demo-f.pdf){ width=85% }
 :::

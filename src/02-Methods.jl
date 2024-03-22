@@ -28,6 +28,59 @@ function ⋄(cev::CEvolution, iv::AbstractInnovation)::CEvolution
 end
 
 """
+    ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\diamond`.)
+
+The succinct statement `cev ▷ sir` checks whether one can replace
+`cev.initial` by `sir` (but using `cev.initial.t` for the `t` field). 
+If so, then the resulting `CEvolution` is returned. 
+If not, then the original `CEvolution` is returned.
+### Example
+```{jldoctest}
+cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
+sir = SIR(0, 2, 0, 0)
+cev ▷ sir
+
+# output
+CEvolution(SIR₀.₀₀(1:1:0),
+infections: AbstractInfection[ℐ₀.₀₀¹⁻²]
+removals:   AbstractRemoval[]
+cremovals:  CRemoval[𝒞₁.₀₀²]
+chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²]
+trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
+history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
+```
+"""
+function ▷(cev::CEvolution, sir::SIR)::CEvolution
+    try
+        new_cev = CEvolution(sir, cev.chronology)
+        return new_cev
+    catch e
+        if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
+            rethrow()
+        end
+        return cev
+    end
+end
+
+"""
+    proposed_sir(::SIR, ::Int)
+
+Returns a modification of its first argument such that
+the `i` field equals the second argument.
+## Example
+```{jldoctest}
+sir = SIR(0, 2, 0, 0)
+proposed_sir(sir, SIR(1, 1, 1, 0)
+
+# output
+
+```
+"""
+function proposed_sir(sir, proposed_i)
+    return SIR(sir.t, sir.s - (proposed_i - sir.i), proposed_i, sir.r)
+end
+
+"""
     ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool (Use `\\preceq`.)
 
 This allows us to compare (weakly) two `AbstractEvolution`s

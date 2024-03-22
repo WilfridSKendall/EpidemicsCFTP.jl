@@ -49,12 +49,15 @@ make introduction.pdf
 - [ ] `22/03/2024` Things remaining to be done for `CFTP-demo.qmd`:
 
   - [ ] Clean up the code!
+    - [ ] Change `threshold` to `size`.
+    - [ ] Check whether update function should take a `deepcopy` (really an issue for  the [`EpidemicsUtilities`](file://EpidemicsUtilities/) module).
+    - [ ] Move initial state update function to  the [`EpidemicsUtilities`](file://EpidemicsUtilities/) module, and add a "no action" option if `size` specified and would be exceeded.
     - [ ] Move some of the specialized choices and functions of section 2 into the [`EpidemicsUtilities`](file://EpidemicsUtilities/) module,
     - [ ] How to speed up by doing more in memory?!
     - [ ] More unit tests are needed!
       - [ ] `28/04/2024` Generate graphics with `CFTP.qmd` to help validate automatic unit tests.
       - [ ] `24/02/2024` Move unit tests from `test.qmd` to `EpidemicsCFTP/test`. 
-
+    
   - [x] Compute the prior distribution of infectives at time `0` given α and β, if the first `CRemoval` occurs at time `0`. 
     - [ ] Alter code to account for this using `CategoricalDistribution`.
     - [ ] Produce simple RWM variant for proposal of new initial state. Check requirements if monotonicity is to be maintained.
@@ -100,4 +103,4 @@ Stored in [`ARCHIVE`](file:..ARCHIVE/).
 
 ## Manual for `julia 1.9`
 
-See [`Julia-2023.pdf`.](file://Reading/Julia-2023.pdf).
+See [`Julia-2023.pdf`](file:///home/wilfrid/ms/PerfectEpidemics/juliaReading/Julia-2023.pdf).

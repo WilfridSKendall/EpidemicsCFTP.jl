@@ -82,7 +82,7 @@ population     = 120
 interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε, 1, 
                    1, 1, 2, ε, 1, 5, ε, 5, 5] 
 α, β           = 0.0008, 0.088 
-THRESHOLD      = length(interremovals) + 1 ;
+size           = length(interremovals) + 1 
 cremoval_times = accumulate(+, interremovals) 
 pushfirst!(cremoval_times, 0) 
 duration = 10 + maximum(cremoval_times) ;
@@ -98,7 +98,7 @@ when our plots end,
 #| label: setting up extremal evolutions
 initial     = SIR(0, population - 1, 1, 0)
 initial_min = SIR(0, population - 1, 1, 0)
-initial_max = SIR(0, population - THRESHOLD, THRESHOLD, 0)
+initial_max = SIR(0, population - size, size, 0)
 
 evmin0 = extremal_evolution(initial_min, duration, cremoval_times, 
     maximal=false) ;
@@ -141,10 +141,10 @@ Here are some more plotting technicalities.
 #| label: basic graphics
 uflow = table_trajectories1(duration, evmin0.trajectory) 
 axes_plot = plot(uflow, 
-    yintercept=0:5:THRESHOLD,
+    yintercept=0:5:size,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
-    Coord.cartesian(xmin=0-0.1, xmax=duration, ymin=0, ymax=THRESHOLD + 0.25),
-    Guide.yticks(ticks=0:10:THRESHOLD),
+    Coord.cartesian(xmin=0-0.1, xmax=duration, ymin=0, ymax=size + 0.25),
+    Guide.yticks(ticks=0:10:size),
     Guide.xlabel("Process time", orientation=:horizontal),
     style(default_color=theme.background),
     Theme(
@@ -182,8 +182,7 @@ given α and β.
 #| label: setup simulation                                                                                                                                                                                                    
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]                                                                                                                                                          
 iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) 
-threshold = THRESHOLD 
-@test threshold == length(cremoval_times) ; # This test could be removed now!
+@test size == length(cremoval_times) ; # This test could be removed now!
 ```
 
 (Digression.) In fact one can make a case for a simple prior distribution for the initial
@@ -279,16 +278,19 @@ The function `innovation_stream` supplies a single stream of tuples each giving
 an `Innovation` and a proposal to change initial condition.
 For now we simply ensure this is long enough to fuel the entire CFTP process,
 though in principle it would be easy to extend this as required!
+Note that `generate_innovation` uses the `size` keyword parameter to exclude
+`Infection`s which is activated would cause epidemic size to rise above the 
+specified `size`.
 ```{julia}
 #| label: function `innovation_stream`
 function innovation_stream(cycle_length; 
-    evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, threshold=threshold)
+    evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
     stream = []
     for iteration ∈ 1:cycle_length
         # `Innovation`
-        iv    = generate_innovation(iv_null, duration; α=α, β=β, threshold=threshold)
+        iv    = generate_innovation(iv_null, duration; α=α, β=β, size=size)
         # Proposed initial infection level
-        proposed_i = rand(Distributions.DiscreteUniform(1, threshold - evmin.initial.r))
+        proposed_i = rand(Distributions.DiscreteUniform(1, size - evmin.initial.r))
         push!(stream, (iv, proposed_i))
     end
     return stream

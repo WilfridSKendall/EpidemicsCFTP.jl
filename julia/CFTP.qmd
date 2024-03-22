@@ -687,8 +687,10 @@ Here is an example from @ONeillRoberts-1999. Removals are observed with the foll
 interremoval times (adjusted to avoid coincidences):
 ```{julia}
 interremovals = 
-    [13, 7, 2, 3, 0.1, 0.1, 1, 4, 5, 3, 2, 0.1, 2, 0.1, 5, 3, 1, 4, 0.1, 1, 1, 1, 2, 
-    0.1, 1, 5, 0.1, 5, 5] ;
+    [13, 7,   2, 3,   0.1, 0.1, 1,   4, 5,   3,
+      2, 0.1, 2, 0.1, 5,   3,   1,   4, 0.1, 1,
+      1, 1,   2, 0.1, 1,   5,   0.1, 5, 5]
+size = length(interremovals) + 1 ;
 ```
 We compute actual times of removals, assuming initial removal takes place `10` days after infection
 (this is an arbitrary choice, and perhaps CFTP needs to be extended to deal with uncertainty about number of initial infectives?).
@@ -726,15 +728,13 @@ coalesce_color = colorant"purple" ;
 ```{julia}
 #| echo: false
 set_default_plot_size(2theme.figwidth, 0.8theme.figheight)
-# ylines = 0:5:initial.n
-THRESHOLD = 30
-ylines = 0:5:THRESHOLD
+ylines = 0:5:size
 
 uflow = table_trajectories1(duration2, evmin.trajectory) ;
 axes_plot2 = plot(uflow, 
     yintercept=ylines,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
-    Coord.cartesian(xmin=0, xmax=duration2, ymin=0, ymax=THRESHOLD + 0.25),
+    Coord.cartesian(xmin=0, xmax=duration2, ymin=0, ymax=size + 0.25),
     Guide.xlabel("Process time", orientation=:horizontal),
     style(default_color=theme.background),
     Theme(
@@ -767,17 +767,17 @@ and updates minimal and maximal `CEvolution`s by a specified number of algorithm
 import Distributions
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
 iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;
-threshold = length(min_cremovals)
+@test size == length(min_cremovals) + 1
 function repetition_and_display(evmin, evmax, n; duration2=duration2, iv_null=iv_null,
                     α0=α0, β0=β0, lines_plot2=lines_plot2)
     for i in 1:n
-        iv    = generate_innovation(iv_null, duration2; α=α0, β=β0, threshold=threshold) ;
+        iv    = generate_innovation(iv_null, duration2; α=α0, β=β0, size=size) ;
         evmin = evmin ⋄ iv ;
         evmax = evmax ⋄ iv ;
         
         # Start of proposal to check a new initial condition.
         # IRL we'd use a distribution with Bayesian justification!
-        proposed_start = rand(Distributions.DiscreteUniform(evmin.initial.r + 1, threshold))
+        proposed_start = rand(Distributions.DiscreteUniform(evmin.initial.r + 1, size))
         
         new_initial = SIR(evmin.initial.t, 
             evmin.initial.n - proposed_start, proposed_start - evmin.initial.r, evmin.initial.r)

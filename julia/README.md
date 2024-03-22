@@ -52,24 +52,24 @@ make introduction.pdf
     - [x] Change `threshold` to `size`.
     - [x] Check whether update function should take a `deepcopy` (really an issue for  the [`EpidemicsUtilities`](file://EpidemicsUtilities/) module). (RESOLVED by ensuring `deepcopy` taken for constructors of `Evolution` and `CEvolution`.)
     - [x] Move initial state update function to  the [`EpidemicsUtilities`](file://EpidemicsUtilities/) module,
-      - [ ]  and add a "no action" option if `size` specified and would be exceeded.
+      - [x]  and add a "no action" option if `size` specified and would be exceeded.
     - [ ] Move some of the specialized choices and functions of section 2 into the [`EpidemicsUtilities`](file://EpidemicsUtilities/) module,
     - [ ] How to speed up by doing more in memory?!
     - [ ] More unit tests are needed!
       - [ ] `28/04/2024` Generate graphics with `CFTP.qmd` to help validate automatic unit tests.
       - [ ] `24/02/2024` Move unit tests from `test.qmd` to `EpidemicsCFTP/test`. 
   - [x] Compute the prior distribution of infectives at time `0` given α and β, if the first `CRemoval` occurs at time `0`. 
-    - [ ] Alter code to account for this using `CategoricalDistribution`.
+    - [x] Alter code to account for this using `CategoricalDistribution`.
     - [ ] Produce simple RWM variant for proposal of new initial state. Check requirements if monotonicity is to be maintained.
   - [ ] Generate code for automatic extension of CFTP.
 
 - [x] `13/03/24` Extend `CFTP.qmd` to generate a `GIF`. For this, use `gadfly_animate.jl`. (Alter [`EpidemicsUtilities`](file://EpidemicsUtilities/) module?)
 
-- [ ] Improve animation.
+- [x] Improve animation.
   - [x] Modify code so times are displayed as negative running up to time 0.
   - [x] Highlight coalescence in animation.
   - [x] Pause at end of each CFTP cycle in animation.
-  - [ ] Previous cycles would be better plotted as greyed out.
+  - [x] Previous cycles would be better plotted as greyed out.
   - [x] Coalesced trajectory as opaque black.
   
 - [ ] Statistical application:

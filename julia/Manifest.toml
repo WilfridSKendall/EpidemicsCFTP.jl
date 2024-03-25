@@ -2,7 +2,7 @@
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "faaae535ad8d0b088f81c35af4debee9d8151800"
+project_hash = "6ada8532e7cbee41b139fd2b4c9f1b267cd887e1"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -229,7 +229,7 @@ uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
 version = "0.6.8"
 
 [[deps.EpidemicsCFTP]]
-deps = ["DataFrames", "Distributions", "Format", "PrettyPrint", "PrettyTables"]
+deps = ["DataFrames", "Distributions", "Format", "PrettyPrint", "PrettyTables", "Random"]
 path = "/home/wilfrid/ms/PerfectEpidemics/julia/EpidemicsCFTP/"
 uuid = "e9e582aa-fa14-4cd8-84f3-d59ae741ce27"
 version = "1.0.0-DEV"

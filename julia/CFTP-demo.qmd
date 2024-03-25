@@ -128,10 +128,8 @@ import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
 Here are specialized colours used in the plots.
 ```{julia}
 #| label: choice of colours
-min_spectrum    = [colorant"red"] 
-append!(min_spectrum, range(colorant"grey5", stop=colorant"grey99", length=11)) 
-max_spectrum    = [colorant"blue"] 
-append!(max_spectrum, range(colorant"grey5", stop=colorant"grey99", length=11)) 
+min_colour      = colorant"red"
+max_colour      = colorant"blue"
 joined_colour   = colorant"deeppink" 
 coalesce_colour = colorant"black" ;
 ```
@@ -387,11 +385,9 @@ function single_frame(work, evmin, evmax, iv, proposed_sir; duration=duration, t
                     select=BOUNDARIES, specified_color=coalesce_colour, specified_opacity=1.0)
     else
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    #select=BOUNDARIES, specified_color=min_spectrum[1])
-                    select=BOUNDARIES, specified_color=min_spectrum[1], specified_opacity=0.2)
+                    select=BOUNDARIES, specified_color=min_colour, specified_opacity=0.2)
         draw_evolution!(work, evmax, duration, theme=theme,
-                    #select=BOUNDARIES, specified_color=max_spectrum[1])
-                    select=BOUNDARIES, specified_color=max_spectrum[1], specified_opacity=0.2)
+                    select=BOUNDARIES, specified_color=max_colour, specified_opacity=0.2)
     end
 
     return evmin, evmax
@@ -410,45 +406,51 @@ function cycle(stream, canvas;
     evmax = deepcopy(evmax0)
     iteration = 0
     legend  = lpad(iteration, 4, "0")
-    if iteration < length(stream)
-        legend2 = "-$(lpad(length(stream)-iteration, 4, "0")):"
-    else
-        legend2 = "$(lpad(length(stream)-iteration, 4, "0")): "
-    end
+    lstream = "-$(lpad(length(stream), 4, "0"))"
+    legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
     draw_evolution!(work, evmin, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=min_spectrum[1])
+                    select=BOUNDARIES, specified_color=min_colour)
     draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=max_spectrum[1])
+                    select=BOUNDARIES, specified_color=max_colour)
     logo  = "Minimum and maximum evolutions at algorithmic time step"
     title = "$logo $legend2"
-    about = "Cycle at time $legend2 begun at $(-length(stream))"
-    info  = Guide.annotation(compose(context(), font("Helvetica"), fontsize(12pt), 
-                    text(0.4w, 0.95h, about), fill("tomato")))
-    image = new_figure(work, info; title=title)
+    about = "Cycle at time $legend2/$lstream"
+    info  = Guide.annotation(compose(context(), font("JuliaMono"), fontsize(12pt), 
+                    text(0.5w, 0.95h, about), fill("tomato")))
+    image = new_figure(work, 
+#        draw_evolution!(work, evmin, duration, theme=theme, 
+#                    select=BOUNDARIES, specified_color=min_colour, specified_opacity=1),
+#        draw_evolution!(work, evmax, duration, theme=theme,
+#                    select=BOUNDARIES, specified_color=max_colour, specified_opacity=1),
+        info; title=title)
+    draw(PNG("animation/$tag-$legend-test.png"), image)
     draw(PNG("animation/$tag-$legend.png"), image)
     draw(PDF("animation/$tag-$legend.pdf"), image)
     
-    lstream = "-$(lpad(length(stream), 4, "0"))"
     
     for (iteration, pair) ∈ enumerate(stream)
         (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
 
         legend = lpad(iteration, 4, "0")
-        legend2 = "-$(lpad(length(stream)-iteration, 4, "0")):"
+        legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
 
-        about1 = "Cycle at time $legend2"
-        about2 = "begun at $lstream"
-        info  = Guide.annotation(compose(context(), font("Helvetica"), fontsize(12pt), 
-                        text(0.4w, 0.95h, about1), text(0.7w, 0.95h, about2), fill("tomato")))
+        about = "Cycle at time $legend2/$lstream"
+        info  = Guide.annotation(compose(context(), font("JuliaMono"), fontsize(12pt), 
+                        text(0.5w, 0.95h, about), fill("tomato")))
 
         if (evmin ≃ evmax)
             title  = "$logo $legend2 [COALESCED]"
             signal = Guide.annotation(compose(context(), font("Helvetica-Bold"), fontsize(14pt), 
-                        text(0.4w, 0.8h, "COALESCED"), fill("tomato")))
+                        text(0.5w, 0.8h, "COALESCED"), fill("tomato")))
             image  = new_figure(canvas[iteration], info, signal; title=title)
         else
             title  = "$logo $legend2"
-            image  = new_figure(canvas[iteration], info; title=title)
+            image  = new_figure(canvas[iteration], 
+#                draw_evolution!(work, evmin, duration, theme=theme, 
+#                    select=BOUNDARIES, specified_color=min_colour, specified_opacity=1),
+#                draw_evolution!(work, evmax, duration, theme=theme,
+#                    select=BOUNDARIES, specified_color=max_colour, specified_opacity=1), 
+                info; title=title)
         end
         draw(PNG("animation/$tag-$legend.png"), image)
         if mod(iteration, 10) == 0

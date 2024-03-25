@@ -1183,8 +1183,9 @@ end ;
 
 
 
-# # Generate an innovation
-# # ----------------------
+# # Sampling
+# # --------
+
 """
     generate_innovation(::AbstractInnovation, ::Real; α::Real, β::Real, size::Int)
 

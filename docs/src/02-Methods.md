@@ -38,7 +38,7 @@ also other helper functions:
 
 | _Method_                                   | _Summary_                                              |
 |:-------------------------------------------|:-------------------------------------------------------|
-| [`generate_innovation`](@ref)              | Generates random [`Innovation`](@ref)                  |
+| [`generate_innovation`](@ref)              | Generates random [`Innovation`](@ref) **REPLACE**      |
 | [`evolution`](@ref)                        | Generates trajectory, history for [`Evolution`](@ref)  |
 | [`evolution_history`](@ref)                | Generates history for [`Evolution`](@ref)              |
 | [`extremal_evolution`](@ref)               | Generates extremal [`Evolution`](@ref) from `CRemoval`s|
@@ -56,6 +56,7 @@ also other helper functions:
 |                                            |                                                        |
 | [`EpidemicsCFTP.antecedent`](@ref)         | Computes state before stated incident (no checks!)     |
 | [`EpidemicsCFTP.reverse_update`](@ref)     | Performs reverse update if this is possible            |
+|                                            |                                                        |
 ```@docs 
 generate_innovation
 evolution

@@ -12,12 +12,16 @@ summary = "EpidemicsCFTP version $version, checked in on $date"
 
 # # Imports
 # # -------
+# # The function `isless` is overloaded in  `Methods.jl`!
+import Base: isless
 # # The `Format` module is required in order to define `show` methods for the various types.
 using Format
 # # The `Distributions` module is required in order to simulate new `Innovation`s.
 import Distributions
 # # The `DataFrames` module is required in order to provide placeholders for trajectory flows.
 import DataFrames
+# # We need `AbstractRNG` and `GLOBALRNG` from the  `Random` module 
+# in order to produce implementations of `rand` for sampling various random objects.
 
 # # Exports
 # # =======
@@ -58,9 +62,6 @@ export BadNFZ, ExpungedInfectionGivesValidTrajectory
 # This is _not_ explicitly exported: import or use it 
 # as `EpidemicsCFTP.abbreviations`.
 
-# # Note also that `isless` is overloaded in `Methods.jl`!
-import Base: isless
-
 # # Included files
 # # ==============
 # # Include types defined in this package.
@@ -78,7 +79,7 @@ include("04-Exceptions.jl")
 # # Include abbreviations defined in a sub-package.
 include("05-Abbreviations.jl")
 
-# # From this we use the `.abbreviations` module for ease of reference.
+# # We use the `.abbreviations` module internally for ease of reference.
 using .abbreviations
 
 end

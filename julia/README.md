@@ -71,6 +71,7 @@ make introduction.pdf
   - [x] Pause at end of each CFTP cycle in animation.
   - [x] Previous cycles would be better plotted as greyed out.
   - [x] Coalesced trajectory as opaque black.
+  - [x] Previous uncoalesced trajectories in lighter colours
   
 - [ ] Statistical application:
   - [ ] Adapt to search out _maximum a posteriori_ estimates for the parameters.

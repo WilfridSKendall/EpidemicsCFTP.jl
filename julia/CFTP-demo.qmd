@@ -356,13 +356,13 @@ In general, care needs to be taken that monotonicity is maintained!
 [A similar situation concerning spatial point processes is discussed in @KendallMoeller-2000.]
 
 Using this, 
-a function `single_frame!` updates minimal and maximal `CEvolution`s by a single algorithmic step.
+a function `single_step` updates minimal and maximal `CEvolution`s by a single algorithmic step.
 Note that we vary the initial number of infectives using a separate accept/reject step
 in the update. Note that `proposed_sir` here simply supplies a proposed initial number
 of `Infection`s; other aspects do not affect the result.
 ```{julia}
-#| label: function `single_frame!`
-function single_frame!(work, evmin, evmax, iv, proposed_sir; duration=duration, theme=theme)
+#| label: function `single_step`
+function single_step(work, evmin, evmax, iv, proposed_sir; duration=duration, theme=theme)
     evmin = evmin ⋄ iv ▷ proposed_sir 
     evmax = evmax ⋄ iv ▷ proposed_sir 
 
@@ -371,15 +371,15 @@ function single_frame!(work, evmin, evmax, iv, proposed_sir; duration=duration, 
         error("Monotonicity fails")
     end
 
-    if evmin ≃ evmax
-        draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=theme.coalesce, specified_opacity=1.0)
-    else
-        draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.2)
-        draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.2)
-    end
+    #if evmin ≃ evmax
+    #    draw_evolution!(work, evmin, duration, theme=theme, 
+    #                select=BOUNDARIES, specified_color=theme.coalesce, specified_opacity=1.0)
+    #else
+    #    draw_evolution!(work, evmin, duration, theme=theme, 
+    #                select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.2)
+    #    draw_evolution!(work, evmax, duration, theme=theme,
+    #                select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.2)
+    #end
 
     return evmin, evmax
 end ;
@@ -393,27 +393,43 @@ It is convenient to express the actual drawing in another function
 ```{julia}
 #| label: function `graphic_component!`
 function graphic_component!(work, evmin, evmax, duration, iteration, stream_length; 
-                tag="demo-e", theme=theme, fixed_font="JuliaMono",
+                tag="demo-e", theme=theme, fixed_font="JuliaMono", variable_font="HelveticaBold",
                 logo="Minimum and maximum evolutions at algorithmic time step")
     lstream = "-$(lpad(stream_length, 4, "0"))"
     legend = "-$(lpad(stream_length-iteration, 4, "0"))"
 
-    title = "$logo $legend"
     about = "Cycle at time $legend/$lstream"
     info  = Guide.annotation(compose(context(), font(fixed_font), fontsize(12pt), 
                     text(0.5w, 0.95h, about), fill("tomato")))
 
-    draw_evolution!(work, evmin, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.min)
-    draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.max)
-    image = new_figure(work, info; title=title)
+    if evmin ≃ evmax
+        title  = "$logo $legend [COALESCED]"
+        signal = Guide.annotation(compose(context(), font(variable_font), fontsize(14pt), 
+                        text(0.5w, 0.8h, "COALESCED"), fill("tomato")))
+        draw_evolution!(work, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=theme.coalesce, specified_opacity=1.0)
+        image = new_figure(work, info, signal; title=title)
+    else
+        title  = "$logo $legend"
+        draw_evolution!(work, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.2)
+        draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.2)
 
+        work2 = deepcopy(work)
+        draw_evolution!(work2, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=1.0)
+        draw_evolution!(work2, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=1.0)
+        image = new_figure(work2, info; title=title)
+    end
+                    
     fname   = "animation/$tag-$(lpad(iteration, 4, "0"))"
     draw(PNG("$fname.png"), image)
     if mod(iteration, 10) == 0
         draw(PDF("$fname.pdf"), image)
     end
+    
     return image
 end
 ```
@@ -424,46 +440,17 @@ function graphic_cycle!(stream, canvas;
         evmin0=evmin0, evmax0=evmax0, tag="demo-e", lines_plot=lines_plot, 
         fixed_font="JuliaMono", variable_font="HelveticaBold", theme=theme)
     # Create deep copies of plot background and of extremal `CEvolution`s
-    #evmin, evmax = deepcopy(evmin0), deepcopy(evmax0)
-    evmin = deepcopy(evmin0)
-    evmax = deepcopy(evmax0)
+    evmin, evmax = deepcopy(evmin0), deepcopy(evmax0)
     work = deepcopy(lines_plot)
-    iteration = 0
-    
     stream_length = length(stream)
-    
-    image = graphic_component!(work, evmin, evmax, duration, iteration, stream_length, tag=tag)
+
+    image = graphic_component!(work, evmin, evmax, duration, 0, stream_length, tag=tag)
     
     for (iteration, pair) ∈ enumerate(stream)
-        (evmin, evmax) = single_frame!(canvas[iteration], evmin, evmax, pair...)
-
-        legend = lpad(iteration, 4, "0")
-        legend2 = "-$(lpad(stream_length-iteration, 4, "0"))"
-        lstream = "-$(lpad(stream_length, 4, "0"))"
-        logo  = "Minimum and maximum evolutions at algorithmic time step"
-
-        about = "Cycle at time $legend2/$lstream"
-        info  = Guide.annotation(compose(context(), font(fixed_font), fontsize(12pt), 
-                        text(0.5w, 0.95h, about), fill("tomato")))
-
-        if (evmin ≃ evmax)
-            title  = "$logo $legend2 [COALESCED]"
-            signal = Guide.annotation(compose(context(), font(variable_font), fontsize(14pt), 
-                        text(0.5w, 0.8h, "COALESCED"), fill("tomato")))
-            image  = new_figure(canvas[iteration], info, signal; title=title)
-        else
-            title  = "$logo $legend2"
-#            draw_evolution!(work, evmin, duration, theme=theme, 
-#                select=BOUNDARIES, specified_color=theme.min, specified_opacity=1),
-#            draw_evolution!(work, evmax, duration, theme=theme,
-#                select=BOUNDARIES, specified_color=theme.max, specified_opacity=1), 
-            image  = new_figure(canvas[iteration], info; title=title)
-        end
-        draw(PNG("animation/$tag-$legend.png"), image)
-        if mod(iteration, 10) == 0
-            draw(PDF("animation/$tag-$legend.pdf"), image)
-        end
+        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, pair...)
+        image = graphic_component!(canvas[iteration], evmin, evmax, duration, iteration, stream_length, tag=tag)
     end
+
     draw(PNG("animation/$tag.png"), image)
     draw(PDF("animation/$tag.pdf"), image)
 end ;

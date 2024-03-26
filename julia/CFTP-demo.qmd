@@ -612,13 +612,13 @@ End states of all the cycles up to coalescence
 ----------------------------------------------
 
 ::: {layout-nrow=5}
-![](animation/demo-a.pdf){ width=45% }
+![](animation/demo-a.pdf){ width=49% }
 
-![](animation/demo-b.pdf){ width=45% }
+![](animation/demo-b.pdf){ width=49% }
 
-![](animation/demo-c.pdf){ width=45% }
+![](animation/demo-c.pdf){ width=49% }
 
-![](animation/demo-d.pdf){ width=45% }
+![](animation/demo-d.pdf){ width=49% }
 
-![](animation/demo-e.pdf){ width=45% }
+![](animation/demo-e.pdf){ width=49% }
 :::

@@ -24,7 +24,7 @@ colour_x:
     lastfeasible1:             "pink"
     lastfeasible2:             "hotpink2"
     lastfeasible3:             "deeppink3"
-    legend:                    "black"
+    legend:                    "tomato"
     background:                "bisque"
     min:                       "red"
     max:                       "blue"

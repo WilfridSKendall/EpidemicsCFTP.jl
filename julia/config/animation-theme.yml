@@ -1,0 +1,71 @@
+# Primitive usage:
+# import YAML
+# data = YAML.load_file("default_style.yml")
+# println(data)
+
+# named colours for incidents and markers
+colour:
+    Removal:                   "tan"
+    CRemoval:                  "purple"
+    Infection:                 "orange"
+    PInfection:                "darkgreen"
+    KilledInfection:           "gray90"           
+    NoFlyInfection:            "hotpink2"
+    ExpungedInfection:         "gray50"
+    KilledRemoval:             "burlywood1"
+
+# named colour for other purposes
+colour_x:
+    blank:                     "white"    
+    scaffold:                  "grey"
+    NFZ1:                      "steelblue" 
+    NFZ2:                      "steelblue2"
+    NFZ:                       "lightsteelblue"
+    lastfeasible1:             "pink"
+    lastfeasible2:             "hotpink2"
+    lastfeasible3:             "deeppink3"
+    legend:                    "tomato"
+    background:                "bisque"
+    min:                       "red"
+    max:                       "blue"
+    joined:                    "deeppink"
+    coalesce:                  "black"
+    default:                   "white"
+
+length_cy:
+    # node radius in `cy` units
+    radius:                0.26
+    # vertical offset in `cy` units
+    height:                0.00
+    # tic size in `cy` units
+    tic:                  -0.20
+    
+length_h:
+    bit:                  -0.02
+    
+# label offsets in inches
+length_inch:
+    xlab:                 -0.40
+    yloc:                  0.25
+    figwidth:              3
+    figheight:             3
+    
+# shrinkage factor for small radius
+length_factor:
+    smradius:              0.90
+
+#  line thicknesses in mm
+thickness_mm:
+    boundary:              1.00
+    trail:                 0.75
+    dormant:               0.25
+    broad:                 2.00
+    activated:             0.75
+
+# background opacity
+opacity:
+    background:            0.30
+
+# jitter
+jitter:
+    ϵ:                     1e-7

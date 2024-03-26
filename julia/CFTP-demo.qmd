@@ -59,7 +59,7 @@ import Test: @test
 ```{julia}
 #| label: basic graphics settings
 #| include: false
-theme = create_theme(load_theme("config/test-theme.yml"))
+theme = create_theme(load_theme("config/animation-theme.yml"))
 
 set_default_plot_size(2theme.figwidth, 0.9theme.figheight)
 ```
@@ -280,7 +280,7 @@ function InnovationStart_IS(prob::Vector{S}) where S<: Real
    prior = Categorical(prob)
    return new(prior)
 end
-end
+end ;
 ```
 
 Here is the code for sampling from an `InnovationStart_IS`. ***This will need improving!***
@@ -293,7 +293,7 @@ end
   
 function rand(iv_ST::InnovationStart_IS)
     return rand(GLOBAL_RNG, iv_ST)
-end
+end ;
 ```
 
 We define a vector of probabilities given as products of transition probabilities as 
@@ -315,8 +315,7 @@ plt = plot(prior_df, x=:k, y=:probability,
     Guide.xlabel("Number of initial infectives", orientation=:horizontal),
     Guide.ylabel("Prior probability", orientation=:vertical),
     Geom.bar)
-draw(PDF("image/prior.pdf"), plt)
-print((1+size))
+draw(PDF("image/prior.pdf"), plt) ;
 ```
 
 
@@ -371,16 +370,6 @@ function single_step(work, evmin, evmax, iv, proposed_sir; duration=duration, th
         error("Monotonicity fails")
     end
 
-    #if evmin ≃ evmax
-    #    draw_evolution!(work, evmin, duration, theme=theme, 
-    #                select=BOUNDARIES, specified_color=theme.coalesce, specified_opacity=1.0)
-    #else
-    #    draw_evolution!(work, evmin, duration, theme=theme, 
-    #                select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.2)
-    #    draw_evolution!(work, evmax, duration, theme=theme,
-    #                select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.2)
-    #end
-
     return evmin, evmax
 end ;
 ```
@@ -399,22 +388,24 @@ function graphic_component!(work, evmin, evmax, duration, iteration, stream_leng
     legend = "-$(lpad(stream_length-iteration, 4, "0"))"
 
     about = "Cycle at time $legend/$lstream"
-    info  = Guide.annotation(compose(context(), font(fixed_font), fontsize(12pt), 
-                    text(0.5w, 0.95h, about), fill("tomato")))
+    info  = Guide.annotation(compose(context(), 
+                    font(fixed_font), fontsize(12pt), fill(theme.legend), 
+                    text(0.5w, 0.95h, about), fill(theme.legend)))
 
     if evmin ≃ evmax
         title  = "$logo $legend [COALESCED]"
-        signal = Guide.annotation(compose(context(), font(variable_font), fontsize(14pt), 
-                        text(0.5w, 0.8h, "COALESCED"), fill("tomato")))
+        signal = Guide.annotation(compose(context(), 
+                        font(variable_font), fontsize(24pt), 
+                        text(0.5w, 0.8h, "COALESCED"), fill(theme.legend)))
         draw_evolution!(work, evmin, duration, theme=theme, 
                     select=BOUNDARIES, specified_color=theme.coalesce, specified_opacity=1.0)
         image = new_figure(work, info, signal; title=title)
     else
         title  = "$logo $legend"
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.2)
+                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.3)
         draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.2)
+                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.3)
 
         work2 = deepcopy(work)
         draw_evolution!(work2, evmin, duration, theme=theme, 
@@ -431,7 +422,7 @@ function graphic_component!(work, evmin, evmax, duration, iteration, stream_leng
     end
     
     return image
-end
+end ;
 ```
 
 ```{julia}
@@ -448,7 +439,8 @@ function graphic_cycle!(stream, canvas;
     
     for (iteration, pair) ∈ enumerate(stream)
         (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, pair...)
-        image = graphic_component!(canvas[iteration], evmin, evmax, duration, iteration, stream_length, tag=tag)
+        image = graphic_component!(canvas[iteration], evmin, evmax,
+                                duration, iteration, stream_length, tag=tag)
     end
 
     draw(PNG("animation/$tag.png"), image)
@@ -467,6 +459,8 @@ References {.unnumbered}
 ::: {#refs}
 :::
 
+
+{{< pagebreak >}}
 
 \appendix
 
@@ -617,16 +611,14 @@ coalescence is visually evident: the coalesced trajectory is drawn in black.
 End states of all the cycles up to coalescence
 ----------------------------------------------
 
-::: {layout-nrow=3}
-![](animation/demo-a.pdf){ width=50% }
+::: {layout-nrow=5}
+![](animation/demo-a.pdf){ width=45% }
 
-![](animation/demo-b.pdf){ width=50% }
+![](animation/demo-b.pdf){ width=45% }
 
-![](animation/demo-c.pdf){ width=50% }
-:::
+![](animation/demo-c.pdf){ width=45% }
 
-::: {layout-nrow=3}
-![](animation/demo-d.pdf){ width=50% }
+![](animation/demo-d.pdf){ width=45% }
 
-![](animation/demo-e.pdf){ width=50% }
+![](animation/demo-e.pdf){ width=45% }
 :::

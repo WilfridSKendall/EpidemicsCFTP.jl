@@ -125,16 +125,7 @@ used for the plotting parameter `select`, namely
 import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
 ```
 
-Here are specialized colours used in the plots.
-```{julia}
-#| label: choice of colours
-min_colour      = colorant"red"
-max_colour      = colorant"blue"
-joined_colour   = colorant"deeppink" 
-coalesce_colour = colorant"black" ;
-```
-
-Here are some more plotting technicalities.
+Here are some plotting technicalities.
 ```{julia}
 #| label: basic graphics
 uflow = table_trajectories1(duration, evmin0.trajectory) 
@@ -365,13 +356,13 @@ In general, care needs to be taken that monotonicity is maintained!
 [A similar situation concerning spatial point processes is discussed in @KendallMoeller-2000.]
 
 Using this, 
-a function `single_frame` updates minimal and maximal `CEvolution`s by a single algorithmic step.
+a function `single_frame!` updates minimal and maximal `CEvolution`s by a single algorithmic step.
 Note that we vary the initial number of infectives using a separate accept/reject step
 in the update. Note that `proposed_sir` here simply supplies a proposed initial number
 of `Infection`s; other aspects do not affect the result.
 ```{julia}
-#| label: function `single_frame`
-function single_frame(work, evmin, evmax, iv, proposed_sir; duration=duration, theme=theme)
+#| label: function `single_frame!`
+function single_frame!(work, evmin, evmax, iv, proposed_sir; duration=duration, theme=theme)
     evmin = evmin ⋄ iv ▷ proposed_sir 
     evmax = evmax ⋄ iv ▷ proposed_sir 
 
@@ -382,36 +373,76 @@ function single_frame(work, evmin, evmax, iv, proposed_sir; duration=duration, t
 
     if evmin ≃ evmax
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=coalesce_colour, specified_opacity=1.0)
+                    select=BOUNDARIES, specified_color=theme.coalesce, specified_opacity=1.0)
     else
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=min_colour, specified_opacity=0.2)
+                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.2)
         draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=max_colour, specified_opacity=0.2)
+                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.2)
     end
 
     return evmin, evmax
 end ;
 ```
 
-Most of the work of the CFTP algorithm will be done by the `cycle` function.
+Most of the work of the CFTP algorithm will be done by the `graphic_cycle!` function.
 Note that previous cycles are included in the plots as relevant. Ideally we should plot
 these as greyed out, but this is a matter for later.
+It is convenient to express the actual drawing in another function
+`graphic_component!`.
 ```{julia}
-#| label: function `cycle`
-function cycle(stream, canvas; 
-        evmin0=evmin0, evmax0=evmax0, tag="demo-e", lines_plot=lines_plot, theme=theme)
-    work = deepcopy(lines_plot)
+#| label: function `graphic_component!`
+function graphic_component!(work, evmin, evmax, duration, iteration, stream_length; 
+                tag="demo-e", theme=theme, fixed_font="JuliaMono",
+                logo="Minimum and maximum evolutions at algorithmic time step")
+    legend  = lpad(iteration, 4, "0")
+    lstream = "-$(lpad(stream_length, 4, "0"))"
+    legend2 = "-$(lpad(stream_length-iteration, 4, "0"))"
+    draw_evolution!(work, evmin, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=theme.min)
+    draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=theme.max)
+    logo  = "Minimum and maximum evolutions at algorithmic time step"
+        title = "$logo $legend2"
+        about = "Cycle at time $legend2/$lstream"
+        info  = Guide.annotation(compose(context(), font(fixed_font), fontsize(12pt), 
+                    text(0.5w, 0.95h, about), fill("tomato")))
+
+#        draw_evolution!(work, evmin, duration, theme=theme, 
+#                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=1),
+#        draw_evolution!(work, evmax, duration, theme=theme,
+#                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=1),
+        image = new_figure(work, 
+                info; title=title)
+    draw(PNG("animation/$tag-$legend.png"), image)
+    if mod(iteration, 10) == 0
+        draw(PDF("animation/$tag-$legend.pdf"), image)
+    end
+    return image
+end
+```
+
+```{julia}
+#| label: function `graphic_cycle!`
+function graphic_cycle!(stream, canvas; 
+        evmin0=evmin0, evmax0=evmax0, tag="demo-e", lines_plot=lines_plot, 
+        fixed_font="JuliaMono", variable_font="HelveticaBold", theme=theme)
+    # Create deep copies of plot background and of extremal `CEvolution`s
+    #evmin, evmax = deepcopy(evmin0), deepcopy(evmax0)
     evmin = deepcopy(evmin0)
     evmax = deepcopy(evmax0)
+    work = deepcopy(lines_plot)
     iteration = 0
+    
+    stream_length = length(stream)
+    
     legend  = lpad(iteration, 4, "0")
-    lstream = "-$(lpad(length(stream), 4, "0"))"
-    legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
+    lstream = "-$(lpad(stream_length, 4, "0"))"
+    legend2 = "-$(lpad(stream_length-iteration, 4, "0"))"
     draw_evolution!(work, evmin, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=min_colour)
+                    select=BOUNDARIES, specified_color=theme.min)
     draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=max_colour)
+                    select=BOUNDARIES, specified_color=theme.max)
     logo  = "Minimum and maximum evolutions at algorithmic time step"
     title = "$logo $legend2"
     about = "Cycle at time $legend2/$lstream"
@@ -419,38 +450,36 @@ function cycle(stream, canvas;
                     text(0.5w, 0.95h, about), fill("tomato")))
     image = new_figure(work, 
 #        draw_evolution!(work, evmin, duration, theme=theme, 
-#                    select=BOUNDARIES, specified_color=min_colour, specified_opacity=1),
+#                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=1),
 #        draw_evolution!(work, evmax, duration, theme=theme,
-#                    select=BOUNDARIES, specified_color=max_colour, specified_opacity=1),
+#                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=1),
         info; title=title)
-    draw(PNG("animation/$tag-$legend-test.png"), image)
     draw(PNG("animation/$tag-$legend.png"), image)
     draw(PDF("animation/$tag-$legend.pdf"), image)
     
     
     for (iteration, pair) ∈ enumerate(stream)
-        (evmin, evmax) = single_frame(canvas[iteration], evmin, evmax, pair...)
+        (evmin, evmax) = single_frame!(canvas[iteration], evmin, evmax, pair...)
 
         legend = lpad(iteration, 4, "0")
-        legend2 = "-$(lpad(length(stream)-iteration, 4, "0"))"
+        legend2 = "-$(lpad(stream_length-iteration, 4, "0"))"
 
         about = "Cycle at time $legend2/$lstream"
-        info  = Guide.annotation(compose(context(), font("JuliaMono"), fontsize(12pt), 
+        info  = Guide.annotation(compose(context(), font(fixed_font), fontsize(12pt), 
                         text(0.5w, 0.95h, about), fill("tomato")))
 
         if (evmin ≃ evmax)
             title  = "$logo $legend2 [COALESCED]"
-            signal = Guide.annotation(compose(context(), font("Helvetica-Bold"), fontsize(14pt), 
+            signal = Guide.annotation(compose(context(), font(variable_font), fontsize(14pt), 
                         text(0.5w, 0.8h, "COALESCED"), fill("tomato")))
             image  = new_figure(canvas[iteration], info, signal; title=title)
         else
             title  = "$logo $legend2"
-            image  = new_figure(canvas[iteration], 
 #                draw_evolution!(work, evmin, duration, theme=theme, 
-#                    select=BOUNDARIES, specified_color=min_colour, specified_opacity=1),
+#                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=1),
 #                draw_evolution!(work, evmax, duration, theme=theme,
-#                    select=BOUNDARIES, specified_color=max_colour, specified_opacity=1), 
-                info; title=title)
+#                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=1), 
+            image  = new_figure(canvas[iteration], info; title=title)
         end
         draw(PNG("animation/$tag-$legend.png"), image)
         if mod(iteration, 10) == 0
@@ -536,7 +565,7 @@ In this appendix we display an entire evolution of a CFTP run, always starting w
 An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the entire CFTP,
 evolving in logical time and re-starting earlier and earlier till coalescence is achieved!
 
-The work of each CFTP cycle is carried out by the function `cycle`. Note that we have not yet automated 
+The work of each CFTP cycle is carried out by the function `graphic_cycle!`. Note that we have not yet automated 
 how CFTP works through cycles.
 ```{julia}
 #| label: building figures
@@ -545,7 +574,7 @@ stream = innovation_stream(max_length)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 
 for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e", 128)] 
-    cycle(stream[max_length - cycle_length + 1:max_length], 
+    graphic_cycle!(stream[max_length - cycle_length + 1:max_length], 
         canvas[max_length - cycle_length + 1:max_length], 
         tag="demo-$epithet")
 end

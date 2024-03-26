@@ -21,6 +21,10 @@ colour_x:
     lastfeasible2:             "black"
     lastfeasible3:             "black"
     legend:                    "black"
+    min:                       "black"
+    max:                       "black"
+    joined:                    "black"
+    coalesce:                  "black"
     background:                "white"
     default:                   "white"
 

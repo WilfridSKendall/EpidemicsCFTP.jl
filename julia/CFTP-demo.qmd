@@ -395,28 +395,24 @@ It is convenient to express the actual drawing in another function
 function graphic_component!(work, evmin, evmax, duration, iteration, stream_length; 
                 tag="demo-e", theme=theme, fixed_font="JuliaMono",
                 logo="Minimum and maximum evolutions at algorithmic time step")
-    legend  = lpad(iteration, 4, "0")
     lstream = "-$(lpad(stream_length, 4, "0"))"
-    legend2 = "-$(lpad(stream_length-iteration, 4, "0"))"
+    legend = "-$(lpad(stream_length-iteration, 4, "0"))"
+
+    title = "$logo $legend"
+    about = "Cycle at time $legend/$lstream"
+    info  = Guide.annotation(compose(context(), font(fixed_font), fontsize(12pt), 
+                    text(0.5w, 0.95h, about), fill("tomato")))
+
     draw_evolution!(work, evmin, duration, theme=theme,
                     select=BOUNDARIES, specified_color=theme.min)
     draw_evolution!(work, evmax, duration, theme=theme,
                     select=BOUNDARIES, specified_color=theme.max)
-    logo  = "Minimum and maximum evolutions at algorithmic time step"
-        title = "$logo $legend2"
-        about = "Cycle at time $legend2/$lstream"
-        info  = Guide.annotation(compose(context(), font(fixed_font), fontsize(12pt), 
-                    text(0.5w, 0.95h, about), fill("tomato")))
+    image = new_figure(work, info; title=title)
 
-#        draw_evolution!(work, evmin, duration, theme=theme, 
-#                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=1),
-#        draw_evolution!(work, evmax, duration, theme=theme,
-#                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=1),
-        image = new_figure(work, 
-                info; title=title)
-    draw(PNG("animation/$tag-$legend.png"), image)
+    fname   = "animation/$tag-$(lpad(iteration, 4, "0"))"
+    draw(PNG("$fname.png"), image)
     if mod(iteration, 10) == 0
-        draw(PDF("animation/$tag-$legend.pdf"), image)
+        draw(PDF("$fname.pdf"), image)
     end
     return image
 end

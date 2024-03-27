@@ -210,7 +210,9 @@ Instances should always possess fields as given in the table.
 | `NFZ1`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 | `NFZ2`        | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
 | `NFZ`         | `Vector{Real}`               | **computed** | `CEvolution`      | ordered list      |
-| `size`        | `Int`                        |              | `                 | no effect if `0`  |
+| `size`        | `Int`                        | **keyword**  | `                 | ignored if `0`    |
+| `t0`          | `Real`                       | **keyword**  | `                 | computed if `-∞`  |
+| `duration`    | `Real`                       | **keyword**  | `                 | computed if `∞`   |
 
 #### Unconditioned `Evolution`
 

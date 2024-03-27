@@ -864,6 +864,13 @@ for infectious intervals.
 
 The field `size` currently plays no role.
 
+The field `t0` (initial time) is either assigned as a keyword parameter or computed using 
+`initial`.
+
+The field `duration` (length of time period of evolution) is either assigned as a keyword parameter or computed using 
+`initial` and `chronology`.
+
+
 The fundamental constructor of `Evolution` uses `deepcopy` for the fields `infections`, 
 `removals`, and `cremovals` to avoid embarrassing bugs if the source lists are later modified!
 
@@ -890,6 +897,7 @@ AbstractRemoval[𝒞₀.₀₀¹,ℳ⁺[∞]²,ℳ⁺[∞]³]
 """
 struct Evolution <: AbstractEvolution
     population  ::Int
+    size        ::Int
     infections  ::Vector{<:AbstractInfection}
     removals    ::Vector{<:AbstractRemoval}
     cremovals   ::Vector{CRemoval}
@@ -899,7 +907,8 @@ struct Evolution <: AbstractEvolution
     initial     ::SIR
     start       ::Vector{AbstractInfection}
     finis       ::Vector{AbstractRemoval}
-    size        ::Int
+    t0          ::Real
+    duration    ::Real
 
 @doc """
     Evolution(::SIR, ::AbstractInnovation)::Evolution
@@ -927,7 +936,8 @@ trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 """
-function Evolution(initial_state::SIR, innovation::AbstractInnovation)::Evolution
+function Evolution(initial_state::SIR, innovation::AbstractInnovation;
+                   size::Int=0, t0::Real=-Inf, duration::Real=Inf)::Evolution
         # Need to check population == sum of initial.state entries
         population = innovation.population
         infections = innovation.infections
@@ -937,8 +947,15 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation)::Evolutio
         trajectory, history = evolution(initial_state, innovation)
         start      = create_start(trajectory[1], history)
         finis      = create_finis(trajectory[1], history)
-        return new(population, deepcopy(infections), deepcopy(removals), deepcopy(cremovals), 
-                   chronology, trajectory, history, initial_state, start, finis, 0::Int)
+        if t0 == -Inf
+            t0 = minimum(z.t for z in chronology)
+        end
+        if duration == Inf
+            duration = maximum(z.t for z in chronology) - t0
+        end
+        return new(population, size, deepcopy(infections), deepcopy(removals), deepcopy(cremovals), 
+                   chronology, trajectory, history, initial_state, start, finis, 
+                   t0, duration)
     end
     
 @doc """
@@ -966,14 +983,15 @@ trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 """
-function Evolution(initial_state::SIR, chronology::Vector{AbstractIncident})::Evolution
-        innovation = Innovation(initial_state.n,
+function Evolution(initial_state::SIR, chronology::Vector{<:AbstractIncident};
+                   size::Int=0, t0::Real=-Inf, duration::Real=Inf)::Evolution
+    innovation = Innovation(initial_state.n,
                         AIF[z for z ∈ chronology if z isa AIF],
                         AIR[z for z ∈ chronology if z isa AIR && !(z isa C)],
                         C[z for z ∈ chronology if z isa C],
                         )
-        return Evolution(initial_state, innovation)
-    end
+    return Evolution(initial_state, innovation; size=size, t0=t0, duration=duration)
+end
 
 end
 
@@ -1010,6 +1028,12 @@ not be infected if we are not to violate conditioning on removals.
 If field `size` is positive (in fact, no smaller than the total number of `CRemoval`s)
 then this serves as a further constraint on the `initial` field.
 
+The field `t0` (initial time) is either assigned as a keyword parameter or computed using 
+`initial`.
+
+The field `duration` (length of time period of evolution) is either assigned as a keyword parameter or computed using 
+`initial` and `chronology`.
+
 The fundamental constructor of `CEvolution` uses `deepcopy` for the fields `infections`, 
 `removals`, and `cremovals` to avoid embarrassing bugs if the source lists are later modified!
 
@@ -1035,6 +1059,7 @@ AbstractIncident[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻�
 """
 struct CEvolution <: AbstractEvolution
     population ::Int
+    size       ::Int
     infections ::Vector{<:AbstractInfection}
     removals   ::Vector{<:AbstractRemoval}
     cremovals  ::Vector{CRemoval}
@@ -1049,7 +1074,8 @@ struct CEvolution <: AbstractEvolution
     NFZ1       ::Vector{Real}
     NFZ2       ::Vector{Real}
     NFZ        ::Vector{Real}
-    size       ::Int
+    t0         ::Real
+    duration   ::Real
 
 @doc """
         CEvolution(::AbstractEvolution, ::AbstractInnovation; size::Int=0)::CEvolution
@@ -1121,7 +1147,8 @@ CEvolution(initial, innov)
 ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.1, 1)
 ```
 """
-function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation; size::Int=0)::CEvolution
+function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation; 
+                    size::Int=0, t0::Real=-Inf, duration::Real=Inf)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
     #                       last_feasible_evolution,
@@ -1148,7 +1175,8 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation; size::Int=0):
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
-    return CEvolution(ev.initial, iv_mod; LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound, size=size)
+    return CEvolution(ev.initial, iv_mod; LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound, 
+                      size=size, t0=t0, duration=duration)
 end
 # 1. Initial computation of `NFZ2`, a **list of times** 
 # indexed by time line ("level"), where each time is initially defined as
@@ -1181,13 +1209,15 @@ true
 ```
 """
 function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
-                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], size::Int=0)
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], 
+                    size::Int=0, t0::Real=-Inf, duration::Real=Inf)
         innovation = Innovation(initial_state.n,
                     AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                     AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                     CRemoval[z for z ∈ chronology if z isa CRemoval]
                     )
-    return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ, size=size)
+    return CEvolution(initial_state, innovation, LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=NFZ, 
+                      size=size, t0=t0, duration=duration)
 end
 
 @doc """
@@ -1219,7 +1249,8 @@ history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
 """
 function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
-                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], size::Int=0)
+                    LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], 
+                    size::Int=0, t0::Real=-Inf, duration::Real=Inf)
     # Need to check population == sum of `initial_state` entries
     population          = innovation.population
     infections          = innovation.infections
@@ -1229,9 +1260,17 @@ function CEvolution(initial_state::SIR, innovation::AbstractInnovation;
     trajectory, history = evolution(initial_state, innovation, conditioned=true)
     start               = create_start(trajectory[1], history)
     finis               = create_finis(trajectory[1], history)
+    if t0 == -Inf
+        t0 = minimum(z.t for z in chronology)
+    end
+    if duration == Inf
+        duration = maximum(z.t for z in chronology) - t0
+    end
         
-    return new(population, deepcopy(infections), deepcopy(removals), deepcopy(cremovals),
-               chronology, trajectory, history, initial_state, start, finis, LFE, NFZ1, NFZ2, NFZ, size)
+    return new(population, size, deepcopy(infections), deepcopy(removals), deepcopy(cremovals),
+               chronology, trajectory, history, initial_state, start, finis,
+               LFE, NFZ1, NFZ2, NFZ,
+               t0, duration)
 end
 
 end

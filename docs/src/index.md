@@ -53,7 +53,7 @@ import Markdown, EpidemicsCFTP
 Markdown.parse("""
 | _Software_             | _Version_                  | _Branch_                  | _Date of last commit_  |
 |:-----------------------|:---------------------------|:--------------------------|:-----------------------|
-| Running under `julia`  | `$VERSION`                 | ---                       |                        |
+| Running under `julia`  | `$VERSION`                 | --                        |                        |
 | Module `EpidemicsCFTP` | `$(EpidemicsCFTP.version)` | `$(EpidemicsCFTP.branch)` | $(EpidemicsCFTP.date)  |
 """)
 ```

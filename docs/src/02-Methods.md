@@ -13,12 +13,20 @@ EpidemicsCFTP.proposed_sir
 
 ## A total ordering for incidents
 A total ordering is provided by [`Base.isless`](@ref)
-(with signature `isless(::AbstractIncident,::AbstractIncident)`), based on time `t` of occurrence of 
+(with signature `isless(::AbstractIncident,::AbstractIncident)`), 
+based principally on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
 [`AbstractIncident`](@ref)s.
+`AbstractInfection`s precede `AbstractRemoval`s if occurring at the same time `t`.
+If necessary, further consideration uses
+`target` mark (and `infectee` mark if applicable).
+Finally a pre-computed order of subtypes is employed.
 ```@docs
-isless(::S, ::T) where {S <: AbstractInfection, T <: AbstractRemoval}
+isless(::AbstractInfection, ::AbstractRemoval)
+isless(::AbstractRemoval,   ::AbstractInfection) 
+isless(::AbstractRemoval,   ::AbstractRemoval) 
+isless(::AbstractInfection, ::AbstractInfection)
 ```
 
 ## Altering `CRemoval` targets

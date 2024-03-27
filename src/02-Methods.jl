@@ -237,60 +237,74 @@ false
 julia> P(0.10, 2, 7) < R(0.10, 3)
 true
 ```
+
+    isless(::AbstractInfection, ::AbstractRemoval)
+
+Default is based purely on `time` mark.
 """
 function isless(x::AbstractInfection, y::AbstractRemoval)
-    # Default is based purely on `time` mark.
     if x.t != y.t
         return x.t < y.t
     end
     return true
 end
 
+"""
+    isless(::AbstractRemoval, ::AbstractInfection) 
+
+Default is based purely on `time` mark.
+"""
 function isless(x::AbstractRemoval, y::AbstractInfection) 
-    # Default is based purely on `time` mark.
     if x.t != y.t
         return x.t < y.t
     end
     return false
 end
 
-# Pre-compute order for `AbstractRemoval` subtypes.
 # Possible efficiency gain: implement as `Tuple`?
 Removal_order = Dict(CRemoval => 1, Removal => 2, 
                      KilledRemoval => 3, RemovalMarker => 4)
 
+"""
+    isless(::AbstractRemoval, ::AbstractRemoval) 
+
+If both are `AbstractRemoval` then first consider `time` mark.
+Then consider `target` mark.
+Finally differentiate according to subtype of `AbstractRemoval` (this is pre-computed).
+"""
 function isless(x::AbstractRemoval, y::AbstractRemoval) 
-    # If both are `AbstractRemoval` then first consider `time` mark.
     if x.t != y.t
         return x.t < y.t
     end
-    # Then consider `target` mark.
     if x.target != y.target
         return x.target < y.target
     end
-    # Finally differentiate according to subtype of `AbstractRemoval`.
     return Removal_order[typeof(x)] < Removal_order[typeof(y)]
 end
 
-# Pre-compute order for `AbstractInfection` subtypes.
 # Possible efficiency gain: implement as `Tuple`?
 Infection_order = Dict(InfectionMarker => 0, PInfection => 1, Infection => 2, 
                        NoFlyInfection => 3, KilledInfection => 4, ExpungedInfection => 5)
-  
+
+"""
+    isless(::AbstractInfection, ::AbstractInfection)
+
+If both are `AbstractInfection` then first consider `time` mark.
+Then consider `target` mark.
+Then consider `infectee` mark.
+Finally differentiate according to subtype of `InfectionRemoval` (this is pre-computed).
+"""
 function isless(x::AbstractInfection, y::AbstractInfection) 
-    # If both are `AbstractInfection` then first consider `time` mark.
+    # 
     if x.t != y.t
         return x.t < y.t
     end
-    # Then consider `target` mark.
     if x.target != y.target
         return x.target < y.target
     end
-    # Then consider `infectee` mark.
     if x.infectee != y.infectee
         return x.infectee < y.infectee
     end
-    # Finally differentiate according to subtype of `InfectionRemoval`.
     return Infection_order[typeof(x)] < Infection_order[typeof(y)]
 end
 

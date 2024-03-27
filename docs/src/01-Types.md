@@ -180,7 +180,7 @@ Instances should always possess fields as given in the table.
 ```@docs
 Innovation
 Innovation(::Int, ::Vector{AbstractIncident})
-Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval})
 ```
 
 ### Two kinds of `AbstractEvolution`

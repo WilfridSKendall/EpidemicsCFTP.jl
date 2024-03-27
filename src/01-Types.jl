@@ -733,13 +733,17 @@ time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
 """
 struct Innovation <: AbstractInnovation
     population ::Int
+    size       ::Int
     infections ::Vector{<:AbstractInfection}
     removals   ::Vector{<:AbstractRemoval}
     cremovals  ::Vector{CRemoval}
     chronology ::Vector{<:AbstractIncident}
+    α          ::Real
+    β          ::Real
 
 @doc """
-    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval}, ::Vector{CRemoval}) 
+    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval}, ::Vector{CRemoval};
+                size::Int=0, α::Real=0.0, β::Real=0.0) 
 This is the usual basic creation of an `Innovation`, specifying
 all of `infections`, `removals`, and `cremovals`.
 ### Example
@@ -759,7 +763,8 @@ cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])
 """
 function Innovation(population::Int, infections::Vector{<:AbstractInfection},
                     removals::Vector{<:AbstractRemoval},
-                    cremovals::Vector{CRemoval}) 
+                    cremovals::Vector{CRemoval};
+                    size::Int=0, α::Real=0.0, β::Real=0.0) 
     noun = "Innovation($population, $infections, $removals, $cremovals)"
     if population ≤ 0
         throw(DomainError(noun, "non-positive population size $population"))
@@ -772,17 +777,16 @@ function Innovation(population::Int, infections::Vector{<:AbstractInfection},
     elseif any(i.target > population for i ∈ infections)
         throw(ArgumentError("some infection targets too high in \n$noun"))
     else
-        # chron = Iterators.flatten([infections, removals, cremovals])
-        return new(population, sort(infections), 
-            sort(removals), 
-            sort(cremovals),
-            convert(Vector{AI}, sort(infections ∪ removals ∪ cremovals)))
-            # [x::AbstractIncident for x ∈ sort(collect(chron))])
+        return new(population, size,
+                    sort(infections), sort(removals), sort(cremovals),
+                    convert(Vector{AI}, sort(infections ∪ removals ∪ cremovals)),
+                    α, β)
     end
 end
 
 @doc """
-    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval})
+    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval};
+                    size::Int=0, α::Real=0.0, β::Real=0.0)
     
 Variant which omits `cremovals` list.
 
@@ -800,8 +804,11 @@ infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]) 
 ```
 """
-function Innovation(population::Int, infections::Vector{<:AbstractInfection}, removals::Vector{<:AbstractRemoval})
-    return Innovation(population, infections, removals, CRemoval[])
+function Innovation(population::Int, 
+                    infections::Vector{<:AbstractInfection}, removals::Vector{<:AbstractRemoval};
+                    size::Int=0, α::Real=0.0, β::Real=0.0)
+    return Innovation(population, infections, removals, CRemoval[];
+                      size=size, α=α, β=β)
 end
 
 @doc """
@@ -823,11 +830,13 @@ removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₁.₀₀²])
 ```
 """
-function Innovation(population::Int, chronology::Vector{AbstractIncident})
+function Innovation(population::Int, chronology::Vector{AbstractIncident};
+                    size::Int=0, α::Real=0.0, β::Real=0.0)
     infections = convert(Vector{AIF}, filter(z -> z isa AIF, chronology))
     removals   = convert(Vector{AIR}, filter(z -> (z isa AIR) && !(z isa C), chronology))
     cremovals  = C.(filter(z -> (z isa C), chronology))
-    return Innovation(population, infections, removals, cremovals)
+    return Innovation(population, infections, removals, cremovals;
+                      size=size, α=α, β=β)
 end
 
 end

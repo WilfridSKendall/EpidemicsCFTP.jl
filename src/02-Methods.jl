@@ -238,7 +238,7 @@ julia> P(0.10, 2, 7) < R(0.10, 3)
 true
 ```
 """
-function isless(x::S, y::T) where {S <: AbstractInfection, T <: AbstractRemoval}
+function isless(x::AbstractInfection, y::AbstractRemoval)
     # Default is based purely on `time` mark.
     if x.t != y.t
         return x.t < y.t
@@ -246,7 +246,7 @@ function isless(x::S, y::T) where {S <: AbstractInfection, T <: AbstractRemoval}
     return true
 end
 
-function isless(x::S, y::T) where {S <: AbstractRemoval, T <: AbstractInfection}
+function isless(x::AbstractRemoval, y::AbstractInfection) 
     # Default is based purely on `time` mark.
     if x.t != y.t
         return x.t < y.t
@@ -259,7 +259,7 @@ end
 Removal_order = Dict(CRemoval => 1, Removal => 2, 
                      KilledRemoval => 3, RemovalMarker => 4)
 
-function isless(x::S, y::T) where {S <: AbstractRemoval, T <: AbstractRemoval}
+function isless(x::AbstractRemoval, y::AbstractRemoval) 
     # If both are `AbstractRemoval` then first consider `time` mark.
     if x.t != y.t
         return x.t < y.t
@@ -277,7 +277,7 @@ end
 Infection_order = Dict(InfectionMarker => 0, PInfection => 1, Infection => 2, 
                        NoFlyInfection => 3, KilledInfection => 4, ExpungedInfection => 5)
   
-function isless(x::S, y::T) where {S <: AbstractInfection, T <: AbstractInfection}
+function isless(x::AbstractInfection, y::AbstractInfection) 
     # If both are `AbstractInfection` then first consider `time` mark.
     if x.t != y.t
         return x.t < y.t
@@ -667,8 +667,8 @@ end
 # Creating an extremal `CEvolution`
 # ---------------------------------
 """
-    extremal_evolution(::SIR, ::S, ::Vector{<:Real}; 
-        maximal::Bool=true, all_cremovals_observed::Bool=false)::CEvolution where {S <: Real}
+    extremal_evolution(::SIR, ::Real, ::Vector{<:Real}; 
+        maximal::Bool=true, all_cremovals_observed::Bool=false)::CEvolution
     
 Creates an extremal `CEvolution`, placing `CRemoval`s at the times specified by the third argument,
 and giving them targets which are maximal (`initial.n`) if keyword `maximal=true`, otherwise
@@ -729,8 +729,8 @@ julia> cev.size
 2
 ```
 """
-function extremal_evolution(initial::SIR, duration::S, times::Vector{<:Real}; 
-                maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution where {S <: Real}
+function extremal_evolution(initial::SIR, duration::Real, times::Vector{<:Real}; 
+                maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution
     beginning  = initial.t
     starter    = initial.r + initial.i
     population = initial.n

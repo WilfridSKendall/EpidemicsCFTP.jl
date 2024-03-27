@@ -265,13 +265,14 @@ OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻
     𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 ```
 """
-function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; 
-                    width::Int=75, tab::String=' '^4) where T<:AbstractTimedOccurrence
+function Base.show(io::IO, ::MIME"text/plain", xv::Vector{<:AbstractTimedOccurrence}; 
+                    width::Int=75, tab::String=' '^4)
+    T = eltype(xv)
     if isempty(xv)
-        print(io, "$(string(T))[]")
+        print(io, "$T[]")
     else
         parts = [sprint(show, MIME("text/plain"), a) for a ∈ xv]
-        parts[1] = "$(string(T))[" * parts[1]
+        parts[1] = "$T[" * parts[1]
         parts[end] = parts[end]*"]"
         broken = []
         cumulative, clength, initial = [], 0, true

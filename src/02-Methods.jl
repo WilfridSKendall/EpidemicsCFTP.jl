@@ -480,8 +480,8 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
 # Evolve an epidemic
 # -------------------------------
 """
-    evolution(::SIR, ::Vector{T}; conditioned::Bool=false)          
-        ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
+    evolution(::SIR, ::Vector{<:AbstractIncident}; conditioned::Bool=false)          
+        ::Tuple{Vector{SIR},Vector{AbstractIncident}}
 
 Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
 an [`AbstractIncident`](@ref) vector. Returns
@@ -510,7 +510,8 @@ julia> history
 AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
 ```
 """
-function evolution(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
+function evolution(initial_state::SIR, chronology::Vector{<:AbstractIncident}; 
+                    conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
     trajectory, history = SIR[initial_state], AbstractIncident[]
     chron  = [x for x ∈ chronology if x.t ≥ initial_state.t]
     if ! isempty(chron)
@@ -531,8 +532,8 @@ function evolution(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=
 end
 
 """
-    evolution(::SIR, ::Vector{T}; conditioned::Bool=false)          
-        ::Tuple{Vector{SIR},Vector{AbstractIncident}} where T <: AbstractIncident
+    evolution(::SIR, ::AbstractInnovation; conditioned::Bool=false)          
+        ::Tuple{Vector{SIR},Vector{AbstractIncident}}
 
 Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
 an [`Innovation`](@ref). Returns
@@ -588,8 +589,8 @@ end
 
     
 """
-    evolution_history(::SIR, ::Vector{T}; conditioned::Bool=false)          
-        ::Vector{AbstractIncident} where T <: AbstractIncident
+    evolution_history(::SIR, ::Vector{<:AbstractIncident}; conditioned::Bool=false)          
+        ::Vector{AbstractIncident}
     evolution_history(::SIR, ::AbstractInnovation; conditioned::Bool=false)          
         ::Vector{AbstractIncident}
 
@@ -644,7 +645,7 @@ function evolution_history(initial_state::SIR, innovation::AbstractInnovation; c
     return evolution_history(initial_state, innovation.chronology; conditioned=conditioned)
 end
 
-function evolution_history(initial_state::SIR, chronology::Vector{T}; conditioned::Bool=false) ::Vector{AbstractIncident} where T <: AbstractIncident
+function evolution_history(initial_state::SIR, chronology::Vector{<:AbstractIncident}; conditioned::Bool=false) ::Vector{AbstractIncident}
     
     current_state, history = initial_state, AbstractIncident[]
     for z ∈ [x for x ∈ chronology if x.t ≥ initial_state.t]
@@ -666,8 +667,8 @@ end
 # Creating an extremal `CEvolution`
 # ---------------------------------
 """
-    extremal_evolution(::SIR, ::S, ::Vector{T}; 
-        maximal::Bool=true, all_cremovals_observed::Bool=false)::CEvolution where {S,T <: Real}
+    extremal_evolution(::SIR, ::S, ::Vector{<:Real}; 
+        maximal::Bool=true, all_cremovals_observed::Bool=false)::CEvolution where {S <: Real}
     
 Creates an extremal `CEvolution`, placing `CRemoval`s at the times specified by the third argument,
 and giving them targets which are maximal (`initial.n`) if keyword `maximal=true`, otherwise
@@ -728,8 +729,8 @@ julia> cev.size
 2
 ```
 """
-function extremal_evolution(initial::SIR, duration::S, times::Vector{T}; 
-                maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution where {S,T <: Real}
+function extremal_evolution(initial::SIR, duration::S, times::Vector{<:Real}; 
+                maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution where {S <: Real}
     beginning  = initial.t
     starter    = initial.r + initial.i
     population = initial.n
@@ -1084,8 +1085,8 @@ compute_nofly(ev, iv.infections ∪ perpetuated, NFZ2)[2]
 
 Note the source-code also contains many commented-out assertions!
 """
-function compute_nofly(ev::CEvolution, infections::Vector{S}, 
-    NFZ2::Vector{T}) ::Tuple{Vector{AbstractInfection},Vector{T}} where {S<:AbstractInfection, T <: Real}
+function compute_nofly(ev::CEvolution, infections::Vector{<:AbstractInfection}, 
+    NFZ2::Vector{<:Real}) ::Tuple{Vector{AbstractInfection},Vector{<:Real}} 
     
 	nofly_bound = deepcopy(NFZ2)                                               # <1>
 	processed_infections = AbstractInfection[]                                 # <2>

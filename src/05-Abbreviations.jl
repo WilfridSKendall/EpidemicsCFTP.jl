@@ -5,7 +5,7 @@ The sub-module `EpidemicsCFTP.abbreviations` provides simple abbreviations for [
 at the cost of using one-, two- or three-letter capital abbreviations:
 
 ```
-AI  = AbstractIncident;
+ AI = AbstractIncident;
 AIF = AbstractInfection;   I = Infection; P = PInfection;
  NF = NoFlyInfection;     XI = ExpungedInfection;
 AIR = AbstractRemoval;     R = Removal;   C = CRemoval;
@@ -37,7 +37,7 @@ export AI,
     OI, NO, OR, NR, 
     IM, RM
     
-AI  = AbstractIncident;
+ AI = AbstractIncident;
 AIF = AbstractInfection;   I = Infection; P = PInfection;
  NF = NoFlyInfection;     XI = ExpungedInfection;
 AIR = AbstractRemoval;     R = Removal;   C = CRemoval;

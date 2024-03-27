@@ -253,7 +253,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
 end
 
 """
-    show(::IO, ::MIME"text/plain", ::Vector{T}; ::Int, ::String) where T <: AbstractTimedOccurrence
+    show(::IO, ::MIME"text/plain", ::Vector{<:AbstractTimedOccurrence}; ::Int, ::String)
 
 Implementation of `show` for vector of [`AbstractTimedOccurrence`](@ref)
 incidents with line-breaking.
@@ -265,7 +265,8 @@ OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻
     𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
 ```
 """
-function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab::String=' '^4) where T <: AbstractTimedOccurrence
+function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; 
+                    width::Int=75, tab::String=' '^4) where T<:AbstractTimedOccurrence
     if isempty(xv)
         print(io, "$(string(T))[]")
     else
@@ -289,8 +290,5 @@ function Base.show(io::IO, ::MIME"text/plain", xv::Vector{T}; width::Int=75, tab
             push!(broken, initial ? addition :  tab * addition)
         end
         print(io, join(broken, '\n'))
-        #for section ∈ broken
-        #    print(io, section)
-        #end
     end
 end

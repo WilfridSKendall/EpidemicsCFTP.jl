@@ -739,9 +739,7 @@ struct Innovation <: AbstractInnovation
     chronology ::Vector{<:AbstractIncident}
 
 @doc """
-    Innovation(::Int, ::Vector{S}, ::Vector{T},
-               ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}    
-
+    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval}, ::Vector{CRemoval}) 
 This is the usual basic creation of an `Innovation`, specifying
 all of `infections`, `removals`, and `cremovals`.
 ### Example
@@ -759,9 +757,9 @@ removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])  
 ```
 """
-function Innovation(population::Int, infections::Vector{S},
-                    removals::Vector{T},
-                    cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
+function Innovation(population::Int, infections::Vector{<:AbstractInfection},
+                    removals::Vector{<:AbstractRemoval},
+                    cremovals::Vector{CRemoval}) 
     noun = "Innovation($population, $infections, $removals, $cremovals)"
     if population ≤ 0
         throw(DomainError(noun, "non-positive population size $population"))
@@ -784,7 +782,7 @@ function Innovation(population::Int, infections::Vector{S},
 end
 
 @doc """
-    Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval})
     
 Variant which omits `cremovals` list.
 
@@ -802,8 +800,7 @@ infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]) 
 ```
 """
-function Innovation(population::Int, infections::Vector{S},
-                    removals::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
+function Innovation(population::Int, infections::Vector{<:AbstractInfection}, removals::Vector{<:AbstractRemoval})
     return Innovation(population, infections, removals, CRemoval[])
 end
 

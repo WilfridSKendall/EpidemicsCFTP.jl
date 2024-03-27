@@ -43,7 +43,7 @@ export SIR
 
 export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
-export Innovation, CInnovation, Evolution, CEvolution
+export Innovation, Evolution, CEvolution
 
 # # Defined in `02-methods.jl`
 export evolution, evolution_history

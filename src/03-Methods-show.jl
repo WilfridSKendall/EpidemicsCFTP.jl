@@ -136,11 +136,6 @@ julia> Innovation(population, infections, removals, C[])
 Innovation(3,
 infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
-
-julia> CInnovation(population, infections, removals, C[])
-CInnovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractInnovation)

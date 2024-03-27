@@ -834,97 +834,6 @@ function Innovation(population::Int, chronology::Vector{AbstractIncident})
 end
 
 end
-
-
-"""
-    CInnovation
-
-This represents an entire conditioned innovation corresponding to a single step of _algorithmic_ time,
-stored as a sequence of three **time-ordered** lists 
-(realized and unrealized infections, unrealized removals, conditional removals).
-
-Note that there is a first argument `population` (an `Int`),
-and a computed field `chronology` holding a
-time-ordered list of the incidents in `infections`, `removals`, and `cremovals`.
-"""
-struct CInnovation <: AbstractInnovation
-    population ::Int
-    infections ::Vector{<:AbstractInfection}
-    removals   ::Vector{<:AbstractRemoval}
-    cremovals  ::Vector{CRemoval}
-    chronology ::Vector{<:AbstractIncident}
-
-@doc """
-    CInnovation(::Int, ::Vector{S}, ::Vector{T},
-               ::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}    
-
-This is the usual basic creation of an `CInnovation`, specifying
-all of `infections`, `removals`, and `cremovals`.
-### Example
-```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
-population = 3
-infections = [I(0.7,1,2), P(0.5,1,2)]
-removals   = [R(0.2, 3), R(0.1, 2)]
-cremovals  = [C(0.0, 1), C(0.05, 2)]
-CInnovation(population, infections, removals, cremovals)
-
-# output
-CInnovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])  
-```
-"""
-function CInnovation(population::Int, infections::Vector{S},
-                    removals::Vector{T},
-                    cremovals::Vector{CRemoval}) where {S<:AbstractInfection, T<:AbstractRemoval}
-    noun = "CInnovation($population, $infections, $removals, $cremovals)"
-    if population ≤ 0
-        throw(DomainError(noun, "non-positive population size $population"))
-    elseif length(cremovals) > population
-        throw(ArgumentError("too many conditional removals in \n$noun"))
-    elseif any(cr.target > population for cr ∈ cremovals)
-        throw(ArgumentError("some conditional removal timelines too high in \n$noun"))
-    elseif any(r.target > population for r ∈ removals)
-        throw(ArgumentError("some removal timelines too high in \n$noun"))
-    elseif any(i.target > population for i ∈ infections)
-        throw(ArgumentError("some infection targets too high in \n$noun"))
-    else
-        return new(population, sort(infections), 
-            sort(removals), 
-            sort(cremovals),
-            convert(Vector{AI}, sort(infections ∪ removals ∪ cremovals)))
-    end
-end
-
-@doc """
-    CInnovation(::Int, ::Vector{AbstractIncident})
-    
-Variant of `CInnovation` based on a time-ordered `chronology` of `AbstractIncident`s.
-
-### Example
-```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
-population = 3
-chron      = [R(0.1, 2), R(0.2, 3), I(0.7,1,2), P(0.5,1,2), C(1,2)]
-
-CInnovation(population, chron)
-
-# output
-CInnovation(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
-removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
-cremovals:  CRemoval[𝒞₁.₀₀²])
-```
-"""
-function CInnovation(population::Int, chronology::Vector{AbstractIncident})
-    infections = convert(Vector{AIF}, filter(z -> z isa AIF, chronology))
-    removals   = convert(Vector{AIR}, filter(z -> (z isa AIR) && !(z isa C), chronology))
-    cremovals  = C.(filter(z -> (z isa C), chronology))
-    return CInnovation(population, infections, removals, cremovals)
-end
-
-end
-
     
 # ### Abstract evolution for an $\SIR$ epidemic
 """
@@ -1276,7 +1185,7 @@ true
 """
 function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident}; 
                     LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], size::Int=0)
-        innovation = CInnovation(initial_state.n,
+        innovation = Innovation(initial_state.n,
                     AbstractInfection[z for z ∈ chronology if z isa AbstractInfection],
                     AbstractRemoval[z for z ∈ chronology if z isa AbstractRemoval && !(z isa CRemoval)],
                     CRemoval[z for z ∈ chronology if z isa CRemoval]

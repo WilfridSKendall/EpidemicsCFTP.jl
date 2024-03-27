@@ -165,8 +165,8 @@ AbstractEvolution
 ```
 
 ### Two kinds of `AbstractInnovation`
-[`AbstractInnovation`](@ref) has two subtypes:
-`Innovation` and `CInnovation` fill the lists of an abstract environment with (typically simulated) contents
+[`AbstractInnovation`](@ref) has one subtype:
+`Innovation` fills the lists of an abstract environment with (typically simulated) contents
 of lists of the requisite infections or removals. 
 Instances should always possess fields as given in the table. 
 
@@ -181,8 +181,6 @@ Instances should always possess fields as given in the table.
 Innovation
 Innovation(::Int, ::Vector{AbstractIncident})
 Innovation(::Int, ::Vector{S}, ::Vector{T}) where {S<:AbstractInfection, T<:AbstractRemoval}
-CInnovation
-CInnovation(::Int, ::Vector{AbstractIncident})
 ```
 
 ### Two kinds of `AbstractEvolution`

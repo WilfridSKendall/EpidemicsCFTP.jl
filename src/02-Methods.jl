@@ -270,7 +270,7 @@ Removal_order = Dict(CRemoval => 1, Removal => 2,
 
 If both are `AbstractRemoval` then first consider `time` mark.
 Then consider `target` mark.
-Finally differentiate according to subtype of `AbstractRemoval` (this is pre-computed).
+Finally differentiate according to subtype of `AbstractRemoval` (this sub-ordering is pre-computed).
 """
 function isless(x::AbstractRemoval, y::AbstractRemoval) 
     if x.t != y.t
@@ -292,7 +292,7 @@ Infection_order = Dict(InfectionMarker => 0, PInfection => 1, Infection => 2,
 If both are `AbstractInfection` then first consider `time` mark.
 Then consider `target` mark.
 Then consider `infectee` mark.
-Finally differentiate according to subtype of `InfectionRemoval` (this is pre-computed).
+Finally differentiate according to subtype of `InfectionRemoval` (this sub-ordering is pre-computed).
 """
 function isless(x::AbstractInfection, y::AbstractInfection) 
     # 

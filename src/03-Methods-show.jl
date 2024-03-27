@@ -37,7 +37,7 @@ end
 # # Actual display functions
 # # -------------------------------
 """
-    Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
+    Base.show(::IO, ::MIME"text/plain", ::AbstractRemoval)
     
 Implementation of `show` for [`AbstractRemoval`](@ref), using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
@@ -57,7 +57,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
 end
 
 """
-    Base.show(io::IO, z::AbstractRemoval)
+    Base.show(::IO, ::AbstractRemoval)
 
 This applies when used with `print`, being the string produced
 buy `repr`, and can be used 
@@ -76,7 +76,7 @@ function Base.show(io::IO, z::AbstractRemoval)
 end
 
 """
-    Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
+    Base.show(::IO, ::MIME"text/plain", ::AbstractInfection)
     
 Implementation of `show` for [`AbstractInfection`](@ref), using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
@@ -98,7 +98,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
 end
 
 """
-    show(io::IO, z::AbstractInfection)
+    show(::IO, ::AbstractInfection)
 
 This applies when used with `print`, being the string produced
 buy `repr`, and can be used 
@@ -118,7 +118,7 @@ function Base.show(io::IO, z::AbstractInfection)
 end
 
 """
-    Base.show(io::IO, ::MIME"text/plain", z::AbstractInnovation)
+    Base.show(::IO, ::MIME"text/plain", ::AbstractInnovation)
     
 Implementation of `show` for [`AbstractInnovation`](@ref) as three rows of lists of incidents
 -- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
@@ -147,7 +147,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractInnovation)
 end
 
 """
-    Base.show(io::IO, z::AbstractInnovation)
+    Base.show(::IO, ::AbstractInnovation)
     
 ### Example
 ```jldoctest
@@ -176,7 +176,7 @@ end
 
 
 """
-    Base.show(io::IO, ::MIME"text/plain", z::SIR)
+    Base.show(::IO, ::MIME"text/plain", ::SIR)
     
 Implementation of `show` for [`SIR`](@ref) using subscript and 2 decimal places for time.
 
@@ -194,7 +194,7 @@ end
 
 
 """
-    Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
+    Base.show(::IO, ::MIME"text/plain", ::AbstractEvolution)
     
 Implementation of `show` for [`AbstractEvolution`](@ref) as three rows of lists of incidents
 -- or two rows if no [`CRemoval`](@ref)s -- together with further calculations. 

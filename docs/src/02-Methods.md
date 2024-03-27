@@ -13,7 +13,7 @@ EpidemicsCFTP.proposed_sir
 
 ## A total ordering for incidents
 A total ordering is provided by [`Base.isless`](@ref)
-(with signature `isless(::AbstractIncident,::AbstractIncident)`), 
+(with effective signature `isless(::AbstractIncident,::AbstractIncident)`), 
 based principally on time `t` of occurrence of 
 the two arguments, which should be 
 instances of

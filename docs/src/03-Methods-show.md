@@ -12,7 +12,7 @@ Base.show(io::IO, z::AbstractRemoval)
 Base.show(::IO, ::MIME"text/plain", ::AbstractInfection)
 Base.show(io::IO, z::AbstractInfection)
 
-show(::IO, ::MIME"text/plain", ::Vector{<:AbstractTimedOccurrence}; ::Int, ::String)
+Base.show(::IO, ::MIME"text/plain", ::Vector{<:AbstractTimedOccurrence})
 ```
 
 ## Methods for displaying states, innovations, and evolutions

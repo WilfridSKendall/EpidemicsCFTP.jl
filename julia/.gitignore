@@ -1,5 +1,3 @@
-
-
 ARCHIVE/
 ../python-SBC
 EpidemicsCFTP/
@@ -10,6 +8,7 @@ image/introduction*
 image/production*
 image/test*
 image/CFTP*
+
 
 .directory
 .Rhistory

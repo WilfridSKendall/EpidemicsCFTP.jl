@@ -177,7 +177,7 @@ given α and β.
 ```{julia}
 #| label: setup simulation
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
-iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) 
+iv_null       = Innovation(initial.n, Infection[], Removal[], min_cremovals) 
 ```
 
 The argument runs as follows. Assume that there is one index case and that all 

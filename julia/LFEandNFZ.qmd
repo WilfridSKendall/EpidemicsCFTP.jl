@@ -43,7 +43,7 @@ source = "LFE.qmd"
 
 using Random, Test
 import EpidemicsCFTP: EpidemicsCFTP, 
-    CInnovation, CEvolution, SIR,
+    Innovation, CEvolution, SIR,
     AbstractIncident,
     AbstractInfection, OperativeInfection, Infection, PInfection, NoFlyInfection, ExpungedInfection,
     AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
@@ -82,7 +82,7 @@ AIF = AbstractInfection; I = Infection; P = PInfection;
 AIR = AbstractRemoval;   R = Removal;   C = CRemoval;
  KI = KilledInfection;  KR = KilledRemoval;
 ```
-Here is the random seed used for random generation of `CInnovation`s.
+Here is the random seed used for random generation of `Innovation`s.
 ```{julia}
 Random.seed!(44) ;
 ```
@@ -116,10 +116,10 @@ evolution. Simulations are conditioned on the specified `cremoval_times`. "
 We first test the "zero step" (extending maximum and minimum conditioned evolutions
 using an essentially empty innovation) over a range of initial conditions.
 In this edge-case it is actually necessary to _construct_ the `CEvolution` from a
-null `CInnovation` `iv` in order to ensure all fields are filled as required!
+null `Innovation` `iv` in order to ensure all fields are filled as required!
 Note the use of a monotonicity test for `ev_pair`.
 ```{julia simulation1}
-iv = CInnovation(population, I[], R[], C[C(t,population) for (r, t) ∈ enumerate(cremoval_times)])
+iv = Innovation(population, I[], R[], C[C(t,population) for (r, t) ∈ enumerate(cremoval_times)])
 crcount = length(cremoval_times)
 traj_hi = [P(0, r, r+1) for r ∈ 1:population] ∪ iv.cremovals
 traj_lo = sort([P(t, r, r+1) for (r,t) ∈ enumerate(cremoval_times)][1:end-1] 

@@ -90,7 +90,7 @@ cremovals = C[C(t, population) for t ∈ [2,4]]
 ev0_min = extremal_evolution(initial, duration, [z.t for z ∈ cremovals]; maximal=false) ;
 ev0_max = extremal_evolution(initial, duration, [z.t for z ∈ cremovals]) ;
 
-iv_null  = CInnovation(initial.n, I[], R[], ev0_min.cremovals)
+iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
 iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i ∈ SEQUENCE] ;
 ```
 
@@ -602,7 +602,7 @@ function rank_incident(z::AbstractRemoval)
     return typeof(z)(rank_time[z.t], z.target)
 end
 dev1 = CEvolution(ev1.initial, [rank_incident(z) for z in ev1.chronology])
-div2 = CInnovation(iv2.population, [rank_incident(z) for z in iv2.chronology])
+div2 = Innovation(iv2.population, [rank_incident(z) for z in iv2.chronology])
 dev2 = CEvolution(ev2.initial, [rank_incident(z) for z in ev2.chronology],
     LFE=[rank_incident(z) for z in ev2.LFE], NFZ=[rank_time[t] for t in ev2.NFZ]) ;
 ```
@@ -632,7 +632,7 @@ unit_test_string = """
         $(sprint(show, dev1.chronology))
         )
 
-    div2 = CInnovation($(div2.population),
+    div2 = Innovation($(div2.population),
         $(sprint(show, div2.infections)),
         $(sprint(show, div2.removals)),
         $(sprint(show, div2.cremovals))
@@ -766,7 +766,7 @@ and updates minimal and maximal `CEvolution`s by a specified number of algorithm
 #| echo: false
 import Distributions
 min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
-iv_null  = CInnovation(initial.n, Infection[], Removal[], min_cremovals) ;
+iv_null  = Innovation(initial.n, Infection[], Removal[], min_cremovals) ;
 @test size == length(min_cremovals) + 1
 function repetition_and_display(evmin, evmax, n; duration2=duration2, iv_null=iv_null,
                     α0=α0, β0=β0, lines_plot2=lines_plot2)

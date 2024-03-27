@@ -8,6 +8,7 @@ Manifest.toml
 TEMP-*
 
 docs/build/
+src/ARCHIVE/
 
 *.kate-swp
 *.pdf

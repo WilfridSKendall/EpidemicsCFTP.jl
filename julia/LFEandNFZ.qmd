@@ -47,7 +47,7 @@ import EpidemicsCFTP: EpidemicsCFTP,
     AbstractIncident,
     AbstractInfection, OperativeInfection, Infection, PInfection, NoFlyInfection, ExpungedInfection,
     AbstractRemoval, Removal, CRemoval, KilledInfection, KilledRemoval,
-    ⪯, ≃, ⋄, generate_innovation, extremal_evolution
+    ⪯, ≃, ⋄, extremal_evolution
 
 import Markdown
 
@@ -119,7 +119,8 @@ In this edge-case it is actually necessary to _construct_ the `CEvolution` from 
 null `Innovation` `iv` in order to ensure all fields are filled as required!
 Note the use of a monotonicity test for `ev_pair`.
 ```{julia simulation1}
-iv = Innovation(population, I[], R[], C[C(t,population) for (r, t) ∈ enumerate(cremoval_times)])
+iv = Innovation(population, I[], R[], C[C(t,population) for (r, t) ∈ enumerate(cremoval_times)];
+                duration=duration, α=α, β=β)
 crcount = length(cremoval_times)
 traj_hi = [P(0, r, r+1) for r ∈ 1:population] ∪ iv.cremovals
 traj_lo = sort([P(t, r, r+1) for (r,t) ∈ enumerate(cremoval_times)][1:end-1] 
@@ -170,7 +171,8 @@ In this case the constructed `CEvolution` _will_ have an `LFE` field with the co
 Note the monotonicity test using `ev_pair`."
 ```
 ```{julia}
-ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ REPLICATES]
+#ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ REPLICATES]
+ivl = rand(iv, REPLICATES[end])
 for i ∈ 1:population
     initial = SIR(0, population - i, i, 0) 
     println("\nInitial condition ", sprint(show, MIME("text/plain"), initial))

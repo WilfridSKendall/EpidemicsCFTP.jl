@@ -681,7 +681,8 @@ end
 # Creating an extremal `CEvolution`
 # ---------------------------------
 """
-    extremal_evolution(::SIR, ::Real, ::Vector{<:Real}; 
+    extremal_evolution(::SIR, ::Real, ::Vector{<:Real}; ;
+        t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0,
         maximal::Bool=true, all_cremovals_observed::Bool=false)::CEvolution
     
 Creates an extremal `CEvolution`, placing `CRemoval`s at the times specified by the third argument,
@@ -743,29 +744,31 @@ julia> cev.size
 2
 ```
 """
-function extremal_evolution(initial::SIR, duration::Real, times::Vector{<:Real}; 
+function extremal_evolution(initial::SIR, duration::Real, times::Vector{<:Real};
+                size::Int=-1, α::Real=-1.0, β::Real=-1.0,
                 maximal::Bool=true, all_cremovals_observed::Bool=false) ::CEvolution
-    beginning  = initial.t
+    t0         = initial.t
     starter    = initial.r + initial.i
     population = initial.n
     if maximal
         if all_cremovals_observed
-            infections = [Infection(beginning,i,i+1) for i ∈ starter:(length(times)-1)]
+            infections = [Infection(t0,i,i+1) for i ∈ starter:(length(times)-1)]
             cremovals  = [C(t, length(times)) for t in times]
         else
-            infections = [I(beginning,i,i+1) for i ∈ starter:(population-1)]
+            infections = [I(t0,i,i+1) for i ∈ starter:(population-1)]
             cremovals  = [C(t, population) for t in times]
         end
     else
         sort(deepcopy(times))
         infections = [I(times[i],i,i+1) for i ∈ starter:(length(times)-1)]
         cremovals  = [C(t, i) for (i, t) in enumerate(times)]
-        if all_cremovals_observed
+        if all_cremovals_observed && size < 0
             size       = length(cremovals) + initial.r
         end
     end
     size = all_cremovals_observed ? length(cremovals) + initial.r : 0
-    return CEvolution(initial, convert(Vector{AI}, infections ∪ cremovals), size=size)
+    return CEvolution(initial, convert(Vector{AI}, infections ∪ cremovals);
+                t0=t0, duration=duration, size=size)
 end
 
 # Computing the last feasible epidemic trajectory

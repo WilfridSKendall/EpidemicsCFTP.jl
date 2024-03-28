@@ -1,4 +1,5 @@
 using Documenter, DocumenterLaTeX, EpidemicsCFTP
+import Random: AbstractRNG, SamplerTrivial # Is this necessary?!
 DocMeta.setdocmeta!(EpidemicsCFTP, :DocTestSetup, :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations); recursive=true)
 makedocs(;
     modules=[EpidemicsCFTP],

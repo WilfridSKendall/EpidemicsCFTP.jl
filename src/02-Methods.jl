@@ -1360,7 +1360,7 @@ println(rand(iv_ST, 4))
 Any[1, 1, 2, 1]
 ```
 """
-function rand(rng::Random.AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::Int
+function rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::Int
     iv_ST = d[]
     return rand(rng, iv_ST.prior)
 end
@@ -1372,7 +1372,7 @@ Enables sampling as given below.
 ### Example 1
 ```jldoctest
 using EpidemicsCFTP.abbreviations
-import Random: seed!, AbstractRNG
+import Random: seed!
 seed!(9)
 iv = Innovation(2, AIF[I(0.0, 1, 2)], R[], C[C(1.0, 2)], duration=2.0, size=2, α=2, β=3)
 rand(iv)
@@ -1387,7 +1387,7 @@ cremovals:  CRemoval[𝒞₁.₀₀¹])
 ### Example 2
 ```jldoctest
 using EpidemicsCFTP.abbreviations
-import Random: seed!, AbstractRNG
+import Random: seed!
 seed!(9)
 iv = Innovation(2, AIF[I(0.0, 1, 2)], R[], C[C(1.0, 2)], duration=2.0, size=2, α=-2, β=3)
 rand(iv)
@@ -1396,7 +1396,7 @@ rand(iv)
 ERROR: Infection or removal parameter for innovation is not positive!
 ```
 """
-function rand(rng::Random.AbstractRNG, d::SamplerTrivial{Innovation})::Innovation
+function rand(rng::AbstractRNG, d::SamplerTrivial{Innovation})::Innovation
     iv = d[]
     n = iv.population  # test this?
     m = iv.size > 0 ? iv.size : n

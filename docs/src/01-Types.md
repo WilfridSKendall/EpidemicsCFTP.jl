@@ -230,3 +230,8 @@ CEvolution(::SIR, ::Vector{AbstractIncident})
 CEvolution(::SIR, ::Innovation)
 ```
 
+#### Initial states
+```@docs
+AbstractInnovationStart
+InnovationStart_IS
+```

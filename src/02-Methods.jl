@@ -762,11 +762,10 @@ function extremal_evolution(initial::SIR, duration::Real, times::Vector{<:Real};
         sort(deepcopy(times))
         infections = [I(times[i],i,i+1) for i ∈ starter:(length(times)-1)]
         cremovals  = [C(t, i) for (i, t) in enumerate(times)]
-        if all_cremovals_observed && size < 0
-            size       = length(cremovals) + initial.r
-        end
     end
-    size = all_cremovals_observed ? length(cremovals) + initial.r : 0
+    if all_cremovals_observed && size < 0 
+        size = length(cremovals) + initial.r
+    end
     return CEvolution(initial, convert(Vector{AI}, infections ∪ cremovals);
                 t0=t0, duration=duration, size=size)
 end

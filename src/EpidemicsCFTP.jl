@@ -12,16 +12,18 @@ summary = "EpidemicsCFTP version $version, checked in on $date"
 
 # # Imports
 # # -------
-# # The function `isless` is overloaded in  `Methods.jl`!
-import Base: isless
+# # The functions `isless` and `rand` are overloaded in  `03-Methods.jl`!
+import Base: isless, rand
 # # The `Format` module is required in order to define `show` methods for the various types.
 using Format
-# # The `Distributions` module is required in order to simulate new `Innovation`s.
+# # Functions from the `Distributions` module are required in order to simulate new `Innovation`s.
 import Distributions
+import Distributions: DiscreteUniform, Uniform, Poisson
 # # The `DataFrames` module is required in order to provide placeholders for trajectory flows.
 import DataFrames
-# # We need `AbstractRNG` and `GLOBALRNG` from the  `Random` module 
+# # We need `AbstractRNG` and `SamplerTrivial` from the  `Random` module 
 # in order to produce implementations of `rand` for sampling various random objects.
+import Random: SamplerTrivial, rand, AbstractRNG
 
 # # Exports
 # # =======
@@ -44,6 +46,8 @@ export SIR
 export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
+
+export AbstractInnovationStart, InnovationStart_IS
 
 # # Defined in `02-methods.jl`
 export evolution, evolution_history

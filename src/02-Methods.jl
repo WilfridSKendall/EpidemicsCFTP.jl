@@ -1411,3 +1411,82 @@ end
 # So raise an appropriate exception, namely [`ExpungedInfectionGivesValidTrajectory`](@ref).
 # 7. For incidents which are not `ExpungedInfection`s, simply update the `state`.
 
+# Random samplers
+# ---------------
+"""
+    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
+    
+Enables sampling as given below.
+### Example
+```jldoctest
+import Random: seed!
+seed!(9)
+iv_ST = InnovationStart_IS(Real[0.4, 0.3, 0.3])
+println(rand(iv_ST, 4))
+
+# output
+Any[1, 1, 2, 1]
+```
+"""
+function rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::Int
+    iv_ST = d[]
+    return rand(rng, iv_ST.prior)
+end
+
+"""
+    function rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation
+
+Enables sampling as given below.
+### Example 1
+```jldoctest
+using EpidemicsCFTP.abbreviations
+import Random: seed!
+seed!(9)
+iv = Innovation(2, AIF[I(0.0, 1, 2)], R[], C[C(1.0, 2)], duration=2.0, size=2, α=2, β=3)
+rand(iv)
+
+# output
+Innovation(2,
+infections: AbstractInfection[ℐ₀.₁₃¹⁻²,ℐ₀.₁₄¹⁻²,ℐ₀.₉₂¹⁻²]
+removals:   AbstractRemoval[ℛ₀.₀₄¹,ℛ₀.₀₈¹,ℛ₀.₁₀²,ℛ₀.₁₅²,ℛ₀.₂₁²,ℛ₀.₇₂²,ℛ₀.₇₃¹,ℛ₀.₈₈¹,ℛ₁.₃₄²,
+    ℛ₁.₃₅²,ℛ₁.₄₈²,ℛ₁.₆₃²,ℛ₁.₈₁²,ℛ₁.₉₅¹]
+cremovals:  CRemoval[𝒞₁.₀₀¹])
+```
+### Example 2
+```jldoctest
+using EpidemicsCFTP.abbreviations
+import Random: seed!
+seed!(9)
+iv = Innovation(2, AIF[I(0.0, 1, 2)], R[], C[C(1.0, 2)], duration=2.0, size=2, α=-2, β=3)
+rand(iv)
+
+# output
+ERROR: Infection or removal parameter for innovation is not positive!
+```
+"""
+function rand(rng::AbstractRNG, d::SamplerTrivial{Innovation})::Innovation
+    iv = d[]
+    n = iv.population  # test this?
+    m = iv.size > 0 ? iv.size : n
+    duration = iv.duration # test this?
+    α, β = iv.α, iv.β
+    if !(α > 0 && β > 0)
+        error("Infection or removal parameter for innovation is not positive!")
+    end
+    removals = ∪([AIR[R(t, k) 
+        for t ∈ rand(rng, Uniform(0, duration), rand(rng, Poisson(β * duration)))] 
+        for k ∈ 1:m]...)
+    infections = ∪(Vector{AIF}[[
+                        I(t, rand(rng, DiscreteUniform(1, k-1)), k)
+                    for t ∈ rand(rng, Uniform(0, duration), 
+                        rand(rng, Poisson((k-1) * (n - k + 1) * α * duration)))] 
+                    for k ∈ 2:m]...)
+    if isempty(iv.cremovals)
+        return typeof(iv)(n, infections, removals)
+    else
+        cremovals = C[alter(x...) 
+            for x ∈ zip(iv.cremovals, 
+                rand(rng, DiscreteUniform(1, m), length(iv.cremovals)))]
+        return typeof(iv)(n, infections, removals, cremovals)
+    end    
+end

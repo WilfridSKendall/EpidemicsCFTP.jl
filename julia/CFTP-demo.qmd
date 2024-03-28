@@ -3,7 +3,7 @@ title:  "Perfect epidemic simulation IRL with `julia`"
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
-csl: /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
+csl: /home/wilfrid/lib/palndoc/CSL/ima-journal-of-applied-mathematics.csl
 ---
 
 ---
@@ -49,32 +49,34 @@ using DataFrames, PrettyTables
 using Colors, Gadfly, Compose
 
 
-import Distributions: Categorical, DiscreteUniform
-import Random: seed!
+import Distributions: Categorical, DiscreteUniform, Uniform, Poisson
+import Random: seed!, rand
 import Markdown
 
 import Test: @test
-```
-
-```{julia}
-#| label: basic graphics settings
-#| include: false
-theme = create_theme(load_theme("config/animation-theme.yml"))
-
-set_default_plot_size(2theme.figwidth, 0.9theme.figheight)
 ```
 
 -----------------
 
 Introduction
 ============
+
+Overview
+--------
 We follow @ONeillRoberts-1999 in considering a data set obtained from a smallpox outbreak 
 in a closed community of 120
 individuals in Abakaliki, Nigeria [see @Bailey-1975, p. 125]. 
+We consider only the observed times of subsequent removals (measured in days from first removal).
+Of course, while this is an actual dataset, our purpose here is not to deliver a convincing analysis
+but rather to show that (at least in principle) the technique of perfect simulation of epidemics
+has something to offer.
+
+Setting up parameters for the simulation
+----------------------------------------
 Removals are separated by the following 
 interremoval times (measured in days, but with `0` adjusted to `ε > 0` in order to avoid coincidences).
 Specific infectivity and removal rates are defined according to suggestions in @ONeillRoberts-1999
-derived from a maximum likelihood analysis devised by Frank Ball.
+using maximum likelihood analysis by Frank Ball.
 ```{julia}
 #| label: initialization
 population     = 120
@@ -84,29 +86,32 @@ interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε,
 α, β           = 0.0008, 0.088 
 size           = length(interremovals) + 1 
 cremoval_times = accumulate(+, interremovals) 
-pushfirst!(cremoval_times, 0) 
-duration = 10 + maximum(cremoval_times) ;
+pushfirst!(cremoval_times, 0)
+t0             = 0.0
+duration       = t0 + maximum(cremoval_times) + 10 ;
 ```
-Note that the first `CRemoval` is deemed to have happened at time `0`.
+We emphasize that the first `CRemoval` is deemed to have happened at time `t0=0`.
+Plot `duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal
+(this is a purely photogenic choice).
 
-We create maximal and minimal initial evolutions `evmin0` and `evmax0`, deriving from the most
-minimal and maximal initial conditions possible,
+We create maximal and minimal initial evolutions `evmin0` and `evmax0`, deriving 
+respectively from the most
+minimal and most maximal initial conditions possible,
 under the reasonable assumption that all actual removals have been observed  as `CRemoval`s by time `{julia} duration`,
 when our plots end,
-(This considerably speeds up the simulation.)
+(This assumption allows us to speed up the perfect simulation considerably.)
 ```{julia}
 #| label: setting up extremal evolutions
 initial     = SIR(0, population - 1, 1, 0)
 initial_min = SIR(0, population - 1, 1, 0)
 initial_max = SIR(0, population - size, size, 0)
 
-evmin0 = extremal_evolution(initial_min, duration, cremoval_times, 
-    maximal=false) ;
+evmin0 = extremal_evolution(initial_min, duration, cremoval_times; 
+    maximal=false, size=size, α=α, β=β) ;
 evmax0 = extremal_evolution(initial_max, duration, cremoval_times, 
-    maximal=true, all_cremovals_observed=true) ;
+    maximal=true,  size=size, α=α, β=β, all_cremovals_observed=true) ;
 ```
-Plot `duration =` `{julia} duration` is set at `{julia} duration - maximum(cremoval_times)` days after the final removal,
-a choice based on purely photogenic reasons.
+
 
 The random `seed!` is fixed, in order to ensure repeatability.
 ```{julia}
@@ -114,54 +119,40 @@ The random `seed!` is fixed, in order to ensure repeatability.
 seed!(6) ;
 ```
 
-Tabular and graphical displays of epidemics
-===========================================
-Here are some rather unimportant details about construction of plots,
-which in due course may be incorporated in the module `EpidemicsUtilities` 
-in a more generalized form. In particular it is convenient to import from `EpidemicsUtilities` some constants 
-used for the plotting parameter `select`, namely
+Graphical displays of epidemics
+-------------------------------
+We import some constants from `EpidemicsUtilities`, to be
+used for a plotting parameter `select`:
 ```{julia}
-#| label: imports from `EpidemicsUtilities`
-import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ
+#| label: specific imports from `EpidemicsUtilities`
+import EpidemicsUtilities: ACTIVATED, BOUNDARIES, ELEMENTS, LFET, NFZ ;
 ```
 
-Here are some plotting technicalities.
+Now we set up graphics and  create a basic `lines_plot` as a basis for subsequent plots. 
 ```{julia}
-#| label: basic graphics
-uflow = table_trajectories1(duration, evmin0.trajectory) 
-axes_plot = plot(uflow, 
-    yintercept=0:5:size,
-    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
-    Coord.cartesian(xmin=0-0.1, xmax=duration, ymin=0, ymax=size + 0.25),
-    Guide.yticks(ticks=0:10:size),
-    Guide.xlabel("Process time", orientation=:horizontal),
-    style(default_color=theme.background),
-    Theme(
-        panel_fill=theme.blank,
-        default_color=theme.default,
-        background_color=theme.background,
-        major_label_font="CMU Serif",   minor_label_font="CMU Serif",
-        minor_label_color=theme.legend, major_label_color=theme.legend,
-        major_label_font_size=6pt,     minor_label_font_size=4pt,
-        plot_padding = [4pt, 2pt, 4pt, 4pt],
-        grid_line_width=0mm,
-)) 
+#| label: basic graphics settings
+theme = create_theme(load_theme("config/animation-theme.yml"))
+set_default_plot_size(2theme.figwidth, 0.9theme.figheight)
 
-push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
-    style(line_width=theme.trail, default_color=theme.scaffold))) 
-
-lines_plot = new_figure(axes_plot,
-    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
-        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
-        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
-    Guide.ylabel("Time lines")) ;
+lines_plot = prepare_screen(initial, evmin0; theme=theme) ;
 ```
-
-
 
 Implementation
 ==============
-We have assumed the first observed removal to happen at time zero, and
+We wish to evolve a sequence of `CEvolution`s in algorithmic time, in fact a pair of
+such `CEvolution`s, starting at `evmin0` and `evmax0` respectively and using the same 
+randomness in an order-preserving way. In particular we are conditioning on `CRemoval`s
+being exactly the only `AbstractRemoval`s to be realized, and occurring at the times
+listed in `cremoval_times`.
+```{julia}
+#| label: setup simulation
+min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
+iv_null       = Innovation(initial.n, Infection[], Removal[], min_cremovals;
+                            t0=t0, duration=duration, α=α, β=β, size=size) 
+```
+
+We need to consider how many `Infection`s are activated at the initial time `t0=0`.
+We assume the first observed removal happens at time zero, and
 we need further to assume a Bayesian prior distribution for the numbers of infectives at this time.
 Under the assumption that all removals are observed, we know the size of the epidemic
 must equal the number of `CRemoval`s plus the initial removal which triggered the data collection
@@ -172,14 +163,9 @@ over the range of possibilities which would not be able to lead to further remov
 after the completion of the observation period.
 (This means that no removals can take place after the
 last `CRemoval` (and therefore that no infectives can occur after the last `CRemoval`!).
-This seems unduly pessimistic: it is possible to _compute_ a reasonable prior distribution
+This seems unduly pessimistic: in fact under the above assumptions
+it is possible to _compute_ a reasonable prior distribution
 given α and β.
-```{julia}
-#| label: setup simulation
-min_cremovals = [CRemoval(t, n) for (n, t) in enumerate(cremoval_times)]
-iv_null       = Innovation(initial.n, Infection[], Removal[], min_cremovals) 
-```
-
 The argument runs as follows. Assume that there is one index case and that all 
 actual removals at _whatever_ time
 are observed and are registered as `CRemoval`s. 
@@ -216,90 +202,13 @@ So one can argue that the number of `Infection`s at time `0` is sub-Geometric
 (version with smallest value equal to `1`, since we require at least one `Infection` at time zero!)
 with this success parameter.
 
-This needs a little more Bayesian justification, based on some prior for the (negative) time 
+This needs a little more Bayesian justification, based on some 
+(perhaps improper?) prior for the (negative) time 
 at which the index case is infected, but we omit this for now.
 
-
-We introduce the notion of an `AbstractInnovationStart` 
-(eventually to be hidden in `EpidemicsCFTP`:
-```{julia}
-#| label: Defining `InnovationStart`s
-import Random: rand, AbstractRNG, GLOBAL_RNG
-
-"""
-    AbstractInnovationStart
-
-This abstract type holds information which can be generated by `rand`, and
-then in turn can be combined with a `CEvolution` using `⋄` to generate
-a proposal of a new `initial` state whose acceptance depends on whether
-the `CEvolution` meets required conditions when started with the proposal.
-"""
-abstract type AbstractInnovationStart end
-
-"""
-    InnovationStart_IS{Categorical{Real, Vector{Real}}} <: AbstractInnovationStart
-    
-The `AbstractInnovationStart` information is simply a specific `Categorical` distribution
-to be used to propose a `SIR` for the new initial state. Combined with the `CEvolution`
-test this carries out the equivalent of an independence sampler move (the suffix `_IS`
-refers to Independence Sampler!).
-### Example
-jldoctest
-prob  = Real[0.8, 0.2]
-prior = Categorical(prob)
-InnovationStart_IS(prior)
-
-# output
-
-InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]))
-
-"""
-struct InnovationStart_IS <: AbstractInnovationStart
-    prior::Categorical
-
-function InnovationStart_IS(prior::Categorical)
-   return new(prior)
-end    
-
-@doc """
-    InnovationStart_IS(Vector{Real})
-
-Shortcut to constructing an `InnovationStart_IS`: simply supply the vector of probabilities
-to be used to define the required `Categorical` distribution.
-### Example
-jldoctest
-prob=Real[0.7, 0.3]
-InnovationStart_IS(prob)
-
-# output
-
-InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]))
-
-"""
-function InnovationStart_IS(prob::Vector{S}) where S<: Real
-   prior = Categorical(prob)
-   return new(prior)
-end
-end ;
-```
-
-Here is the code for sampling from an `InnovationStart_IS`. ***This will need improving!***
-```{julia}
-#| label: Random samplers
-function rand(rng::AbstractRNG, iv_ST::InnovationStart_IS)
-    return rand(rng, iv_ST.prior)
-end
- 
-  
-function rand(iv_ST::InnovationStart_IS)
-    return rand(GLOBAL_RNG, iv_ST)
-end ;
-```
-
-We define a vector of probabilities given as products of transition probabilities as 
-in the above theoretical description. Notice that here we are implicitly using
-the epidemic size threshold induced by requiring that the initial number of infectives
-must be less than the number of `CRemoval`s.
+We thus define a vector of probabilities given as products of transition probabilities following 
+the above theoretical description. The prior probability mass function
+for the initial number of infectives is graphed in @fig-prior-distribution-plot.
 ```{julia}
 #| label: prior distribution 
 function transition_probability(k)
@@ -308,27 +217,33 @@ end
 survival = [transition_probability(k) for k in 1:length(min_cremovals)]
 priorprob = (1 .- survival) .* pushfirst!(accumulate(*, survival[1:(end-1)]), 1)
 push!(priorprob, 1 - sum(priorprob))
-iv_ST = InnovationStart_IS(priorprob)
+iv_ST = InnovationStart_IS(priorprob) ;
+```
 
+```{julia}
+#| label: fig-prior-distribution-plot
+#| echo: false
 prior_df = DataFrame(k=1:(1+size), probability=priorprob)
 plt = plot(prior_df, x=:k, y=:probability,
     Guide.xlabel("Number of initial infectives", orientation=:horizontal),
     Guide.ylabel("Prior probability", orientation=:vertical),
+    Coord.cartesian(xmin=0, xmax=evmin0.size),
     Geom.bar)
 draw(PDF("image/prior.pdf"), plt) ;
 ```
 
+![Prior probability mass function for number of initial infectives in the range `{julia} "1:$size"`.](image/prior.pdf)
 
-![Probability mass function for prior for number of initial infectives.](image/prior.pdf)
-
-We'll need a stream of tuples of `Innovation`s and proposals to change `initial` conditions.
-The function `innovation_stream` supplies a single stream of tuples each giving
-an `Innovation` and a proposal to change initial condition.
-For now we simply ensure this is long enough to fuel the entire CFTP process,
+We need a stream of tuples of `Innovation`s and proposals to change `initial` conditions.
+This is supplied by the function `innovation_stream`.
+For now we simply ensure this is long enough to fuel the entire CFTP process
+up to coalescence,
 though in principle it would be easy to extend this as required!
 Note that `generate_innovation` uses the `size` keyword parameter to exclude
-`Infection`s which if activated would cause epidemic size to rise above the
+`Infection`s which if activated would cause the epidemic size to rise above the
 specified `size`.
+
+
 ```{julia}
 #| label: function `innovation_stream`
 import EpidemicsCFTP: proposed_sir
@@ -336,11 +251,7 @@ function innovation_stream(cycle_length;
             evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
     stream, initial = [], evmin0.initial
     for iteration ∈ 1:cycle_length
-        # `Innovation`
-        iv = generate_innovation(iv_null, duration; α=α, β=β, size=size)
-        # Proposed initial infection levels: distribution `prior` constructed above.
-        proposed_i = rand(iv_ST)
-        push!(stream, (iv, proposed_sir(initial, proposed_i)))
+        push!(stream, (rand(iv_null), proposed_sir(initial, rand(iv_ST))))
     end
     return stream
 end ;
@@ -357,8 +268,8 @@ In general, care needs to be taken that monotonicity is maintained!
 Using this, 
 a function `single_step` updates minimal and maximal `CEvolution`s by a single algorithmic step.
 Note that we vary the initial number of infectives using a separate accept/reject step
-in the update. Note that `proposed_sir` here simply supplies a proposed initial number
-of `Infection`s; other aspects do not affect the result.
+in the update. Note that here `proposed_sir` is used simply to supply a proposed initial number
+of `Infection`s.
 ```{julia}
 #| label: function `single_step`
 function single_step(work, evmin, evmax, iv, proposed_sir; duration=duration, theme=theme)

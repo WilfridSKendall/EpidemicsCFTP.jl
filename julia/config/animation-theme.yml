@@ -1,6 +1,6 @@
 # Primitive usage:
 # import YAML
-# data = YAML.load_file("default_style.yml")
+# data = YAML.load_file("animation-theme.yml")
 # println(data)
 
 # named colours for incidents and markers

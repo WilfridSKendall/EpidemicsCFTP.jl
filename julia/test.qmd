@@ -568,8 +568,8 @@ Note that exceptions will be raised if `LFE` or `NFZ` structures appear to be wr
 See the image sequence in @fig-test-09-minstep.
 ```{julia}
 ALG=12 ; α=0.2 ; β=0.1
-iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals)
-iv_seq   = [generate_innovation(iv_null, duration, α=α, β=β) for i ∈ 1:ALG] ;
+iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals; duration=duration, α=α, β=β)
+iv_seq   = [rand(iv_null) for i ∈ 1:ALG] ;
 ```
 
 ```{julia}

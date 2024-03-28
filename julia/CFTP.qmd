@@ -90,7 +90,7 @@ cremovals = C[C(t, population) for t ∈ [2,4]]
 ev0_min = extremal_evolution(initial, duration, [z.t for z ∈ cremovals]; maximal=false) ;
 ev0_max = extremal_evolution(initial, duration, [z.t for z ∈ cremovals]) ;
 
-iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals, duration=duration, α=α, β=β)
+iv_null  = Innovation(initial.n, I[], R[], ev0_min.cremovals; duration=duration, α=α, β=β)
 iv_seq   = rand(iv_null, SEQUENCE[end]) ;
 ```
 

@@ -51,7 +51,7 @@ export AbstractInnovationStart, InnovationStart_IS
 
 # # Defined in `02-methods.jl`
 export evolution, evolution_history
-export extremal_evolution, generate_innovation
+export extremal_evolution
 
 export alter
 

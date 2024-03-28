@@ -804,9 +804,9 @@ duration, population = 5.0, 5
 α, β = 0.2, 0.1
 cremoval_times = [1.0, 2.0, 3.0, 4.0] 
 initial = SIR(0, population - 1, 1, 0) 
-ev = extremal_evolution(initial, duration, cremoval_times)
-iv0 = Innovation(population, I[], R[], ev.cremovals)
-iv = generate_innovation(iv0, duration, α=α, β=β)
+ev  = extremal_evolution(initial, duration, cremoval_times)
+iv0 = Innovation(population, I[], R[], ev.cremovals; duration=duration, α=α, β=β)
+iv  = rand(iv0)
 evx = CEvolution(ev, iv)
 evx.LFE
 
@@ -1200,76 +1200,6 @@ end ;
 # to a `NoFlyInfection` when we add it to `processed_infections`, to
 # signal that it should never become infected.
 
-
-
-# # Sampling
-# # --------
-
-"""
-    generate_innovation(::AbstractInnovation, ::Real; α::Real, β::Real, size::Int)
-
-Generates a random [`AbstractInnovation`](@ref), borrowing some structure from its first argument.
-
-If the keyword parameter `size` is a positive integer then 
-`Infection`s are restricted by `infectee ≤ size` 
-while `Removal`s and `CRemoval`s are restricted by `target ≤ size`.
-
-Note use of keyword argument `size`
-to reflect possible conditioning on size of envisaged epidemic.
-
-# # _Later work to be done:_
-
-1. The code and name for this function should be adapted to take 
-account of the section on "Create New Samplers and Distributions"
-from [`Distributions.jl`](https://juliastats.org/Distributions.jl/stable/extends/).
-
-2. Conduct a simulation study (in a separate `quarto` notebook) to verify that the Poisson intensity rates used by this function are correct.
-
-"""
-function generate_innovation(iv::AbstractInnovation, duration::Real;
-                                α::Real=0.2, β::Real=0.1, size::Int=0)
-    n = iv.population
-    m = size > 0 ? size : n
-    removals = ∪([AbstractRemoval[Removal(t, k) 
-        for t ∈ rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
-        for k ∈ 1:m]...)
-    infections = ∪(Vector{AbstractInfection}[[
-                        Infection(t, rand(Distributions.DiscreteUniform(1, k-1)), k)
-                    for t ∈ rand(Distributions.Uniform(0, duration), 
-                        rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
-                    for k ∈ 2:m]...)
-    if isempty(iv.cremovals)
-        return typeof(iv)(n, infections, removals)
-    else
-        cremovals = CRemoval[alter(x...) 
-            for x ∈ zip(iv.cremovals, 
-                rand(Distributions.DiscreteUniform(1, m), length(iv.cremovals)))]
-        return typeof(iv)(n, infections, removals, cremovals)
-    end
-end
-
-    
-"""
-    generate_innovation(::Integer, ::Real; α::Real, β::Real, size::Int)
-
-Generates a random [`Innovation`](@ref) (with empty `cremoval` list), 
-population given by first argument. Note use of keyword argument `size`
-to reflect possible conditioning on size of envisaged epidemic.
-"""
-function generate_innovation(n::Integer, duration::Real;
-                                α::Real=0.2, β::Real=0.1, size::Int=0)
-    m = size > 0 ? size : n
-    removals = ∪([AbstractRemoval[Removal(t, k) 
-        for t ∈ rand(Distributions.Uniform(0, duration), rand(Distributions.Poisson(β * duration)))] 
-        for k ∈ 1:m]...)
-    infections = ∪(Vector{AbstractInfection}[[
-                        Infection(t, rand(Distributions.DiscreteUniform(1, k-1)), k)
-                    for t ∈ rand(Distributions.Uniform(0, duration), 
-                        rand(Distributions.Poisson((k-1) * (n - k + 1) * α * duration)))] 
-                    for k ∈ 2:m]...)
-    return Innovation(n, infections, removals)
-end
-
 # Debugging functions
 # -------------------
 
@@ -1290,9 +1220,9 @@ duration, population = 5.0, 5
 α, β = 0.2, 0.1
 cremoval_times = [1.0, 2.0, 3.0, 4.0] 
 initial = SIR(0, population - 1, 1, 0) 
-ev = extremal_evolution(initial, duration, cremoval_times)
-iv0 = Innovation(population, I[], R[], ev.cremovals)
-iv = generate_innovation(iv0, duration, α=α, β=β)
+ev  = extremal_evolution(initial, duration, cremoval_times)
+iv0 = Innovation(population, I[], R[], ev.cremovals; duration=duration, α=α, β=β)
+iv  = rand(iv0)
 evx = CEvolution(ev, iv)
 is_correct_LFE(evx)
 

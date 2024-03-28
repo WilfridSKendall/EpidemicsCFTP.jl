@@ -37,16 +37,13 @@ alter
 
 ## Methods relating to epidemic dynamics
 Various methods relating to updating a trajectory (some of these are private to `EpidemicsCFTP`!).
-The first set of methods concerns the generation of a random [`Innovation`](@ref)
-([`generate_innovation`](@ref))
-and production of an [`Evolution`](@ref) based on an initial [`SIR`](@ref) and 
+The first set of methods concerns tproduction of an [`Evolution`](@ref) based on an initial [`SIR`](@ref) and 
 an [`Innovation`](@ref)
 ([`evolution`](@ref) for trajectory and history, 
 also other helper functions:
 
 | _Method_                                   | _Summary_                                              |
 |:-------------------------------------------|:-------------------------------------------------------|
-| [`generate_innovation`](@ref)              | Generates random [`Innovation`](@ref) **REPLACE**      |
 | [`evolution`](@ref)                        | Generates trajectory, history for [`Evolution`](@ref)  |
 | [`evolution_history`](@ref)                | Generates history for [`Evolution`](@ref)              |
 | [`extremal_evolution`](@ref)               | Generates extremal [`Evolution`](@ref) from `CRemoval`s|
@@ -66,7 +63,6 @@ also other helper functions:
 | [`EpidemicsCFTP.reverse_update`](@ref)     | Performs reverse update if this is possible            |
 |                                            |                                                        |
 ```@docs 
-generate_innovation
 evolution
 evolution_history
 ```
@@ -118,4 +114,11 @@ EpidemicsCFTP.update
 ```@docs
 EpidemicsCFTP.is_correct_LFE
 EpidemicsCFTP.is_correct_NFZ
+```
+
+## Random samplers
+These involve overloading `Random.rand`.
+```@docs
+rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
+rand(::AbstractRNG, ::SamplerTrivial{Innovation})
 ```

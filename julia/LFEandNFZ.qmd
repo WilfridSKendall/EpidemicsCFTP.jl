@@ -171,7 +171,6 @@ In this case the constructed `CEvolution` _will_ have an `LFE` field with the co
 Note the monotonicity test using `ev_pair`."
 ```
 ```{julia}
-#ivl = [generate_innovation(iv, duration, α=α, β=β) for j ∈ REPLICATES]
 ivl = rand(iv, REPLICATES[end])
 for i ∈ 1:population
     initial = SIR(0, population - i, i, 0) 

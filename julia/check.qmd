@@ -90,9 +90,12 @@ samplesize = 10000 ;
 
 ## Simulation and storage of results
 A sample of a random `Innovation` (with no conditional removals),
-based on \(n\) time lines,
+based on \(n\) time lines and duration `t`,
 is generated using the following invocation:
-`generate_innovation(n, duration, α=α, β=β)`.
+`rand(iv0)`
+where
+`iv0=Innovation(n, AbstractInfection[], AbstractRemoval[]; duration=t, α=α, β=β)`.
+**WAS** `generate_innovation(n, duration, α=α, β=β)`.
 Total numbers of `Infection`s with specified `infectee` marks
 and numbers of `Removal`s with specified `target` marks are tabulated
 in a `DataFrame` together with mean values.
@@ -115,6 +118,7 @@ and differenced removals together with their expected numbers:
 
 ```{julia}
 function simulate_innovations(n, t, α, β, samplesize)
+  iv0 = Innovation(n, AbstractInfection[], AbstractRemoval[]; duration=t, α=α, β=β)
   df = DataFrame() ;
 
   df[:, "Time line"]      = 1:n
@@ -124,7 +128,8 @@ function simulate_innovations(n, t, α, β, samplesize)
   df[:, "E[removals]"]    = [β * x * samplesize * t for x in 1:n] ;
   
   for x in 1:samplesize
-    iv = generate_innovation(n, t, α=α, β=β)
+    #iv = generate_innovation(n, t, α=α, β=β)
+    iv = rand(iv0)
     df.infections += [length([z for z in iv.infections if z.infectee == i]) for i in 1:n]
     df.removals   += [length([z for z in iv.removals   if z.target   <= i]) for i in 1:n]
   end

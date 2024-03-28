@@ -37,7 +37,7 @@ if it is positive.
 If so, then the resulting `CEvolution` is returned. 
 If not, then the original `CEvolution` is returned.
 ### Example 1
-```{jldoctest}
+```jldoctest
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
 sir = SIR(0, 2, 0, 0)
 cev ▷ sir
@@ -52,7 +52,7 @@ trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
 history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
 ```
 ### Example 2 (maximal)
-```{jldoctest}
+```jldoctest
 julia> cev = extremal_evolution(SIR(0, 2, 1, 0), 3.0, [1.0, 2.0], all_cremovals_observed=true) ;
 
 julia> sir = SIR(0, 1, 2, 0) ; (cev.initial, cev.size)
@@ -63,13 +63,13 @@ julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
 (SIR(0.0, 2, 1, 0, 3), 2)
 ```
 ### Example 2 (minimal)
-```{jldoctest}
+```jldoctest
 julia> cev = extremal_evolution(SIR(0, 2, 1, 0), 3.0, [1.0, 2.0], all_cremovals_observed=true, maximal=false) ;
 
 julia> sir = SIR(0, 1, 2, 0) ; (cev.initial, cev.size)
 (SIR(0.0, 2, 1, 0, 3), 2)
 julia> ((cev ▷ sir).initial, cev.size)
-((cev ▷ sir).initial, cev.size)
+(SIR(0.0, 1, 2, 0, 3), 2)
 julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
 (SIR(0.0, 2, 1, 0, 3), 2)
 ```
@@ -96,20 +96,22 @@ end
 Returns a modification of its first argument such that
 the `i` field equals the second argument.
 ### Example 1
-```{jldoctest}
+```jldoctest
+import EpidemicsCFTP: proposed_sir
 sir = SIR(0, 2, 0, 0)
 proposed_sir(sir, 1)
 
 # output
 SIR₀.₀₀(1:1:0)
 ```
-### Example 2```{jldoctest}
+### Example 2
+```jldoctest
+import EpidemicsCFTP: proposed_sir
 sir = SIR(0, 2, 0, 0)
 proposed_sir(sir, 1)
 
 # output
-ERROR: DomainError with SIR(0.0, -1, 3, 0):
-negative number -1 of susceptibles
+SIR₀.₀₀(1:1:0)
 ```
 """
 function proposed_sir(sir::SIR, proposed_i::Int)::SIR
@@ -1414,7 +1416,7 @@ end
 # Random samplers
 # ---------------
 """
-    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
+    Random.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
     
 Enables sampling as given below.
 ### Example
@@ -1434,7 +1436,7 @@ function rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::Int
 end
 
 """
-    function rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation
+    Random.rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation
 
 Enables sampling as given below.
 ### Example 1

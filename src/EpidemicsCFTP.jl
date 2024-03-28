@@ -23,6 +23,7 @@ import Distributions: DiscreteUniform, Uniform, Poisson
 import DataFrames
 # # We need `AbstractRNG` and `SamplerTrivial` from the  `Random` module 
 # in order to produce implementations of `rand` for sampling various random objects.
+import Random
 import Random: SamplerTrivial, rand, AbstractRNG
 
 # # Exports

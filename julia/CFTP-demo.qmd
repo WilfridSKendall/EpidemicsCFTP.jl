@@ -188,7 +188,7 @@ and so the chance that the next transition is an infection is
 \frac{(n-m) m \alpha}{(n-m) m \alpha + m \beta}\quad=\quad
 \frac{(n-m)\alpha }{(n-m)\alpha + \beta}
 \quad=\quad
-\frac{1}{1+ \frac{1}{n-m}\frac{\beta}{\alpha}}\,.
+\frac{1}{1+ \beta/((n-m) \alpha)}\,.
 \]
 In the particular case being considered, we are dealing with \(n=`{julia} population`\) 
 and \(\alpha = `{julia} α`\), \(\beta = `{julia} β`\), so
@@ -201,14 +201,12 @@ and then monotonically decays for further transitions up to the point of the fir
 So one can argue that the number of `Infection`s at time `0` is sub-Geometric
 (version with smallest value equal to `1`, since we require at least one `Infection` at time zero!)
 with this success parameter.
-
 This needs a little more Bayesian justification, based on some 
 (perhaps improper?) prior for the (negative) time 
 at which the index case is infected, but we omit this for now.
 
-We thus define a vector of probabilities given as products of transition probabilities following 
-the above theoretical description. The prior probability mass function
-for the initial number of infectives is graphed in @fig-prior-distribution-plot.
+Thus prior probabilities are products of transition probabilities following 
+the above theoretical description. @fig-prior-distribution-plot graphs the prior probability mass function.
 ```{julia}
 #| label: prior distribution 
 function transition_probability(k)
@@ -221,7 +219,6 @@ iv_ST = InnovationStart_IS(priorprob) ;
 ```
 
 ```{julia}
-#| label: fig-prior-distribution-plot
 #| echo: false
 prior_df = DataFrame(k=1:(1+size), probability=priorprob)
 plt = plot(prior_df, x=:k, y=:probability,
@@ -232,18 +229,17 @@ plt = plot(prior_df, x=:k, y=:probability,
 draw(PDF("image/prior.pdf"), plt) ;
 ```
 
-![Prior probability mass function for number of initial infectives in the range `{julia} "1:$size"`.](image/prior.pdf)
+![Prior probability mass function for number of initial infectives in the range `{julia} "1:$size"`.](image/prior.pdf){#fig-prior-distribution-plot}
 
 We need a stream of tuples of `Innovation`s and proposals to change `initial` conditions.
 This is supplied by the function `innovation_stream`.
 For now we simply ensure this is long enough to fuel the entire CFTP process
 up to coalescence,
 though in principle it would be easy to extend this as required!
-Note that `generate_innovation` uses the `size` keyword parameter to exclude
+Note that the `size` field in `iv_null` is used to exclude
 `Infection`s which if activated would cause the epidemic size to rise above the
-specified `size`.
-
-
+specified `size`, while the `α`, `β` and `population` fields determine the intensities of
+various kinds of `AbstractIncident`s.
 ```{julia}
 #| label: function `innovation_stream`
 import EpidemicsCFTP: proposed_sir
@@ -268,8 +264,8 @@ In general, care needs to be taken that monotonicity is maintained!
 Using this, 
 a function `single_step` updates minimal and maximal `CEvolution`s by a single algorithmic step.
 Note that we vary the initial number of infectives using a separate accept/reject step
-in the update. Note that here `proposed_sir` is used simply to supply a proposed initial number
-of `Infection`s.
+in the update. Note that here `proposed_sir` is needed only to supply a proposed initial number
+of `Infection`s, though I'd like to deal with `SIR` not `Int`.
 ```{julia}
 #| label: function `single_step`
 function single_step(work, evmin, evmax, iv, proposed_sir; duration=duration, theme=theme)

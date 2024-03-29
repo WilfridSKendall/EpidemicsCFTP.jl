@@ -1320,21 +1320,23 @@ InnovationStart_IS(prior)
 
 # output
 
-InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]))
+InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), SIR(0.0, 1, 0, 0, 1))
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
     prior::Distributions.Categorical
+    proposal::SIR
 
-function InnovationStart_IS(prior::Distributions.Categorical)
-   return new(prior)
+function InnovationStart_IS(prior::Distributions.Categorical; sir::SIR=SIR(0,1,0,0))
+   return new(prior, sir)
 end    
 
 @doc """
     InnovationStart_IS(Vector{Real})
 
 Shortcut: supply the vector of probabilities
-defining the required `Categorical` distribution.
+defining the required `Categorical` distribution
+and (by default) .
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 prob=Real[0.7, 0.3]
@@ -1342,12 +1344,12 @@ InnovationStart_IS(prob)
 
 # output
 
-InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]))
+InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), SIR(0.0, 1, 0, 0, 1))
 ```
 """
-function InnovationStart_IS(prob::Vector{S}) where S<: Real
+function InnovationStart_IS(prob::Vector{S}; sir::SIR=SIR(0,1,0,0)) where S<: Real
    prior = Distributions.Categorical(prob)
-   return new(prior)
+   return new(prior, sir)
 end
 end
 

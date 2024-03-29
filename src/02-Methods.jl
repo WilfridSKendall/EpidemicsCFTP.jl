@@ -75,7 +75,7 @@ julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
 ```
 """
 function ▷(cev::CEvolution, sir::SIR)::CEvolution
-    new_sir = proposed_sir(cev.initial, sir.i)
+    new_sir = alter_sir_infection(cev.initial, sir.i)
     if (new_sir == cev.initial) || (new_sir.i + new_sir.r > cev.size > 0)
         return cev
     end
@@ -88,34 +88,6 @@ function ▷(cev::CEvolution, sir::SIR)::CEvolution
         end
         return cev
     end
-end
-
-"""
-    proposed_sir(::SIR, ::Int)
-
-Returns a modification of its first argument such that
-the `i` field equals the second argument.
-### Example 1
-```jldoctest
-import EpidemicsCFTP: proposed_sir
-sir = SIR(0, 2, 0, 0)
-proposed_sir(sir, 1)
-
-# output
-SIR₀.₀₀(1:1:0)
-```
-### Example 2
-```jldoctest
-import EpidemicsCFTP: proposed_sir
-sir = SIR(0, 2, 0, 0)
-proposed_sir(sir, 1)
-
-# output
-SIR₀.₀₀(1:1:0)
-```
-"""
-function proposed_sir(sir::SIR, proposed_i::Int)::SIR
-    return SIR(sir.t, sir.s - (proposed_i - sir.i), proposed_i, sir.r)
 end
 
 """
@@ -309,6 +281,37 @@ function isless(x::AbstractInfection, y::AbstractInfection)
     end
     return Infection_order[typeof(x)] < Infection_order[typeof(y)]
 end
+
+# Altering an `SIR` infection field
+# ---------------------------------
+"""
+    alter_sir_infection(::SIR, ::Int)
+
+Returns a modification of its first argument such that
+the `i` field equals the second argument.
+### Example 1
+```jldoctest
+import EpidemicsCFTP: alter_sir_infection
+sir = SIR(0, 2, 0, 0)
+alter_sir_infection(sir, 1)
+
+# output
+SIR₀.₀₀(1:1:0)
+```
+### Example 2
+```jldoctest
+import EpidemicsCFTP: alter_sir_infection
+sir = SIR(0, 1, 0, 0)
+alter_sir_infection(sir, 1)
+
+# output
+SIR₀.₀₀(0:1:0)
+```
+"""
+function alter_sir_infection(sir::SIR, proposed_i::Int)::SIR
+    return SIR(sir.t, sir.s + (sir.i - proposed_i), proposed_i, sir.r)
+end
+
 
 # Altering `CRemoval` timeline
 # -------------------------------

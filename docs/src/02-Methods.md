@@ -8,7 +8,6 @@ or `Evolution` objects.
 ≃
 ⋄
 ▷
-EpidemicsCFTP.proposed_sir
 ```
 
 ## A total ordering for incidents
@@ -29,10 +28,11 @@ isless(::AbstractRemoval,   ::AbstractRemoval)
 isless(::AbstractInfection, ::AbstractInfection)
 ```
 
-## Altering `CRemoval` targets
-A method concerning conversion of one incident into another.
+## Altering incidents
+Altering / converting various incidents.
 ```@docs
 alter
+EpidemicsCFTP.alter_sir_infection
 ```
 
 ## Methods relating to epidemic dynamics

@@ -59,6 +59,7 @@ end
     # Now check non-integer second arguments cause errors!
     @test_throws MethodError     alter(crem,  100.5)
     @test_throws MethodError     alter(crem, -100.5)
+    @test EpidemicsCFTP.alter_sir_infection(SIR(0,1,0,0),1) == SIR(0,0,1,0)
 end
 
 

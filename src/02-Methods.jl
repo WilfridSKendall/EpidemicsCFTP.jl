@@ -75,12 +75,12 @@ julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
 ```
 """
 function ▷(cev::CEvolution, sir::SIR)::CEvolution
-    new_sir = alter_sir_infection(cev.initial, sir.i)
-    if (new_sir == cev.initial) || (new_sir.i + new_sir.r > cev.size > 0)
+    proposed_sir = alter_sir_infection(cev.initial, sir.i)
+    if (proposed_sir == cev.initial) || (proposed_sir.i + proposed_sir.r > cev.size > 0)
         return cev
     end
     try
-        new_cev = CEvolution(sir, cev.chronology)
+        new_cev = CEvolution(proposed_sir, cev.chronology)
         return new_cev
     catch e
         if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
@@ -1351,7 +1351,8 @@ end
 """
     Random.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
     
-Enables sampling as given below.
+Enables sampling from an `InnovationStart_IS` to return an `Int` which is
+the proposed new initial number of infections.
 ### Example
 ```jldoctest
 import Random: seed!
@@ -1363,7 +1364,7 @@ println(rand(iv_ST, 4))
 Any[1, 1, 2, 1]
 ```
 """
-function rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::Int
+function rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS}):Int
     iv_ST = d[]
     return rand(rng, iv_ST.prior)
 end
@@ -1371,7 +1372,7 @@ end
 """
     Random.rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation
 
-Enables sampling as given below.
+Enables sampling of a new `Innovation`.
 ### Example 1
 ```jldoctest
 using EpidemicsCFTP.abbreviations

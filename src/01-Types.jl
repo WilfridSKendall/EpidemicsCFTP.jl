@@ -1320,15 +1320,14 @@ InnovationStart_IS(prior)
 
 # output
 
-InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), SIR(0.0, 1, 0, 0, 1))
+InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]))
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
     prior::Distributions.Categorical
-    proposal::SIR
 
-function InnovationStart_IS(prior::Distributions.Categorical; sir::SIR=SIR(0,1,0,0))
-   return new(prior, sir)
+function InnovationStart_IS(prior::Distributions.Categorical)
+   return new(prior)
 end    
 
 @doc """
@@ -1344,12 +1343,12 @@ InnovationStart_IS(prob)
 
 # output
 
-InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), SIR(0.0, 1, 0, 0, 1))
+InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]))
 ```
 """
-function InnovationStart_IS(prob::Vector{S}; sir::SIR=SIR(0,1,0,0)) where S<: Real
+function InnovationStart_IS(prob::Vector{<: Real})
    prior = Distributions.Categorical(prob)
-   return new(prior, sir)
+   return new(prior)
 end
 end
 

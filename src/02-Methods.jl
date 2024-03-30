@@ -1349,7 +1349,7 @@ end
 # Random samplers
 # ---------------
 """
-    Random.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
+    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
     
 Enables sampling from an `InnovationStart_IS` to return an `Int` which is
 the proposed new initial number of infections.
@@ -1364,13 +1364,37 @@ println(rand(iv_ST, 4))
 Any[1, 1, 2, 1]
 ```
 """
-function rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS}):Int
-    iv_ST = d[]
-    return rand(rng, iv_ST.prior)
+function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS}):Int
+    return rand(rng, d[].prior)
 end
 
 """
-    Random.rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation
+    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_RWM})
+    
+Enables sampling from an `InnovationStart_RWM` to return a `NamedTuple` 
+with fields 
+
+(a) the proposed increment in the initial number of infections;
+(b) a `Uniform(0,1)` mark.
+
+### Example
+```jldoctest
+import Random: seed!
+seed!(9)
+iv_RWM = InnovationStart_RWM(Real[0.4, 0.3, 0.3])
+println(rand(iv_RWM))
+
+# output
+(increment = -1, mark = 0.022408672237053562, prior = Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(3), p=Real[0.4, 0.3, 0.3]))
+```
+"""
+function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_RWM}):Int
+    return (increment=rand(rng, DiscreteNonParametric([-1,1], [0.5, 0.5])), 
+            mark=rand(rng, Uniform(0,1)), prior=d[].prior)
+end
+
+"""
+    Base.rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation
 
 Enables sampling of a new `Innovation`.
 ### Example 1
@@ -1400,7 +1424,7 @@ rand(iv)
 ERROR: Infection or removal parameter for innovation is not positive!
 ```
 """
-function rand(rng::AbstractRNG, d::SamplerTrivial{Innovation})::Innovation
+function Base.rand(rng::AbstractRNG, d::SamplerTrivial{Innovation})::Innovation
     iv = d[]
     n = iv.population  # test this?
     m = iv.size > 0 ? iv.size : n

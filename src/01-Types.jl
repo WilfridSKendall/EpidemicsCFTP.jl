@@ -1307,15 +1307,16 @@ abstract type AbstractInnovationStart end
 """
     InnovationStart_IS{Categorical{Real, Vector{Real}}} <: AbstractInnovationStart
     
-The `AbstractInnovationStart` information is simply a specific `Categorical` distribution
-to be used to propose a positive integer to be used to construct the `SIR` for the new initial state. Combined with a test
+The `InnovationStart_IS` information is simply a specific `Categorical` distribution
+to be used to propose a positive integer to be used for the infection field
+for the `SIR` for the new initial state. Combined with a test
 that the result leads to a valid `CEvolution`,
 this carries out the equivalent of an independence sampler move (the suffix `_IS`
 refers to Independence Sampler!).
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-import Distributions: Categorical
-prior = Categorical(Real[0.8, 0.2])
+import Distributions
+prior = Distributions.Categorical(Real[0.8, 0.2])
 InnovationStart_IS(prior)
 
 # output
@@ -1324,9 +1325,9 @@ InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.On
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
-    prior::Distributions.Categorical
+    prior::Categorical
 
-function InnovationStart_IS(prior::Distributions.Categorical)
+function InnovationStart_IS(prior::Categorical)
    return new(prior)
 end    
 
@@ -1338,6 +1339,7 @@ defining the required `Categorical` distribution
 and (by default) .
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
+import Distributions
 prob=Real[0.7, 0.3]
 InnovationStart_IS(prob)
 
@@ -1347,7 +1349,60 @@ InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.On
 ```
 """
 function InnovationStart_IS(prob::Vector{<: Real})
-   prior = Distributions.Categorical(prob)
+   prior = Categorical(prob)
+   return new(prior)
+end
+end
+
+"""
+    InnovationStart_RWM{Categorical{Real, Vector{Real}}} <: AbstractInnovationStart
+    
+The `InnovationStart_RWM` information is again
+simply a specific `Categorical` distribution
+to be used in constructing a new proposal for the initial state.
+However using `rand` on this generates ``
+Combined with a test
+that the result leads to a valid `CEvolution`,
+this carries out the equivalent of a
+Random Walk Metropolis sampler move (the suffix `_RMW`
+refers to Random Walk Metropolis Sampler!).
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+import Distributions
+prior = Distributions.Categorical(Real[0.8, 0.2])
+InnovationStart_RWM(prior)
+
+# output
+
+InnovationStart_RWM(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]))
+```
+"""
+struct InnovationStart_RWM <: AbstractInnovationStart
+    prior::Categorical
+
+function InnovationStart_RWM(prior::Categorical)
+   return new(prior)
+end    
+
+@doc """
+    InnovationStart_RWM(Vector{Real})
+
+Shortcut: supply the vector of probabilities
+defining the required `Categorical` distribution
+and (by default) .
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+import Distributions
+prob=Real[0.7, 0.3]
+InnovationStart_RWM(prob)
+
+# output
+
+InnovationStart_RWM(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]))
+```
+"""
+function InnovationStart_RWM(prob::Vector{<: Real})
+   prior = Categorical(prob)
    return new(prior)
 end
 end

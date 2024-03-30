@@ -234,4 +234,5 @@ CEvolution(::SIR, ::Innovation)
 ```@docs
 AbstractInnovationStart
 InnovationStart_IS
+InnovationStart_RW
 ```

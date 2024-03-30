@@ -16,13 +16,13 @@ summary = "EpidemicsCFTP version $version, checked in on $date"
 import Base: isless, rand
 # # The `Format` module is required in order to define `show` methods for the various types.
 using Format
-# # Functions from the `Distributions` module are required in order to simulate new `Innovation`s.
-import Distributions
-import Distributions: DiscreteUniform, Uniform, Poisson
+# # Functions from the `Distributions` module are required in order to simulate new `Innovation`s _etc_.
+import Distributions: Categorical, DiscreteUniform, Uniform, Poisson, DiscreteNonParametric
 # # The `DataFrames` module is required in order to provide placeholders for trajectory flows.
 import DataFrames
 # # We need `AbstractRNG` and `SamplerTrivial` from the  `Random` module 
 # in order to produce implementations of `rand` for sampling various random objects.
+import Random
 import Random: SamplerTrivial, rand, AbstractRNG
 
 # # Exports
@@ -47,7 +47,7 @@ export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
 
-export AbstractInnovationStart, InnovationStart_IS
+export AbstractInnovationStart, InnovationStart_IS, InnovationStart_RWM
 
 # # Defined in `02-methods.jl`
 export evolution, evolution_history

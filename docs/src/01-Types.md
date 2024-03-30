@@ -234,5 +234,7 @@ CEvolution(::SIR, ::Innovation)
 ```@docs
 AbstractInnovationStart
 InnovationStart_IS
-InnovationStart_RW
+InnovationStart_IS(::Vector{<: Real})
+InnovationStart_RWM
+InnovationStart_RWM(::Categorical)
 ```

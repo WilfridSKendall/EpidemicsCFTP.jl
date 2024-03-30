@@ -120,5 +120,6 @@ EpidemicsCFTP.is_correct_NFZ
 These involve overloading `Random.rand`.
 ```@docs
 rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
+rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_RWM})
 rand(::AbstractRNG, ::SamplerTrivial{Innovation})
 ```

@@ -245,7 +245,7 @@ various kinds of `AbstractIncident`s.
 ```{julia}
 #| label: function `innovation_stream`
 import EpidemicsCFTP
-function innovation_stream(cycle_length;
+function innovation_stream(cycle_length; iv_ST=iv_ST,
             evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
     stream, initial = [], evmin0.initial
     for iteration ∈ 1:cycle_length
@@ -336,7 +336,7 @@ end ;
 
 ```{julia}
 #| label: function `graphic_cycle!`
-function graphic_cycle!(stream, canvas; 
+function graphic_cycle!(stream, canvas; step=single_step, 
         evmin0=evmin0, evmax0=evmax0, tag="demo-e", lines_plot=lines_plot, 
         fixed_font="JuliaMono", variable_font="HelveticaBold", theme=theme)
     # Create deep copies of plot background and of extremal `CEvolution`s
@@ -347,7 +347,7 @@ function graphic_cycle!(stream, canvas;
     image = graphic_component!(work, evmin, evmax, duration, 0, stream_length, tag=tag)
     
     for (iteration, pair) ∈ enumerate(stream)
-        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, pair...)
+        (evmin, evmax) = step(canvas[iteration], evmin, evmax, pair...)
         image = graphic_component!(canvas[iteration], evmin, evmax,
                                 duration, iteration, stream_length, tag=tag)
     end
@@ -361,6 +361,54 @@ This code is used to plot an entire CFTP sequence of sequences of updates in alg
 I suspect that considerable speed-up could be achieved by _not_ plotting each frame of each cycle!
 
 
+Now a RWM approach! (NOT YET IMPLEMENTED)
+===================
+```julia
+iv_RWM = InnovationStart_RWM(priorprob) ;
+```
+
+
+```julia
+#| label: function `innovation_stream2`
+import EpidemicsCFTP
+function innovation_stream2(cycle_length; iv_RWM=iv_RWM,
+            evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
+    stream, initial = [], evmin0.initial
+    for iteration ∈ 1:cycle_length
+        push!(stream, (rand(iv_null), initial, rand(iv_RWM)))
+    end
+    return stream
+end ;
+```
+```julia
+#| label: function `single_step2`
+function single_step2(work, evmin, evmax, iv, proposal; duration=duration, theme=theme)
+    evmin = evmin ⋄ iv ▷ proposal 
+    evmax = evmax ⋄ iv ▷ proposal
+
+    # Omit next conditional statement once thoroughly tested!
+    if !(evmin ⪯ evmax)
+        error("Monotonicity fails")
+    end
+
+    return evmin, evmax
+end ;
+```
+
+```julia
+#| label: building figures
+max_length = 256
+stream = innovation_stream2(max_length)
+canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
+
+for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e", 128)] 
+    graphic_cycle!(stream[max_length - cycle_length + 1:max_length], 
+        canvas[max_length - cycle_length + 1:max_length]; step=single_step2, 
+        tag="demoRWM-$epithet")
+end
+```
+
+```
 
 References {.unnumbered}
 ==========
@@ -531,3 +579,4 @@ End states of all the cycles up to coalescence
 
 ![](animation/demo-e.pdf){ width=49% }
 :::
+

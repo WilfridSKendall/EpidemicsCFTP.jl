@@ -236,5 +236,5 @@ AbstractInnovationStart
 InnovationStart_IS
 InnovationStart_IS(::Vector{<: Real})
 InnovationStart_RWM
-InnovationStart_RWM(::Categorical)
+InnovationStart_RWM(::Vector{<: Real})
 ```

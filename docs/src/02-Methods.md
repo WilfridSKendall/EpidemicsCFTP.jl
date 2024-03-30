@@ -117,7 +117,7 @@ EpidemicsCFTP.is_correct_NFZ
 ```
 
 ## Random samplers
-These involve overloading `Random.rand`.
+These involve overloading `Base.rand`.
 ```@docs
 rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
 rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_RWM})

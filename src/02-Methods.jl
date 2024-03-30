@@ -91,6 +91,25 @@ function ▷(cev::CEvolution, sir::SIR)::CEvolution
 end
 
 """
+    ▷(::CEvolution, ::NamedTuple{(:increment, :mark, :prior), 
+                                 Tuple{Int, Real, Categorical{Real, Vector{Real}}}})
+                                                
+Implements a shift in `initial` that proposes an increment `±1` and accepts this
+according to a (simple) Random Walk Metropolis test.
+"""
+function ▷(cev::CEvolution, proposal::NamedTuple{(:increment, :mark, :prior), 
+                                                Tuple{Int, Real, Categorical{Real, Vector{Real}}}})::CEvolution
+    (increment, mark, prior) = proposal
+    current  = cev.initial.i
+    proposed = current + increment
+    if mark * prior[current] > prior[proposed]
+        return cev
+    else
+        return cev ▷ alter_sir_infection(cev.initial, proposed)
+    end
+end
+
+"""
     ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool (Use `\\preceq`.)
 
 This allows us to compare (weakly) two `AbstractEvolution`s

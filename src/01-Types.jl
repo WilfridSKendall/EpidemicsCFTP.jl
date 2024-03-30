@@ -1358,13 +1358,16 @@ end
     InnovationStart_RWM{Categorical{Real, Vector{Real}}} <: AbstractInnovationStart
     
 The `InnovationStart_RWM` information is again
-simply a specific `Categorical` distribution
+simply a specific `Categorical` distribution `prior`
 to be used in constructing a new proposal for the initial state.
-However using `rand` on this generates ``
+However using `rand` on this generates `±1` equiprobably
+and uses a `Uniform(0,1)` mark to test whether to accept this
+according to a (simple) Random Walk Metropolis test.
+
 Combined with a test
 that the result leads to a valid `CEvolution`,
 this carries out the equivalent of a
-Random Walk Metropolis sampler move (the suffix `_RMW`
+Random Walk Metropolis sampler move (the suffix `_RWM`
 refers to Random Walk Metropolis Sampler!).
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -1392,7 +1395,6 @@ defining the required `Categorical` distribution
 and (by default) .
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-import Distributions
 prob=Real[0.7, 0.3]
 InnovationStart_RWM(prob)
 

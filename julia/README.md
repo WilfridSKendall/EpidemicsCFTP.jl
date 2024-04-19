@@ -1,5 +1,7 @@
 # Julia notebooks for `EpidemicsCFTP`. 
 
+![](/home/wilfrid/ms/PerfectEpidemics/julia/animation/VERIFY_demo-e.png)
+
 ## Producing primary files
 Primary files are produced by `quarto`. At the time of writing these files are
 

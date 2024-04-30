@@ -18,6 +18,8 @@ JULIA           := $(HOME)/.local/bin/julia
 
 MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
+START           := xdg-open
+
 # ====================
 # Main targets
 main: $(PRODUCTS)
@@ -41,6 +43,15 @@ install:
 	@make -C EpidemicsCFTP install
 	@echo ----------
 	@make -C EpidemicsUtilities install
+
+
+# ====================
+# Animation as GIF
+animate: animate.gif ; $(START) "$<" 2> /dev/null
+%.gif: %.jl 
+	$(JULIA) $<
+	convert -loop 1 animation/script-*.gif -layers Optimize animate.gif
+	rm animation/script*.*
 
 # ====================
 # Verification

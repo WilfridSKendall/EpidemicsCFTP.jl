@@ -315,17 +315,20 @@ function graphic_component!(work, evmin, evmax, duration, iteration, stream_leng
         image = new_figure(work, info, signal; title=title)
     else
         title  = "$logo $legend"
-        draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=theme.min)
-        draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.max)
-
         work2 = deepcopy(work)
+
+        draw_evolution!(work, evmin, duration, theme=theme, 
+                    select=BOUNDARIES, specified_color=colorant"tomato")
+        draw_evolution!(work, evmax, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=colorant"skyblue")
+
         draw_evolution!(work2, evmin, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.min)
+                    select=BOUNDARIES, specified_color=theme.min, order=2)
         draw_evolution!(work2, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.max)
+                    select=BOUNDARIES, specified_color=theme.max, order=2)
+
         image = new_figure(work2, info; title=title)
+
     end
                     
     fname   = "animation/$tag-$(lpad(iteration, 4, "0"))"

@@ -437,7 +437,7 @@ Graphical illustration of CFTP {#sec-figures}
 
 In this appendix we display an entire evolution of a CFTP run, always starting with minimal and maximal evolutions
 `evmin0` and `evmax0` given above. 
-An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animation-demo.gif) displays the entire CFTP,
+An [animated `GIF`](file:///home/wilfrid/ms/PerfectEpidemics/julia/animate.gif) displays the entire CFTP,
 evolving in logical time and re-starting earlier and earlier till coalescence is achieved!
 
 The work of each CFTP cycle is carried out by the function `graphic_cycle!`. Note that we have not yet automated 

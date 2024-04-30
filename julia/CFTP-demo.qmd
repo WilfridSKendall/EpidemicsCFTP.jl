@@ -311,24 +311,20 @@ function graphic_component!(work, evmin, evmax, duration, iteration, stream_leng
                         font(variable_font), fontsize(24pt), 
                         text(0.5w, 0.8h, "COALESCED"), fill(theme.legend)))
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=theme.coalesce, specified_opacity=1.0)
+                    select=BOUNDARIES, specified_color=theme.coalesce, order=2)
         image = new_figure(work, info, signal; title=title)
     else
         title  = "$logo $legend"
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.1)
+                    select=BOUNDARIES, specified_color=theme.min)
         draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.1)
+                    select=BOUNDARIES, specified_color=theme.max)
 
         work2 = deepcopy(work)
-        #draw_evolution!(work2, evmin, duration, theme=theme, 
-        #            select=BOUNDARIES, specified_color=theme.min, specified_opacity=0.1)
-        #draw_evolution!(work2, evmax, duration, theme=theme,
-        #            select=BOUNDARIES, specified_color=theme.max, specified_opacity=0.1)
-        draw_evolution!(work2, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=colorant"grey")
+        draw_evolution!(work2, evmin, duration, theme=theme,
+                    select=BOUNDARIES, specified_color=theme.min)
         draw_evolution!(work2, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=colorant"grey")
+                    select=BOUNDARIES, specified_color=theme.max)
         image = new_figure(work2, info; title=title)
     end
                     
@@ -472,9 +468,9 @@ run(`rm $(["animation/demo-$epithet.gif" for epithet in lexicon])`) ;
 ```
 
 Or try building an animation using the `animate` package for `LaTeX`: see
-https://latex-beamer.com/tutorials/gif-latex-beamer/
+https://latex-beamer.com/tutorials/gif-latex-beamer/. Here is the animation for the
+final coalescing run.
 
-\animategraphics[type=png,controls={play,stop}]{12}{animation/demo-a-}{0000}{0008}
 \animategraphics[type=png,controls={play,stop}]{12}{animation/demo-e-}{0000}{0128}
 
 Final (coalescent) cycle

@@ -454,28 +454,6 @@ for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e"
         tag="demo-$epithet")
 end
 ```
-
-Now we create a `GIF` of the entire CFTP run, working with `ImageMagick` on the command-line.
-(Construction might be quicker if run in memory!)
-```{julia}
-#| label: creating GIF using CLI
-lexicon = ["a", "b", "c", "d", "e"] 
-dt1 = 15
-dt2 = 300
-for epithet ∈ lexicon
-    prefix = "animation/demo-$epithet"
-    run(`convert -delay $dt1 $prefix-\*.png -delay $dt2 $prefix.png -layers Optimize $prefix.gif`)
-end
-run(`convert -loop 1 animation/demo-\*.gif -layers Optimize animation-demo.gif`)
-run(`rm $(["animation/demo-$epithet.gif" for epithet in lexicon])`) ;
-```
-
-Or try building an animation using the `animate` package for `LaTeX`: see
-https://latex-beamer.com/tutorials/gif-latex-beamer/. Here is the animation for the
-final coalescing run.
-
-\animategraphics[type=png,controls={play,stop}]{12}{animation/demo-e-}{0000}{0128}
-
 Final (coalescent) cycle
 ------------------------
 There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
@@ -484,9 +462,7 @@ where appropriate.
 We start with the initial configuration of maximal and minimal evolutions at time `0`,
 and then plot continuation of the final CFTP cycle. Note that times are displayed
 as _negative_, counting up to time `0`!
-
-It would also be better to display previous cycles as greyed out. Note however that 
-coalescence is visually evident: the coalesced trajectory is drawn in black.
+The coalesced trajectory is drawn in black.
 
 ::: {layout-nrow=3}
 ![](animation/demo-e-0000.pdf)
@@ -525,6 +501,11 @@ coalescence is visually evident: the coalesced trajectory is drawn in black.
 ![](animation/demo-e-0120.pdf)
 
 ![](animation/demo-e.pdf)
+
+Finally, here is an animation using the `animate` package for `LaTeX`: see
+https://latex-beamer.com/tutorials/gif-latex-beamer/.  
+\animategraphics[type=png,controls={play,stop}]{12}{animation/demo-e-}{0000}{0128}
+
 :::
 
 {{< pagebreak >}}

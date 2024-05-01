@@ -28,7 +28,7 @@ colour_x:
     background:                "bisque"
     min:                       "red"
     max:                       "blue"
-    joined:                    "deeppink"
+    joined:                    "brown"
     coalesce:                  "black"
     default:                   "white"
 

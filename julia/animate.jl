@@ -243,6 +243,9 @@ end
 
 # -------------------------------
 # not sure `specified_opacity` has any effect here!
+oldblue = range(colorant"white", theme.max, length=3)[2]
+oldred  = range(colorant"white", theme.min, length=3)[2]
+
 function graphic_component!(work, evmin, evmax, duration, iteration, stream_length; 
                 tag="demo-e", theme=theme, fixed_font="JuliaMono", variable_font="HelveticaBold",
                 logo="Minimum and maximum evolutions at algorithmic time step")
@@ -269,14 +272,14 @@ function graphic_component!(work, evmin, evmax, duration, iteration, stream_leng
         merges = layer(table_trajectories4(evmin, evmax, duration),
                            x=:t0, y=:x0, xend=:t1, yend=:x1,
                            Geom.segment, 
-                           style(line_width=1.5theme.boundary, default_color=theme.joined),
+                           style(line_width=theme.trail, default_color=theme.joined),
                            order=3)
         push!(work2, merges)
         
         draw_evolution!(work, evmin, duration, theme=theme, 
-                    select=BOUNDARIES, specified_color=colorant"tomato")
+                    select=BOUNDARIES, specified_color=oldred)
         draw_evolution!(work, evmax, duration, theme=theme,
-                    select=BOUNDARIES, specified_color=colorant"skyblue")
+                    select=BOUNDARIES, specified_color=oldblue)
        
         draw_evolution!(work2, evmin, duration, theme=theme,
                     select=BOUNDARIES, specified_color=theme.min, order=2)

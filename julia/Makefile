@@ -18,6 +18,9 @@ JULIA           := $(HOME)/.local/bin/julia
 
 MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
+FRATE           := 10
+FPAUSE          := 3
+
 START           := xdg-open
 
 # ====================
@@ -44,6 +47,23 @@ install:
 	@echo ----------
 	@make -C EpidemicsUtilities install
 
+# ====================
+# Animation as MPEG
+movie: CFTP-demo.pdf
+	rm animate*.mp4
+	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-a*.png' \
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-a.mp4
+	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-b*.png' \
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-b.mp4
+	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-c*.png' \
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-c.mp4
+	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-d*.png' \
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-d.mp4
+	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-e*.png' \
+		-vf tpad=stop_mode=clone:stop_duration=25 animate-e.mp4
+	# Now merge these videos
+	ffmpeg -f concat -i animate-list.txt -c copy animate.mp4
+	rm animate-*.mp4
 
 # ====================
 # Animation as GIF

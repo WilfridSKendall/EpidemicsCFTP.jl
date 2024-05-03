@@ -336,7 +336,7 @@ oldred  = range(colorant"white", theme.min, length=3)[2]
 
 function graphic_component!(work, evmin, evmax, duration, iteration, stream_length; 
                 tag="demo-e", theme=theme, fixed_font="JuliaMono", variable_font="HelveticaBold",
-                logo="Minimum and maximum evolutions at algorithmic time step")
+                logo="Minimum and maximum evolutions (using IS at t=0) at algorithmic time step")
     lstream = "-$(lpad(stream_length, 4, "0"))"
     legend = "-$(lpad(stream_length-iteration, 4, "0"))"
 

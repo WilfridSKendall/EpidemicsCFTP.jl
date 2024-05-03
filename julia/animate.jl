@@ -53,7 +53,7 @@ seed!(6) ;
 
 
 
-theme = create_theme(load_theme("config/animation-theme.yml"))
+theme = create_theme(load_theme("config/animation-theme-dark.yml"))
 set_default_plot_size(2theme.figwidth, 0.9theme.figheight)
 
 lines_plot = prepare_screen(initial, evmin0; theme=theme) ;

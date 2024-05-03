@@ -28,8 +28,8 @@ colour_x:
     background:                "bisque"
     min:                       "red"
     max:                       "blue"
-    joined:                    "brown"
-    coalesce:                  "black"
+    joined:                    "peru"
+    coalesce:                  "gold"
     default:                   "white"
 
 length_cy:

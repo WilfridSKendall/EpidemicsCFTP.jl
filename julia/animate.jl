@@ -74,7 +74,7 @@ end
 survival = [transition_probability(k) for k in 1:length(min_cremovals)]
 priorprob = (1 .- survival) .* pushfirst!(accumulate(*, survival[1:(end-1)]), 1)
 push!(priorprob, 1 - sum(priorprob))
-iv_ST = InnovationStart_IS(priorprob) ;
+iv_ST = InnovationStart_IS(priorprob, 1) ;
 
 
 # -------------------------------
@@ -82,15 +82,16 @@ function innovation_stream(cycle_length;
             evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
     stream, initial = [], evmin0.initial
     for iteration ∈ 1:cycle_length
-        push!(stream, (rand(iv_null), alter_sir_infection(initial, rand(iv_ST))))
+        push!(stream, (rand(iv_null), rand(iv_ST)))
     end
     return stream
 end ;
 
 # -------------------------------
-function single_step(work, evmin, evmax, iv, new_sir; duration=duration, theme=theme)
-    evmin = evmin ⋄ iv ▷ new_sir 
-    evmax = evmax ⋄ iv ▷ new_sir 
+function single_step(work, evmin, evmax, iv, new_start_proposal; 
+                            duration=duration, theme=theme)
+    evmin = evmin ⋄ iv ▷ new_start_proposal 
+    evmax = evmax ⋄ iv ▷ new_start_proposal 
 
     # Omit next conditional statement once thoroughly tested!
     if !(evmin ⪯ evmax)

@@ -48,7 +48,7 @@ install:
 	@make -C EpidemicsUtilities install
 
 # ====================
-# Animation as MPEG
+# Animation as MPEG: see https://trac.ffmpeg.org/wiki/Slideshow
 movie: CFTP-demo.pdf
 	rm animate*.mp4
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-a*.png' \

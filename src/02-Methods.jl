@@ -8,7 +8,7 @@
 The succinct statement `cev ⋄ iv` is an expressive shorthand for 
 [`CEvolution(cev, iv)`](@ref CEvolution).
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
 iv  = Innovation(2, [I(0.5, 1, 2)], R[], [C(1.0, 1)])
 cev ⋄ iv
@@ -37,7 +37,7 @@ if it is positive.
 If so, then the resulting `CEvolution` is returned. 
 If not, then the original `CEvolution` is returned.
 ### Example 1
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
 sir = SIR(0, 2, 0, 0)
 cev ▷ sir
@@ -52,7 +52,7 @@ trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
 history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
 ```
 ### Example 2 (maximal)
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 julia> cev = extremal_evolution(SIR(0, 2, 1, 0), 3.0, [1.0, 2.0], all_cremovals_observed=true) ;
 
 julia> sir = SIR(0, 1, 2, 0) ; (cev.initial, cev.size)
@@ -63,7 +63,7 @@ julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
 (SIR(0.0, 2, 1, 0, 3), 2)
 ```
 ### Example 2 (minimal)
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 julia> cev = extremal_evolution(SIR(0, 2, 1, 0), 3.0, [1.0, 2.0], all_cremovals_observed=true, maximal=false) ;
 
 julia> sir = SIR(0, 1, 2, 0) ; (cev.initial, cev.size)
@@ -75,7 +75,16 @@ julia> sir = SIR(0, 0, 3, 0) ; ((cev ▷ sir).initial, cev.size)
 ```
 """
 function ▷(cev::CEvolution, sir::SIR)::CEvolution
-    proposed_sir = alter_sir_infection(cev.initial, sir.i)
+    return ▷(cev, sir.i)
+end
+
+"""
+    ▷(::CEvolution, ::Int)::CEvolution
+    
+Uses `Int` directly instead of using `i` field in `SIR` for `▷(::CEvolution, ::SIR) ::CEvolution`.
+"""
+function ▷(cev::CEvolution, initial_infectives::Int)::CEvolution
+    proposed_sir = alter_sir_infection(cev.initial, initial_infectives)
     if (proposed_sir == cev.initial) || (proposed_sir.i + proposed_sir.r > cev.size > 0)
         return cev
     end
@@ -89,6 +98,17 @@ function ▷(cev::CEvolution, sir::SIR)::CEvolution
         return cev
     end
 end
+
+"""
+    ▷(::CEvolution, ::InnovationStart_IS)::CEvolution
+    
+Uses `InnovationStart_IS.proposal` in `▷(::CEvolution, ::Int)`.
+"""
+function ▷(cev::CEvolution, innovation_start::InnovationStart_IS)::CEvolution
+    return ▷(cev, innovation_start.proposal)
+end
+
+
 
 """
     ▷(::CEvolution, ::NamedTuple{(:increment, :mark, :prior), 
@@ -117,7 +137,7 @@ with the same population `initial.n`, by comparing the `start` fields.
 Note that `ev1 ⪯ ev2` exactly when none of the activated infections of `ev1` precede
 the respective activated infections of `ev2`, so that `ev1` proceeds no faster than `ev2`.
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
 iv1 = Innovation(2, I[I(2,1,2)], R[])
 iv2 = Innovation(2, I[I(1,1,2)], R[])
@@ -143,7 +163,7 @@ comparing not only the `start` fields as in the `AbstractEvolution` version,
 but also checking that the `CRemoval` `target` fields in `ev1` are no higher
 than the respective `CRemoval` `target` fields in `ev2`.  
 ### Examples
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
 civ1 = Innovation(2, I[I(2,1,2)], R[], [C(3,1)])
 civ2 = Innovation(2, I[I(1,1,2)], R[], [C(3,1)])
@@ -153,7 +173,7 @@ CEvolution(initial, civ1) ⪯ CEvolution(initial, civ2)
 true
 ```
 
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
 civ1 = Innovation(2, I[I(1,1,2)], R[], [C(3,1)])
 civ2 = Innovation(2, I[I(1,1,2)], R[], [C(3,2)])
@@ -178,7 +198,7 @@ end
 This allows us to test equality (weakly) for two `AbstractEvolution`s
 with the same population `initial.n`, using [`⪯`](@ref) both ways.
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
 iv = Innovation(2, I[I(1,1,2)], R[])
 Evolution(initial, iv) ≃ Evolution(initial, iv)
@@ -212,7 +232,7 @@ Notice that `PInfection` and `CRemoval` take priority in, respectively,
 `AbstractInfection`s and `AbstractRemovals`.
 
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 julia> C(0.10, 2) < R(0.10, 2)
 true
 julia> P(0.15, 2, 5) < I(0.15, 2, 5)
@@ -309,7 +329,7 @@ end
 Returns a modification of its first argument such that
 the `i` field equals the second argument.
 ### Example 1
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 import EpidemicsCFTP: alter_sir_infection
 sir = SIR(0, 2, 0, 0)
 alter_sir_infection(sir, 1)
@@ -318,7 +338,7 @@ alter_sir_infection(sir, 1)
 SIR₀.₀₀(1:1:0)
 ```
 ### Example 2
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 import EpidemicsCFTP: alter_sir_infection
 sir = SIR(0, 1, 0, 0)
 alter_sir_infection(sir, 1)
@@ -342,7 +362,7 @@ the mark `target` of the [`CRemoval`](@ref) `rem`
 to point to a positive `timeline` specified by the `Integer` argument.
 
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 julia> crem = C(0.15, 4)
 𝒞₀.₁₅⁴
 
@@ -370,7 +390,7 @@ end
 Tests whether an incident should be activated for a given state.
 
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), I(0.1, 4, 6))
 true
 julia> EpidemicsCFTP.is_activatable(SIR(0.0, 1, 2, 3), XI(0.1, 4, 6))
@@ -438,7 +458,7 @@ to a given state and returns resulting state if it is activated (and hence opera
 Otherwise returns original state but with updated time `t`.
 
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP)
 julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), R(0.2, 4))
 SIR₀.₂₀(1:1:4)
 julia> EpidemicsCFTP.update(SIR(0.1, 1, 2, 3), KR(0.2, 4))
@@ -1376,15 +1396,15 @@ the proposed new initial number of infections.
 ```jldoctest
 import Random: seed!
 seed!(9)
-iv_ST = InnovationStart_IS(Real[0.4, 0.3, 0.3])
-println(rand(iv_ST, 4))
+iv_ST = InnovationStart_IS(Real[0.4, 0.3, 0.3], 1)
+println([z.replacement for z in rand(iv_ST, 4)])
 
 # output
-Any[1, 1, 2, 1]
+[1, 1, 2, 1]
 ```
 """
-function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS}):Int
-    return rand(rng, d[].prior)
+function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::InnovationStart_IS
+    return InnovationStart_IS(d[].prior, rand(rng, d[].prior))
 end
 
 """
@@ -1397,14 +1417,14 @@ with fields
 (b) a `Uniform(0,1)` mark.
 
 ### Example
-```jldoctest
+```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
 import Random: seed!
 seed!(9)
 iv_RWM = InnovationStart_RWM(Real[0.4, 0.3, 0.3])
 println(rand(iv_RWM))
 
 # output
-(increment = -1, mark = 0.022408672237053562, prior = Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(3), p=Real[0.4, 0.3, 0.3]))
+(increment = -1, mark = 0.022408672237053562, prior = Categorical{Real, Vector{Real}}(support=Base.OneTo(3), p=Real[0.4, 0.3, 0.3]))
 ```
 """
 function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_RWM}):Int

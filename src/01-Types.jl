@@ -1305,52 +1305,50 @@ the `CEvolution` meets required conditions when started with the proposal.
 abstract type AbstractInnovationStart end
 
 """
-    InnovationStart_IS{Categorical{Real, Vector{Real}}} <: AbstractInnovationStart
+    InnovationStart_IS{::Categorical{Real, Vector{Real}}, ::Int} <: AbstractInnovationStart
     
-The `InnovationStart_IS` information is simply a specific `Categorical` distribution
-to be used to propose a positive integer to be used for the infection field
-for the `SIR` for the new initial state. Combined with a test
+The `InnovationStart_IS` information is a proposal of a positive integer to be used for the infection field
+for the `SIR` for the new initial state, accompanied by a specific `Categorical` distribution
+to be used as prior to evaluate the proposal. Combined with a test
 that the result leads to a valid `CEvolution`,
-this carries out the equivalent of an independence sampler move (the suffix `_IS`
-refers to Independence Sampler!).
+this carries out the equivalent of an independence sampler move (the acronym `_IS`
+refers to "Independence Sampler").
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-import Distributions
-prior = Distributions.Categorical(Real[0.8, 0.2])
-InnovationStart_IS(prior)
+```jldoctest
+prior = Categorical(Real[0.8, 0.2])
+InnovationStart_IS(prior, 1)
 
 # output
 
-InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]))
+InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 1)
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
-    prior::Categorical
+    prior       ::Categorical
+    replacement ::Int
 
-function InnovationStart_IS(prior::Categorical)
-   return new(prior)
+function InnovationStart_IS(prior::Categorical, replacement::Int)::InnovationStart_IS
+   return new(prior, replacement)
 end    
 
 @doc """
-    InnovationStart_IS(Vector{Real})
+    InnovationStart_IS(::Vector{Real}, ::Int)::InnovationStart_IS
 
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution
 and (by default) .
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-import Distributions
 prob=Real[0.7, 0.3]
-InnovationStart_IS(prob)
+InnovationStart_IS(prob, 1)
 
 # output
 
-InnovationStart_IS(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]))
+InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 1)
 ```
 """
-function InnovationStart_IS(prob::Vector{<: Real})
-   prior = Categorical(prob)
-   return new(prior)
+function InnovationStart_IS(prob::Vector{<: Real}, replacement::Int)::InnovationStart_IS
+   return new(Categorical(prob), replacement)
 end
 end
 
@@ -1370,25 +1368,24 @@ this carries out the equivalent of a
 Random Walk Metropolis sampler move (the suffix `_RWM`
 refers to Random Walk Metropolis Sampler!).
 ### Example
-```jldoctest; setup = :(using EpidemicsCFTP)
-import Distributions
-prior = Distributions.Categorical(Real[0.8, 0.2])
+```jldoctest
+prior = Categorical(Real[0.8, 0.2])
 InnovationStart_RWM(prior)
 
 # output
 
-InnovationStart_RWM(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]))
+InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]))
 ```
 """
 struct InnovationStart_RWM <: AbstractInnovationStart
     prior::Categorical
 
-function InnovationStart_RWM(prior::Categorical)
+function InnovationStart_RWM(prior::Categorical)::InnovationStart_RWM
    return new(prior)
 end    
 
 @doc """
-    InnovationStart_RWM(Vector{Real})
+    InnovationStart_RWM(Vector{Real})::InnovationStart_RWM
 
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution
@@ -1400,10 +1397,10 @@ InnovationStart_RWM(prob)
 
 # output
 
-InnovationStart_RWM(Distributions.Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]))
+InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]))
 ```
 """
-function InnovationStart_RWM(prob::Vector{<: Real})
+function InnovationStart_RWM(prob::Vector{<: Real})::InnovationStart_RWM
    prior = Categorical(prob)
    return new(prior)
 end

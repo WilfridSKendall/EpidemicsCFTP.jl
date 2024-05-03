@@ -56,7 +56,10 @@ export extremal_evolution
 export alter
 
 export ⪯, ≃, ⋄, ▷
-
+    
+# # Used in `02-Methods.jl`
+export Categorical
+    
 # # Defined in `04-exceptions.jl`
 export BadIncident, MissedCRemoval, EmployedRemoval
 export BadLFE, EmptyLFE, NonMinimalLFE

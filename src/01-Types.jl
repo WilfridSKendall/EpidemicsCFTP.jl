@@ -1324,11 +1324,11 @@ InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
-    prior       ::Categorical
-    replacement ::Int
+    prior    ::Categorical
+    proposal ::Int
 
-function InnovationStart_IS(prior::Categorical, replacement::Int)::InnovationStart_IS
-   return new(prior, replacement)
+function InnovationStart_IS(prior::Categorical, proposal::Int)::InnovationStart_IS
+   return new(prior, proposal)
 end    
 
 @doc """
@@ -1347,8 +1347,8 @@ InnovationStart_IS(prob, 1)
 InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 1)
 ```
 """
-function InnovationStart_IS(prob::Vector{<: Real}, replacement::Int)::InnovationStart_IS
-   return new(Categorical(prob), replacement)
+function InnovationStart_IS(prob::Vector{<: Real}, proposal::Int)::InnovationStart_IS
+   return new(Categorical(prob), proposal)
 end
 end
 

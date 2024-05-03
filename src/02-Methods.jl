@@ -1397,7 +1397,7 @@ the proposed new initial number of infections.
 import Random: seed!
 seed!(9)
 iv_ST = InnovationStart_IS(Real[0.4, 0.3, 0.3], 1)
-println([z.replacement for z in rand(iv_ST, 4)])
+println([z.proposal for z in rand(iv_ST, 4)])
 
 # output
 [1, 1, 2, 1]

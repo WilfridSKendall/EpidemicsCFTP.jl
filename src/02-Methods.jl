@@ -1413,23 +1413,25 @@ end
 Enables sampling from an `InnovationStart_RWM` to return a `NamedTuple` 
 with fields 
 
-(a) the proposed increment in the initial number of infections;
+(a) the proposed shift for the initial number of infections;
 (b) a `Uniform(0,1)` mark.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
 import Random: seed!
 seed!(9)
-iv_RWM = InnovationStart_RWM(Real[0.4, 0.3, 0.3])
-println(rand(iv_RWM))
+iv_RWM = InnovationStart_RWM(Real[0.4, 0.3, 0.3], 0.5, -1)
+[(z.shift, z.mark) for z in rand(iv_RWM, 3)]
 
 # output
-(increment = -1, mark = 0.022408672237053562, prior = Categorical{Real, Vector{Real}}(support=Base.OneTo(3), p=Real[0.4, 0.3, 0.3]))
+3-element Vector{Tuple{Int64, Float64}}:
+ (1, 0.32267671953844956)
+ (1, 0.44225646604528)
+ (-1, 0.3631773712936526)
 ```
 """
 function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_RWM}):Int
-    return (increment=rand(rng, DiscreteNonParametric([-1,1], [0.5, 0.5])), 
-            mark=rand(rng, Uniform(0,1)), prior=d[].prior)
+    return InnovationStart_RWM(d[].prior, rand(rng, Uniform(0,1)), rand(rng, 2*Bernoulli()-1))
 end
 
 """

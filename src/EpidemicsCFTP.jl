@@ -17,7 +17,7 @@ import Base: isless, rand
 # # The `Format` module is required in order to define `show` methods for the various types.
 using Format
 # # Functions from the `Distributions` module are required in order to simulate new `Innovation`s _etc_.
-import Distributions: Categorical, DiscreteUniform, Uniform, Poisson, DiscreteNonParametric
+import Distributions: Bernoulli, Categorical, DiscreteUniform, Uniform, Poisson, DiscreteNonParametric
 # # The `DataFrames` module is required in order to provide placeholders for trajectory flows.
 import DataFrames
 # # We need `AbstractRNG` and `SamplerTrivial` from the  `Random` module 

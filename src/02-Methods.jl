@@ -30,8 +30,10 @@ end
 """
     ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\diamond`.)
 
+Consider the action of an integer (or a `SIR`, or an `InnovationStart_RWM`) on a `CEvolution` 
+through `▷`. 
 The succinct statement `cev ▷ sir` checks whether one can replace
-`cev.initial` by `sir` (but using `cev.initial.t` for the `t` field).
+`cev.initial.i` by `sir.i`.
 This _includes_ checking whether the epidemic size, `cev.size` will not be exceeded,
 if it is positive.
 If so, then the resulting `CEvolution` is returned. 
@@ -89,7 +91,7 @@ function ▷(cev::CEvolution, initial_infectives::Int)::CEvolution
         return cev
     end
     try
-        new_cev = CEvolution(proposed_sir, cev.chronology)
+        new_cev = CEvolution(proposed_sir, cev.chronology, size=cev.size)
         return new_cev
     catch e
         if !((e isa EmployedRemoval) || (e isa MissedCRemoval))
@@ -111,18 +113,65 @@ end
 
 
 """
-    ▷(::CEvolution, ::NamedTuple{(:increment, :mark, :prior), 
-                                 Tuple{Int, Real, Categorical{Real, Vector{Real}}}})
+    ▷(::CEvolution, ::InnovationStart_RWM)
                                                 
-Implements a shift in `initial` that proposes an increment `±1` and accepts this
-according to a (simple) Random Walk Metropolis test.
+Consider the action of an `InnovationStart_RWM` on a `CEvolution` 
+through `▷`. This implements a proposal of a `shift` `±1` and accepts this
+according to a (simple, symmetric) Random Walk Metropolis test (employing a 
+`Uniform(0,1)` `mark` and a `prior` given by the `InnovationStart_RWM`).
+### Example
+In this example, a shift of `-1` has no effect, as this would reduce total 
+population to zero.
+```jldoctest iv_RM; setup = :(using EpidemicsCFTP)
+initial    = SIR(0.0, 3, 1, 0)
+infections = [NF(0.2,3,4), NF(0.4,3,4), P(0.5,1,2), I(0.7,1,2)]
+removals   = [R(0.1, 3), R(0.3, 3), R(0.8, 3)]
+cremovals  = [C(0.6,1), C(0.9,2)]
+chronology = infections ∪ removals ∪ cremovals
+cev        = CEvolution(initial, chronology)
+prior      = Categorical(Real[0.5, 0.3, 0.2])
+(cev ▷ InnovationStart_RWM(prior, 0.1, -1)).trajectory
+
+# output
+SIR[SIR₀.₀₀(3:1:0),SIR₀.₅₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
+```
+A shift of `+1` with a sufficiently small mark 
+(here we use a zero `mark`!)
+_does_ have an effect.
+```jldoctest iv_RM
+(cev ▷ InnovationStart_RWM(prior, 0.0, 1)).trajectory
+
+# output
+SIR[SIR₀.₀₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
+```
+However a further application of the `InnovationStart_RWM`
+with shift `+1`
+does not alter the conditioned epidemic (even with 
+a zero `mark`), in fact because
+the change would lead to an (unconditioned) removal
+being activated.
+```jldoctest iv_RM
+cev1 = cev ▷ InnovationStart_RWM(prior, 0.0, 1)
+(cev1 ▷ InnovationStart_RWM(prior, 0.0, 1)).trajectory
+
+# output
+SIR[SIR₀.₀₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
+```
+Note on the other hand that a _different_ further shift of `-1` _does_ have an effect,
+reverting to the original trajectory.
+```jldoctest iv_RM
+(cev1 ▷ InnovationStart_RWM(prior, 0.0, -1)).trajectory
+
+# output
+SIR[SIR₀.₀₀(3:1:0),SIR₀.₅₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
+```
 """
-function ▷(cev::CEvolution, proposal::NamedTuple{(:increment, :mark, :prior), 
-                                                Tuple{Int, Real, Categorical{Real, Vector{Real}}}})::CEvolution
-    (increment, mark, prior) = proposal
+function ▷(cev::CEvolution, proposal::InnovationStart_RWM)::CEvolution
     current  = cev.initial.i
-    proposed = current + increment
-    if mark * prior[current] > prior[proposed]
+    proposed = current + proposal.shift
+    if (proposed ≤ 0) || (0 < cev.size < proposed)
+        return cev
+    elseif proposal.mark * proposal.prior.p[current] > proposal.prior.p[proposed]
         return cev
     else
         return cev ▷ alter_sir_infection(cev.initial, proposed)

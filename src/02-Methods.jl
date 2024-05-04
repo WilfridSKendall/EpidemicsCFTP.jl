@@ -30,7 +30,7 @@ end
 """
     ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\triangleright`.)
 
-Consider the action of an integer (or a `SIR`, or an `InnovationStart_RWM`) on a `CEvolution` 
+Consider the action of an integer (or a `SIR`, or an `InnovationStart_sRWM`) on a `CEvolution` 
 through `▷`. 
 The succinct statement `cev ▷ sir` checks whether one can replace
 `cev.initial.i` by `sir.i`.
@@ -113,12 +113,12 @@ end
 
 
 """
-    ▷(::CEvolution, ::InnovationStart_RWM)
+    ▷(::CEvolution, ::InnovationStart_sRWM)
                                                 
-Consider the action of an `InnovationStart_RWM` on a `CEvolution` 
+Consider the action of an `InnovationStart_sRWM` on a `CEvolution` 
 through `▷`. This implements a proposal of a `shift` `±1` and accepts this
 according to a (simple, symmetric) Random Walk Metropolis test (employing a 
-`Uniform(0,1)` `mark` and a `prior` given by the `InnovationStart_RWM`).
+`Uniform(0,1)` `mark` and a `prior` given by the `InnovationStart_sRWM`).
 
 Note that the `prior` is assumed to be a `Categorical` distribution
 over some range of integers `1:n`.
@@ -134,7 +134,7 @@ cremovals  = [C(0.6,1), C(0.9,2)]
 chronology = infections ∪ removals ∪ cremovals
 cev        = CEvolution(initial, chronology)
 prior      = Categorical(Real[0.5, 0.3, 0.2])
-(cev ▷ InnovationStart_RWM(prior, 0.1, -1)).trajectory
+(cev ▷ InnovationStart_sRWM(prior, 0.1, -1)).trajectory
 
 # output
 SIR[SIR₀.₀₀(3:1:0),SIR₀.₅₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
@@ -143,20 +143,20 @@ A shift of `+1` with a sufficiently small mark
 (here we use a zero `mark`!)
 _does_ have an effect.
 ```jldoctest iv_RM
-(cev ▷ InnovationStart_RWM(prior, 0.0, 1)).trajectory
+(cev ▷ InnovationStart_sRWM(prior, 0.0, 1)).trajectory
 
 # output
 SIR[SIR₀.₀₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
 ```
-However a further application of the `InnovationStart_RWM`
+However a further application of the `InnovationStart_sRWM`
 with shift `+1`
 does not alter the conditioned epidemic (even with 
 a zero `mark`), in fact because
 the change would lead to an (unconditioned) removal
 being activated.
 ```jldoctest iv_RM
-cev1 = cev ▷ InnovationStart_RWM(prior, 0.0, 1)
-(cev1 ▷ InnovationStart_RWM(prior, 0.0, 1)).trajectory
+cev1 = cev ▷ InnovationStart_sRWM(prior, 0.0, 1)
+(cev1 ▷ InnovationStart_sRWM(prior, 0.0, 1)).trajectory
 
 # output
 SIR[SIR₀.₀₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
@@ -164,13 +164,13 @@ SIR[SIR₀.₀₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
 Note on the other hand that a _different_ further shift of `-1` _does_ have an effect,
 reverting to the original trajectory.
 ```jldoctest iv_RM
-(cev1 ▷ InnovationStart_RWM(prior, 0.0, -1)).trajectory
+(cev1 ▷ InnovationStart_sRWM(prior, 0.0, -1)).trajectory
 
 # output
 SIR[SIR₀.₀₀(3:1:0),SIR₀.₅₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
 ```
 """
-function ▷(cev::CEvolution, proposal::InnovationStart_RWM)::CEvolution
+function ▷(cev::CEvolution, proposal::InnovationStart_sRWM)::CEvolution
     current  = cev.initial.i
     proposed = current + proposal.shift
 #     if (proposed ≤ 0) || (0 < cev.size < proposed) || (proposal.nmax < proposed)
@@ -1463,9 +1463,9 @@ function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::Inn
 end
 
 """
-    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_RWM})
+    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_sRWM})
     
-Enables sampling from an `InnovationStart_RWM` to return a `NamedTuple` 
+Enables sampling from an `InnovationStart_sRWM` to return a `NamedTuple` 
 with fields 
 
 (a) the proposed shift for the initial number of infections;
@@ -1475,7 +1475,7 @@ with fields
 ```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
 import Random: seed!
 seed!(9)
-iv_RWM = InnovationStart_RWM(Real[0.4, 0.3, 0.3], 0.5, -1)
+iv_RWM = InnovationStart_sRWM(Real[0.4, 0.3, 0.3], 0.5, -1)
 [(z.shift, z.mark) for z in rand(iv_RWM, 3)]
 
 # output
@@ -1485,8 +1485,8 @@ iv_RWM = InnovationStart_RWM(Real[0.4, 0.3, 0.3], 0.5, -1)
  (-1, 0.3631773712936526)
 ```
 """
-function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_RWM}):Int
-    return InnovationStart_RWM(d[].prior, rand(rng, Uniform(0,1)), rand(rng, 2*Bernoulli()-1))
+function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_sRWM}):Int
+    return InnovationStart_sRWM(d[].prior, rand(rng, Uniform(0,1)), rand(rng, 2*Bernoulli()-1))
 end
 
 """

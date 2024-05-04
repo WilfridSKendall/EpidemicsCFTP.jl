@@ -235,6 +235,6 @@ CEvolution(::SIR, ::Innovation)
 AbstractInnovationStart
 InnovationStart_IS
 InnovationStart_IS(::Vector{<: Real}, ::Int)
-InnovationStart_RWM
-InnovationStart_RWM(::Vector{<: Real}, ::Real, ::Int)
+InnovationStart_sRWM
+InnovationStart_sRWM(::Vector{<: Real}, ::Real, ::Int)
 ```

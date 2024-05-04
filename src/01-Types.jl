@@ -1359,13 +1359,13 @@ end
 end
 
 """
-    InnovationStart_RWM <: AbstractInnovationStart
+    InnovationStart_sRWM <: AbstractInnovationStart
     
-The `InnovationStart_RWM` information is again
+The `InnovationStart_sRWM` information is again
 simply a specific `Categorical` distribution `prior`
 to be used in constructing a new proposal for the initial state,
 on range of integer values `1:nmax`.
-However using `rand` on this generates a `shift` `±1` equiprobably
+However using `rand` on this generates a `shift` `±1` equiprobably (hence `s` for "symmetric")
 and uses a `Uniform(0,1)` `mark` to test whether to accept this `shift`,
 according to a (simple) Random Walk Metropolis test.
 
@@ -1377,25 +1377,25 @@ refers to Random Walk Metropolis Sampler!).
 ### Example
 ```jldoctest
 prior = Categorical(Real[0.8, 0.2])
-InnovationStart_RWM(prior, 0.5, 1)
+InnovationStart_sRWM(prior, 0.5, 1)
 
 # output
 
-InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 0.5, 1, 2)
+InnovationStart_sRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 0.5, 1, 2)
 ```
 """
-struct InnovationStart_RWM <: AbstractInnovationStart
+struct InnovationStart_sRWM <: AbstractInnovationStart
     prior ::Categorical
     mark  ::Real
     shift ::Int
     nmax  ::Int
 
-function InnovationStart_RWM(prior::Categorical, mark::Real, shift::Int)::InnovationStart_RWM
+function InnovationStart_sRWM(prior::Categorical, mark::Real, shift::Int)::InnovationStart_sRWM
     return new(prior, mark, shift, ncategories(prior))
 end    
 
 @doc """
-    InnovationStart_RWM(Vector{Real})::InnovationStart_RWM
+    InnovationStart_sRWM(Vector{Real})::InnovationStart_sRWM
 
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution
@@ -1403,14 +1403,14 @@ and (by default) .
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 prob=Real[0.7, 0.3]
-InnovationStart_RWM(prob, 0.5, 1)
+InnovationStart_sRWM(prob, 0.5, 1)
 
 # output
 
-InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 0.5, 1, 2)
+InnovationStart_sRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 0.5, 1, 2)
 ```
 """
-function InnovationStart_RWM(prob::Vector{<: Real}, mark::Real, shift::Int)::InnovationStart_RWM
+function InnovationStart_sRWM(prob::Vector{<: Real}, mark::Real, shift::Int)::InnovationStart_sRWM
    return new(Categorical(prob), mark, shift, length(prob))
 end
 end

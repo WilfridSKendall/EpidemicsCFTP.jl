@@ -47,7 +47,7 @@ export AbstractEnvironment
 export AbstractInnovation, AbstractEvolution
 export Innovation, Evolution, CEvolution
 
-export AbstractInnovationStart, InnovationStart_IS, InnovationStart_RWM
+export AbstractInnovationStart, InnovationStart_IS, InnovationStart_sRWM
 
 # # Defined in `02-methods.jl`
 export evolution, evolution_history

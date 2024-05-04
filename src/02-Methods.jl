@@ -28,7 +28,7 @@ function ⋄(cev::CEvolution, iv::AbstractInnovation)::CEvolution
 end
 
 """
-    ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\diamond`.)
+    ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\triangleright`.)
 
 Consider the action of an integer (or a `SIR`, or an `InnovationStart_RWM`) on a `CEvolution` 
 through `▷`. 

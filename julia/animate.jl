@@ -74,17 +74,28 @@ end
 survival = [transition_probability(k) for k in 1:length(min_cremovals)]
 priorprob = (1 .- survival) .* pushfirst!(accumulate(*, survival[1:(end-1)]), 1)
 push!(priorprob, 1 - sum(priorprob))
-iv_ST = InnovationStart_IS(priorprob, 1) ;
-
+iv_ST  = InnovationStart_IS(priorprob, 1) ;
+iv_RWM = InnovationStart_sRWM(priorprob, 0.5, 1) ;
 
 # -------------------------------
-function innovation_stream(cycle_length;
+# Here `innovation_stream` is modified to allow addition of columns
+# giving alternative ways to alter start of epidemic, while keeping the previous
+# columns unchanged.
+function innovation_stream(cycle_length, iv_IS=iv_IS, iv_RWM=iv_RWM;
             evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
-    stream, initial = [], evmin0.initial
+    stream = []
+    datastream = DataFrame(innov_trajectory=AbstractInnovation[], 
+                           innov_initial_IS=InnovationStart_IS[])
     for iteration ∈ 1:cycle_length
-        push!(stream, (rand(iv_null), rand(iv_ST)))
-    end
-    return stream
+        push!(datastream, (rand(iv_null), rand(iv_IS)))
+    end    
+    # Now add a further column for `InnovationStart_sRWM`.
+    datastream.innov_initial_sRWM = rand(iv_RWM, nrow(datastream))
+    # Now add a further column based on the `iv_RWM` column but such that
+    # every other entry uses the `iv_IS` column.
+    datastream.innov_initial_MIX = collect((mod(n, 2) == 0 ? z1 : z2)
+        for (n, (z1, z2)) in enumerate(zip(datastream.innov_initial_IS, datastream.innov_initial_sRWM)))
+    return datastream
 end ;
 
 # -------------------------------
@@ -294,7 +305,7 @@ function graphic_component!(work, evmin, evmax, duration, iteration, stream_leng
     draw(PNG("$fname.png"), image)
 
     return image
-    
+        
 end ;
 
 # -------------------------------
@@ -304,12 +315,16 @@ function graphic_cycle!(stream, canvas;
     # Create deep copies of plot background and of extremal `CEvolution`s
     evmin, evmax = deepcopy(evmin0), deepcopy(evmax0)
     work = deepcopy(lines_plot)
-    stream_length = length(stream)
+    stream_length = nrow(stream)
 
     image = graphic_component!(work, evmin, evmax, duration, 0, stream_length, tag=tag)
     
-    for (iteration, pair) ∈ enumerate(stream)
-        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, pair...)
+    for (iteration, iv) ∈ enumerate(eachrow(stream))
+        # CHOICE of strategy for initial value proposals
+        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[2]) # This is for `iv_IS`
+#        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[3]) # This is for `iv_RWM`
+#        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[4]) # This is a mixture
+
         image = graphic_component!(canvas[iteration], evmin, evmax,
                                 duration, iteration, stream_length, tag=tag)
     end
@@ -319,17 +334,20 @@ function graphic_cycle!(stream, canvas;
 end ;
 
 # ===============================
-@info "Running the simulation"
+@info "Preparing the simulation"
 
 max_length = 256
-stream = innovation_stream(max_length)
+stream = innovation_stream(max_length, iv_ST, iv_RWM)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 
 lexicon = ["01", "02", "03", "04", "05"] 
 cycles_lexicon = [(c, 4 * 2^k) for (k, c) ∈ enumerate(lexicon)]    
 
+# ===============================
+@info "Iterating through the simulation"
+
 for (epithet, cycle_length) ∈ cycles_lexicon 
-    graphic_cycle!(stream[max_length - cycle_length + 1:max_length], 
+    graphic_cycle!(last(stream, cycle_length), 
         canvas[max_length - cycle_length + 1:max_length], 
         tag="script-$epithet")
 end

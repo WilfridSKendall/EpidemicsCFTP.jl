@@ -70,7 +70,6 @@ movie: CFTP-demo.pdf
 animate: animate.gif ; $(START) "$<" 2> /dev/null
 %.gif: %.jl 
 	$(JULIA) $<
-	#convert -loop 1 animation/script-*.gif -layers Optimize animate.gif
 	rm animation/script*.*
 
 # ====================

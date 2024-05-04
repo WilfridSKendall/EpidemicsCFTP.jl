@@ -1356,7 +1356,8 @@ end
     
 The `InnovationStart_RWM` information is again
 simply a specific `Categorical` distribution `prior`
-to be used in constructing a new proposal for the initial state.
+to be used in constructing a new proposal for the initial state,
+on range of integer values `1:nmax`.
 However using `rand` on this generates a `shift` `±1` equiprobably
 and uses a `Uniform(0,1)` `mark` to test whether to accept this `shift`,
 according to a (simple) Random Walk Metropolis test.
@@ -1373,16 +1374,17 @@ InnovationStart_RWM(prior, 0.5, 1)
 
 # output
 
-InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 0.5, 1)
+InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 0.5, 1, 2)
 ```
 """
 struct InnovationStart_RWM <: AbstractInnovationStart
     prior ::Categorical
     mark  ::Real
     shift ::Int
+    nmax  ::Int
 
 function InnovationStart_RWM(prior::Categorical, mark::Real, shift::Int)::InnovationStart_RWM
-   return new(prior, mark, shift)
+    return new(prior, mark, shift, ncategories(prior))
 end    
 
 @doc """
@@ -1398,11 +1400,11 @@ InnovationStart_RWM(prob, 0.5, 1)
 
 # output
 
-InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 0.5, 1)
+InnovationStart_RWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 0.5, 1, 2)
 ```
 """
 function InnovationStart_RWM(prob::Vector{<: Real}, mark::Real, shift::Int)::InnovationStart_RWM
-   return new(Categorical(prob), mark, shift)
+   return new(Categorical(prob), mark, shift, length(prob))
 end
 end
 

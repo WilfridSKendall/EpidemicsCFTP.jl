@@ -173,7 +173,9 @@ SIR[SIR₀.₀₀(3:1:0),SIR₀.₅₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀
 function ▷(cev::CEvolution, proposal::InnovationStart_RWM)::CEvolution
     current  = cev.initial.i
     proposed = current + proposal.shift
-    if (proposed ≤ 0) || (0 < cev.size < proposed) || (proposal.nmax < proposed)
+#     if (proposed ≤ 0) || (0 < cev.size < proposed) || (proposal.nmax < proposed)
+    if (proposed ≤ 0) || (0 < cev.size <= proposed) || (proposal.nmax < proposed)
+        # Above is an attempt to fix the wobble problem: should be done in a more principled way!
         return cev
     elseif proposal.mark * proposal.prior.p[current] > proposal.prior.p[proposed]
         return cev

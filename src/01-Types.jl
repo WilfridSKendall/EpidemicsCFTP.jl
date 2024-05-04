@@ -1166,13 +1166,20 @@ ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.
 ```
 """
 function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation; 
-                    size::Int=0, t0::Real=-Inf, duration::Real=Inf)::CEvolution
+                    t0::Real=-Inf, duration::Real=Inf)::CEvolution
+#                     size::Int=0, t0::Real=-Inf, duration::Real=Inf)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
     #                       last_feasible_evolution,
     #                       compute_nofly
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
+    
+    if ev isa CEvolution
+        size = ev.size
+    else
+        size = 0
+    end
     
     removals = inactive_removals(ev, iv)
     

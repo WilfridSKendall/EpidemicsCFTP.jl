@@ -119,6 +119,10 @@ Consider the action of an `InnovationStart_RWM` on a `CEvolution`
 through `▷`. This implements a proposal of a `shift` `±1` and accepts this
 according to a (simple, symmetric) Random Walk Metropolis test (employing a 
 `Uniform(0,1)` `mark` and a `prior` given by the `InnovationStart_RWM`).
+
+Note that the `prior` is assumed to be a `Categorical` distribution
+over some range of integers `1:n`.
+
 ### Example
 In this example, a shift of `-1` has no effect, as this would reduce total 
 population to zero.
@@ -169,7 +173,7 @@ SIR[SIR₀.₀₀(3:1:0),SIR₀.₅₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀
 function ▷(cev::CEvolution, proposal::InnovationStart_RWM)::CEvolution
     current  = cev.initial.i
     proposed = current + proposal.shift
-    if (proposed ≤ 0) || (0 < cev.size < proposed) || (cev.initial.n < proposed)
+    if (proposed ≤ 0) || (0 < cev.size < proposed) || (ncategories(prior) < proposed)
         return cev
     elseif proposal.mark * proposal.prior.p[current] > proposal.prior.p[proposed]
         return cev

@@ -1335,8 +1335,7 @@ end
     InnovationStart_IS(::Vector{Real}, ::Int)::InnovationStart_IS
 
 Shortcut: supply the vector of probabilities
-defining the required `Categorical` distribution
-and (by default) .
+defining the required `Categorical` distribution.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 prob=Real[0.7, 0.3]

@@ -23,6 +23,7 @@ interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε,
                    1, 1, 2, ε, 1, 5, ε, 5, 5] 
 α, β           = 0.0008, 0.088 
 size           = length(interremovals) + 1 
+#size           = 120 
 cremoval_times = accumulate(+, interremovals) 
 pushfirst!(cremoval_times, 0)
 t0             = 0.0
@@ -340,13 +341,14 @@ max_length = 256
 stream = innovation_stream(max_length, iv_ST, iv_RWM)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 
-lexicon = ["01", "02", "03", "04", "05"] 
+lexicon = ["01", "02", "03", "04", "05", "06"] # For reduced "size", only need up to `"05"`
 cycles_lexicon = [(c, 4 * 2^k) for (k, c) ∈ enumerate(lexicon)]    
 
 # ===============================
 @info "Iterating through the simulation"
 
 for (epithet, cycle_length) ∈ cycles_lexicon 
+    @info "Now processing script-$epithet"
     graphic_cycle!(last(stream, cycle_length), 
         canvas[max_length - cycle_length + 1:max_length], 
         tag="script-$epithet")

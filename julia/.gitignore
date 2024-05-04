@@ -19,4 +19,5 @@ Manifest.toml
 *.kate-swp
 *.kilepr
 *.pdf
+*.ps
 

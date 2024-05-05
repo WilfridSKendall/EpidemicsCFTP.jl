@@ -110,8 +110,6 @@ function ▷(cev::CEvolution, innovation_start::InnovationStart_IS)::CEvolution
     return ▷(cev, innovation_start.proposal)
 end
 
-
-
 """
     ▷(::CEvolution, ::InnovationStart_sRWM)
                                                 
@@ -172,17 +170,61 @@ SIR[SIR₀.₀₀(3:1:0),SIR₀.₅₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀
 """
 function ▷(cev::CEvolution, proposal::InnovationStart_sRWM)::CEvolution
     current  = cev.initial.i
+    p, mark = proposal.prior.p, proposal.mark
     proposed = current + proposal.shift
-#     if (proposed ≤ 0) || (0 < cev.size < proposed) || (proposal.nmax < proposed)
     if (proposed ≤ 0) || (0 < cev.size <= proposed) || (proposal.nmax < proposed)
-        # Above is an attempt to fix the wobble problem: should be done in a more principled way!
         return cev
-    elseif proposal.mark * proposal.prior.p[current] > proposal.prior.p[proposed]
+    elseif mark * p[current] > p[proposed]
         return cev
     else
         return cev ▷ alter_sir_infection(cev.initial, proposed)
     end
 end
+
+"""
+    ▷(::CEvolution, ::InnovationStart_aRWM)
+                                                
+Consider the action of an `InnovationStart_aRWM` on a `CEvolution` 
+through `▷`. This implements a proposal of a `shift` `±1` 
+(with probability `ρ` for `-`)
+and accepts this
+according to a (simple, symmetric) Random Walk Metropolis test (employing a 
+`Uniform(0,1)` `mark` and a `prior` given by the `InnovationStart_aRWM`).
+
+Note that the `prior` is assumed to be a `Categorical` distribution
+over some range of integers `1:n`.
+
+### Example
+If `ρ==0.5` then we have the equivalent of an `InnovationStart_sRWM`.
+```jldoctest iv_RM
+initial    = SIR(0.0, 3, 1, 0)
+infections = [NF(0.2,3,4), NF(0.4,3,4), P(0.5,1,2), I(0.7,1,2)]
+removals   = [R(0.1, 3), R(0.3, 3), R(0.8, 3)]
+cremovals  = [C(0.6,1), C(0.9,2)]
+chronology = infections ∪ removals ∪ cremovals
+cev        = CEvolution(initial, chronology)
+prior      = Categorical(Real[0.5, 0.3, 0.2])
+(cev ▷ InnovationStart_aRWM(prior, 0.5, 0.0, 1)).trajectory
+
+# output
+SIR[SIR₀.₀₀(2:2:0),SIR₀.₆₀(2:1:1),SIR₀.₉₀(2:0:2)]
+```
+```
+"""
+function ▷(cev::CEvolution, proposal::InnovationStart_aRWM)::CEvolution
+    current  = cev.initial.i
+    p, ρ, mark = proposal.prior.p, proposal.ρ, proposal.mark
+    t_prob = proposal.shift == -1 ? ρ : 1 - ρ
+    proposed = current + proposal.shift
+    if (proposed ≤ 0) || (0 < cev.size <= proposed) || (proposal.nmax < proposed)
+        return cev
+    elseif mark * t_prob * p[current] > (1 - t_prob) * p[proposed]
+        return cev
+    else
+        return cev ▷ alter_sir_infection(cev.initial, proposed)
+    end
+end
+
 
 """
     ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool (Use `\\preceq`.)

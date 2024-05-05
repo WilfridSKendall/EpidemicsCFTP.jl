@@ -230,11 +230,13 @@ CEvolution(::SIR, ::Vector{AbstractIncident})
 CEvolution(::SIR, ::Innovation)
 ```
 
-#### Initial states
+#### Innovations for initial states
 ```@docs
 AbstractInnovationStart
 InnovationStart_IS
 InnovationStart_IS(::Vector{<: Real}, ::Int)
 InnovationStart_sRWM
 InnovationStart_sRWM(::Vector{<: Real}, ::Real, ::Int)
+InnovationStart_aRWM
+InnovationStart_aRWM(::Vector{<: Real}, ::Real, ::Real, ::Int)
 ```

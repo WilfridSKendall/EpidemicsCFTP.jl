@@ -1415,3 +1415,63 @@ function InnovationStart_sRWM(prob::Vector{<: Real}, mark::Real, shift::Int)::In
 end
 end
 
+
+"""
+    InnovationStart_aRWM <: AbstractInnovationStart
+    
+The `InnovationStart_aRWM` information is again
+simply a specific `Categorical` distribution `prior`
+to be used in constructing a new proposal for the initial state,
+on range of integer values `1:nmax`.
+Using `rand` on this generates a `shift` `±1` _not_ equiprobably (hence `a` for "asymmetric":
+`ρ` is the probability of `-`)
+and uses a `Uniform(0,1)` `mark` to test whether to accept this `shift`,
+according to a (simple) Random Walk Metropolis test.
+
+Combined with a test
+that the result leads to a valid `CEvolution`,
+this carries out the equivalent of a
+Random Walk Metropolis sampler move (the suffix `_RWM`
+refers to Random Walk Metropolis Sampler!).
+### Example
+```jldoctest
+prior = Categorical(Real[0.8, 0.2])
+InnovationStart_aRWM(prior, 0.9, 0.5, 1)
+
+# output
+
+InnovationStart_aRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 0.9, 0.5, 1, 2)
+```
+"""
+struct InnovationStart_aRWM <: AbstractInnovationStart
+    prior ::Categorical
+    ρ     ::Real
+    mark  ::Real
+    shift ::Int
+    nmax  ::Int
+
+function InnovationStart_aRWM(prior::Categorical, ρ::Real, mark::Real, shift::Int)::InnovationStart_aRWM
+    return new(prior, ρ, mark, shift, ncategories(prior))
+end    
+
+@doc """
+    InnovationStart_aRWM(Vector{Real})::InnovationStart_aRWM
+
+Shortcut: supply the vector of probabilities
+defining the required `Categorical` distribution
+and (by default) .
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+prob=Real[0.7, 0.3]
+InnovationStart_aRWM(prob, 0.9, 0.5, 1)
+
+# output
+
+InnovationStart_aRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 0.9, 0.5, 1, 2)
+```
+"""
+function InnovationStart_aRWM(prob::Vector{<: Real}, ρ::Real, mark::Real, shift::Int)::InnovationStart_aRWM
+   return new(Categorical(prob), ρ, mark, shift, length(prob))
+end
+end
+

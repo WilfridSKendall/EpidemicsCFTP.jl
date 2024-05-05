@@ -1547,7 +1547,7 @@ iv_RWM = InnovationStart_aRWM(Real[0.4, 0.3, 0.3], 0.5, 0.5, -1)
 ```
 """
 function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_aRWM}):Int
-    return InnovationStart_aRWM(d[].prior, d[].ρ, rand(rng, Uniform(0,1)), rand(rng, 2*Bernoulli()-1))
+    return InnovationStart_aRWM(d[].prior, d[].ρ, rand(rng, Uniform(0,1)), rand(rng, 2*Bernoulli(1-d[].ρ)-1))
 end
 
 

@@ -1507,11 +1507,7 @@ end
 """
     Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_sRWM})
     
-Enables sampling from an `InnovationStart_sRWM` to return a `NamedTuple` 
-with fields 
-
-(a) the proposed shift for the initial number of infections;
-(b) a `Uniform(0,1)` mark.
+Enables sampling from an `InnovationStart_sRWM`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
@@ -1530,6 +1526,30 @@ iv_RWM = InnovationStart_sRWM(Real[0.4, 0.3, 0.3], 0.5, -1)
 function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_sRWM}):Int
     return InnovationStart_sRWM(d[].prior, rand(rng, Uniform(0,1)), rand(rng, 2*Bernoulli()-1))
 end
+
+"""
+    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_aRWM})
+    
+Enables sampling from an `InnovationStart_aRWM`.
+
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
+import Random: seed!
+seed!(9)
+iv_RWM = InnovationStart_aRWM(Real[0.4, 0.3, 0.3], 0.5, 0.5, -1)
+[(z.shift, z.mark) for z in rand(iv_RWM, 3)]
+
+# output
+3-element Vector{Tuple{Int64, Float64}}:
+ (1, 0.32267671953844956)
+ (1, 0.44225646604528)
+ (-1, 0.3631773712936526)
+```
+"""
+function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_aRWM}):Int
+    return InnovationStart_aRWM(d[].prior, d[].ρ, rand(rng, Uniform(0,1)), rand(rng, 2*Bernoulli()-1))
+end
+
 
 """
     Base.rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation

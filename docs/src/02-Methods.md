@@ -121,5 +121,6 @@ These involve overloading `Base.rand`.
 ```@docs
 rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
 rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_sRWM})
+rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_aRWM})
 rand(::AbstractRNG, ::SamplerTrivial{Innovation})
 ```

@@ -23,7 +23,7 @@ interremovals  = [13, 7, 2, 3, ε, ε, 1, 4, 5, 3, 2, ε, 2, ε, 5, 3, 1, 4, ε,
                    1, 1, 2, ε, 1, 5, ε, 5, 5] 
 α, β           = 0.0008, 0.088 
 size           = length(interremovals) + 1 
-#size           = 120 
+#size           = 120  # This is too high for current programme to make any impact at all!
 cremoval_times = accumulate(+, interremovals) 
 pushfirst!(cremoval_times, 0)
 t0             = 0.0
@@ -76,13 +76,14 @@ survival = [transition_probability(k) for k in 1:length(min_cremovals)]
 priorprob = (1 .- survival) .* pushfirst!(accumulate(*, survival[1:(end-1)]), 1)
 push!(priorprob, 1 - sum(priorprob))
 iv_ST  = InnovationStart_IS(priorprob, 1) ;
-iv_RWM = InnovationStart_sRWM(priorprob, 0.5, 1) ;
+iv_sRWM = InnovationStart_sRWM(priorprob, 0.5, 1) ;
+iv_aRWM = InnovationStart_aRWM(priorprob, 0.9, 0.5, 1) ;
 
 # -------------------------------
 # Here `innovation_stream` is modified to allow addition of columns
 # giving alternative ways to alter start of epidemic, while keeping the previous
 # columns unchanged.
-function innovation_stream(cycle_length, iv_IS=iv_IS, iv_RWM=iv_RWM;
+function innovation_stream(cycle_length, iv_IS=iv_IS, iv_sRWM=iv_sRWM, iv_aRWM=iv_aRWM;
             evmin=evmin0, iv_null=iv_null, duration=duration, α=α, β=β, size=size)
     stream = []
     datastream = DataFrame(innov_trajectory=AbstractInnovation[], 
@@ -90,12 +91,13 @@ function innovation_stream(cycle_length, iv_IS=iv_IS, iv_RWM=iv_RWM;
     for iteration ∈ 1:cycle_length
         push!(datastream, (rand(iv_null), rand(iv_IS)))
     end    
-    # Now add a further column for `InnovationStart_sRWM`.
-    datastream.innov_initial_sRWM = rand(iv_RWM, nrow(datastream))
-    # Now add a further column based on the `iv_RWM` column but such that
+    # Now add columns for `InnovationStart_sRWM` and `InnovationStart_aRWM`.
+    datastream.innov_initial_sRWM = rand(iv_sRWM, nrow(datastream))
+    datastream.innov_initial_aRWM = rand(iv_aRWM, nrow(datastream))
+    # Now add a further column based on the `iv_sRWM` column but such that
     # every other entry uses the `iv_IS` column.
     datastream.innov_initial_MIX = collect((mod(n, 2) == 0 ? z1 : z2)
-        for (n, (z1, z2)) in enumerate(zip(datastream.innov_initial_IS, datastream.innov_initial_sRWM)))
+        for (n, (z1, z2)) in enumerate(zip(datastream.innov_initial_IS, datastream.innov_initial_aRWM)))
     return datastream
 end ;
 
@@ -261,7 +263,7 @@ oldred  = range(colorant"white", theme.min, length=3)[2]
 
 function graphic_component!(work, evmin, evmax, duration, iteration, stream_length; 
                 tag="demo-e", theme=theme, fixed_font="JuliaMono", variable_font="HelveticaBold",
-                logo="Minimum and maximum evolutions (using IS at t=0) at algorithmic time step")
+                logo="Minimum and maximum evolutions (using `IS` at t=0) at algorithmic time step")
     lstream = "-$(lpad(stream_length, 4, "0"))"
     legend = "-$(lpad(stream_length-iteration, 4, "0"))"
 
@@ -323,8 +325,9 @@ function graphic_cycle!(stream, canvas;
     for (iteration, iv) ∈ enumerate(eachrow(stream))
         # CHOICE of strategy for initial value proposals
         (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[2]) # This is for `iv_IS`
-#        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[3]) # This is for `iv_RWM`
-#        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[4]) # This is a mixture
+#        (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[3]) # This is for `iv_sRWM`
+#       (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[4]) # This is for `iv_aRWM`
+#         (evmin, evmax) = single_step(canvas[iteration], evmin, evmax, iv[1], iv[5]) # This is a mixture
 
         image = graphic_component!(canvas[iteration], evmin, evmax,
                                 duration, iteration, stream_length, tag=tag)
@@ -338,10 +341,11 @@ end ;
 @info "Preparing the simulation"
 
 max_length = 256
-stream = innovation_stream(max_length, iv_ST, iv_RWM)
+stream = innovation_stream(max_length, iv_ST, iv_sRWM, iv_aRWM)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 
-lexicon = ["01", "02", "03", "04", "05", "06"] # For reduced "size", only need up to `"05"`
+#lexicon = ["01", "02", "03", "04", "05", "06", "07"] 
+lexicon = ["01", "02", "03", "04", "05", "06"] # For reduced "size" and IS, only need up to `"06"`
 cycles_lexicon = [(c, 4 * 2^k) for (k, c) ∈ enumerate(lexicon)]    
 
 # ===============================
@@ -362,8 +366,7 @@ dt2 = 300
 for epithet ∈ lexicon
     prefix = "animation/script"
     run(`convert -delay $dt1 $prefix-$epithet-\*.png -delay $dt2 $prefix-$epithet.png -layers Optimize $prefix-$epithet.gif`)
-    run(`convert -loop 1 animation/script-\*.gif -layers Optimize animate.gif`)
-    # run(`rm animation/script\*.\*`) # DOESN'T WORK ?!
 end
+run(`convert -loop 1 animation/script-\*.gif -layers Optimize animate.gif`)
 
 @info "Finished"

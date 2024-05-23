@@ -340,12 +340,12 @@ end ;
 # ===============================
 @info "Preparing the simulation"
 
-max_length = 256
+max_length = 128
 stream = innovation_stream(max_length, iv_ST, iv_sRWM, iv_aRWM)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 
 #lexicon = ["01", "02", "03", "04", "05", "06", "07"] 
-lexicon = ["01", "02", "03", "04", "05", "06"] # For reduced "size" and IS, only need up to `"06"`
+lexicon = ["01", "02", "03", "04", "05"] # For reduced "size" and IS, only need up to `"05"`
 cycles_lexicon = [(c, 4 * 2^k) for (k, c) ∈ enumerate(lexicon)]    
 
 # ===============================

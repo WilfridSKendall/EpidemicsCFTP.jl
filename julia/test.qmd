@@ -744,9 +744,22 @@ Markdown.parse("""
 """)
 ```
 
+
 Package documentation
 =====================
-* `Gadfly`:       <http://gadflyjl.org/stable/>;
-* `Compose`:      <https://docs.juliahub.com/General/Compose/stable/>;
-* `DataFrames`:   <https://dataframes.juliadata.org/stable/>;
-* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.
+```{julia}
+#| label: software-links
+#| echo: false
+#| eval: true
+#| cache: false
+Markdown.parse("""
+| Software        | Link                                                  |
+|:----------------|:------------------------------------------------------|
+| `Gadfly`:       | <http://gadflyjl.org/stable/>;                        |
+| `Compose`:      | <https://docs.juliahub.com/General/Compose/stable/>;  |
+| `DataFrames`:   | <https://dataframes.juliadata.org/stable/>;           |
+| `PrettyTables`: | <https://ronisbr.github.io/PrettyTables.jl/stable/>.  |
+""")
+```
+
+

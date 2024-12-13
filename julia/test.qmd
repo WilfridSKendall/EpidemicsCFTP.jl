@@ -2,9 +2,8 @@
 title:  "Testing `julia` code for perfect epidemics"
 author: "Wilfrid Kendall"
 date:   today
----
 
----
+
 toc: true
 
 date-format: "D MMMM YYYY"

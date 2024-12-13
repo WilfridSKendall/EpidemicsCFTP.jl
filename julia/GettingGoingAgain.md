@@ -36,7 +36,7 @@ Worked with `julia 1.9.2` but `quarto` issues. Need to change to `1.11.2`.
     - [x] `Notes-on-sampling.pdf` (no `julia` code! sets out programme for future parameter estimation. Useful to check basic `quarto` operation.)
 
     - [x] `production.pdf`edited as follows  (a) not to have separate YAML block for title;
-      (b) there is a LaTeX error: using style file `SIR.sty` instead of inline
+      (b) there is a LaTeX error: using style file `SIR.sty` instead of inline _and_ using `xspace` package.
 
       ``````
       include-before-body:

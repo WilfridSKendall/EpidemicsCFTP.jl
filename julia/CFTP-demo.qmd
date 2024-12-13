@@ -4,9 +4,8 @@ author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
 csl: /home/wilfrid/lib/palndoc/CSL/ima-journal-of-applied-mathematics.csl
----
 
----
+
 toc: true
 
 date-format: "D MMMM YYYY"
@@ -37,7 +36,7 @@ format:
     monofontoptions:
        - Scale=0.7
 
-jupyter:    julia-1.9
+jupyter:    julia-1.11
 ---
 
 ```{julia}

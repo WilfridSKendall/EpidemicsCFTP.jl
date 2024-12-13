@@ -2,9 +2,7 @@
 title:  "A Graphical Introduction to Perfect Simulation of Conditioned Epidemics"
 author: "Wilfrid Kendall"
 date:   today
----
 
----
 toc: true
 
 date-format: "D MMMM YYYY"
@@ -13,12 +11,6 @@ papersize:  a4
 tbl-cap-location: top
 
 from: markdown+tex_math_single_backslash
-
-include-before-body:
-    - text: |
-        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
-        \newcommand{\NFZ}{``no-fly zone"\xspace}
-        \newcommand{\LFE}{``last feasible evolution"\xspace}
 
 format:
   html:
@@ -30,8 +22,10 @@ format:
     monofont: "JuliaMono"
     monofontoptions:
        - Scale=0.7
+    include-in-header:
+        - "SIR.sty"
 
-jupyter:    julia-1.9
+jupyter:    julia-1.11
 ---
 
 ```{julia}
@@ -111,8 +105,8 @@ the `s`, `i`, and `r` fields of the `SIR` constructor
 (namely, the non-negative integers supplied by the last three parameters).
 ```{julia}
 const duration = 2.0;
-const α, β = 0.2, 1.5;
-const initial = SIR(0.0, 5, 1, 0);
+const α, β     = 0.2, 1.5;
+const initial  = SIR(0.0, 5, 1, 0);
 ```
 
 Structure of potential infections and removals
@@ -147,7 +141,7 @@ activation of `𝒳` would immediately cause violation of conditioning);
 ```{julia}
 #| echo: false
 #| label: fig-introduction-01-key
-#| fig-cap: "`AbstractIncident`s with activated versions (activation leads to an error for  \
+#| fig-cap: "Inactivated and activated versions of various `AbstractIncident`s (activation leads to an error for  \
 #|           `NoFlyInfection`, `ExpungedInfection`, `KilledInfection` and `KilledRemoval`). \
 #|           Arrows from `AbstractInfection` incidents point to `infectee` time lines.      \
 #|           [`01-key`]"
@@ -222,21 +216,22 @@ set_default_plot_size(theme.figwidth, theme.figheight)
 {{< pagebreak >}}
 
 # Constructing the epidemic
-An epidemic can now be constructed as follows;
+An epidemic is constructed as follows;
 the epidemic
 `ev1 = CEvolution(initial, iv1)`
-starts at the `initial` state at process time \(0.0\) and then evolves
+starts at the `initial` state at process time \(0.0\),
+then evolves
 in process time 
-based on the various potential incidents
+using potential incidents
 held in the `Innovations`
 structure `iv1`. 
 @tbl-evolution tabulates the epidemic trajectory 
 `ev1 = CEvolution(initial, iv1)`
 up to time `duration=2.0`
-for initial state `initial` and a particular `Innovation` structure `iv1`.
+for initial state `initial` and `Innovation` structure `iv1`.
 ```{julia}
 #| label: tbl-evolution
-#| tbl-cap: CEvolution of an epidemic
+#| tbl-cap: \texttt{CEvolution} of an epidemic
 #| echo: false 
 ev1 = CEvolution(initial, iv1)
 
@@ -253,22 +248,22 @@ Plotting the epidemic
 We need graphical visualizations of
 simulation of the epidemic
 conditional on all activated removals being observed
-(denoting such activated removals by `C ≈ 𝒞`
-signifying "conditional removal");
+(denoting such activated removals by `C`
+signifying "conditional removal", displayed as `𝒞`);
 with the ultimate objective of deriving a perfect simulation under this conditioning.
-Note that the assumption of all activated removals being observed
-is idealized, but not entirely unrealistic.
+Note the debateable but not entirely unrealistic assumption that
+all activated removals are actually observed.
 
 The epidemic curve
 ------------------
 @fig-introduction-02-curves displays the epidemic curve together with 
 trajectories of removals and susceptibles.
-@fig-introduction-02-curves is also annotated at the two distinct epidemic curve peaks
+@fig-introduction-02-curves also displays annotations at the two distinct epidemic curve peaks
 of this particular simulation.
 ```{julia}
 #| echo: false
 #| label: fig-introduction-02-curves
-#| fig-cap: "Epidemic curve (with annotated peaks) together with monotonic \
+#| fig-cap: "Epidemic curve (annotated at peaks) together with monotonic \
 #|           trajectories of numbers of susceptibles and removals. [`02-curves`]"
 curves_template = plot(flow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
@@ -390,9 +385,8 @@ depict("introduction-05-incidents", new_figure(
     title="Incidents driving the epidemic")
 )
 ```
-
-Indicating activated incidents
-------------------------------
+Criteria to determine activation of incidents
+---------------------------------------------
 Only some of these incidents are actually activated by the construction:
 
  * _Infections_ (`I ≈ ℐ` and `P ≈ 𝒫`) must lie inside the infectivity zone with
@@ -803,7 +797,18 @@ Markdown.parse("""
 """)
 ```
 
+
 Package documentation
 =====================
-* `Gadfly`:       <http://gadflyjl.org/stable/>;
-* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.
+```{julia}
+#| label: software-links
+#| echo: false
+#| eval: true
+#| cache: false
+Markdown.parse("""
+| Software        | Link                                                  |
+|:----------------|:------------------------------------------------------|
+| `Gadfly`:       | <http://gadflyjl.org/stable/>;                        |
+| `PrettyTables`: | <https://ronisbr.github.io/PrettyTables.jl/stable/>.  |
+""")
+```

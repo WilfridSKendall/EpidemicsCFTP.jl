@@ -31,7 +31,7 @@ format:
     monofontoptions:
        - Scale=0.7
 
-jupyter:    julia-1.9
+jupyter:    julia-1.11
 ---
 
 ```{julia}

@@ -4,9 +4,7 @@ author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
 csl: /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
----
 
----
 toc: true
 
 date-format: "D MMMM YYYY"
@@ -15,10 +13,6 @@ papersize:  a4
 tbl-cap-location: top
 
 from: markdown+tex_math_single_backslash
-
-include-before-body:
-    - text: |
-        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
 
 format:
   html:
@@ -29,8 +23,11 @@ format:
     mainfont: "Times New Roman"
     monofont: "JuliaMono"
     monofontoptions:
-       - Scale=0.7
-jupyter:    julia-1.9
+        - Scale=0.7
+    include-in-header:
+        - "SIR.sty"
+
+jupyter:    julia-1.11
 ---
 
 
@@ -45,10 +42,10 @@ source = "production.qmd"
 #| eval: true
 #| cache: false 
 using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose ;
-import Markdown #, EpidemicsCFTP, EpidemicsUtilities
 ```
 
 # Set-up details and utilities
+
 Hidden cells load required modules, load theme, set up and establish graphics size and coordinates,
 and define labelling functions for \(y\)-axis.
 Overall simulation parameters are set as constants. 

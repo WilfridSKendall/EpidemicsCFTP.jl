@@ -2,6 +2,7 @@ ARCHIVE/
 ../python-SBC
 EpidemicsCFTP/
 EpidemicsUtilities/
+../Short Talk/
 
 animation/demo*
 image/introduction*
@@ -19,5 +20,6 @@ Manifest.toml
 *.kate-swp
 *.kilepr
 *.pdf
+*.png
 *.ps
 

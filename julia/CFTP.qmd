@@ -189,7 +189,7 @@ We now generate successive `CEvolution`s in algorithmic time,
 starting from _maximal_ `CEvolution`. @fig-CFTP-02-maxstepA
 and @fig-CFTP-02-maxstepB depict the first 
 $(SEQUENCE[end]) algorithmic time steps.
-Checks made an `LFE` and `NFZ` again.
+Checks made on `LFE` and `NFZ` again.
 """)
 ```
 

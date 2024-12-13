@@ -14,7 +14,7 @@ QUARTO_CACHE    ?=  --no-cache
 QUARTO_OPTIONS  :=  --csl=$(CSL) $(QUARTO_CACHE)
 #QUARTO_OPTIONS  :=  $(QUARTO_CACHE)
 
-JULIA           := $(HOME)/.local/bin/julia
+JULIA           := $(HOME)/.juliaup/bin/julia
 
 MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
@@ -50,7 +50,7 @@ install:
 # ====================
 # Animation as MPEG: see https://trac.ffmpeg.org/wiki/Slideshow
 movie: CFTP-demo.pdf
-	rm animate*.mp4
+	# rm animate*.mp4
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-a*.png' \
 		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-a.mp4
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-b*.png' \
@@ -63,7 +63,7 @@ movie: CFTP-demo.pdf
 		-vf tpad=stop_mode=clone:stop_duration=25 animate-e.mp4
 	# Now merge these videos
 	ffmpeg -f concat -i animate-list.txt -c copy animate.mp4
-	rm animate-*.mp4
+	# rm animate-*.mp4
 
 # ====================
 # Animation as GIF

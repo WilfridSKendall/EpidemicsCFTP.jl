@@ -35,8 +35,8 @@ Worked with `julia 1.9.2` but `quarto` issues. Need to change to `1.11.2`.
 
     - [x] `Notes-on-sampling.pdf` (no `julia` code! sets out programme for future parameter estimation. Useful to check basic `quarto` operation.)
 
-    - [ ] `production.pdf`==GOOD SO FAR!== but (a) need not to have separate YAML block for title;
-      (b) there is a LaTeX error: using style file instead of inline
+    - [x] `production.pdf`edited as follows  (a) not to have separate YAML block for title;
+      (b) there is a LaTeX error: using style file `SIR.sty` instead of inline
 
       ``````
       include-before-body:
@@ -44,10 +44,20 @@ Worked with `julia 1.9.2` but `quarto` issues. Need to change to `1.11.2`.
           	\newcommand{\SIR}{\operatorname{S-I-R}\xspace
       ``````
 
+    - [ ] `introduction.pdf`
+
+    - [ ] `check.pdf`
+
+    - [ ] `test.pdf`
+    
+    - [ ] `LFEandNFZ.pdf`
+    
+    - [ ] `CFTP.pdf`
+    
+    - [ ] `CFTP-demo.pdf`
+    
     - [ ] `movie`	
-
+    
     - [ ] `animate`
-
-    - [ ] ...
 
 - [ ] Study "todo" list in `Readme.pdf`.

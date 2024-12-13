@@ -13,12 +13,6 @@ tbl-cap-location: top
 
 from: markdown+tex_math_single_backslash
 
-include-before-body:
-    - text: |
-        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
-        \newcommand{\NOFLYZONE}{``no-fly zone"\xspace}
-        \newcommand{\LFE}{``last feasible epidemic"\xspace}
-
 format:
   html:
     code-fold: true
@@ -29,6 +23,8 @@ format:
     monofont: "JuliaMono"
     monofontoptions:
        - Scale=0.7
+    include-in-header:
+        - "SIR.sty"
 
 jupyter:    julia-1.11
 ---
@@ -84,7 +80,7 @@ const duration = 2.0
 const α, β     = 0.2, 1.5 
 const n₁       = 6  
 
-samplesize = 10000 ;
+samplesize     = 10000 ;
 ```
 
 ## Simulation and storage of results
@@ -200,7 +196,7 @@ display_simulation_results(data)
 
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(11\) independent \(Z\)-tests, no \(p\)-values are at \(0.01\) level or lower.
+In a sequence of \(11\) independent \(Z\)-tests, no \(p\)-values are at or below \(0.01\) level.
 :::
 
 ## An example using a larger population.
@@ -217,7 +213,7 @@ display_simulation_results(data)
 ```
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(21\) independent \(Z\)-tests there is just one \(p\)-value at \(0.01\) level or lower.
+In a sequence of \(21\) independent \(Z\)-tests there is just one \(p\)-value at or below \(0.01\) level.
 :::
 
 \newpage
@@ -237,7 +233,7 @@ display_simulation_results(data)
 
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at the edge of \(0.01\) level.
+In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at or below \(0.01\) level.
 :::
 
 
@@ -259,14 +255,13 @@ display_simulation_results(data)
 
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(63\) independent \(Z\)-tests, only one of the \(p\)-values is around or below level \(0.05\).
+In a sequence of \(47\) independent \(Z\)-tests, two of the \(p\)-values are at or below level \(0.01\).
 :::
 
 
 ::: {.callout-tip}
 ## Overall assessment
-In a total of \(110\) independent \(Z\)-tests, one of the \(p\)-values is around or below level \(0.01\),
-and one other is around or below level \(0.05\).
+In a total of \(110\) independent \(Z\)-tests, three of the \(p\)-values are at or below level \(0.01\).
 :::
 
 {{< pagebreak >}}
@@ -298,7 +293,17 @@ This script takes
 
 Package documentation
 =====================
-* `Gadfly`:       <http://gadflyjl.org/stable/>;
-* `PrettyTables`: <https://ronisbr.github.io/PrettyTables.jl/stable/>.
+```{julia}
+#| label: software-links
+#| echo: false
+#| eval: true
+#| cache: false
+Markdown.parse("""
+| Software        | Link                                                  |
+|:----------------|:------------------------------------------------------|
+| `Gadfly`:       | <http://gadflyjl.org/stable/>;                        |
+| `PrettyTables`: | <https://ronisbr.github.io/PrettyTables.jl/stable/>.  |
+""")
+```
 
 

@@ -44,9 +44,9 @@ Worked with `julia 1.9.2` but `quarto` issues. Need to change to `1.11.2`.
           	\newcommand{\SIR}{\operatorname{S-I-R}\xspace
       ``````
 
-    - [ ] `introduction.pdf`
+    - [x] `introduction.pdf`
 
-    - [ ] `check.pdf`
+    - [x] `check.pdf` though there are 3/110 significant discrepancies at 1% level!
 
     - [ ] `test.pdf`
     

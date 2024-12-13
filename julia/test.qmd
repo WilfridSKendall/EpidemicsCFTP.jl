@@ -13,12 +13,6 @@ tbl-cap-location: top
 
 from: markdown+tex_math_single_backslash
 
-include-before-body:
-    - text: |
-        \newcommand{\SIR}{\operatorname{S-I-R}\xspace}
-        \newcommand{\NFZ}{``no-fly zone"\xspace}
-        \newcommand{\LFE}{``last feasible epidemic"\xspace}
-
 format:
   html:
     code-fold: true
@@ -29,6 +23,8 @@ format:
     monofont: "JuliaMono"
     monofontoptions:
        - Scale=0.7
+    include-in-header:
+        - "SIR.sty"
 
 jupyter:    julia-1.11
 ---

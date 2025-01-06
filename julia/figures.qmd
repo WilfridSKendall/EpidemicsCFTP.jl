@@ -23,7 +23,7 @@ format:
     mainfont: "Times New Roman"
     monofont: "JuliaMono"
     monofontoptions:
-        - Scale=0.7
+       - Scale=0.7
     include-in-header:
         - "SIR.sty"
 
@@ -31,26 +31,41 @@ jupyter:    julia-1.11
 ---
 
 
+
 ```{julia}
 #| label: identify-source
 #| include: false
 #| tags: [parameters]
-source = "production.qmd"
+source = "figures.qmd"
 ```
+
 
 ```{julia}
-#| label: initialization
-#| echo: false
+#| include: false
 #| eval: true
-#| cache: false 
-using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, Markdown ;
+#| cache: false
+#| tags: [parameters]
+using EpidemicsCFTP, EpidemicsUtilities
+
+using Gadfly, Compose
+using DataFrames, PrettyTables
+
+import Markdown
 ```
 
-# Set-up details and utilities
+{{< pagebreak >}}
 
-Hidden cells load required modules, load theme, set up and establish graphics size and coordinates,
-and define labelling functions for \(y\)-axis.
-Overall simulation parameters are set as constants. 
+```{julia}
+#| include: false
+theme = create_theme(load_theme("config/theme.yml"))
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
+
+Construction of epidemics
+=========================
+Parameters: initial state and duration
+--------------------------------------
 ```{julia}
 #| label: parameters
 const duration   = 15 ;
@@ -59,310 +74,173 @@ const initial    = SIR(0.0, 4, 1, 0) ;
 const population = 5 ;
 ```
 
+Here are useful abbreviations for some imports from `EpidemicsCFTP`:
 ```{julia}
-#| label: theme
 #| echo: false
-theme = create_theme(load_theme("config/theme.yml")) ;
-
-gadfly_theme = Theme(
-    panel_fill=theme.blank,
-    default_color=theme.default,
-    background_color=theme.background,
-    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
-    minor_label_color=theme.legend, major_label_color=theme.legend,
-    major_label_font_size=8pt,     minor_label_font_size=6pt,
-    grid_line_width=0mm,
-)
-
-set_default_plot_size(theme.figwidth, theme.figheight) ;
-
-if population > MAXPOP
-  error("`population` exceeds `$(MAXPOP)`: modify code indexing time-lines!")
-end ;
-if initial.n > MAXPOP                                                                  
-    circlabels = ["[$i]" for i in 1:initial.n]                                                                                         
-else                                                                                    
-    circlabels = [string(Char(codepoint('①') + i - 1)) for i in 1:initial.n]                                                           
-end                                                                                     
-function timelinelabels1(i) 
-    (round(i) > 0 && i ≤ initial.n) ? circlabels[round(Int, i)] : "" 
-end ;                                                                             
-function timelinelabels2(i) 
-    (i ≤ initial.n) ? string(trunc(Int, i)) : ""
-end ;                                                                             
+labels   = [:AI  :AIF :I  :P  :R  :C]
+import EpidemicsCFTP: AI, AIF, I, P, R, C
+pretty_table(map(eval, labels), header=vec(labels), alignment = :l)
 ```
 
-It is convenient to import some selected abbreviations of types of incident.
+`EpidemicsUtilities` supplies some constants 
+used for the plotting parameter `select`, namely
 ```{julia}
-#| label: abbreviations
-import EpidemicsCFTP.abbreviations: AIF, R, C, I, P ;
+import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, 
+                        ELEMENTS, LFE, LFET, LFER, MOST, NFZ
 ```
 
+Unconditioned epidemic
+----------------------
+We work with an `Innovation`, used to generate an `Evolution` for an unconditioned epidemic.
 
-# Figure 1
-We first generate Figure 1.
 
+
+# Figure 3 of @ConnorKendall-2023
 **Caption in draft paper:** 
 "Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
 
-Here is the set of innovations, with epidemic effects tabulated in @tbl-evolution.
+We work with an `Innovation`, used to generate an `Evolution` for an unconditioned 
+epidemic, and illustrate the generating events
+
+We construct an `Innovation` and a corresponding `Evolution` as follows.
 ```{julia}
-#| label: set-of-innovations1
-#| echo: false
-innov_figure1 = Innovation(duration, 
-  AIF[I(1.0,2,5),  I(2.0,1,2),  I(3.0,1,2),  I(4.0,2,4),  I(6.0,3,4),  I(7.0,2,3),  I(8.0,1,2), 
-    I(8.0,4,5),  I(9.0,1,4),  I(11.0,2,4), I(14.5,3,5)], 
-  R[R(3.0,5),    R(5.0,1),    R(7.5,5),  R(13.0,3),   R(14.0,3)],  C[])
+infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),
+        I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
+#removals   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
+#cremovals  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
+removals    = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5),
+                R(3.5,1), R(6.5,4), R(8.0,3), R(12.0,5), R(13.0,5)]
+cremovals   = C[]
+uiv1 = Innovation(duration, infections, removals, cremovals)
 ```
-The incidents for the resulting epidemic evolution are illustrated in @fig-nodes1.
+The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follows:
 ```{julia}
-#| label: tbl-evolution
-#| tbl-cap: Table of data frame for evolution of the first epidemic
+uev1 = Evolution(initial, uiv1)
+```
+
+Here is a table of the evolution of the epidemic
+
+```{julia}
 #| echo: false 
-ev1 = Evolution(initial, innov_figure1)
-
-flow1 = table_trajectories1(duration, ev1.trajectory)
+uflow = table_trajectories1(duration, uev1.trajectory) ;
+header = [:t, :susceptibles, :infectives, :removals, :epidemic]
+Markdown.parse(pretty_table(String, uflow[:,header], 
+  header=header, tf=tf_markdown, alignment=[:l, :c, :c, :c, :c]))
 ```
 
 
 ```{julia}
 #| echo: false
-#| label: fig-nodes1
-#| fig-cap: "Illustration of nodes as used in Figure 1 of @ConnorKendall-2023. `[figure1-0]`"
-timelines = layer(flow1, yintercept=1:initial.n,
-    Geom.hline(style=:dot, size=0.25mm),
-    style(default_color=theme.scaffold))
-
-fig0 = plot(flow1,  x=:t, y=:empty, Geom.line(),
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n+0.25),
-    Scale.x_continuous(),
+#| label: fig-figure-3-0
+#| fig-cap: "Infections are denoted by yellow circles, with arrows pointing  \
+#|           upwards to target; removals are denoted by light brown circles. \
+#|                                                                           \
+#|           This is Figure 3a of @ConnorKendall-2023 `[figure-3-0.pdf]`." 
+axes_plot = plot(uflow, yintercept=1:initial.n,
+    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
     Guide.xlabel("Process time", orientation=:horizontal),
-    gadfly_theme
-    )
-    
-fig0 = push!(fig0, timelines)
+    style(default_color=theme.background),
+    Theme(
+        panel_fill=theme.blank,
+        default_color=theme.default,
+        background_color=theme.background,
+        major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+        minor_label_color=theme.legend, major_label_color=theme.legend,
+        major_label_font_size=8pt,      minor_label_font_size=6pt,
+        grid_line_width=0mm,
+)) ;
 
-fig_inc = deepcopy(fig0)
-fig_inc = push!(fig_inc,    
-    Scale.y_continuous(labels=timelinelabels1),
+push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))) ;
+
+lines_plot = new_figure(axes_plot,
+    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
     Guide.yticks(ticks=collect(1:(initial.n))),
-    Guide.ylabel("Time lines"),
-    )
+    Guide.ylabel("Time lines")) ;
 
-fig_nodes0 = deepcopy(fig_inc)
-fig_nodes0 = push!(fig_nodes0,
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innov_figure1; theme=theme)))
-    )
-depict("figure1-0", fig_nodes0, figdir="Figure")
-```
-
-@fig-figure1a illustrates the resulting epidemic in terms of infectious and removal zones,
-while 
-@fig-figure1b illustrates the corresponding epidemic, susceptible and removal trajectories.
-```{julia}
-#| echo: false
-#| label: fig-figure1a
-#| fig-cap: "@fig-nodes1 plus infectious and removal boundaries. Activated incidents have coloured       \
-#|           backgrounds and thicker line-widths. Epidemic/removal regions are coloured tan/light-brown. \
-#|           This is a candidate for Figure 1a of @ConnorKendall-2023. `[figure1a]`"
-evolution1 = Evolution(initial, innov_figure1)
-
-lz2b = layer(flow1, x=:t, y=:removals, Geom.step,
-    style(line_width=theme.boundary, default_color=theme.colour(R)))
-lz4 = layer(flow1, x=:t, y=:epidemic, Geom.step,
-    style(line_width=theme.trail, default_color=theme.colour(I)))
-lz5 = layer(flow1, x=:t, y=:population, Geom.line,
-    style(line_width=theme.trail, default_color=theme.scaffold))
-
-flow1a = table_trajectories2(flow1, theme=theme) ;
-ll6 = layer(flow1a, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
-    alpha=[theme.opacity], style(default_color=theme.colour(I)))
-ll7 = layer(flow1a, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
-    alpha=[2theme.opacity], style(default_color=theme.colour(R)))
-
-fig_inc1 = deepcopy(fig_inc)
-
-fig_inc1 = push!(fig_inc1,   
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_activated_elements(initial, evolution1.history, theme=theme)))
-    )
-fig_inc1 =  push!(fig_inc1,
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innov_figure1; theme=theme)))
-    )
-
-
-fig_inc1 = push!(fig_inc1, lz4, lz2b)
-fig_inc1 = push!(fig_inc1, ll6, ll7)    
-
-draftfigure1a = deepcopy(fig_inc1)
-
-depict("figure1a", draftfigure1a, figdir="Figure")
+depict("figure-3-0", new_figure(
+    draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
+        select=ELEMENTS),
+        title="Incidents determining the unconditioned epidemic"),
+    figdir="Figure"
+)
 ```
 
 ```{julia}
 #| echo: false
-#| label: fig-figure1b
-#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line),        \
-#|           removals (brown dashed line).                                                           \
-#|           This is a candidate for Figure 1b of @ConnorKendall-2023. `[figure1b]`"  
-
-fig_traj = deepcopy(fig0)
-fig_traj = push!(fig_traj, Scale.y_continuous(labels=timelinelabels2),
-    Guide.ylabel("Numbers of individuals"),
-    Guide.title("Epidemic curve with removals and susceptibles")
-    )
-draftfigure1a = deepcopy(fig0)
-
-ll0 = layer(flow1, x=:t, y=:empty, Geom.line,
-    style(line_width=2theme.trail, default_color=theme.scaffold))
-ll1 = layer(flow1, x=:t, y=:infectives, Geom.step,
-    style(line_width=theme.trail,  default_color=theme.colour(I)))
-ll2 = layer(flow1, x=:t, y=:removals, Geom.step,
-    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
-ll3 = layer(flow1[flow1.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
-    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
-
-figure_1b = deepcopy(fig_traj)
-push!(figure_1b, ll0, ll3, ll2, ll1)
-
-depict("figure1b", figure_1b, figdir="Figure")
+#| label: fig-figure-3-1
+#| fig-cap: "Infections (yellow circles) in the unconditioned epidemic are        \
+#|           realised whenever an infection target is the least uninfected        \
+#|           line at the relevant time.                                           \
+#|           Removals (light brown circles) are realized whenever they occur      \
+#|           in the infected region; if so then the lowest infected line          \
+#|           incurs a removal (solid purple disk if not coincident with removal). \
+#|                                                                                \
+#|           This is Figure 3b of @ConnorKendall-2023 `[figure-3-1.pdf]`." 
+depict("figure-3-1", new_figure(
+    draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
+        select=MOST),
+        title="Evolution of the unconditioned epidemic"),
+    figdir="Figure"
+)
 ```
 
-\newpage
+# Figure 4 of @ConnorKendall-2023
+**Caption in draft paper:** 
+"Graphical representation of _conditioned_ \(\SIR\) epidemic with added LFE and NF."
 
-# Figure 3
-We now generate Figure 3.
-
-Here is the set of innovations:
+We construct an adapted `Innovation` and a corresponding `CEvolution` as follows.
+The No-Fly Zone (NFZ) and Last Feasible Epidemic (LFE) are computed
+based on the supplied `Innovation` (it would normally computed as part of an
+update of the `CEvolution` using a further `Innovation`). The logic of the
+accept/reject constituent of the updating procedure is that LFE infections are
+retained in the update unless superseded by a new and viable subsequent
+infection supplied
+by the further `Innovation`. Additionally new and viable 
+infections are discarded if otherwise they would infect the NFZ, since otherwise they would trigger activation of a removal which had not been conditioned to occur.
 ```{julia}
-#| echo: false
-#| label: set-of-innovations2
-innov_figure3 = Innovation(duration, 
-  AIF[I(0.5,2,5),I(2.0,1,2),  I(2.5,3,4),I(3.0,1,3),  I(5.0,2,4),  I(5.5,3,4),
-    I(6.0,2,3),  I(8.0,2,5),  I(9.5,1,3),I(10.0,4,5), I(11.0,4,5), I(12.5,3,5)],
-  R[R(1.0,5),   R(2.0,4),  R(4.0,4),  R(7.0,5)],
-  C[C(3.5,1), C(6.5,4),C(7.0,3),  C(12.0,5), C(13.0,5)])
-```
-The effect of these is tabulated in @tbl-table3
-and zones are illustrated in @fig-figure3-0.
-
-
-```{julia}
-#| label: tbl-table3
-#| tbl-cap: Table of data frame for evolution of the second epidemic
-#| echo: false
-evolution3 = Evolution(initial, innov_figure3)
-
-
-flow3 = table_trajectories1(duration, evolution3.trajectory) ;
-
-
-lx2 = layer(flow3, x=:t, y=:removals, Geom.step,
-    style(line_width=theme.boundary, default_color=theme.colour(R)))
-lx4 = layer(flow3, x=:t, y=:epidemic, Geom.step,
-    style(line_width=theme.trail, default_color=theme.colour(I)))
-lx5 = layer(flow3, x=:t, y=:population, Geom.line,
-    style(line_width=theme.trail, default_color=theme.scaffold))
-
-flow3
+infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),
+        I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
+removals   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
+cremovals  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
+civ1 = Innovation(duration, infections, removals, cremovals)
+cevx = CEvolution(initial, civ1)
+cev1 = CEvolution(cevx, civ1)
 ```
 
 ```{julia}
 #| echo: false
-#| label: fig-figure3-0
-#| fig-cap: "Figure 3 of @ConnorKendall-2023: nodes used in this figure. `[figure3-0]`"
-fig_nodes3 = deepcopy(fig_inc)
-fig_nodes3 = push!(fig_nodes3,
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innov_figure3; theme=theme)))
-    )
-depict("figure3-0", fig_nodes3, figdir="Figure")
+#| label: fig-figure-4
+#| fig-cap: "The conditional epidemic evolution is accompanied here by         \
+#|           the Last Feasible Epidemic (the red _slowest_ epidemic which does \
+#|           not violate constraints imposed by conditioned removals);         \
+#|           the No-Fly Zone (the blue-grey region which must not be infected  \
+#|           if the _unconditioned_ removals are not to be activated).         \      
+#|           These are relevant when seeking to update the current evolution.  \
+#|                                                                             \
+#|           This is Figure 4 of @ConnorKendall-2023 `[figure-4.pdf]`."
+depict("figure-4", new_figure(
+    draw_evolution!(deepcopy(lines_plot), cev1, duration, theme=theme, 
+        select=MOST | LFE | NFZ),
+        title="Conditioned epidemic with Last Feasible Epidemic and No-Fly Zone"),
+    figdir="Figure"
+)
 ```
 
-@ConnorKendall-2023 Figure 3 is made up of (boundaries and zones) @fig-figure3a
-and (trajectories) @fig-figure3b.
-
-
-
-
-```{julia}
-#| echo: false
-#| label: fig-figure3a
-#| fig-cap: "@fig-figure3-0 plus epidemic and removal boundaries. Activated incidents have \
-#|           coloured backgrounds and thicker line-widths. Epidemic/removal regions are                   \
-#|           coloured tan/light-brown.                                                                    \
-#|           This is a candidate for Figure 3a of @ConnorKendall-2023. `[figure3a]`" 
-
-flow3a = table_trajectories2(flow3, theme=theme) ;
-ll6 = layer(flow3a, x=:t, ymin=:removals, ymax=:epidemic, Geom.ribbon,
-    alpha=[theme.opacity], style(default_color=theme.colour(I)))
-ll7 = layer(flow3a, x=:t, ymin=:empty, ymax=:removals, Geom.ribbon,
-    alpha=[2theme.opacity], style(default_color=theme.colour(R)))
-
-
-fig_inc3 = deepcopy(fig_inc)
-
-fig_inc3 = push!(fig_inc3,   
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_activated_elements(initial, evolution3.history, theme=theme)))
-    )
-fig_inc3 =  push!(fig_inc3,
-    Guide.annotation(compose(context(),
-        EpidemicsUtilities.draw_elements(innov_figure3; theme=theme)))
-    )
-
-    
-fig_inc3 = push!(fig_inc3, lx2, lx4)
-fig_inc3 = push!(fig_inc3, ll6, ll7)    
-
-draftfigure3a = deepcopy(fig_inc3)
-
-    
-depict("figure3a", draftfigure3a, figdir="Figure")
-```
-
-```{julia}
-#| echo: false
-#| label: fig-figure3b
-#| fig-cap: "Trajectories of susceptibles (orange solid line), infectives (grey dashed line),        \
-#|           removals (brown dashed line).                                                           \
-#|           This is a candidate for Figure 3b of @ConnorKendall-2023. `[figure3b]` " 
-ll1d = layer(flow3, x=:t, y=:infectives, Geom.step,
-    style(line_width=theme.trail,  default_color=theme.colour(I)))
-ll2d = layer(flow3, x=:t, y=:removals, Geom.step,
-    style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R)))
-ll3d = layer(flow3, x=:t, y=:susceptibles, Geom.step,
-    style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold))
-    
-
-figure_3b = deepcopy(fig_traj)
-push!(figure_3b, ll3d, ll2d, ll1d)
-
-depict("figure3b", figure_3b, figdir="Figure")
-```
-
-
-References {.unnumbered}
-==========
-
-::: {#refs}
-:::
 
 {{< pagebreak >}}
 
-\appendix
-
-
 Appendices {.unnumbered}
 ==========
+
 
 Software versions
 =================
 Here is a table of software used in the following computations:
 ```{julia}
-#| label: software-table
 #| echo: false
 #| eval: true
 #| cache: false
@@ -373,14 +251,16 @@ owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
                         "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
-| Software                  | Version                       |  Branch                  |
-|:--------------------------|:------------------------------|-------------------------:|
-|Quarto script `$(source)`  |`$(ownversion)`                | `$(ownbranch)`           |
-|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`| `$(EpidemicsUtilities.branch)`|
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     | `$(EpidemicsCFTP.branch)`|
-|Running under `julia`       | `$VERSION`                   | ---                            |
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
 """)
 ```
+
 
 Package documentation
 =====================
@@ -390,10 +270,13 @@ Package documentation
 #| eval: true
 #| cache: false
 Markdown.parse("""
-| Software      | Link                                                 |
-|:--------------|:-----------------------------------------------------|
-| `Gadfly`:     | <http://gadflyjl.org/stable/>;                       |
-| `Compose`:    | <https://docs.juliahub.com/General/Compose/stable/>; |
-| `DataFrames`: | <https://dataframes.juliadata.org/stable/>.          |
+| Software        | Link                                                  |
+|:----------------|:------------------------------------------------------|
+| `Gadfly`:       | <http://gadflyjl.org/stable/>;                        |
+| `Compose`:      | <https://docs.juliahub.com/General/Compose/stable/>;  |
+| `DataFrames`:   | <https://dataframes.juliadata.org/stable/>;           |
+| `PrettyTables`: | <https://ronisbr.github.io/PrettyTables.jl/stable/>.  |
 """)
 ```
+
+

@@ -1,4 +1,5 @@
-using Documenter, DocumenterLaTeX, EpidemicsCFTP
+using Documenter, EpidemicsCFTP
+# using Documenter, DocumenterLaTeX, EpidemicsCFTP
 import Random: AbstractRNG, SamplerTrivial # Is this necessary?!
 import Distributions
 import Distributions: Categorical
@@ -8,7 +9,8 @@ makedocs(;
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",
     sitename="EpidemicsCFTP",
 ##
-    format=DocumenterLaTeX.LaTeX(platform="none"),
+    format=Documenter.LaTeX(platform="none"),
+    # format=DocumenterLaTeX.LaTeX(platform="none"), # Deprecated!
 ##
 #     pages=[
 #         "Introduction"            => "index.md",

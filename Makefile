@@ -4,7 +4,7 @@ LOCATION   := $(shell pwd)
 MODULE     := $(notdir $(LOCATION))
 
 GIT        := /usr/bin/git
-JULIA      := $(HOME)/.julia/julia-current/bin/julia
+JULIA      := $(HOME)/.juliaup/bin/julia
 
 PYTHON 	:= /usr/bin/python2
 export PYTHONPATH=/home/wilfrid/lib/python
@@ -128,8 +128,7 @@ docs/build/index.md: $(src_files) $(doc_files) $(doc_images)
 docs/build/$(MODULE).tex: $(doc_files) $(src_files) $(doc_images)
 	@$(JULIA) --color=yes docs/make_latex.jl
 
-# Needs DocumenterLaTeX for julia
-#       pygments for python
+# Needs pygments for python
 docs/build/$(MODULE).pdf: docs/build/$(MODULE).tex
 	cd docs/build ; \
 	latexmk -f -interaction=nonstopmode -view=none -lualatex -shell-escape $(notdir $<)

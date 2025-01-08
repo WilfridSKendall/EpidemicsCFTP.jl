@@ -91,29 +91,18 @@ import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC,
 
 Unconditioned epidemic
 ----------------------
-We work with an `Innovation`, used to generate an `Evolution` for an unconditioned epidemic.
-
-
-
-# Figure 3 of @ConnorKendall-2023
-**Caption in draft paper:** 
-"Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
 
 We work with an `Innovation`, used to generate an `Evolution` for an unconditioned 
-epidemic, and illustrate the generating events
-
-We construct an `Innovation` and a corresponding `Evolution` as follows.
+epidemic.
+Construct an `Innovation` and a corresponding `Evolution` as follows.
 ```{julia}
-infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),
+infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),#
         I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
-#removals   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
-#cremovals  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
-removals    = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5),
-                R(3.5,1), R(6.5,4), R(8.0,3), R(12.0,5), R(13.0,5)]
-cremovals   = C[]
-uiv1 = Innovation(duration, infections, removals, cremovals)
+removals   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
+cremovals  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
+uiv1 = Innovation(population, infections, removals ∪ map(R, cremovals))
 ```
-The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follows:
+The `Evolution` of the corresponding  (_unconditioned_) epidemic is:
 ```{julia}
 uev1 = Evolution(initial, uiv1)
 ```
@@ -129,13 +118,23 @@ Markdown.parse(pretty_table(String, uflow[:,header],
 ```
 
 
+{{< pagebreak >}}
+
+
+Draft of Figure 3 of @ConnorKendall-2023
+========================================
+We first graph the generating incidents corresponding to the unconditional epidemic (`uev1`).
+
+**Caption in draft paper:** 
+"Graphical representation of unconditioned \(\SIR\) epidemic. There are five time-lines."
+
 ```{julia}
 #| echo: false
 #| label: fig-figure-3-0
-#| fig-cap: "Infections are denoted by yellow circles, with arrows pointing  \
-#|           upwards to target; removals are denoted by light brown circles. \
-#|                                                                           \
-#|           This is Figure 3a of @ConnorKendall-2023 `[figure-3-0.pdf]`." 
+#| fig-cap: "`[figure-3-0.pdf]` Infections are denoted by yellow circles,   \
+#|           with arrows pointing upwards to target; removals are denoted by \
+#|           light brown circles                                             \
+#|           [Figure 3a, @ConnorKendall-2023]." 
 axes_plot = plot(uflow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
     Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
@@ -172,14 +171,14 @@ depict("figure-3-0", new_figure(
 ```{julia}
 #| echo: false
 #| label: fig-figure-3-1
-#| fig-cap: "Infections (yellow circles) in the unconditioned epidemic are        \
-#|           realised whenever an infection target is the least uninfected        \
-#|           line at the relevant time.                                           \
-#|           Removals (light brown circles) are realized whenever they occur      \
-#|           in the infected region; if so then the lowest infected line          \
-#|           incurs a removal (solid purple disk if not coincident with removal). \
-#|                                                                                \
-#|           This is Figure 3b of @ConnorKendall-2023 `[figure-3-1.pdf]`." 
+#| fig-cap: "`[figure-3-1.pdf]` Infections (yellow circles) in the          \
+#|           unconditioned epidemic are realised whenever an infection       \
+#|           target is the least uninfected line at the relevant time.       \
+#|           Removals (light brown circles) are realized whenever they       \
+#|           occur in the infected region; if so then the lowest infected    \
+#|           line incurs a removal, indicated by a solid purple disk if not  \
+#|           coincident with the generating removal incident                 \
+#|           [Figure 3b, @ConnorKendall-2023]." 
 depict("figure-3-1", new_figure(
     draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
         select=MOST),
@@ -188,7 +187,12 @@ depict("figure-3-1", new_figure(
 )
 ```
 
-# Figure 4 of @ConnorKendall-2023
+{{< pagebreak >}}
+
+Draft of Figure 4 of @ConnorKendall-2023
+========================================
+We now graph the generating incidents corresponding to a conditional form of the epidemic (`cev1`).
+
 **Caption in draft paper:** 
 "Graphical representation of _conditioned_ \(\SIR\) epidemic with added LFE and NF."
 
@@ -201,12 +205,9 @@ retained in the update unless superseded by a new and viable subsequent
 infection supplied
 by the further `Innovation`. Additionally new and viable 
 infections are discarded if otherwise they would infect the NFZ, since otherwise they would trigger activation of a removal which had not been conditioned to occur.
+
 ```{julia}
-infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),
-        I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
-removals   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
-cremovals  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
-civ1 = Innovation(duration, infections, removals, cremovals)
+civ1 = Innovation(population, infections, removals, cremovals)
 cevx = CEvolution(initial, civ1)
 cev1 = CEvolution(cevx, civ1)
 ```
@@ -214,14 +215,15 @@ cev1 = CEvolution(cevx, civ1)
 ```{julia}
 #| echo: false
 #| label: fig-figure-4
-#| fig-cap: "The conditional epidemic evolution is accompanied here by         \
-#|           the Last Feasible Epidemic (the red _slowest_ epidemic which does \
-#|           not violate constraints imposed by conditioned removals);         \
-#|           the No-Fly Zone (the blue-grey region which must not be infected  \
-#|           if the _unconditioned_ removals are not to be activated).         \      
-#|           These are relevant when seeking to update the current evolution.  \
-#|                                                                             \
-#|           This is Figure 4 of @ConnorKendall-2023 `[figure-4.pdf]`."
+#| fig-cap: "`[figure-4.pdf]` The conditional epidemic evolution is           \
+#|           accompanied here by the Last Feasible Epidemic (the red          \
+#|           _slowest_ epidemic which does not violate constraints imposed by \
+#|           conditioned removals); the No-Fly Zone (the blue-grey region     \
+#|           which must not be infected if the _unconditioned_ removals are   \      
+#|           not to be activated). These are relevant when seeking to update  \
+#|           the current evolution, though NFZ must be recomputed using new   \
+#|           removals and infections                                          \
+#|           [Figure 4, @ConnorKendall-2023]."
 depict("figure-4", new_figure(
     draw_evolution!(deepcopy(lines_plot), cev1, duration, theme=theme, 
         select=MOST | LFE | NFZ),
@@ -230,8 +232,148 @@ depict("figure-4", new_figure(
 )
 ```
 
+It should be noted that the NFZ has influence on which of the infections
+supplied by the _previous_ innovation are to be retained, 
+while the LFE signals
+which of the infections in the _next_ evolution might be perpetuated and 
+thus retained in a future evolution.
+
 
 {{< pagebreak >}}
+
+Draft of Figure 5 of @ConnorKendall-2023
+========================================
+We now consider the effect of updating the removals.
+
+```{julia}
+infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),
+        I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
+newremovals   = R[R(0.8,2), R(1.5,3), R(3.2,4), R(6.0,5), R(8.5,5)]
+newcremovals  = C[C(3.5,3), C(6.5,3), C(8.0,4), C(12.0,5), C(13.0,5)]
+civ2a      = Innovation(population, infections, newremovals, newcremovals)
+cev2x      = CEvolution(initial, civ2a)
+cev2       = CEvolution(cev2x, civ2a) ;
+```
+
+
+
+```{julia}
+#| echo: false
+#| label: fig-figure-5
+#| fig-cap: "`[figure-5.pdf]` The conditional epidemic evolution is           \
+#|           now updated by removing (inactivated) Removals and updating      \
+#|            targets of some CRemovals                                       \
+#|           [Figure 5, @ConnorKendall-2023]."
+depict("figure-5", new_figure(
+    draw_evolution!(deepcopy(lines_plot), cev2, duration, theme=theme, 
+        select=MOST | LFE | NFZ),
+        title="Conditioned epidemic with Removals and CRemovals updated"),
+    figdir="Figure"
+)
+```
+
+{{< pagebreak >}}
+
+
+Epidemic trajectory:  
+```{julia}
+#| echo: false
+traj = [0.0] ∪ [x.t for x in cev2.history if x isa AIF]
+pretty_table(transpose(traj),
+    header=[n for n in range(1,length(traj))],
+    row_label_column_title="Timeline"
+    )
+```
+
+Epidemic LFE (SBC calculates
+`(5, 11.00), (4, 5.50), (3, 3.00), (2, 2.00), (1, 0.00)`):
+```{julia}
+#| echo: false
+jumps = [0.0] ∪ [z.t for z in cev2.LFE if z isa AIF]
+pretty_table(transpose(jumps); 
+    header=range(1,length(jumps)),
+    row_labels=["LFE infection time"],
+    row_label_column_title="Timeline")
+```
+
+Epidemic NFZ (SBC calculates
+`(5, 8.50), (4, 4.00), (3, 2.50), (2, 0.80), (1, -\infty)`):
+```{julia}
+#| echo: false
+pretty_table(transpose(cev2.NFZ); 
+    header=[n for n in range(1,length(cev3.NFZ))],
+    row_labels=["NFZ terminus times"],
+    row_label_column_title="Timeline"
+    )
+```
+
+
+
+{{< pagebreak >}}
+
+Draft of Figure 6 of @ConnorKendall-2023
+========================================
+Finally we update the infections.
+```{julia}
+perpetuated    = [P(10.00,4,5), P(5.00,2,4), P(3.00,1,3), P(2.00,1,2)]
+new_infections = [I(9.00,4,5), I(7.20,4,5), I(7.00,3,4), I(4.20,3,4),
+    I(2.20,4,5), I(1.50,1,2), I(1.00,2,3), I(0.50,1,2)]
+
+civ3 = Innovation(population, new_infections, newremovals, newcremovals)
+cev3 = CEvolution(cev2, civ3) ;
+```
+
+
+```{julia}
+#| echo: false
+#| label: fig-figure-6
+#| fig-cap: "`[figure-6.pdf]` The conditional epidemic evolution is           \
+#|           completed by proposing new infections (some old infections       \
+#|           perpetuated, some new infections violate NFZ so not admitted)    \
+#|           [Figure 6, @ConnorKendall-2023]."
+depict("figure-6", new_figure(
+    draw_evolution!(deepcopy(lines_plot), cev3, duration, theme=theme, 
+        select=MOST | LFE | NFZ),
+        title="Conditioned epidemic with Infections updated"),
+    figdir="Figure"
+)
+```
+
+
+{{< pagebreak >}}
+
+Epidemic trajectory (SBC calculates
+`(1, 0.00), (2, 1.50), (3, 3.00), (4, 4.20), (5, 9.00)`):  
+```{julia}
+#| echo: false
+traj = [0.0] ∪ [x.t for x in cev3.history if x isa AIF]
+pretty_table(transpose(traj),
+    header=[n for n in range(1,length(traj))],
+    row_label_column_title="Timeline"
+    )
+```
+
+Epidemic LFE (SBC calculates  
+`(5, 10.00), (4, 7.00), (3, 3.00), (2, 2.00), (1, 0.00)`):  
+```{julia}
+#| echo: false
+jumps = [0.0] ∪ [z.t for z in cev3.LFE if z isa AIF]
+pretty_table(transpose(jumps); 
+    header=range(1,length(jumps)),
+    row_labels=["LFE infection time"],
+    row_label_column_title="Timeline")
+```
+
+Epidemic NFZ (SBC calculates
+`(5, 8.00), (4, 3.20), (3, 1.50), (2, 1.00), (1, -\infty)`):  
+```{julia}
+#| echo: false
+pretty_table(transpose(cev3.NFZ); 
+    header=[n for n in range(1,length(cev3.NFZ))],
+    row_labels=["NFZ terminus times"],
+    row_label_column_title="Timeline"
+    )
+```
 
 Appendices {.unnumbered}
 ==========

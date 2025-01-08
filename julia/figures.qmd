@@ -281,6 +281,7 @@ Epidemic trajectory:
 traj = [0.0] ∪ [x.t for x in cev2.history if x isa AIF]
 pretty_table(transpose(traj),
     header=[n for n in range(1,length(traj))],
+    row_labels=["Infection time"],
     row_label_column_title="Timeline"
     )
 ```
@@ -301,7 +302,7 @@ Epidemic NFZ (SBC calculates
 ```{julia}
 #| echo: false
 pretty_table(transpose(cev2.NFZ); 
-    header=[n for n in range(1,length(cev3.NFZ))],
+    header=[n for n in range(1,length(cev2.NFZ))],
     row_labels=["NFZ terminus times"],
     row_label_column_title="Timeline"
     )
@@ -349,6 +350,7 @@ Epidemic trajectory (SBC calculates
 traj = [0.0] ∪ [x.t for x in cev3.history if x isa AIF]
 pretty_table(transpose(traj),
     header=[n for n in range(1,length(traj))],
+    row_labels=["Infection time"],
     row_label_column_title="Timeline"
     )
 ```

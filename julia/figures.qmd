@@ -96,8 +96,8 @@ We work with an `Innovation`, used to generate an `Evolution` for an uncondition
 epidemic.
 Construct an `Innovation` and a corresponding `Evolution` as follows.
 ```{julia}
-infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),#
-        I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
+infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(4.5,2,3), 
+        I(5.0,2,4), I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
 removals   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
 cremovals  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
 uiv1 = Innovation(population, infections, removals ∪ map(R, cremovals))
@@ -107,7 +107,12 @@ The `Evolution` of the corresponding  (_unconditioned_) epidemic is:
 uev1 = Evolution(initial, uiv1)
 ```
 
-Here is a table of the evolution of the epidemic
+Note that we have not added any removals which would turn out to sit
+on the removed portion of their timeline, since these will not be activated
+nor influence dynamics under updating of the epidemic conditional on
+prescribed removals.
+
+Here is a table of the evolution of the epidemic:
 
 ```{julia}
 #| echo: false 
@@ -212,6 +217,21 @@ cevx = CEvolution(initial, civ1)
 cev1 = CEvolution(cevx, civ1)
 ```
 
+Table of various aspects of the epidemic:
+```{julia}
+#| echo: false
+cev  = cev1
+traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
+jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
+pretty_table(
+    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
+    header=[n for n in range(1,length(traj))],
+    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
+    row_label_column_title="Timeline"
+    )
+```
+
+
 ```{julia}
 #| echo: false
 #| label: fig-figure-4
@@ -231,31 +251,6 @@ depict("figure-4", new_figure(
     figdir="Figure"
 )
 ```
-
-Table of various aspects of the epidemic 
-(**note disagreement concerning LFE timeline 3**):
-
-* NFZ (SBC calculates
-`(5, 7.00), (4, 4.00), (3, 2.50), (2, -\infty), (1, -\infty)`),
-* epidemic trajectory,
-* LFE (SBC calculates
-`(5, 11.00), (4, 5.50), (3, 4.50), (2, 2.00), (1, 0.00)`).
-
-
-
-```{julia}
-#| echo: false
-cev  = cev1
-traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
-jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
-pretty_table(
-    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
-    header=[n for n in range(1,length(traj))],
-    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
-    row_label_column_title="Timeline"
-    )
-```
-
 
 Note that NFZ and LFE are calculated anew at each update, _after_ updating the CRemoval marks and re-sampling the non-activated Removals.
 The NFZ is used to determine which of the infections
@@ -288,6 +283,21 @@ cev2       = CEvolution(cev2x, civ2a) ;
 
 
 
+Table of various aspects of the epidemic:
+```{julia}
+#| echo: false
+cev  = cev2
+traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
+jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
+pretty_table(
+    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
+    header=[n for n in range(1,length(traj))],
+    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
+    row_label_column_title="Timeline"
+    )
+```
+
+
 ```{julia}
 #| echo: false
 #| label: fig-figure-5
@@ -303,33 +313,9 @@ depict("figure-5", new_figure(
 )
 ```
 
-{{< pagebreak >}}
-
-
-Table of various aspects of the epidemic:
-
-* NFZ (SBC calculates
-`(5, 8.50), (4, 4.00), (3, 2.50), (2, 0.80), (1, -\infty)`),
-* epidemic trajectory,
-* LFE (SBC calculates
-`(5, 11.00), (4, 5.50), (3, 3.00), (2, 2.00), (1, 0.00)`.
-
-
-```{julia}
-#| echo: false
-cev  = cev2
-traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
-jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
-pretty_table(
-    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
-    header=[n for n in range(1,length(traj))],
-    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
-    row_label_column_title="Timeline"
-    )
-```
-
 
 {{< pagebreak >}}
+
 
 Draft of Figure 6 [@ConnorKendall-2023]
 =======================================
@@ -345,6 +331,20 @@ new_infections = [I(9.00,4,5), I(7.20,4,5), I(7.00,3,4), I(4.20,3,4),
 
 civ3 = Innovation(population, new_infections, newremovals, newcremovals)
 cev3 = CEvolution(cev2, civ3) ;
+```
+
+Table of various aspects of the epidemic:
+```{julia}
+#| echo: false
+cev  = cev3
+traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
+jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
+pretty_table(
+    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
+    header=[n for n in range(1,length(traj))],
+    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
+    row_label_column_title="Timeline"
+    )
 ```
 
 
@@ -367,37 +367,13 @@ depict("figure-6", new_figure(
 {{< pagebreak >}}
 
 
-Table of various aspects of the epidemic:
-
-* NFZ (SBC calculates
-`(5, 8.00), (4, 3.20), (3, 1.50), (2, 1.00), (1, -\infty)`),
-* epidemic trajectory (SBC calculates
-`(1, 0.00), (2, 1.50), (3, 3.00), (4, 4.20), (5, 9.00)`),
-* LFE (SBC calculates
-`(5, 10.00), (4, 7.00), (3, 3.00), (2, 2.00), (1, 0.00)`.
-
-
-```{julia}
-#| echo: false
-cev  = cev3
-traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
-jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
-pretty_table(
-    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
-    header=[n for n in range(1,length(traj))],
-    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
-    row_label_column_title="Timeline"
-    )
-```
-
 Draft of Figure 7 [@ConnorKendall-2023]
 =======================================
-CFTP depends on examination of updates started at maximal ("top") and minimal ("bottom") states,
-which we illustrate here. (Note that it might be better to use "maximal" or, even better, "fastest"
-instead of "bottom", and "minimal" or "slowest" instead of "top".)
+CFTP depends on examination of updates started at maximal ("fast") and minimal ("slow") states,
+which we illustrate here.
 
 **Caption in draft paper:** 
-"Representation of top and bottom states, \(E^\text{bot}\) and \(E^\text{top}\)."
+"Representation of fastest and slowest states, \(E^\text{fast}\) and \(E^\text{slow}\)."
 
 Here it is useful to ensure the correct well-ordering of the set of all incidents
 (ordering first by time, and then by ensuring that infections have priority over removals).
@@ -452,17 +428,18 @@ depict("figure-7b", new_figure(
 :::
 
 
-Figure 7(a): bottom state \(E^\text{bot}\)
-------------------------------------------
-In the "bottom" or fastest state the epidemic proceeds at the fastest possible speed,
+Figure 7(a): fastest state \(E^\text{fast}\):
+: In the fastest state the epidemic proceeds at the fastest possible speed,
 so all timelines are infected immediately.
 
-Figure 7(b): top state \(E^\text{top}\)
----------------------------------------
-In the "top" or slowest
+Figure 7(b): slowest state \(E^\text{slow}\):
+: In the slowest
 state the epidemic proceeds at the slowest possible speed compatible with all conditioned removals
 actually happening.
 
+
+
+{{< pagebreak >}}
 
 Draft of Figure 8 [@ConnorKendall-2023]
 =======================================
@@ -494,7 +471,7 @@ cevsmall = Evolution(initial, civsmall)
 #| echo: false
 #| label: fig-figure-8
 #| fig-cap: "`[figure-8.pdf]` A conditional epidemic in which all \
-#|           activated infections occur before time 1.0,          \
+#|           activated infections occur before time 3.0,          \
 #|           before smallest observed removal time.               \
 #|           [Figure 8, @ConnorKendall-2023]."
 depict("figure-8", new_figure(

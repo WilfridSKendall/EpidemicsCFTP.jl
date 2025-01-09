@@ -131,9 +131,9 @@ We first graph the generating incidents corresponding to the unconditional epide
 ```{julia}
 #| echo: false
 #| label: fig-figure-3-0
-#| fig-cap: "`[figure-3-0.pdf]` Infections are denoted by yellow circles,   \
-#|           with arrows pointing upwards to target; removals are denoted by \
-#|           light brown circles                                             \
+#| fig-cap: "`[figure-3-0.pdf]` Infections are denoted by light orange       \
+#|           circles, with arrows pointing upwards to target; removals are   \
+#|           denoted by light brown circles                                  \
 #|           [Figure 3a, @ConnorKendall-2023]." 
 axes_plot = plot(uflow, yintercept=1:initial.n,
     Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
@@ -171,13 +171,13 @@ depict("figure-3-0", new_figure(
 ```{julia}
 #| echo: false
 #| label: fig-figure-3-1
-#| fig-cap: "`[figure-3-1.pdf]` Infections (yellow circles) in the          \
+#| fig-cap: "`[figure-3-1.pdf]` Infections (orange circles) in the           \
 #|           unconditioned epidemic are realised whenever an infection       \
-#|           target is the least uninfected line at the relevant time.       \
+#|           target is the least uninfected timeline at the relevant time.   \
 #|           Removals (light brown circles) are realized whenever they       \
 #|           occur in the infected region; if so then the lowest infected    \
-#|           line incurs a removal, indicated by a solid purple disk if not  \
-#|           coincident with the generating removal incident                 \
+#|           timeline incurs a removal, indicated by a purple disk if        \
+#|           not coincident with the generating removal incident             \
 #|           [Figure 3b, @ConnorKendall-2023]." 
 depict("figure-3-1", new_figure(
     draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
@@ -194,7 +194,7 @@ Draft of Figure 4 of @ConnorKendall-2023
 We now graph the generating incidents corresponding to a conditional form of the epidemic (`cev1`).
 
 **Caption in draft paper:** 
-"Graphical representation of _conditioned_ \(\SIR\) epidemic with added LFE and NF."
+"Illustration of no-fly zone, epidemic trajectory and last-viable epidemic for this graphical representation."
 
 We construct an adapted `Innovation` and a corresponding `CEvolution` as follows.
 The No-Fly Zone (NFZ) and Last Feasible Epidemic (LFE) are computed

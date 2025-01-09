@@ -10,6 +10,9 @@ image/production*
 image/test*
 image/CFTP*
 
+CFTP.bib
+version.sed
+
 
 .directory
 .Rhistory

@@ -121,8 +121,8 @@ Markdown.parse(pretty_table(String, uflow[:,header],
 {{< pagebreak >}}
 
 
-Draft of Figure 3 of @ConnorKendall-2023
-========================================
+Draft of Figure 3 [@ConnorKendall-2023]
+=======================================
 We first graph the generating incidents corresponding to the unconditional epidemic (`uev1`).
 
 **Caption in draft paper:** 
@@ -189,8 +189,8 @@ depict("figure-3-1", new_figure(
 
 {{< pagebreak >}}
 
-Draft of Figure 4 of @ConnorKendall-2023
-========================================
+Draft of Figure 4 [@ConnorKendall-2023]
+=======================================
 We now graph the generating incidents corresponding to a conditional form of the epidemic (`cev1`).
 
 **Caption in draft paper:** 
@@ -232,17 +232,48 @@ depict("figure-4", new_figure(
 )
 ```
 
-It should be noted that the NFZ has influence on which of the infections
+Table of various aspects of the epidemic 
+(**note disagreement concerning LFE timeline 3**):
+
+* NFZ (SBC calculates
+`(5, 7.00), (4, 4.00), (3, 2.50), (2, -\infty), (1, -\infty)`),
+* epidemic trajectory,
+* LFE (SBC calculates
+`(5, 11.00), (4, 5.50), (3, 4.50), (2, 2.00), (1, 0.00)`).
+
+
+
+```{julia}
+#| echo: false
+cev  = cev1
+traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
+jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
+pretty_table(
+    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
+    header=[n for n in range(1,length(traj))],
+    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
+    row_label_column_title="Timeline"
+    )
+```
+
+
+Note that NFZ and LFE are calculated anew at each update, _after_ updating the CRemoval marks and re-sampling the non-activated Removals.
+The NFZ is used to determine which of the infections
 supplied by the _previous_ innovation are to be retained, 
-while the LFE signals
+while the LFE is used to determine
 which of the infections in the _next_ evolution might be perpetuated and 
 thus retained in a future evolution.
 
 
+
+
 {{< pagebreak >}}
 
-Draft of Figure 5 of @ConnorKendall-2023
-========================================
+Draft of Figure 5 [@ConnorKendall-2023]
+=======================================
+**Caption in draft paper:**
+Demonstration of the update of removals, beginning from the realisation in [the previous] Figure.
+
 We now consider the effect of updating the removals.
 
 ```{julia}
@@ -275,45 +306,37 @@ depict("figure-5", new_figure(
 {{< pagebreak >}}
 
 
-Epidemic trajectory:  
+Table of various aspects of the epidemic:
+
+* NFZ (SBC calculates
+`(5, 8.50), (4, 4.00), (3, 2.50), (2, 0.80), (1, -\infty)`),
+* epidemic trajectory,
+* LFE (SBC calculates
+`(5, 11.00), (4, 5.50), (3, 3.00), (2, 2.00), (1, 0.00)`.
+
+
 ```{julia}
 #| echo: false
-traj = [0.0] ∪ [x.t for x in cev2.history if x isa AIF]
-pretty_table(transpose(traj),
+cev  = cev2
+traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
+jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
+pretty_table(
+    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
     header=[n for n in range(1,length(traj))],
-    row_labels=["Infection time"],
+    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
     row_label_column_title="Timeline"
     )
 ```
-
-Epidemic LFE (SBC calculates
-`(5, 11.00), (4, 5.50), (3, 3.00), (2, 2.00), (1, 0.00)`):
-```{julia}
-#| echo: false
-jumps = [0.0] ∪ [z.t for z in cev2.LFE if z isa AIF]
-pretty_table(transpose(jumps); 
-    header=range(1,length(jumps)),
-    row_labels=["LFE infection time"],
-    row_label_column_title="Timeline")
-```
-
-Epidemic NFZ (SBC calculates
-`(5, 8.50), (4, 4.00), (3, 2.50), (2, 0.80), (1, -\infty)`):
-```{julia}
-#| echo: false
-pretty_table(transpose(cev2.NFZ); 
-    header=[n for n in range(1,length(cev2.NFZ))],
-    row_labels=["NFZ terminus times"],
-    row_label_column_title="Timeline"
-    )
-```
-
 
 
 {{< pagebreak >}}
 
-Draft of Figure 6 of @ConnorKendall-2023
-========================================
+Draft of Figure 6 [@ConnorKendall-2023]
+=======================================
+**Caption in draft paper:**
+Demonstration of the update of infections (the right-most figure (b)), 
+beginning from the realisation in [the previous] Figure.
+
 Finally we update the infections.
 ```{julia}
 perpetuated    = [P(10.00,4,5), P(5.00,2,4), P(3.00,1,3), P(2.00,1,2)]
@@ -343,45 +366,158 @@ depict("figure-6", new_figure(
 
 {{< pagebreak >}}
 
-Epidemic trajectory (SBC calculates
-`(1, 0.00), (2, 1.50), (3, 3.00), (4, 4.20), (5, 9.00)`):  
+
+Table of various aspects of the epidemic:
+
+* NFZ (SBC calculates
+`(5, 8.00), (4, 3.20), (3, 1.50), (2, 1.00), (1, -\infty)`),
+* epidemic trajectory (SBC calculates
+`(1, 0.00), (2, 1.50), (3, 3.00), (4, 4.20), (5, 9.00)`),
+* LFE (SBC calculates
+`(5, 10.00), (4, 7.00), (3, 3.00), (2, 2.00), (1, 0.00)`.
+
+
 ```{julia}
 #| echo: false
-traj = [0.0] ∪ [x.t for x in cev3.history if x isa AIF]
-pretty_table(transpose(traj),
+cev  = cev3
+traj = [0.0] ∪ [x.t for x in cev.history if x isa AIF]
+jumps = [0.0] ∪ [z.t for z in cev.LFE if z isa AIF]
+pretty_table(
+    vcat(transpose(cev.NFZ), transpose(traj), transpose(jumps)),
     header=[n for n in range(1,length(traj))],
-    row_labels=["Infection time"],
+    row_labels=["NFZ terminus time", "Infection time", "LFE infection time"],
     row_label_column_title="Timeline"
     )
 ```
 
-Epidemic LFE (SBC calculates  
-`(5, 10.00), (4, 7.00), (3, 3.00), (2, 2.00), (1, 0.00)`):  
+Draft of Figure 7 [@ConnorKendall-2023]
+=======================================
+CFTP depends on examination of updates started at maximal ("top") and minimal ("bottom") states,
+which we illustrate here. (Note that it might be better to use "maximal" or, even better, "fastest"
+instead of "bottom", and "minimal" or "slowest" instead of "top".)
+
+**Caption in draft paper:** 
+"Representation of top and bottom states, \(E^\text{bot}\) and \(E^\text{top}\)."
+
+Here it is useful to ensure the correct well-ordering of the set of all incidents
+(ordering first by time, and then by ensuring that infections have priority over removals).
+
+
 ```{julia}
-#| echo: false
-jumps = [0.0] ∪ [z.t for z in cev3.LFE if z isa AIF]
-pretty_table(transpose(jumps); 
-    header=range(1,length(jumps)),
-    row_labels=["LFE infection time"],
-    row_label_column_title="Timeline")
+#| include: false
+theme = create_theme(load_theme("config/test-theme.yml"))
+
+set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-Epidemic NFZ (SBC calculates
-`(5, 8.00), (4, 3.20), (3, 1.50), (2, 1.00), (1, -\infty)`):  
+```{julia}
+cremovaltimes = [x.t for x in cremovals]
+cevslowest    = extremal_evolution(initial, duration, cremovaltimes, maximal=false) ;
+cevfastest    = extremal_evolution(initial, duration, cremovaltimes, maximal=true) ;
+```
+
+::: {#fig-figure-7 layout-ncol=2}
+
+
 ```{julia}
 #| echo: false
-pretty_table(transpose(cev3.NFZ); 
-    header=[n for n in range(1,length(cev3.NFZ))],
-    row_labels=["NFZ terminus times"],
-    row_label_column_title="Timeline"
-    )
+#| label: fig-figure-7a
+#| fig-cap: "`[figure-7a.pdf]` The fastest conditional epidemic evolution is   \
+#|           constructed by infecting all timelines immediately                \
+#|           [Figure 7(a), @ConnorKendall-2023]."
+depict("figure-7a", new_figure(
+    draw_evolution!(deepcopy(lines_plot), cevfastest, duration, theme=theme, 
+        select=BOUNDARIES | BASIC),
+        title="Fastest conditioned epidemic"),
+    figdir="Figure"
+)
 ```
+
+
+```{julia}
+#| echo: false
+#| label: fig-figure-7b
+#| fig-cap: "`[figure-7b.pdf]` The slowest conditional epidemic evolution is   \
+#|           constructed by infecting all timelines as late as is compatible   \
+#|           with conditioning on observed removals                            \
+#|           [Figure 7(b), @ConnorKendall-2023]."
+depict("figure-7b", new_figure(
+    draw_evolution!(deepcopy(lines_plot), cevslowest, duration, theme=theme, 
+        select=BOUNDARIES | BASIC),
+        title="Slowest conditioned epidemic"),
+    figdir="Figure"
+)
+```
+
+:::
+
+
+Figure 7(a): bottom state \(E^\text{bot}\)
+------------------------------------------
+In the "bottom" or fastest state the epidemic proceeds at the fastest possible speed,
+so all timelines are infected immediately.
+
+Figure 7(b): top state \(E^\text{top}\)
+---------------------------------------
+In the "top" or slowest
+state the epidemic proceeds at the slowest possible speed compatible with all conditioned removals
+actually happening.
+
+
+Draft of Figure 8 [@ConnorKendall-2023]
+=======================================
+We need to exhibit a set \(F_\delta\) which 
+possesses certain properties with respect to the update process.
+
+**Caption in draft paper:** 
+"Example of an epidemic belonging to the set \(F_\delta\)."
+
+```{julia}
+#| include: false
+theme = create_theme(load_theme("config/theme.yml"))
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
+
+We produce an example by setting relevant infections to occur
+in order on or before a fixed small time \(\delta>0\) smaller than
+any of the conditioned removal times (here we set \(\delta=3.0\)).
+
+```{julia}
+infectionssmall = [I(k*0.6, k, k+1) for k in range(1, population-1)]
+removalssmall   = [R(k*0.1-0.05, k+1) for k in range(1, population-1)]
+civsmall = Innovation(population, infectionssmall, removalssmall, cremovals)
+cevsmall = Evolution(initial, civsmall)
+```
+
+```{julia}
+#| echo: false
+#| label: fig-figure-8
+#| fig-cap: "`[figure-8.pdf]` A conditional epidemic in which all \
+#|           activated infections occur before time 1.0,          \
+#|           before smallest observed removal time.               \
+#|           [Figure 8, @ConnorKendall-2023]."
+depict("figure-8", new_figure(
+    draw_evolution!(deepcopy(lines_plot), cevsmall, duration, theme=theme, 
+        select=BOUNDARIES | BASIC),
+        title="Conditioned epidemic from a given small set."),
+    figdir="Figure"
+)
+```
+
+
+References {-}
+==========
+
+::: {#refs}
+:::
+
 
 Appendices {.unnumbered}
 ==========
 
 
-Software versions
+Software versions {-}
 =================
 Here is a table of software used in the following computations:
 ```{julia}
@@ -406,7 +542,9 @@ Markdown.parse("""
 ```
 
 
-Package documentation
+{{< pagebreak >}}
+
+Package documentation {-}
 =====================
 ```{julia}
 #| label: software-links

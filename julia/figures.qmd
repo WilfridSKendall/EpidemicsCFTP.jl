@@ -272,8 +272,8 @@ Demonstration of the update of removals, beginning from the realisation in [the 
 We now consider the effect of updating the removals.
 
 ```{julia}
-infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),
-        I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
+#infections = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(5.0,2,4),
+#        I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
 newremovals   = R[R(0.8,2), R(1.5,3), R(3.2,4), R(6.0,5), R(8.5,5)]
 newcremovals  = C[C(3.5,3), C(6.5,3), C(8.0,4), C(12.0,5), C(13.0,5)]
 civ2a      = Innovation(population, infections, newremovals, newcremovals)

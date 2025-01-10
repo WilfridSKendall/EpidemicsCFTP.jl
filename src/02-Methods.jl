@@ -452,7 +452,7 @@ end
 # Altering `CRemoval` timeline
 # -------------------------------
 """
-    alter(rem::AbstractRemoval, timeline::Integer)::CRemoval
+    alter(rem::AbstractRemoval, timeline::Integer)::AbstractRemoval
 
 Produce a new [`AbstractRemoval`](@ref): same time `t` but changing
 the mark `target` of the [`AbstractRemoval`](@ref) `rem`
@@ -466,11 +466,14 @@ julia> rem = C(0.15, 4)
 julia> alter(rem, 2)
 𝒞₀.₁₅²
 
-julia> rem
-𝒞₀.₁₅⁴
+julia> rem = R(0.15, 4)
+ℛ₀.₁₅⁴
+
+julia> alter(rem, 2)
+ℛ₀.₁₅²
 ```
 """
-function alter(rem::AbstractRemoval, new_timeline::Integer)::CRemoval
+function alter(rem::AbstractRemoval, new_timeline::Integer)::AbstractRemoval
     if  0 < new_timeline
         typeof(rem)(rem.t, new_timeline)
     else

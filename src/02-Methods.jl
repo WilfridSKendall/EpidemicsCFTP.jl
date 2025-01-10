@@ -452,29 +452,29 @@ end
 # Altering `CRemoval` timeline
 # -------------------------------
 """
-    alter(crem::CRemoval, timeline::Integer)::CRemoval
+    alter(rem::AbstractRemoval, timeline::Integer)::CRemoval
 
-Produce a new [`CRemoval`](@ref): same time `t` but changing
-the mark `target` of the [`CRemoval`](@ref) `rem`
+Produce a new [`AbstractRemoval`](@ref): same time `t` but changing
+the mark `target` of the [`AbstractRemoval`](@ref) `rem`
 to point to a positive `timeline` specified by the `Integer` argument.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
-julia> crem = C(0.15, 4)
+julia> rem = C(0.15, 4)
 𝒞₀.₁₅⁴
 
-julia> alter(crem, 2)
+julia> alter(rem, 2)
 𝒞₀.₁₅²
 
-julia> crem
+julia> rem
 𝒞₀.₁₅⁴
 ```
 """
-function alter(crem::CRemoval, new_timeline::Integer)::CRemoval
+function alter(rem::AbstractRemoval, new_timeline::Integer)::CRemoval
     if  0 < new_timeline
-        CRemoval(crem.t, new_timeline)
+        typeof(rem)(rem.t, new_timeline)
     else
-        throw(ArgumentError("cannot give $crem a non-positive new timeline $new_timeline"))
+        throw(ArgumentError("cannot give $rem a non-positive new timeline $new_timeline"))
     end
 end
 

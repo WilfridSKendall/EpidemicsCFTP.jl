@@ -1,4 +1,4 @@
-# ~/HTML/WilfridSKendall/Thessaloniki-2024
+# ~/HTML/WilfridSKendall/PerfectEpidemics
 title             := PerfectEpidemics
 biblio-source     := CFTP.bib 
 version           := VERSION.txt
@@ -41,7 +41,7 @@ see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
 %.pdf: %.qmd $(biblio) $(macros)
 	git log -1 > $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
-	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)              \
+	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)  --no-cache             \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)
 
 %.tex: %.qmd $(biblio)

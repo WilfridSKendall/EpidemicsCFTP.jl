@@ -253,12 +253,10 @@ depict("figure-4", new_figure(
 ```
 
 Note that NFZ and LFE are calculated anew at each update, _after_ updating the CRemoval marks and re-sampling the non-activated Removals.
-The NFZ is used to determine which of the infections
-supplied by the _previous_ innovation are to be retained, 
-while the LFE is used to determine
-which of the infections in the _next_ evolution might be perpetuated and 
-thus retained in a future evolution.
-
+They summarize recursive calculations, running backwards in process time, aimed at determining whether
+new infections should be allowed to proceed. (LFE applies to infections targetting at or below epidemic trajectory;
+NFZ to infections targetting above epidemic trajectory.)
+or 
 
 
 

@@ -1,22 +1,21 @@
 ---
 title:       Perfect Epidemics
-subtitle:    Seminar at Warwick University Department of Statistics
+subtitle:    Applied Probability Seminar \newline Warwick University Department of Statistics
 date:        17 January 2025
 author:     
-    - name:           Wilfrid S Kendall
+    - name:           W S Kendall
       url:            https://wilfridskendall.github.io/talks/PerfectEpidemics/PerfectEpidemics-handout.pdf
       affiliation:    University of Warwick Department of Statistics
       affilation-url: https://www.warwick.ac.uk/statsdept
-    - name:           Stephen B Connor
+    - name:           S B Connor
       affiliation:    University of York Department of Mathematics
       affilation-url: https://www-users.york.ac.uk/~sbc502/
-institute: Universities of Warwick and York
+institute: Warwick, York
 license:    "CC BY"
----
 
-
----
 from: markdown+tex_math_single_backslash
+
+jupyter: julia-1.11
 
 format: 
     beamer:
@@ -27,6 +26,8 @@ format:
         theme:           Boadilla
         mainfont:        "Times New Roman"
         monofont:        "JuliaMono"
+        monofontoptions:
+              - Scale=0.7
         incremental:     true
         link-citations:  true
         citecolor:       blue
@@ -40,7 +41,24 @@ format:
             @ConnorKendall-2007b
 ---
 
+```{julia}
+#| label: setup
+#| include: false
+#| tags: [parameters]
+Pkg.activate("..")
+source = "trial.qmd"
 
+using EpidemicsCFTP, EpidemicsUtilities
+
+using Gadfly, Compose
+using DataFrames, PrettyTables
+
+import Markdown
+
+theme = create_theme(load_theme("config/theme.yml"))
+
+set_default_plot_size(theme.figwidth, theme.figheight)
+```
 
 Introduction   {#sec-introduction}
 ============
@@ -80,17 +98,17 @@ a 50\$ bill lying on the ground.}
 
 * The term “perfect simulation” [@Kendall-1998d] should make you suspicious:
 perfection is never achieved. 
-The term was chosen for precisely this reason!
+This is why the term was chosen!
 \note[item]{In particular, “exact simulation” cannot 
 somehow miraculously defeat numerical approximation error :-).}
 
-* The key ideas of “_classic CFTP_” are as follows: 
-	- extend simulation _backwards_ through time rather than forwards, 
-	- exploit monotonicity by _coupling_ maximal and minimal processes, 
+* Key ideas of “_classic CFTP_”: 
+	- extend simulation _backwards_ through time not forwards;
+	- exploit monotonicity *_couple_ maximal and minimal processes);
 	- seek coalescence.
 \note[item]{We will cover these key ideas in a single very specific example.}
 
-* Simplest possible example: _random-walk-CFTP_ 
+* Simplest possible example: _random-walk-CFTP_  
 (can be boosted to use Ising model to do simple image reconstruction).
 \note[item]{Propp \& Wilson (1996) show how to vary random walk CFTP to get exact samples for 
 \structure{critical} Ising model
@@ -105,9 +123,9 @@ to model images, hence CFTP can be used for image reconstruction.}
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
 * Consider a simple random walk on \(\{0, 1, 2, 3, 4, 5, 6, 7, 8, 9\}\).
-   - probability of \(+1\) jump is \(p\in(0.1)\), of \(-1\) jump is \(1-p\), **except that** 
-   - \(+1\) jump replaced by staying still at state \(9\), **and**
-   - \(-1\) jump replaced by staying still at state \(0\).
+   - \(\Prob{+1\text{ jump }}=p\in(0,1)\), while \(\Prob{-1 \text{ jump }} = 1{-}p\), **except that** 
+   - at state \(9\) replace \(+1\) jump by staying still, **and**
+   - at state \(0\) replace \(-1\) jump by staying still .
 \note[item]{This is asymmetric simple random walk on the integers, but forbidding any transitions
 outside the specified state-space. The result is irreducible \emph{and} aperiodic, so converges
 to the discrete uniform distribution (hint: use reversibility to check this!).}
@@ -130,7 +148,7 @@ which is the essential poimt!}
 
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
-* So now start at a negative time \(-T\), start at top (\(9\)) and bottom (\(0\)), and run to time \(0\). 
+* So now start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
 \note[item]{Ideally one needs to choose \(T\) neither too small nor
 too large. But the result is not sensitive to this.}
 
@@ -138,7 +156,7 @@ too large. But the result is not sensitive to this.}
 \note[item]{Very important that one doesn't introduce different jumps for the same time \(-t\)
 in this binary back-off! We must \alert{re-use randomness}.}
 
-* May need to iterate back-off several times.
+* May need to iterate back-off doubling several times.
 \note[item]{However the binary back-off procedure means, if \(T\) is too small
 then extra work is only ever a factor of \(4\)!}
 
@@ -170,8 +188,8 @@ Some theory about CFTP  {#sec-theory}
 
 * Theoretical limits:  _in principle_
 	- _Classical CFTP_ equivalent to uniform ergodicity [@FossTweedie-1998]. 
-	- _Dominated CFTP_ is achievable under geometric ergodicity [@Kendall-2004c]. 
-	- Can even do Dominated CFTP in some **non**-geometrically ergodicity cases [@ConnorKendall-2007a, _nb_ corrigendum];
+	- _Dominated CFTP_ achievable under geometric ergodicity [@Kendall-2004c]. 
+	- Dominated CFTP can work in some **non**-geometrically ergodicity cases [@ConnorKendall-2007a, _nb_ corrigendum];
 \note[item]{Basic ideas: use the notion of regenerative sets (``small sets"),
 and (Foster-)Lyapunov arguments. Note that the recipes given for these tend not to be computationally practical:
 they simply show the possibility of (possibly computationally infeasible) CFTP.
@@ -182,12 +200,16 @@ They are intended as a challenge: when can one find \emph{practical} methods?}
 because the ``top" pattern would have points \emph{everywhere}.}
 
 * Detailed expositions: @Kendall-2005a, @Huber-2015.  
-[To implement CFTP in R, see @Kendall-2014b.]
+[Want to implement CFTP in R? see @Kendall-2014b.]
 \note[item]{This is the end of the visual introduction to CFTP.
 People who are interested in CFTP from a practical point of view may find it useful to work through WSK (2015).}
 
 Perfect Epidemics: a challenge problem for CFTP  {#sec-epidemics}
 ===============================================
+_Many_ important inferential questions [@CoriKucharski-2024].
+
+Simplest models [versus [UK model with \(10^6\) agents!](https://github.com/BDI-pathogens/OpenABM-Covid19) @FraserEtAl-2023]:
+
 \note{
 Two classical models from mathematical epidemiology.
 Even the simple case of deterministic S-I-R permits only \emph{partial} closed-form solution.
@@ -198,7 +220,7 @@ The assumption of homogeneous mixing of population greatly simplifies the mathem
 statistics.
 Without this assumption one ends up with huge numbers of parameters, which is very bad news statistically speaking.
 A lot of research has been done on how to deal with more realistic models!
-(For example, [a UK model using 1000000 agents!](https://github.com/BDI-pathogens/OpenABM-Covid19),
+(For example, [the UK model using 1000000 agents!](https://github.com/BDI-pathogens/OpenABM-Covid19),
 Fraser et al, 2023)
 
 \bigskip
@@ -206,30 +228,31 @@ Fraser et al, 2023)
 However in this work we deal only with homogeneous mixing.
 Before running, one must learn to walk!
 \par}
-**S-I-R deterministic epidemic:** susceptibles $s$, infectives $i$, removals $r$:
+**S-I-R deterministic epidemic:** susceptibles $s$, infectives $i$, removals $r$
+(constant total population $s+i+r=n$):
 $$
 \begin{aligned}
-s' \quad&=\quad - \alpha \; i \, s \,,
+s' \quad&=\quad - \alpha \; s \; i\,,
 \\
 i' \quad&=\quad \left(\alpha \; s - \beta\;\right)\;i \,,
 \\
 r' \quad&=\quad \beta\; i \,.
 \end{aligned}
 $$
-(Total population $s+i+r=n$​  is constant.)
 \pause
 
 **S-I-R stochastic epidemic:** a Markov chain $(S, I, R)$​ with transitions
 $$
 \begin{aligned}
-\textbf{Infection:}& \quad S \to S-1\,, &\; I \to I+1 \qquad&\text{at rate}\qquad \alpha\; I \, S \,,
+\textbf{Infection:}& \quad S \to S-1\,, &\; I \to I+1 \qquad&\text{at rate}\qquad \alpha\; S \, I \,,
 \\
 \textbf{Removal:}& \quad I \to I-1\,, &\; R \to R+1 \qquad&\text{at rate}\qquad \beta\; I  \,.
 \end{aligned}
 $$
 
 \pause
-Both models assume **homogeneous mixing**.
+\structure{Massive assumption} for these simple models: **homogeneous mixing**.
+
 
 The first question asked about a new epidemic
 =============================================
@@ -262,12 +285,12 @@ The ``R-nunber" was the subject of continuing interest throughout the COVID-19 p
 \par}
 Important, because the R-number controls severity of epidemic. However:
 
-1. Modelling is \alert{tough}. _Either_ massive assumptions (homogeneous mixing) _or_ far too many parameters;
+1. Modelling is \alert{tough}. _Either_ massive assumptions (homogeneous mixing) _or_ very many parameters;
 
 2. Inference is \alert{really} \alert{tough}: hard to get information about infection times;
 
 3. It is all \alert{especially} \alert{tough} in early stages. Answers are
-most needed when hardly any information is available (a simplified example for a Warwick UG second-year statistics module shows how tough this is);
+most needed when hardly any information is available (a simplified example for a Warwick UG second-year statistics module shows how tough this can be);
 
 4. Markov chain Monte Carlo (MCMC) can be used (see next slide) but what about burn-in?
 
@@ -275,23 +298,359 @@ most needed when hardly any information is available (a simplified example for a
 
 An easier question
 ==================
-Following @GibsonRenshaw-1998, @ONeillRoberts-1999, @GibsonRenshaw-2001:
+\small 
+[@GibsonRenshaw-1998; @ONeillRoberts-1999; @GibsonRenshaw-2001]
+
+\bigskip
 
 \note{
 I learned the phrase ``algorithmic time" from Andrew Stuart.
 \par}
-1. Suppose we know $n$, $\alpha$, $\beta$​, observe removal times, but
-**must infer** unobserved infection times.
-2. We need a new chain: namely, the whole S-I-R trajectory evolving in *algorithmic time* 
-(varying pattern of potential infections and removals).
-3. Visualize $n$ time lines, along which are scattered incidents: 
+1. Suppose $n$, $\alpha$, $\beta$ known​,
+removal times observed,  
+but unobserved infection times \structure{must be inferred}.
+2. Visualize $n$ time lines, along which incidents are scattered: 
    * potential removals, activated if time line is infected;
    * potential infections, activated if time line is infected *and* if designated target time line is lowest uninfected time line.
-4. Using Poisson point processes of appropriate rates to scatter these incidents, we obtain an S-I-R epidemic.
-5. Now let the point patterns evolve _in algorithmic time_, adding and removing incidents according to spatial immigration-death processes.
-6. Result is a _trajectory-valued chain_ which has unconditioned S-I-R as equilibrium.
+3. Poisson point processes of appropriate rates yield an S-I-R epidemic.
+4. Evolve whole S-I-R trajectory in *algorithmic time* 
+(alter potential infections and removals
+using immigration-death in discrete algorithmic time).
+5. Result: _trajectory-valued chain_, unconditioned S-I-R as equilibrium.
 
-Conditioning on observed removals 
+
+---
+
+```{julia}
+#| label: parameters
+#| include: false
+const duration   = 15 ;
+const MAXPOP     = 20 ;
+const initial    = SIR(0.0, 4, 1, 0) ;
+const population = 5 ;
+labels   = [:AI  :AIF :I  :P  :R  :C]
+import EpidemicsCFTP: AI, AIF, I, P, R, C
+pretty_table(map(eval, labels), header=vec(labels), alignment = :l)
+import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, 
+                        ELEMENTS, LFE, LFET, LFER, MOST, NFZ
+```
+
+```{julia}
+#| label: initial-epidemic
+infs1 = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(4.5,2,3), 
+        I(5.0,2,4), I(5.5,3,4), I(6.0,2,3), I(10.0,4,5), I(11.0,4,5)]
+removals1   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
+cremovals1  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
+uiv1 = Innovation(population, infs1, removals1 ∪ map(R, cremovals1))
+
+uev1 = Evolution(initial, uiv1) ;
+```
+
+
+```{julia}
+#| echo: false
+#| label: fig-figure-1
+#| fig-cap: "Light-orange circles denote potential infections \
+#|           (arrows point upwards to targets);               \
+#|           light-brown circles denote potential removals." 
+uflow = table_trajectories1(duration, uev1.trajectory) ;
+axes_plot = plot(uflow, yintercept=1:initial.n,
+    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
+    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
+    Guide.xlabel("Process time", orientation=:horizontal),
+    style(default_color=theme.background),
+    Theme(
+        panel_fill=theme.blank,
+        default_color=theme.default,
+        background_color=theme.background,
+        major_label_font="CMU Serif",   minor_label_font="CMU Serif",
+        minor_label_color=theme.legend, major_label_color=theme.legend,
+        major_label_font_size=8pt,      minor_label_font_size=6pt,
+        grid_line_width=0mm,
+)) ;
+
+push!(axes_plot, layer(uflow, x=:t, y=:empty, Geom.line,
+    style(line_width=2theme.trail, default_color=theme.scaffold))) ;
+
+lines_plot = new_figure(axes_plot,
+    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
+    Guide.yticks(ticks=collect(1:(initial.n))),
+    Guide.ylabel("Time lines")) ;
+
+depict("figure-1", new_figure(
+    draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
+        select=ELEMENTS),
+        title="Incidents determining an unconditioned epidemic")
+)
+```
+
+---
+
+```{julia}
+#| echo: false
+#| label: fig-figure-2
+#| fig-cap: "Activate _infection_ if target on lowest uninfected timeline. \
+#|           _removal_ if in infected region and remove lowest infected    \
+#|           (purple disk if different timeline). " 
+depict("figure-2", new_figure(
+    draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
+        select=MOST),
+        title="Unconditioned epidemic")
+)
+```
+
+---
+
+```{julia}
+#| label: next-epidemic
+infs2 = AIF[I(9.00,4,5), I(7.20,4,5), I(7.00,3,4), I(4.20,3,4),
+    I(2.20,4,5), I(1.50,1,2), I(1.00,2,3), I(0.50,1,2)]
+removals2   = R[R(0.8,2), R(1.5,3), R(3.2,4), R(6.0,5), R(8.5,5)]
+cremovals2  = C[C(3.5,3), C(6.5,3), C(8.0,4), C(12.0,5), C(13.0,5)]
+uiv2 = Innovation(population, infs2, removals2 ∪ map(R, cremovals2))
+
+uev2 = Evolution(initial, uiv2) ;
+```
+
+```{julia}
+#| echo: false
+#| label: fig-figure-3
+#| fig-cap: "A step in algorithmic time for the unconditioned \
+#|           epidemic simply involves replacing all incidents \
+#|           by a new set of incidents." 
+depict("figure-3", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+    uev2, 
+    duration, theme=theme, 
+        select=MOST),
+        title="Updated unconditioned epidemic")
+)
+```
+
+Crucial technical point
+=======================
+
+* Updates in algorithmic time \(\tau\) are then 
+(algorithmic-)_time-reversible_:
+so restriction to subset \(S\) of state-space 
+(in our case, _activated_ removals occurring precisely at
+specified set of times)
+implies a new equilibrium which is the old equilibrium 
+conditioned to lie in \(S\).
+* For later purposes it is
+convenient to stage the replacement as follows:  
+  1. Replace removals (\(R\)s);
+  2. Re-sample timelines (though not times) of \(R\)s;
+  3. Replace infections (\(I\)s).
+* It is convenient to re-express this for continuously
+varying \(\tau\):  
+  1. For \(2n T < \tau < (2n{+}1) T\),
+  update old \(R\)s with times in \((0, \tau-2nT)\);
+  2. For \(\tau=(2n{+}1) T\), resample
+   timelines (not times) of \(R\)s;
+  3. For \((2n{+}1) T< \tau < (2n{+}2) T\),
+  update old \(I\)s in \(((2n{+}2) T-\tau, T)\).
+* Thus the original update is expressible as a (continuous)
+composition of updates, each of which satisfies detailed
+balance in equilibrium.
+* The connection "restriction\(=\)conditioning" is thereby
+preserved.
+* Crucially, step 2 ensures composition action
+is irreducible over \(S\)!
+(So equilibrium under conditioning is unique.)
+
+Illustration of technical point (1)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4a
+#| fig-cap: "No change to removals or infections" 
+rems1 = removals1 ∪ map(R, cremovals1)
+rems2 = removals2 ∪ map(R, cremovals2)
+tsplit = 0.0 * duration
+rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
+uiv = Innovation(population, infs1, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4b", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    title="Initial unconditioned epidemic ")
+)
+```
+
+Illustration of technical point (2)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4b
+#| fig-cap: "Replace first third of removals, infections unchanged" 
+intensity = 0.05
+tsplit = (1.0/3.0) * duration
+rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
+uiv = Innovation(population, infs1, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4b", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (1/7)")
+)
+```
+
+Illustration of technical point (3)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4c
+#| fig-cap: "Replace first two-thirds of removals, infections unchanged" 
+tsplit = (2.0/3.0) * duration
+rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
+uiv = Innovation(population, infs1, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4c", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (2/7)")
+)
+```
+
+Illustration of technical point (4)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4d
+#| fig-cap: "Replace all removals, infections unchanged" 
+tsplit = 1.0 * duration
+rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
+uiv = Innovation(population, infs1, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4d", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (3/7)")
+)
+```
+
+Illustration of technical point (5)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4e
+#| fig-cap: "Re-sample all removal timelines, infections unchanged" 
+tsplit = 1.0 * duration
+rems = [EpidemicsCFTP.alter(x,rand(2:population)) for x in rems]
+uiv = Innovation(population, infs1, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4e", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, duration, population+1), 
+                fill("blue"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (4/7)")
+)
+```
+
+
+Illustration of technical point (6)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4f
+#| fig-cap: "Re-sample last third of infections" 
+tsplit = (2.0/3.0) * duration
+infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
+uiv = Innovation(population, infs, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4f", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(tsplit, 0, duration, population+1), 
+                fill("yellow"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (5/7)")
+)
+```
+
+
+
+Illustration of technical point (7)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4g
+#| fig-cap: "Re-sample last two-thirds of infections" 
+tsplit = (1.0/3.0) * duration
+infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
+uiv = Innovation(population, infs, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4g", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(tsplit, 0, duration, population+1), 
+                fill("yellow"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (6/7)")
+)
+```
+
+
+Illustration of technical point (8)
+===============================
+```{julia}
+#| echo: false
+#| label: fig-figure-4h
+#| fig-cap: "Re-sample all infections" 
+tsplit = 0.0 * duration
+infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
+uiv = Innovation(population, infs, rems)
+uev = Evolution(initial, uiv)
+depict("figure-4h", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(tsplit, 0, duration, population+1), 
+                fill("yellow"), fillopacity(intensity))
+            ),
+    title="Fully updated unconditioned epidemic (7/7)")
+)
+```
+
+
+
+Conditioning on observed removals
 =================================
 \note{
 Monotonicity is a key concept here. Note however
@@ -310,18 +669,20 @@ Additionally. for a complicated algorithm such as this one, it is important
 to test the underlying logic by implementing the algorithm in computer code
 (which has a way of revealing false hidden assumptions!).
 \par}
-* The trajectory-valued chain is *reversible*.
-* So if we forbid the evolution to get rid of observed removals, and forbid it to introduce new activated removals, then the modified chain has invariant probability measure which conditions on observed pattern of removals. Implications:
-  * removals can be introduced only if they don't activate;
-  * sometimes infections cannot be removed (because that would result in losing a conditioned removal);
-  * infections can be introduced only if they don't lead to new removals.
-* More housekeeping details required to define algorithm precisely and make sure reversibility and
-monotonicity still work.
+* The trajectory-valued chain is *dynamically reversible*,
+in _continuous algorithmic time_.
+* Forbidding removal of observed removals, and forbidding creation of new activated removals, yields a modified chain whose invariant probability measure conditions on observed pattern of removals.  
+\structure{Implications:}
+  * a removal can be introduced only if they don't activate;
+  * an infection cannot be removed if that loses a conditioned removal;
+  * an infection can be introduced only if no new observed removals result.
+* \structure{Housekeeping details} required to establish that
+monotonicity still works.
 * Irreducibility is _vital_ 
-(for otherwise equilibrium will depend on starting point).
-Implication:
-  * need to allow conditioned removals to change time line (if still activated) but not time of occurrence;
-* Does this produce a feasible and suitably monotonic algorithm?
+(otherwise equilibrium depends on starting point).
+Consequently:
+  * conditioned removals must be able to change time line (but not time of occurrence);
+* Does this produce a _feasible_ and suitably monotonic algorithm?
 
 Example
 =======
@@ -374,18 +735,20 @@ integrate out the pattern of unobserved infections.
   to find *maximum a posterior* estimates of $\alpha$ and $\beta$;
     - or even, with some computational effort, compute the entire posterior joint density for $\alpha$ and $\beta$!
 
+* Finally: might this generalize to other suitable compartment models?
+
 Conclusion  {#sec-conclusion}
 ==========
-* Do you worry about burn-in issues when doing MCMC? 
-Consider whether perfect simulation can be applied!
+* If MCMC burn-in is a concern, 
+try to build a perfect simulation!
 
 * CFTP works even for significantly complex and relevant models of real-life phenomena.
 
-* _Of course_ detailed models resist perfect simulation: but it 
-will be helpful to compare with a simpler model (using fewer parameters). 
+* _Of course_ detailed models resist perfect simulation (but it 
+will be helpful to compare with a simpler model using fewer parameters). 
 
-* CFTP: an important tool to be considered by the investigator seeking to 
-implement accurate and informative MCMC.
+* Still to be done: statistical estimation of parameters, generalization
+to other compartment models.
 
 * Thank you for your attention! \alert{QUESTIONS?}
 

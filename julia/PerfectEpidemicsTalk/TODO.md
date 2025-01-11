@@ -9,10 +9,10 @@ Talk versions:
 ## To-do
 
 - [ ] IMAGE and QUOTE for page 2.
-- [ ] After "An easier question": three slides on 
-  - [ ] incident pattern;
-  - [ ] resulting epidemic;
-  - [ ] working through first removals then infections "pixel-by-pixel".
+- [x] After "An easier question": three slides on 
+  - [x] incident pattern;
+  - [x] resulting epidemic;
+  - [x] working through first removals then infections "pixel-by-pixel".
 - [ ] After "Conditioning on observed removals": three slides on 
   - [ ] epidemic in step 1;
   - [ ] epidemic in step 2, pointing out how conditioned removals move up and down timelines;
@@ -23,7 +23,7 @@ Talk versions:
 
 ## Nice to do later
 
-- [ ] Fix incorrect image of random walk coupling!
+- [x] Fix incorrect image of random walk coupling!
 - [ ] Fix up perfect SIR simulation GIFs to take just 128 time steps;
 - [ ] Printed talk handout not notes: bad idea!
 - [ ] Note need to fix proposal for initial condition

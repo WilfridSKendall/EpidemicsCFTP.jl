@@ -78,9 +78,9 @@ Perfect Simulation  {#sec-perfection}
 \note[item]{Jim Propp described the discovery of CFTP as like walking down the street and suddenly noticing
 a 50\$ bill lying on the ground.}
 
-* The term “perfect simulation” [@Kendall-1998d] makes everyone suspicious,
-since everyone knows perfection is never achieved. 
-That's exactly why the term was chosen!
+* The term “perfect simulation” [@Kendall-1998d] should make you suspicious:
+perfection is never achieved. 
+The term was chosen for precisely this reason!
 \note[item]{In particular, “exact simulation” cannot 
 somehow miraculously defeat numerical approximation error :-).}
 

@@ -96,19 +96,19 @@ Perfect Simulation  {#sec-perfection}
 \note[item]{Jim Propp described the discovery of CFTP as like walking down the street and suddenly noticing
 a 50\$ bill lying on the ground.}
 
-* The term “perfect simulation” [@Kendall-1998d] makes everyone suspicious,
-since everyone knows perfection is never achieved. 
-That's exactly why the term was chosen!
+* The term “perfect simulation” [@Kendall-1998d] should make you suspicious:
+perfection is never achieved. 
+This is why the term was chosen!
 \note[item]{In particular, “exact simulation” cannot 
 somehow miraculously defeat numerical approximation error :-).}
 
-* The key ideas of “_classic CFTP_” are as follows: 
-	- extend simulation _backwards_ through time rather than forwards, 
-	- exploit monotonicity by _coupling_ maximal and minimal processes, 
+* Key ideas of “_classic CFTP_”: 
+	- extend simulation _backwards_ through time not forwards;
+	- exploit monotonicity *_couple_ maximal and minimal processes);
 	- seek coalescence.
 \note[item]{We will cover these key ideas in a single very specific example.}
 
-* Simplest possible example: _random-walk-CFTP_ 
+* Simplest possible example: _random-walk-CFTP_  
 (can be boosted to use Ising model to do simple image reconstruction).
 \note[item]{Propp \& Wilson (1996) show how to vary random walk CFTP to get exact samples for 
 \structure{critical} Ising model
@@ -123,9 +123,9 @@ to model images, hence CFTP can be used for image reconstruction.}
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
 * Consider a simple random walk on \(\{0, 1, 2, 3, 4, 5, 6, 7, 8, 9\}\).
-   - probability of \(+1\) jump is \(p\in(0.1)\), of \(-1\) jump is \(1-p\), **except that** 
-   - \(+1\) jump replaced by staying still at state \(9\), **and**
-   - \(-1\) jump replaced by staying still at state \(0\).
+   - \(\Prob{+1\text{ jump }}=p\in(0,1)\), while \(\Prob{-1 \text{ jump }} = 1{-}p\), **except that** 
+   - at state \(9\) replace \(+1\) jump by staying still, **and**
+   - at state \(0\) replace \(-1\) jump by staying still .
 \note[item]{This is asymmetric simple random walk on the integers, but forbidding any transitions
 outside the specified state-space. The result is irreducible \emph{and} aperiodic, so converges
 to the discrete uniform distribution (hint: use reversibility to check this!).}
@@ -148,7 +148,7 @@ which is the essential poimt!}
 
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
-* So now start at a negative time \(-T\), start at top (\(9\)) and bottom (\(0\)), and run to time \(0\). 
+* So now start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
 \note[item]{Ideally one needs to choose \(T\) neither too small nor
 too large. But the result is not sensitive to this.}
 
@@ -156,7 +156,7 @@ too large. But the result is not sensitive to this.}
 \note[item]{Very important that one doesn't introduce different jumps for the same time \(-t\)
 in this binary back-off! We must \alert{re-use randomness}.}
 
-* May need to iterate back-off several times.
+* May need to iterate back-off doubling several times.
 \note[item]{However the binary back-off procedure means, if \(T\) is too small
 then extra work is only ever a factor of \(4\)!}
 
@@ -188,8 +188,8 @@ Some theory about CFTP  {#sec-theory}
 
 * Theoretical limits:  _in principle_
 	- _Classical CFTP_ equivalent to uniform ergodicity [@FossTweedie-1998]. 
-	- _Dominated CFTP_ is achievable under geometric ergodicity [@Kendall-2004c]. 
-	- Can even do Dominated CFTP in some **non**-geometrically ergodicity cases [@ConnorKendall-2007a, _nb_ corrigendum];
+	- _Dominated CFTP_ achievable under geometric ergodicity [@Kendall-2004c]. 
+	- Dominated CFTP can work in some **non**-geometrically ergodicity cases [@ConnorKendall-2007a, _nb_ corrigendum];
 \note[item]{Basic ideas: use the notion of regenerative sets (``small sets"),
 and (Foster-)Lyapunov arguments. Note that the recipes given for these tend not to be computationally practical:
 they simply show the possibility of (possibly computationally infeasible) CFTP.
@@ -200,7 +200,7 @@ They are intended as a challenge: when can one find \emph{practical} methods?}
 because the ``top" pattern would have points \emph{everywhere}.}
 
 * Detailed expositions: @Kendall-2005a, @Huber-2015.  
-[To implement CFTP in R, see @Kendall-2014b.]
+[Want to implement CFTP in R? see @Kendall-2014b.]
 \note[item]{This is the end of the visual introduction to CFTP.
 People who are interested in CFTP from a practical point of view may find it useful to work through WSK (2015).}
 
@@ -232,7 +232,7 @@ Before running, one must learn to walk!
 (constant total population $s+i+r=n$):
 $$
 \begin{aligned}
-s' \quad&=\quad - \alpha \; i \, s \,,
+s' \quad&=\quad - \alpha \; s \; i\,,
 \\
 i' \quad&=\quad \left(\alpha \; s - \beta\;\right)\;i \,,
 \\
@@ -244,7 +244,7 @@ $$
 **S-I-R stochastic epidemic:** a Markov chain $(S, I, R)$​ with transitions
 $$
 \begin{aligned}
-\textbf{Infection:}& \quad S \to S-1\,, &\; I \to I+1 \qquad&\text{at rate}\qquad \alpha\; I \, S \,,
+\textbf{Infection:}& \quad S \to S-1\,, &\; I \to I+1 \qquad&\text{at rate}\qquad \alpha\; S \, I \,,
 \\
 \textbf{Removal:}& \quad I \to I-1\,, &\; R \to R+1 \qquad&\text{at rate}\qquad \beta\; I  \,.
 \end{aligned}
@@ -285,12 +285,12 @@ The ``R-nunber" was the subject of continuing interest throughout the COVID-19 p
 \par}
 Important, because the R-number controls severity of epidemic. However:
 
-1. Modelling is \alert{tough}. _Either_ massive assumptions (homogeneous mixing) _or_ far too many parameters;
+1. Modelling is \alert{tough}. _Either_ massive assumptions (homogeneous mixing) _or_ very many parameters;
 
 2. Inference is \alert{really} \alert{tough}: hard to get information about infection times;
 
 3. It is all \alert{especially} \alert{tough} in early stages. Answers are
-most needed when hardly any information is available (a simplified example for a Warwick UG second-year statistics module shows how tough this is);
+most needed when hardly any information is available (a simplified example for a Warwick UG second-year statistics module shows how tough this can be);
 
 4. Markov chain Monte Carlo (MCMC) can be used (see next slide) but what about burn-in?
 
@@ -298,25 +298,25 @@ most needed when hardly any information is available (a simplified example for a
 
 An easier question
 ==================
-
 \small 
 [@GibsonRenshaw-1998; @ONeillRoberts-1999; @GibsonRenshaw-2001]
 
+\bigskip
 
 \note{
 I learned the phrase ``algorithmic time" from Andrew Stuart.
 \par}
-1. Suppose $n$, $\alpha$, $\beta$ are known​,
-removal times are observed,
+1. Suppose $n$, $\alpha$, $\beta$ known​,
+removal times observed,  
 but unobserved infection times \structure{must be inferred}.
 2. Visualize $n$ time lines, along which incidents are scattered: 
    * potential removals, activated if time line is infected;
    * potential infections, activated if time line is infected *and* if designated target time line is lowest uninfected time line.
 3. Poisson point processes of appropriate rates yield an S-I-R epidemic.
-4. Let the whole S-I-R trajectory evolve in *algorithmic time* 
-(pattern of potential infections and removals
-according to immigration-death processes in discrete algorithmic time).
-5. The result is a _trajectory-valued chain_ which has unconditioned S-I-R as its equilibrium distribution.
+4. Evolve whole S-I-R trajectory in *algorithmic time* 
+(alter potential infections and removals
+using immigration-death in discrete algorithmic time).
+5. Result: _trajectory-valued chain_, unconditioned S-I-R as equilibrium.
 
 
 ---
@@ -391,11 +391,9 @@ depict("figure-1", new_figure(
 ```{julia}
 #| echo: false
 #| label: fig-figure-2
-#| fig-cap: "An infection is _activated_ when its target       \
-#|           is lowest uninfected timeline at that time.       \
-#|           A removal is _activated_ when location is in      \
-#|           infected region, affecting lowest infected        \
-#|           (purple disk if different from removal timeline). " 
+#| fig-cap: "Activate _infection_ if target on lowest uninfected timeline. \
+#|           _removal_ if in infected region and remove lowest infected    \
+#|           (purple disk if different timeline). " 
 depict("figure-2", new_figure(
     draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
         select=MOST),
@@ -477,10 +475,10 @@ uiv = Innovation(population, infs1, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4b", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Initial unconditioned epidemic ")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    title="Initial unconditioned epidemic ")
 )
 ```
 
@@ -490,16 +488,21 @@ Illustration of technical point (2)
 #| echo: false
 #| label: fig-figure-4b
 #| fig-cap: "Replace first third of removals, infections unchanged" 
+intensity = 0.05
 tsplit = (1.0/3.0) * duration
 rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
 uiv = Innovation(population, infs1, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4b", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Partially updated unconditioned epidemic (1/7)")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (1/7)")
 )
 ```
 
@@ -515,10 +518,14 @@ uiv = Innovation(population, infs1, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4c", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Partially updated unconditioned epidemic (2/7)")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (2/7)")
 )
 ```
 
@@ -534,10 +541,14 @@ uiv = Innovation(population, infs1, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4d", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Partially updated unconditioned epidemic (3/7)")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (3/7)")
 )
 ```
 
@@ -553,10 +564,14 @@ uiv = Innovation(population, infs1, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4e", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Partially updated unconditioned epidemic (4/7)")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, duration, population+1), 
+                fill("blue"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (4/7)")
 )
 ```
 
@@ -573,10 +588,14 @@ uiv = Innovation(population, infs, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4f", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Partially updated unconditioned epidemic (5/7)")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(tsplit, 0, duration, population+1), 
+                fill("yellow"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (5/7)")
 )
 ```
 
@@ -594,10 +613,14 @@ uiv = Innovation(population, infs, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4g", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Partially updated unconditioned epidemic (6/7)")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(tsplit, 0, duration, population+1), 
+                fill("yellow"), fillopacity(intensity))
+            ),
+    title="Partially updated unconditioned epidemic (6/7)")
 )
 ```
 
@@ -614,16 +637,20 @@ uiv = Innovation(population, infs, rems)
 uev = Evolution(initial, uiv)
 depict("figure-4h", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev, 
-    duration, theme=theme, 
-        select=MOST),
-        title="Fully updated unconditioned epidemic (7/7)")
+                    uev, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(tsplit, 0, duration, population+1), 
+                fill("yellow"), fillopacity(intensity))
+            ),
+    title="Fully updated unconditioned epidemic (7/7)")
 )
 ```
 
 
 
-Conditioning on observed removals (PARTLY OUTMODED)
+Conditioning on observed removals
 =================================
 \note{
 Monotonicity is a key concept here. Note however
@@ -642,18 +669,20 @@ Additionally. for a complicated algorithm such as this one, it is important
 to test the underlying logic by implementing the algorithm in computer code
 (which has a way of revealing false hidden assumptions!).
 \par}
-* The trajectory-valued chain is *reversible*.
-* So if we forbid the evolution to get rid of observed removals, and forbid it to introduce new activated removals, then the modified chain has invariant probability measure which conditions on observed pattern of removals. Implications:
-  * removals can be introduced only if they don't activate;
-  * sometimes infections cannot be removed (because that would result in losing a conditioned removal);
-  * infections can be introduced only if they don't lead to new removals.
-* More housekeeping details required to define algorithm precisely and make sure reversibility and
-monotonicity still work.
+* The trajectory-valued chain is *dynamically reversible*,
+in _continuous algorithmic time_.
+* Forbidding removal of observed removals, and forbidding creation of new activated removals, yields a modified chain whose invariant probability measure conditions on observed pattern of removals.  
+\structure{Implications:}
+  * a removal can be introduced only if they don't activate;
+  * an infection cannot be removed if that loses a conditioned removal;
+  * an infection can be introduced only if no new observed removals result.
+* \structure{Housekeeping details} required to establish that
+monotonicity still works.
 * Irreducibility is _vital_ 
-(for otherwise equilibrium will depend on starting point).
-Implication:
-  * need to allow conditioned removals to change time line (if still activated) but not time of occurrence;
-* Does this produce a feasible and suitably monotonic algorithm?
+(otherwise equilibrium depends on starting point).
+Consequently:
+  * conditioned removals must be able to change time line (but not time of occurrence);
+* Does this produce a _feasible_ and suitably monotonic algorithm?
 
 Example
 =======
@@ -706,18 +735,20 @@ integrate out the pattern of unobserved infections.
   to find *maximum a posterior* estimates of $\alpha$ and $\beta$;
     - or even, with some computational effort, compute the entire posterior joint density for $\alpha$ and $\beta$!
 
+* Finally: might this generalize to other suitable compartment models?
+
 Conclusion  {#sec-conclusion}
 ==========
-* Do you worry about burn-in issues when doing MCMC? 
-Consider whether perfect simulation can be applied!
+* If MCMC burn-in is a concern, 
+try to build a perfect simulation!
 
 * CFTP works even for significantly complex and relevant models of real-life phenomena.
 
-* _Of course_ detailed models resist perfect simulation: but it 
-will be helpful to compare with a simpler model (using fewer parameters). 
+* _Of course_ detailed models resist perfect simulation (but it 
+will be helpful to compare with a simpler model using fewer parameters). 
 
-* CFTP: an important tool to be considered by the investigator seeking to 
-implement accurate and informative MCMC.
+* Still to be done: statistical estimation of parameters, generalization
+to other compartment models.
 
 * Thank you for your attention! \alert{QUESTIONS?}
 

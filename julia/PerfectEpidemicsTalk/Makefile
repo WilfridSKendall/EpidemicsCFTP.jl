@@ -22,7 +22,7 @@ QUARTO_OPT    := --highlight-style tango
 
 INKSCAPE      := /usr/bin/inkscape
 
-.PHONY: main handout notes full see see_handout see_notes qrcode
+.PHONY: main handout web-handout notes full see see_handout see_notes qrcode
 
 ##################################################
 
@@ -36,6 +36,9 @@ see:            main;    xdg-open $(beamer)
 see_handout:    $(handout-2x2); xdg-open $(handout-2x2)
 see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
 
+web-handout:    $(title)-handout.pdf
+	cp $< $(HOME)/HTML/WilfridSKendall/talks/$(title)/$<
+	make -C $(HOME)/HTML/WilfridSKendall deploy
 #################################################
 
 %.pdf: %.qmd $(biblio) $(macros)
@@ -53,7 +56,7 @@ $(biblio): $(biblio-source)
 		"$<" > $(biblio)
 
 qrcode: image/talk_URL.jpg
-	qrencode -s 6 -l H -o image/talk_URL.png "https://wilfridskendall.github.io/talks/$(title(/$(title(-handout.pdf"
+	qrencode -s 6 -l H -o image/talk_URL.png "https://wilfridskendall.github.io/talks/$(title)/$(title)-handout.pdf"
 	convert -scale 25% image/talk_URL.png image/talk_URL.jpg
 	rm image/talk_URL.png
 
@@ -83,4 +86,4 @@ image/%.pdf: image/%.svg
 
 image/talk_URL.png:
 	qrencode -s 1 -l H -o "$@" \
-		"https://wilfridskendall.github.io/talks/$(title(/$(title(-handout.pdf"
+		"https://wilfridskendall.github.io/talks/$(title)/$(title)-handout.pdf"

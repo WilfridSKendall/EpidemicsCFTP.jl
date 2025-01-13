@@ -13,10 +13,12 @@ Talk versions:
   - [x] incident pattern;
   - [x] resulting epidemic;
   - [x] working through first removals then infections "pixel-by-pixel".
-- [ ] After "Conditioning on observed removals": three slides on 
-  - [ ] epidemic in step 1;
-  - [ ] epidemic in step 2, pointing out how conditioned removals move up and down timelines;
-  - [ ] LFE and NFZ controlling update, perpetuated infections, need to prove monotonicity.
+- [x] Introduce function to deliver `julia` pictures. DECIDED NOT
+- [x] After "Conditioning on observed removals": three slides on 
+  - [x] epidemic in step 1;
+  - [x] epidemic in step 2, pointing out how conditioned removals move up and down timelines;
+  - [x] LFE and NFZ controlling update, perpetuated infections, need to prove monotonicity.
+- [ ] Illustration of a small set!
 - [ ] Check production of handout and 2x2 notes.
 - [ ] Test QR code.
 - [ ] Locate and test handout and movie in my github site

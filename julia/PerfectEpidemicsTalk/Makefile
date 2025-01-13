@@ -22,7 +22,7 @@ QUARTO_OPT    := --highlight-style tango
 
 INKSCAPE      := /usr/bin/inkscape
 
-.PHONY: main handout web-handout notes full see see_handout see_notes qrcode
+.PHONY: main handout web notes full see see_handout see_notes qrcode
 
 ##################################################
 
@@ -36,9 +36,6 @@ see:            main;    xdg-open $(beamer)
 see_handout:    $(handout-2x2); xdg-open $(handout-2x2)
 see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
 
-web-handout:    $(title)-handout.pdf
-	cp $< $(HOME)/HTML/WilfridSKendall/talks/$(title)/$<
-	make -C $(HOME)/HTML/WilfridSKendall deploy
 #################################################
 
 %.pdf: %.qmd $(biblio) $(macros)
@@ -54,6 +51,10 @@ $(biblio): $(biblio-source)
 	sed --regexp-extended -f $(HOME)/lib/bibfix.sed \
 		-e "s/Kendall, Wilfrid Stephen/WSK/" \
 		"$<" > $(biblio)
+
+web:    $(title)-handout.pdf
+	cp $< $(HOME)/HTML/WilfridSKendall/talks/$(title)/$<
+	make -C $(HOME)/HTML/WilfridSKendall deploy
 
 qrcode: image/talk_URL.jpg
 	qrencode -s 6 -l H -o image/talk_URL.png "https://wilfridskendall.github.io/talks/$(title)/$(title)-handout.pdf"

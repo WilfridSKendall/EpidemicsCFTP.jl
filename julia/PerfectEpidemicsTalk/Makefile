@@ -38,16 +38,10 @@ see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
 
 #################################################
 
-trial.pdf: trial.qmd $(biblio) $(macros)
-	git log -1 > $(version)
-	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
-	$(QUARTO) render $< - --to=pdf $(QUARTO_OPT)  --no-cache             \
-	--citeproc --bibliography=$(biblio) --csl=$(csl)
-
 %.pdf: %.qmd $(biblio) $(macros)
 	git log -1 > $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
-	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)  --no-cache             \
+	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)                                    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)
 
 %.tex: %.qmd $(biblio)
@@ -55,7 +49,7 @@ trial.pdf: trial.qmd $(biblio) $(macros)
 
 $(biblio): $(biblio-source)
 	sed --regexp-extended -f $(HOME)/lib/bibfix.sed \
-		-e "s/Kendall, Wilfrid Stephen/WSK/" \
+		-e "s/Kendall, Wilfrid Stephen/WSK/"    \
 		"$<" > $(biblio)
 
 web:    $(title)-handout.pdf

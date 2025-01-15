@@ -46,7 +46,7 @@ format:
 #| include: false
 #| tags: [parameters]
 Pkg.activate("..")
-source = "trial.qmd"
+source = "PerfectEpidemics.qmd"
 
 using EpidemicsCFTP, EpidemicsUtilities
 
@@ -70,16 +70,16 @@ Introduction   {#sec-introduction}
 ![](image/Terry_Pratchett.jpg){width=1in fig-align="top"}  
 ::::
 
-::: {.columns layout="[ 35, 65 ]" layout-valign="bottom"}
+::: {.columns layout="[ 30, 70 ]" layout-valign="bottom"}
 ![](image/talk_URL.jpg){width=1in fig-align="bottom"}
 
-Handout available on the web:
+Handout is on the web:
 use the `QR-code`
+or visit  
+[`wilfridskendall.github.io/talks/PerfectEpidemics`](https://wilfridskendall.github.io/talks/PerfectEpidemics/).
 :::
 
-\qquad \quad or visit <https://wilfridskendall.github.io/talks/PerfectEpidemics/>.
-
-The author acknowledges support of UK EPSRC grant EP/R022100.
+WSK acknowledges the support of UK EPSRC grant EP/R022100.
 
 
 1: Introduction to Perfect Simulation  {#sec-perfection}
@@ -322,7 +322,7 @@ most needed when hardly any information is available (a simplified example for a
 
 5. Can we use \structure{perfect simulation}?
 
-::: Notes
+::: notes
 We are going to try to make headway in using perfect simulation
 to aid inference.
 :::
@@ -402,7 +402,7 @@ import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC,
 ```{julia}
 #| label: initial-epidemic
 infections1 = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(4.5,2,3), 
-        I(5.0,2,4), I(5.5,3,4), I(6.5,2,3), I(10.0,4,5), I(11.0,4,5)]
+        I(5.0,2,4), I(5.5,3,4), I(10.0,4,5), I(11.0,4,5)]
 extrainfs1  = I[I(9.1,1,3), I(11,2,4), I(12.75,2,5)]
 removals1   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
 cremovals1  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
@@ -492,7 +492,7 @@ of incidents by another.
 
 ```{julia}
 #| label: next-epidemic
-infections2 = AIF[I(9.00,4,5), I(7.20,4,5), I(6.50,3,4), I(4.20,3,4),
+infections2 = AIF[I(9.00,4,5), I(7.20,4,5), I(4.20,3,4), 
     I(2.20,4,5), I(1.50,1,2), I(1.00,2,3), I(0.50,1,2)]
 extrainfs2  = I[I(3.7,1,5), I(4.4,2,4), I(7.8,2,4), I(10.75,2,5)]
 removals2   = R[R(0.8,2), R(1.5,3), R(3.2,4), R(6.0,5), R(8.5,5)]
@@ -1041,6 +1041,10 @@ The NFZ is a recursive evaluation
 of such ``no-fly" regions,
 working backwards
 in process time.
+A more involved induction argument shows that the NFZ depends
+monotonically on the epidemic trajectory.
+One can then demonstrate that algorithmic-time evolution
+of the conditioned epidemic is monotonic: hence CFTP is feasible!
 :::
 
 ```{julia}
@@ -1058,26 +1062,21 @@ depict("figure-8", new_figure(
 )
 ```
 
-\note{
-A more involved induction argument shows that the NFZ depends
-monotonically on the epidemic trajectory.
-
-One can then demonstrate that algorithmic-time evolution
-of the conditioned epidemic is monotonic: hence CFTP is feasible!
-}
-
 Example
 =======
-\note{
+::: notes
+
 We could vary the assumption concerning the initial and final numbers of infectives while still using essentially the same perfect simulation algorithm!
 This assumption amounts to assuming some Bayesian prior knowledge.
 
-\bigskip
 
-Implementation uses \emph{julia},
+**Technical note:**  
+The simulation implementation uses _julia_,
 which combines rapid development, an expressive syntax (very useful for involved algorithms),
 and remarkably fast execution using very good ``just in time" compilation techniques.
-\par}
+
+:::
+
 * Smallpox outbreak in a closed community of 120 individuals in Abakaliki, Nigeria [much studied! see p. 125, @Bailey-1975].
 * **Assume**  
     - first observed removal is also the first removal: under a plausible improper prior we can then deduce what is the distribution of infectives \(I_0\) at time \(0\);
@@ -1101,10 +1100,11 @@ and remarkably fast execution using very good ``just in time" compilation techni
 
 So what?
 ========
-\note{
+::: notes
 In effect, perfect simulation supplies a well-behaved stochastic integration mechanism,
 reducing an MCMC algorithm to use a technique equivalent to a much more amenable Monte Carlo calculation.
-\par}
+
+::: 
 
 * Why this emphasis on unobserved infections 
 given fixed \(\alpha\) and \(\beta\), 
@@ -1123,7 +1123,8 @@ integrate out pattern of unobserved infections.
 
 * Finally: generalize to other suitable compartment models?
 
-\note{
+::: notes
+
 Other compartment models presenting varying degrees of challenge:
 
 1. Split population into a small number of interacting sub-populations;
@@ -1134,7 +1135,8 @@ as a sub-population on its own;
 3. Allow parameters to change at specific times of day or week;
 
 4. Allow for some activated removals to be unobserved!
-\par}
+
+:::
 
 
 Conclusion  {#sec-conclusion}
@@ -1165,8 +1167,8 @@ References {.allowframebreaks .t}
 
 :::
 
-Technical information
-=====================
+Image information
+-----------------
 
 \scriptsize
 
@@ -1181,4 +1183,33 @@ Technical information
 : {tbl-colwidths="[50,40,20]"}
 :::
 
+Other technical information
+===========================
+
 \scriptsize
+
+Software versions {-}
+-----------------
+Software used in computations:
+```{julia}
+#| echo: false
+#| eval: true
+#| cache: false
+quartoversion = "$(read(Cmd(`quarto --version`),          String)[1:end-1])"
+ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
+ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
+owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => "", " +0000" => "")
+
+Markdown.parse("""
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
+|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                     |`$(quartoversion)`             | ---                          |                            |
+|Running under `julia`      |`$VERSION`                     | ---                          |                            |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+|This Quarto script         |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
+""")
+```
+
+Revision history
+----------------

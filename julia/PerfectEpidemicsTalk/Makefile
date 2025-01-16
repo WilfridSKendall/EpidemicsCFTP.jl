@@ -52,8 +52,8 @@ $(biblio): $(biblio-source)
 		-e "s/Kendall, Wilfrid Stephen/WSK/"    \
 		"$<" > $(biblio)
 
-web:    $(title)-handout.pdf
-	cp $< $(HOME)/HTML/WilfridSKendall/talks/$(title)/$<
+web:    $(title).pdf $(title)-handout.pdf $(title)-notes-2x2.pdf
+	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/
 	make -C $(HOME)/HTML/WilfridSKendall deploy
 
 qrcode: image/talk_URL.jpg

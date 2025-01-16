@@ -181,7 +181,7 @@ Remarkably, this can easily be converted into a fully rigorous proof!
 
 * So now start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
 
-* If not coupled, than back-off to time \(-2T\) and repeat.
+* If not coupled by time \(0\), than back-off to time \(-2T\) and repeat.
 
 
 * May need to iterate back-off doubling several times.
@@ -200,18 +200,18 @@ is an exact draw from equilibrium!
 2: A short section on some theory about CFTP  {#sec-theory}
 ============================================
 * What about cases where monotonicity fails? or there isn’t a sensible “maximal” process? Ideas [@Kendall-1998d]: 
-	* cross-couple upper and lower envelope processes, 
-	* dominate by amenable “dominating process” (time-reversible, can draw from equilibrium, can couple target processes below dominating process); 
+	* cross-couple upper and lower envelope processes; 
+	* dominate by amenable “dominating process” (time-reversible, can draw from equilibrium, can couple target processes below dominating process). 
 
 * Theoretical limits:  _in principle_ we can show that
-	- _Classical CFTP_ equivalent to uniform ergodicity [@FossTweedie-1998]. 
-	- _Dominated CFTP_ achievable under geometric ergodicity [@Kendall-2004c]. 
-	- Dominated CFTP can work in some **non**-geometrically ergodicity cases [@ConnorKendall-2007a; _nb_ corrigendum @ConnorKendall-2007b];
+	- _Classical CFTP_ equivalent to uniform ergodicity [@FossTweedie-1998]; 
+	- _Dominated CFTP_ achievable under geometric ergodicity [@Kendall-2004c]; 
+	- Dominated CFTP can work in some **non**-geometrically ergodicity cases [@ConnorKendall-2007a; _nb_ corrigendum @ConnorKendall-2007b].
 
 * _Dominated CFTP_ 
 can be used to carry out perfect simulation for stable point processes [@KendallMoeller-2000];
 
-* Detailed expositions: @Kendall-2005a, @Huber-2015.   
+* Detailed expositions: @Kendall-2005a, @Huber-2015.  
 [Want to implement CFTP in R? see @Kendall-2014b.]
 
 ::: notes
@@ -283,7 +283,7 @@ r' \quad&=\quad \beta\; i \,.
 \]
 
 \pause
-These models make an \structure{unrealistic assumption}: 
+Both models make an \structure{unrealistic assumption}: 
 \alert{homogeneous mixing.}
 
 
@@ -373,9 +373,9 @@ but unobserved infection times \structure{must be inferred}.
    * potential removals, activated if timeline is infected;
    * potential infections, activated if timeline is infected *and* if designated target timeline is lowest uninfected timeline.
 
-3. Poisson point processes of appropriate rates yield an S-I-R epidemic.
+3. Poisson point processes _of appropriate rates_ yield an S-I-R epidemic.
 
-4. Evolve whole S-I-R trajectory in *algorithmic time* 
+4. First step: evolve whole S-I-R trajectory in *algorithmic time* 
 (alter potential infections and removals
 using immigration-death in discrete algorithmic time).
 
@@ -483,8 +483,8 @@ the initial number of infectives (here we specify \(I_0=1\)).
 ```{julia}
 #| echo: false
 #| label: fig-figure-2
-#| fig-cap: "Activate _infection_ if target on lowest uninfected timeline. \
-#|           _removal_ if in infected region and remove lowest infected    \
+#| fig-cap: "Activate (a) _infection_ if target on lowest uninfected timeline; \
+#|           (b) _removal_ if in infected region, then remove lowest infected  \
 #|           (purple disk if different timeline). " 
 depict("figure-2", new_figure(
     draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
@@ -553,7 +553,7 @@ in between these two phases.
 * Updates in algorithmic time \(\tau\) are then 
 (algorithmic-)_time-reversible_:
 so restriction to subset \(S\) of state-space 
-(in our case, _activated_ removals occurring precisely at
+(of _activated_ removals occurring precisely at
 specified set of times)
 implies a new equilibrium which is the old equilibrium 
 conditioned to lie in \(S\).
@@ -591,7 +591,7 @@ Here is the initial configuration again.
 ```{julia}
 #| echo: false
 #| label: fig-figure-4a
-#| fig-cap: "No change to removals or infections" 
+#| fig-cap: "No change yet to removals or infections;" 
 tsplit = 0.0 * duration
 rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
 uiv = Innovation(population, infs1, rems)
@@ -611,7 +611,7 @@ Illustration of technical point (2/8)
 -------------------------------
 ::: notes
 Now we use the immigration-death process of removals
-to work along the process-time axis removing old removals and
+to work forwards along the process-time axis removing old removals and
 adding new ones. At present we are not applying conditioning.
 Here we are 1/3 of the way through dealing with removals.
 :::
@@ -619,7 +619,7 @@ Here we are 1/3 of the way through dealing with removals.
 ```{julia}
 #| echo: false
 #| label: fig-figure-4b
-#| fig-cap: "Replace first third of removals, infections unchanged" 
+#| fig-cap: "Replace first third of removals, infections unchanged;" 
 intensity = 0.1
 tsplit = (1.0/3.0) * duration
 rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
@@ -645,12 +645,16 @@ Illustration of technical point (3/8)
 -------------------------------
 ::: notes
 Here we are 2/3 of the way through dealing with removals.
+
+Flip backwards and then forwards one slide, 
+and confirm that the light-orange nodes with vertical arrows
+(infections) are not changed at this stage.
 :::
 
 ```{julia}
 #| echo: false
 #| label: fig-figure-4c
-#| fig-cap: "Replace first two-thirds of removals, infections unchanged" 
+#| fig-cap: "Replace first two-thirds of removals, infections unchanged;" 
 tsplit = (2.0/3.0) * duration
 rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
 uiv = Innovation(population, infs1, rems)
@@ -687,7 +691,7 @@ by then removed, and so there isn't much scope for removals to arrive.
 ```{julia}
 #| echo: false
 #| label: fig-figure-4d
-#| fig-cap: "All removals resampled, infections unchanged" 
+#| fig-cap: "All removals resampled, infections as yet unchanged;" 
 tsplit = 1.0 * duration
 rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
 uiv = Innovation(population, infs1, rems)
@@ -713,6 +717,9 @@ Illustration of technical point (5/8)
 At this stage we now re-sample the timelines for all removals.
 Since we are not conditioning, this results in a big change.
 
+No nodes change time, but timelines for removal nodes are
+all re-sampled.
+
 1. When we proceed to consider conditioning on observing certain
 removals, the observed (``conditioned'') removals
 will not have been moved so far (their removal
@@ -728,7 +735,7 @@ but statistically the effect will be the same as if it wasn't re-sampled.
 ```{julia}
 #| echo: false
 #| label: fig-figure-4e
-#| fig-cap: "Re-sample all removal timelines, infections unchanged" 
+#| fig-cap: "Re-sample all removal timelines, infections as yet unchanged;" 
 tsplit = 1.0 * duration
 rems = [EpidemicsCFTP.alter(x,rand(2:population)) for x in rems]
 uiv = Innovation(population, infs1, rems)
@@ -751,8 +758,8 @@ depict("figure-4e", new_figure(
 Illustration of technical point (6/8)
 -------------------------------
 ::: notes
-Now we resample infections, but this time working backwards
-through process time. Here is how matters stand after 1/3 of the work is
+Now we resample infections, _but this time working backwards
+through process time._ Here is how matters stand after 1/3 of the work is
 done. Again, there is little scope for anything to be done yet:
 one infection has been dropped.
 :::
@@ -760,7 +767,7 @@ one infection has been dropped.
 ```{julia}
 #| echo: false
 #| label: fig-figure-4f
-#| fig-cap: "Re-sample last third of infections" 
+#| fig-cap: "Re-sample last third of infections;" 
 tsplit = (2.0/3.0) * duration
 infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
 uiv = Innovation(population, infs, rems)
@@ -786,13 +793,13 @@ Illustration of technical point (7/8)
 -------------------------------
 ::: notes
 And here is how matters stand after 2/3 of the work is
-done. There is a lot more change here.
+done. Much more change at this stage.
 :::
 
 ```{julia}
 #| echo: false
 #| label: fig-figure-4g
-#| fig-cap: "Re-sample last two-thirds of infections" 
+#| fig-cap: "Re-sample last two-thirds of infections;" 
 tsplit = (1.0/3.0) * duration
 infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
 uiv = Innovation(population, infs, rems)
@@ -875,7 +882,7 @@ Consequently:
 \structure{Implications:}
   * a removal can be introduced only if it doesn't activate;
   * a conditioned removal timeline can be altered only if it doesn't de-activate;
-  * an infection cannot be removed if that loses a conditioned removal;
+  * an infection cannot be removed if that action loses a conditioned removal;
   * an infection can be introduced only if no new observed removals result.
 * Does this produce a _feasible_ and suitably monotonic algorithm?
 * \structure{Housekeeping details} required to establish that
@@ -953,7 +960,7 @@ deletion of the infection in question will lead to
 a conditioned removal falling out of the infected region;
 therefore
 this deletion is rejected and the retained infection is designated
-as _perpetuated_ (coloured green!).
+as **perpetuated** (coloured green!).
 Otherwise the infection can be deleted.
 4. Infections targetting the susceptible region are trickier,
 and we will discuss them briefly below.
@@ -994,8 +1001,9 @@ it can be computed in entirety from the updated conditional epidemic.
 * Of course, when computing the update, we have to compute it set-by-step
 when working backwards in process time.
 * Here there are three discrepancies between LFE and epidemic trajectory,
-over intervals \([1.5,2.0]\), \(4.2,6.5\), and \([9.0,10.0]\). 
-* At times \(2.00\) and \(3.00\) there are perpetuations (an old infection
+over intervals \([1.5,2.0]\), \(4.2,5.0\), and \([9.0,10.0]\). 
+* At times \(2.00\), \(3.00\), \(5.00\) and \(10.00\)
+there are perpetuations (an old infection
 has to be retained to ensure conditioning is not broken); 
 at the second time \(3.00\) the perpetuation ends up forming part of
 the epidemic trajectory.
@@ -1027,34 +1035,36 @@ monotonically on the epidemic trajectory!
 No-fly zone (NFZ)
 -----------------
 ::: notes
-The NFZ applies to determine whether to allow introduction
-of infections which target the susceptible region. Things are a bit
-more complicated than for the LFE, as there are two phenomena
-to bear in mind.
+The NFZ is used to decide whether to accept proposals
+of infections targeting the susceptible region. More 
+complicated than LFE; two phenomena interact.
 
 1. An infection rooted in the infection zone must be assessed
 to see whether its introduction would lead to activating a removal,
 because it connects the infectious zone to a timeline which would
-lead to such an activation (a ``no-fly" portion of the timeline).
+lead to such an activation (a ``no-fly" portion of the timeline);
 2. An infection rooted in the susceptible zone may be such that
 it makes a portion of its timeline _before_ its time into ``no-fly".
 
-The NFZ is a recursive evaluation 
-of such ``no-fly" regions,
+Infection proposals at \(0.5\) and \(7.2\) are rejected
+as they would infect the NFZ, activating a removal.
+An infection proposal at \(1,0\) extends the NFZ.
+
+The NFZ is evaluated recursively,
 working backwards
 in process time.
 A more involved induction argument shows that the NFZ depends
 monotonically on the epidemic trajectory.
-One can then demonstrate that algorithmic-time evolution
-of the conditioned epidemic is monotonic: hence CFTP is feasible!
+This implies monotonicity of the algorithmic-time evolution
+of the conditioned epidemic: hence CFTP is feasible!
 :::
 
 ```{julia}
 #| echo: false
 #| label: fig-figure-8
-#| fig-cap: "NFZ computed recursively working right-to-left: trace  \
-#|           region of timelines that must not be infected if one   \
-#|           is not to activate unobserved removals.                "
+#| fig-cap: "NFZ computed recursively working right-to-left: it traces  \
+#|           the region of timelines that must not be infected if one   \
+#|           is not to activate unobserved removals.                    "
 depict("figure-8", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     cev2, 

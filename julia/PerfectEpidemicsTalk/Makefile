@@ -52,7 +52,7 @@ $(biblio): $(biblio-source)
 		-e "s/Kendall, Wilfrid Stephen/WSK/"    \
 		"$<" > $(biblio)
 
-web:    $(title).pdf $(title)-handout.pdf $(title)-notes-2x2.pdf
+web:    $(title)-handout.pdf $(title)-notes-2x2.pdf $(title).pdf
 	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/
 	make -C $(HOME)/HTML/WilfridSKendall deploy
 

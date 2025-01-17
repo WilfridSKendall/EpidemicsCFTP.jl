@@ -1,14 +1,36 @@
 #  TODO list for Perfect Epidemics 17 January 2025
 
+## Forthcoming
+
+- [ ] Clean up perfect SIR simulations: 
+  - [ ] I want a GIF and an MP4 for small-pox dataset requiring just 128 steps of algorithmic time
+  - [ ] I want systematic colour scheme
+  - [ ] How about a closer focus on what is happening in top-right corner for maximal process? (early time, high number of actual infectives)
+- [ ] Follow-up further on Paul Jenkins' remarks concerning links to "look-down" representation
+- [ ] Clean up Classic RW CFTP illustration: need to produce figures using `julia` within the `qmd` document
+- [ ] Visual discussion of developing use of LFE and NFZ in continuous algorithmic time
+- [ ] Visual proof of monotonicity for LFE and NFZ
+- [ ] Visual proof of finite coalescence time using small set analysis and image in appendix
+- [ ] Study Gareth Roberts' remarks on "occult removals"
+- [ ] Compartment models?
+  - [ ] Two compartments?
+  - [ ] Each individual in its own compartment?
+- [ ] Statistics?
+  - [ ] likelihood test for presumed $\alpha$ and $\beta$?
+  - [ ] steepest ascent search for m.a.p. estimator?
+  - [ ] estimate posterior density for $\alpha$ and $\beta$?
+
+## Talk preparation
+
 Talk versions:
 
-- [ ]  Print talk notes
-- [ ] Place talk PDFs in GoodReader
-- [ ] Prepare memory stick for talk PDFs and GIFs
+- [x]  Print talk notes
+- [x] Place talk PDFs in GoodReader
+- [x] Prepare memory stick for talk PDFs and GIFs
 
 ## To-do
 
-- [ ] IMAGE and QUOTE for page 2.
+- [x] IMAGE and QUOTE for page 2.
 - [x] After "An easier question": three slides on 
   - [x] incident pattern;
   - [x] resulting epidemic;
@@ -18,14 +40,14 @@ Talk versions:
   - [x] epidemic in step 1;
   - [x] epidemic in step 2, pointing out how conditioned removals move up and down timelines;
   - [x] LFE and NFZ controlling update, perpetuated infections, need to prove monotonicity.
-- [ ] Illustration of a small set!
-- [ ] Check production of handout and 2x2 notes.
-- [ ] Test QR code.
-- [ ] Locate and test handout and movie in my github site
+- [x] Illustration of a small set!
+- [x] Check production of handout and 2x2 notes.
+- [x] Test QR code.
+- [x] Locate and test handout and movie in my github site
 
 ## Nice to do later
 
 - [x] Fix incorrect image of random walk coupling!
-- [ ] Fix up perfect SIR simulation GIFs to take just 128 time steps;
-- [ ] Printed talk handout not notes: bad idea!
-- [ ] Note need to fix proposal for initial condition
+- [x] Fix up perfect SIR simulation GIFs to take just 128 time steps;
+- [x] Printed talk handout not notes: bad idea!
+- [x] Note need to fix proposal for initial condition

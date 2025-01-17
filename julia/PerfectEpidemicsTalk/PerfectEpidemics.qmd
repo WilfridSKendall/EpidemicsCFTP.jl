@@ -79,11 +79,26 @@ or visit
 [`wilfridskendall.github.io/talks/PerfectEpidemics`](https://wilfridskendall.github.io/talks/PerfectEpidemics/).
 :::
 
+This is initial work on using perfect simulation (CFTP) for epidemics.   
 WSK acknowledges the support of UK EPSRC grant EP/R022100.
 
 
 1: Introduction to Perfect Simulation  {#sec-perfection}
 =====================================
+* @ProppWilson-1996a invented exact simulation / Coupling from the Past (CFTP) / perfect simulation;
+
+* The term “perfect simulation” [@Kendall-1998d] should make you suspicious:
+perfection is never achieved. 
+This is why the term was chosen!
+
+* Key ideas of “_classic CFTP_”: 
+	- extend simulation _backwards_ through time not forwards;
+	- exploit monotonicity (_couple_ maximal and minimal processes);
+	- seek coalescence.
+
+* Simplest possible example: _random-walk-CFTP_  
+(can boost to use Ising model to do simple image reconstruction).
+
 :::notes
 Here's a very brief summary of CFTP / perfect simulation.
 
@@ -100,21 +115,9 @@ somehow miraculously defeat numerical approximation error `:-)`.
 (Persi Diaconis: “Like seeing the landscape of Mars for the first time”).
 The Ising model with an external field can be used
 to model images, hence CFTP can be used for image reconstruction.
+\par
+
 :::
-
-* @ProppWilson-1996a invented exact simulation / Coupling from the Past (CFTP) / perfect simulation;
-
-* The term “perfect simulation” [@Kendall-1998d] should make you suspicious:
-perfection is never achieved. 
-This is why the term was chosen!
-
-* Key ideas of “_classic CFTP_”: 
-	- extend simulation _backwards_ through time not forwards;
-	- exploit monotonicity (_couple_ maximal and minimal processes);
-	- seek coalescence.
-
-* Simplest possible example: _random-walk-CFTP_  
-(can boost to use Ising model to do simple image reconstruction).
 
 ---
 
@@ -124,6 +127,18 @@ Classic CFTP for a simple random walk (I)
    - \(\Prob{+1\text{ jump }}=p\in(0,1)\), while \(\Prob{-1 \text{ jump }} = 1{-}p\), **except that** 
    - at state \(9\) replace \(+1\) jump by staying still, **and**
    - at state \(0\) replace \(-1\) jump by staying still.
+* Conventional MCMC picks a starting point, then runs the simple random walk for long time till approximate equilibrium.
+
+* How long? One way to _estimate_ this is to run two
+(or several?) coupled copies till they meet.
+If probability of meeting by time \(T\) is high, then deviation of \(X_T\) from equilibrium is statistically small;
+
+* Generally \alert{not true} that location _at_ coupling is a draw from equilibrium.
+
+\begin{center}
+\only<1-5| handout:0>{\uncover<5>{\includegraphics[width=3in]{image/basic-rw1.png}}}
+\only<6-7| handout:1>{\includegraphics[width=3in]{image/basic-rw2.png}}
+\end{center}
 
 ::: notes
 This random process is asymmetric simple random walk on the integers, 
@@ -142,43 +157,14 @@ a truncated Geometric distribution (hint: use reversibility to check this!).
 5. In this case the blue and red evolutions can only couple at a boundary,
 so self-evidently the value at time of coupling cannot be a draw from the
 equilibrium!
+
+\par
 :::
-
-* Conventional MCMC picks a starting point, then runs the simple random walk for long time till approximate equilibrium.
-
-* How long? One way to _estimate_ this is to run two
-(or several?) coupled copies till they meet.
-If probability of meeting by time \(T\) is high, then deviation of \(X_T\) from equilibrium is statistically small;
-
-* Generally \alert{not true} that location _at_ coupling is a draw from equilibrium.
-
-\begin{center}
-\only<1-5| handout:0>{\uncover<5>{\includegraphics[width=3in]{image/basic-rw1.png}}}
-\only<6-7| handout:1>{\includegraphics[width=3in]{image/basic-rw2.png}}
-\end{center}
 
 ---
 
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
-::: notes
-1. Ideally one needs to choose \(T\) neither too small nor
-too large. But the result is not particularly sensitive to this.
-2. Very important that one doesn't introduce different jumps for the same time \(-t\)
-in this binary back-off! We must \alert{re-use randomness}.
-3. The binary back-off procedure means, if \(T\) is 
-initially set to be too small
-then the extra work that is required 
-is only ever a factor of \(4\)!
-4. Re-use of randomness means there is now no point in continuing: the common value
-at time \(0\) will be the same however far we extend into the past with further back-offs.
-5. Why is the common value an exact draw from equilibrium?
-Informally, because one would get the same result however far 
-one backed-off: therefore the draw is effectively a draw from time \(-\infty\).
-The golden thread can be viewed as a perfect draw from the last segment of such a simulation (this sort of device is very well-known to ergodic theorists).
-Remarkably, this can easily be converted into a fully rigorous proof!
-:::
-
 * So now start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
 
 * If not coupled by time \(0\), than back-off to time \(-2T\) and repeat.
@@ -196,6 +182,26 @@ is an exact draw from equilibrium!
 \begin{center}
 \only<1| handout:0>{\includegraphics[width=4in]{image/basic-rw3.png}}\only<2| handout:0>{\includegraphics[width=4in]{image/basic-rw4.png}}\only<3| handout:0>{\includegraphics[width=4in]{image/basic-rw5.png}}\only<4| handout:0>{\includegraphics[width=4in]{image/basic-rw6.png}}\only<5| handout:1>{\includegraphics[width=4in]{image/basic-rwCFTP.png}}%
 \end{center}
+
+::: notes
+1. Ideally one needs to choose \(T\) neither too small nor
+too large. But the result is not particularly sensitive to this.
+2. Very important that one doesn't introduce different jumps for the same time \(-t\)
+in this binary back-off! We must couple to \alert{re-use randomness}.
+3. The binary back-off procedure means, if \(T\) is 
+initially set to be too small
+then the extra work that is required 
+is only ever a factor of \(4\)!
+4. Re-use of randomness means there is now no point in continuing: the common value
+at time \(0\) will be the same however far we extend into the past with further back-offs.
+5. Why is the common value an exact draw from equilibrium?
+Informally, because one would get the same result however far 
+one backed-off: therefore the draw is effectively a draw from time \(-\infty\).
+The golden thread can be viewed as a perfect draw from the last segment of such a simulation (this sort of device is very well-known to ergodic theorists).
+Remarkably, this can easily be converted into a fully rigorous proof!
+
+\par
+:::
 
 2: A short section on some theory about CFTP  {#sec-theory}
 ============================================
@@ -215,19 +221,20 @@ can be used to carry out perfect simulation for stable point processes [@Kendall
 [Want to implement CFTP in R? see @Kendall-2014b.]
 
 ::: notes
-(Locally finite) point processes cannot in general be treated using Classic CFTP, 
-because the "top" pattern would have points _everywhere_.
-More generally, the "in principle" results encourage us to try
-CFTP out on a wide variety of models
-[For example, for \(M/G/k\) multiserver queues, @ConnorKendall-2014; @Connor-2016].
-
 1. To be computationally effective, the WSK (1998) fixes still require some associated notion of partial order and (perhaps weak) amenability of the dominating process.
 2. Basic ideas: use the notion of regenerative sets (``small sets"),
 and (Foster-)Lyapunov arguments. Note that the recipes given for these tend not to be computationally practical:
 they simply show the possibility of (possibly computationally infeasible) CFTP.
 They are intended as a challenge: when can one find _practical_ methods?
-3. This is the end of the visual introduction to CFTP.
+3. (Locally finite) point processes cannot in general be treated using Classic CFTP, 
+because the "top" pattern would have points _everywhere_.
+More generally, the "in principle" results encourage us to try
+CFTP out on a wide variety of models
+[For example, for \(M/G/k\) multiserver queues, @ConnorKendall-2014; @Connor-2016].
+4. This is the end of the visual introduction to CFTP.  ==
 People who are interested in CFTP from a practical point of view may find it useful to work through @Kendall-2014b.
+
+\par
 :::
 
 
@@ -236,27 +243,6 @@ People who are interested in CFTP from a practical point of view may find it use
 _Many_ important inferential questions [@CoriKucharski-2024].
 
 Simplest models [versus [UK model with \(10^6\) agents!](https://github.com/BDI-pathogens/OpenABM-Covid19), @FraserEtAl-2023]:
-
-::: notes
-Here are two classical models (one deterministic, one stochastic)
-from mathematical epidemiology.
-Even the exceedingly
-simple case of deterministic S-I-R permits only \emph{partial} closed-form solution.
-
-----------------------------------
-
-The assumption of homogeneous mixing of population greatly simplifies the mathematics \emph{and}
-statistics.
-Without this assumption one ends up with huge numbers of parameters, which is very bad news statistically speaking.
-A lot of research has been done on how to deal with more realistic models!
-(For example, the UK model using 1000000 agents mentioned here!)
-
-----------------------------------
-
-However in this work we deal only with perfect simulation
-for homogeneous mixing.
-Before running, one must learn to walk!
-:::
 
 **S-I-R deterministic epidemic:** 
 susceptibles \(s\), infectives \(i\), removals \(r\)
@@ -285,6 +271,35 @@ r' \quad&=\quad \beta\; i \,.
 \pause
 Both models make an \structure{unrealistic assumption}: 
 \alert{homogeneous mixing.}
+
+::: notes
+@CoriKucharski-2024 provide a broad perspective
+on statistical challenges from a very practical
+point of view!
+
+----------------------------------
+
+Here are two classical models (one deterministic, one stochastic)
+from mathematical epidemiology.
+Even the exceedingly
+simple case of deterministic S-I-R permits only \emph{partial} closed-form solution.
+
+----------------------------------
+
+The assumption of homogeneous mixing of population greatly simplifies the mathematics \emph{and}
+statistics.
+Without this assumption one ends up with huge numbers of parameters, which is very bad news statistically speaking.
+A lot of research has been done on how to deal with more realistic models!
+(For example, the UK model using 1000000 agents mentioned here!)
+
+----------------------------------
+
+However in this work we deal only with perfect simulation
+for homogeneous mixing.
+Before running, one must learn to walk!
+\par
+
+:::
 
 
 The first question asked about a new epidemic
@@ -349,21 +364,8 @@ An absurdly simple variant of contact tracing:
 
 \pause\bigskip
 
-:::notes
-1. Instead of trying to tackle inference concerning the parameters,
-let's concentrate on the large number of nuisance parameters
-provide by (typically unobserved) infection times.
-2. This is a compromise: instead of tracking individuals
-as in the stochastic epidemic model, we effectively track the numbers
-of individuals in various categories.
-3. Poisson point processes generate incidents, which then
-collectively influence the S-I-R trajectory.
-4. I learned the phrase ``algorithmic time" from Andrew Stuart.  
-We move from Poisson points spread out along timelines to
-discrete immigration-death processes producing patterns
-that evolve in algorithmic time.
-5. But we shall quickly move to _continuous_ algorithmic time.
-:::
+An important step on the way: generating an
+_unconditioned_ epidemic.
 
 1. Thus \(n\), \(\alpha\), \(\beta\) are known​,
 removal times are observed,  
@@ -381,16 +383,47 @@ using immigration-death in discrete algorithmic time).
 
 5. Result: _trajectory-valued chain_, unconditioned S-I-R as equilibrium.
 
+:::notes
+An important step on the way is to focus on just one aspect
+of inference:
+
+1. Instead of trying to tackle inference concerning the parameters,
+let's concentrate on the large number of nuisance parameters
+provide by (typically unobserved) infection times.
+2. This is a compromise: instead of tracking individuals
+as in the stochastic epidemic model, we effectively track the numbers
+of individuals in various categories.
+3. Poisson point processes generate incidents, which then
+collectively influence the S-I-R trajectory.
+4. I learned the phrase ``algorithmic time" from Andrew Stuart.  
+We move from Poisson points spread out along timelines to
+discrete immigration-death processes producing patterns
+that evolve in algorithmic time.
+5. But we shall quickly move to _continuous_ algorithmic time.
+
+:::
 
 ---
 
 From incidents to unconditioned epidemic trajectories (1/3)
 -----------------------------------------------------------
 
+
 ::: notes
+As implied above, incidents comprising a single
+innovation are
+produced by Poisson point processes on 
+each of the timelines.
+
+\bigskip
+
 Colour-coding distinguishes infections from deaths. Note that
 infections need to specify which timeline is going to be infected.
 
+* The rates of the Poisson processes generating the (proposed) 
+incidents are chosen to ensure that the numbers of actual 
+susceptibles, infectives and removals form a Markov chain
+with rates as required for a S-I-R epidemic.
 * For an infection incident to be activated, it must sit on an infected portion
 of its timeline and must point to the least of the uninfected timelines
 (calculating at the process time of the incident).
@@ -501,6 +534,15 @@ From incidents to unconditioned epidemic trajectories (3/3)
 An update in algorithmic time, if there is no
 conditioning, simply involves replacement of one set
 of incidents by another.
+
+\bigskip
+
+But we need to refine this if we are to take account of
+conditioning: a simple accept/reject procedure will
+almost always reject proposals of entire innovations
+involving all of both infection and removal incidents.
+
+\par
 :::
 
 ```{julia}
@@ -535,20 +577,6 @@ depict("figure-3", new_figure(
 
 Crucial technical point
 =======================
-::: notes
-In the case of discrete algorithmic time,
-it seems that arranging for conditioning
-would involve horrendous computation.
-Instead we ``unroll'' into continuous algorithmic time.
-
-Intuitively, we analyze first removals and then infections
-``pixel-by-pixel" along the process time axis.
-
-It turns out to be convenient to work forwards in time
-for removals, then backwards in time for infections --
-and to re-assign random timelines (but not times) for removals
-in between these two phases.
-:::
 
 * Updates in algorithmic time \(\tau\) are then 
 (algorithmic-)_time-reversible_:
@@ -579,6 +607,23 @@ preserved.
 * Crucially, step 2 ensures composition action
 is irreducible over \(S\)!  
 (So equilibrium under conditioning is unique.)
+
+::: notes
+In the case of discrete algorithmic time,
+it seems that arranging for conditioning
+would involve horrendous computation.
+Instead we ``unroll'' into continuous algorithmic time.
+
+Intuitively, we analyze first removals and then infections
+``pixel-by-pixel" along the process time axis.
+
+It turns out to be convenient to work forwards in time
+for removals, then backwards in time for infections --
+and to re-assign random timelines (but not times) for removals
+in between these two phases.
+
+\par
+:::
 
 ---
 
@@ -614,6 +659,8 @@ Now we use the immigration-death process of removals
 to work forwards along the process-time axis removing old removals and
 adding new ones. At present we are not applying conditioning.
 Here we are 1/3 of the way through dealing with removals.
+
+\par
 :::
 
 ```{julia}
@@ -649,6 +696,8 @@ Here we are 2/3 of the way through dealing with removals.
 Flip backwards and then forwards one slide, 
 and confirm that the light-orange nodes with vertical arrows
 (infections) are not changed at this stage.
+
+\par
 :::
 
 ```{julia}
@@ -686,6 +735,8 @@ have now been removed, and all new removals have been added.
 Notice that nothing was done for this simulation in the last 1/3
 of removal work, not surprising since most timelines were 
 by then removed, and so there isn't much scope for removals to arrive.
+
+\par
 :::
 
 ```{julia}
@@ -730,6 +781,8 @@ in conditioned removals.
 for an inactivated removal will be rejected
 if it leads to that removal being activated,
 but statistically the effect will be the same as if it wasn't re-sampled.
+
+\par
 :::
 
 ```{julia}
@@ -762,6 +815,8 @@ Now we resample infections, _but this time working backwards
 through process time._ Here is how matters stand after 1/3 of the work is
 done. Again, there is little scope for anything to be done yet:
 one infection has been dropped.
+
+\par
 :::
 
 ```{julia}
@@ -794,6 +849,8 @@ Illustration of technical point (7/8)
 ::: notes
 And here is how matters stand after 2/3 of the work is
 done. Much more change at this stage.
+
+\par
 :::
 
 ```{julia}
@@ -831,6 +888,8 @@ if it affects the pattern of conditioned removals.
 We now need to consider how to do this efficiently, but
 also in a manner that allows us to reason about the crucial
 monotonicity.
+
+\par
 :::
 
 ```{julia}
@@ -858,19 +917,6 @@ depict("figure-4h", new_figure(
 
 Conditioning on observed removals
 =================================
-::: notes
-Monotonicity is a key concept here. (Note however
-that we can still sometimes generate perfect simulation algorithms
-even when monotonicity does not obtain: we don't need to do this here
-but should bear it in mind for more general problems in the future.)
-
-1. We can also deal with ``unbounded" sample space
-using the notion of Dominated CFTP.
-2. The heart of the matter lies in establishing (some variant of) monotonicity.
-3. Additionally. for a complicated algorithm such as this one, it is important
-to test the underlying logic by implementing the algorithm in computer code
-(which has a way of revealing false hidden assumptions!).
-:::
 
 * The trajectory-valued chain is *dynamically reversible*,
 in _continuous algorithmic time_.
@@ -889,6 +935,22 @@ Consequently:
 monotonicity still works. Key notions: 
 _last feasible epidemic_ (\structure{LFE})
 and _no-fly zone_ (\structure{NFZ}).
+
+::: notes
+Monotonicity is a key concept here. (Note however
+that we can still sometimes generate perfect simulation algorithms
+even when monotonicity does not obtain: we don't need to do this here
+but should bear it in mind for more general problems in the future.)
+
+1. We can also deal with ``unbounded" sample space
+using the notion of Dominated CFTP.
+2. The heart of the matter lies in establishing (some variant of) monotonicity.
+3. Additionally. for a complicated algorithm such as this one, it is important
+to test the underlying logic by implementing the algorithm in computer code
+(which has a way of revealing false hidden assumptions!).
+
+\par
+:::
 
 ---
 
@@ -933,6 +995,8 @@ timelines, accepting only those changes which do not
 de-activate the conditional removals.
 * But we need to take more care about whether or not we can
 take away or add in _infections_.
+
+\par
 :::
 
 
@@ -964,6 +1028,8 @@ as **perpetuated** (coloured green!).
 Otherwise the infection can be deleted.
 4. Infections targetting the susceptible region are trickier,
 and we will discuss them briefly below.
+
+\par
 :::
 
 ```{julia}
@@ -1007,6 +1073,8 @@ there are perpetuations (an old infection
 has to be retained to ensure conditioning is not broken); 
 at the second time \(3.00\) the perpetuation ends up forming part of
 the epidemic trajectory.
+
+\par
 :::
 
 ```{julia}
@@ -1057,6 +1125,8 @@ A more involved induction argument shows that the NFZ depends
 monotonically on the epidemic trajectory.
 This implies monotonicity of the algorithmic-time evolution
 of the conditioned epidemic: hence CFTP is feasible!
+
+\par
 :::
 
 ```{julia}
@@ -1076,31 +1146,6 @@ depict("figure-8", new_figure(
 
 Example
 =======
-::: notes
-
-We could vary the assumption concerning the initial and final numbers of infectives while still using essentially the same perfect simulation algorithm!
-This amounts to presuming some Bayesian prior knowledge.
-
-* How do we allow for the (unobserved) number of initial infectives
-being unobserved?
-* Use an independence sampler: draw from the (unconditioned) number of
-initial infectives, accept if this leads to observed removals exactly at the
-list of conditioned removals.  
-* (One can alternatively employ a random-walk Metropolis sampler, so long as
-the prior for the initial number of infectives is suitably monotonic.)
-
---------------------------
-
-**Technical note:**  
-The simulation implementation uses
-[_julia_](https://julialang.org/) [@BezansonEdelmanKarpinskiShah-2017],
-which combines rapid development, an expressive syntax (very useful for involved algorithms),
-and remarkably fast execution using very good ``just in time" compilation techniques.
-
-\bigskip
-
-:::
-
 * Smallpox outbreak in a closed community of 120 individuals in Abakaliki, Nigeria [much studied! see page 125 of @Bailey-1975].
 * **Assume**  
     - first observed removal is also the first removal: under a plausible improper prior we can then deduce what is the distribution of infectives \(I_0\) at time \(0\);
@@ -1121,6 +1166,32 @@ and remarkably fast execution using very good ``just in time" compilation techni
 }\only<10| handout:0>{
 \includegraphics[height=1.5in]{image/demo-e.pdf}
 }
+
+::: notes
+
+We could vary the assumption concerning the initial and final numbers of infectives while still using essentially the same perfect simulation algorithm!
+This amounts to presuming some Bayesian prior knowledge.
+
+* How do we allow for the (unobserved) number of initial infectives
+being unobserved?
+* Use an independence sampler: draw from the (unconditioned) number of
+initial infectives, accept if this leads to observed removals exactly at the
+list of conditioned removals.  
+* (One can alternatively employ a random-walk Metropolis sampler, so long as
+the prior for the initial number of infectives is suitably monotonic.)
+
+--------------------------
+
+\scriptsize
+
+**Technical note:**  
+The simulation implementation uses
+[`julia`](https://julialang.org/) [@BezansonEdelmanKarpinskiShah-2017],
+which combines rapid development, an expressive syntax (very useful for involved algorithms),
+and remarkably fast execution using very good ``just in time" compilation techniques.
+
+\par
+:::
 
 So what?
 ========
@@ -1160,6 +1231,7 @@ as a sub-population on its own;
 
 4. Allow for some activated removals to be unobserved!
 
+\par
 :::
 
 
@@ -1167,6 +1239,13 @@ Conclusion  {#sec-conclusion}
 ==========
 ::: notes
 Lots still to do!
+
+\bigskip
+
+
+\alert{Paul Jenkins says,} what about "look-down" argument in population genetics?
+
+\par
 :::
 
 * If MCMC burn-in is a concern, 
@@ -1193,15 +1272,10 @@ References {.allowframebreaks .t}
 
 :::
 
----
 
 Image information
 -----------------
-
-\scriptsize
-
 ::: {style="font-size: 15%;"} 
-
 | Image         | Attribution                              |              |
 | ------------- | ---------------------------------------- | ------------ |
 | [_Terry Pratchett_](https://commons.wikimedia.org/wiki/File:Terry_Pratchett_(3x4_cropped).jpg) | Luigi Novi       | [_CC BY 3.0_](<https://creativecommons.org/licenses/by/3.0>) |
@@ -1209,6 +1283,21 @@ Image information
 | [_Diamond Princess_](https://commons.wikimedia.org/wiki/File:Diamond_Princess_(ship,_2004)_-_cropped.jpg) | Alpsdake | [_CC BY-SA 4.0_](https://creativecommons.org/licenses/by-sa/4.0/) |
 | Epidemic CFTP images and animation    | Result of code written by WSK | | 
 : {tbl-colwidths="[50,40,20]"}
+:::
+
+---
+
+Previous instances of this talk
+-------------------------------
+\scriptsize
+
+::: {style="font-size: 15%;"} 
+| Date     | Title             |          | Location         |
+| -------- | ----------------- | -------- | ---------------- |
+| 19/04/24 | Perfect Epidemics | Short Research Talk (12min) | Warwick |
+| 15/05/24 | McMC and Perfect Simulation  | Graduate Seminar, Aristotle Univ. (50min) | Thessaloniki | 
+| 17/01/25 | Perfect Epidemics | Applied Probability Seminar (50min) | Warwick |
+: {tbl-colwidths="[10,38,37,15]"}
 :::
 
 A "near-maximal" configuration

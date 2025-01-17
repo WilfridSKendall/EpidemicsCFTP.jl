@@ -38,8 +38,7 @@ see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
 
 #################################################
 
-%.pdf: %.qmd $(biblio) $(macros)
-	git log -1 > $(version)
+%.pdf: %.qmd $(biblio) $(macros) $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)                                    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)
@@ -50,6 +49,7 @@ see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
 $(biblio): $(biblio-source)
 	sed --regexp-extended -f $(HOME)/lib/bibfix.sed \
 		-e "s/Kendall, Wilfrid Stephen/WSK/"    \
+		-e "s/Connor, Stephen B/SBC/"    \
 		"$<" > $(biblio)
 
 web:    $(title)-handout.pdf $(title)-notes-2x2.pdf $(title).pdf
@@ -63,20 +63,22 @@ qrcode: image/talk_URL.jpg
 
 #################################################
 
-%-handout.pdf: %.qmd $(biblio)
-	git log -1 > $(version)
+%-handout.pdf: %.qmd $(biblio) $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
 	-M classoption=handout
 
-%-notes.pdf: %.qmd $(biblio)
-	git log -1 > $(version)
+%-notes.pdf: %.qmd $(biblio) $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
 	-M classoption=notes -M classoption=handout
 
+$(version):
+	git log -1    > $(version)
+	git describe >> $(version)
+	
 %-2x2.pdf: %.pdf
 	$(PDFNUP) --tidy --landscape --frame 'true' --scale '0.95' --nup '2x2' $^ -o $@
 

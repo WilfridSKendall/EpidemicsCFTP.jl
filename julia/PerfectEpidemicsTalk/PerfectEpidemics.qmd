@@ -1237,17 +1237,6 @@ as a sub-population on its own;
 
 Conclusion  {#sec-conclusion}
 ==========
-::: notes
-Lots still to do!
-
-\bigskip
-
-
-\alert{Paul Jenkins says,} what about "look-down" argument in population genetics?
-
-\par
-:::
-
 * If MCMC burn-in is a concern, 
 try to build a perfect simulation!
 
@@ -1262,6 +1251,22 @@ to other compartment models.
 * Thank you for your attention! **\alert{QUESTIONS?}**
 
 ![](image/talk_URL.jpg){width=1in fig-align="center"}
+
+::: notes
+Lots still to do!
+
+\bigskip
+
+
+At the Warwick talk in January 2025,
+Paul Jenkins asked whether this might be related to the "look-down" argument in population genetics
+[@DonnellyKurtz-1996]? My provisional answer, after recalling @DonnellyKurtz-1996 later in the day,
+is:  
+as far as I can tell, the "look-down" argument is related in the sense that it also involves
+a particle model as discussed in @Liggett-1985. However I do not yet see a closer connection.
+
+\par
+:::
 
 References {.allowframebreaks .t} 
 ==========

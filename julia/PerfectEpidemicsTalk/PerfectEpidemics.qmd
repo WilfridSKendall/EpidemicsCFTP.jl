@@ -995,8 +995,7 @@ depict("figure-5", new_figure(
 
 ::: notes
 Here is a different initial epidemic,
-including \emph{conditional removals}, indicated
-by purple circles.
+including \emph{conditional removals}, indicated by purple circles.
 
 * Essentially we change it in the same way as in the 
 unconditioned case (working ``pixel-by-pixel''), but

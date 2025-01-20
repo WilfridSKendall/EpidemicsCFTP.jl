@@ -75,7 +75,7 @@ qrcode: image/talk_URL.jpg
 	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
 	-M classoption=notes -M classoption=handout
 
-$(version):
+$(version): $(title).qmd
 	git log -1    > $(version)
 	git describe >> $(version)
 	

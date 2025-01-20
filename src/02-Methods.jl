@@ -1603,11 +1603,12 @@ function Base.rand(rng::AbstractRNG, d::SamplerTrivial{Innovation})::Innovation
                         rand(rng, Poisson((k-1) * (n - k + 1) * α * duration)))] 
                     for k ∈ 2:m]...)
     if isempty(iv.cremovals)
-        return typeof(iv)(n, infections, removals)
+        return typeof(iv)(n, infections, removals; duration=duration, α=α, β=β))
     else
         cremovals = C[alter(x...) 
             for x ∈ zip(iv.cremovals, 
                 rand(rng, DiscreteUniform(1, m), length(iv.cremovals)))]
-        return typeof(iv)(n, infections, removals, cremovals)
+        return typeof(iv)(n, infections, removals, cremovals;
+                            duration=duration, α=α, β=β)
     end    
 end

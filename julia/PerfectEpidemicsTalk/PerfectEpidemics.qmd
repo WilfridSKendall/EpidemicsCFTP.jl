@@ -1,7 +1,7 @@
 ---
 title:       Perfect Epidemics
 subtitle:    Applied Probability Seminar \newline Department of Statistics, University of Warwick
-date:        17 January 2025
+date:        today
 author:     
     - name:           W S Kendall
       url:            https://wilfridskendall.github.io/talks/PerfectEpidemics/PerfectEpidemics-handout.pdf
@@ -36,9 +36,6 @@ format:
 
         include-in-header:
             - "PerfectEpidemics.sty"
-            
-        nocite: |
-            @ConnorKendall-2007b @ConnorKendall-2014 @Connor-2016
 ---
 
 ```{julia}
@@ -52,6 +49,8 @@ using EpidemicsCFTP, EpidemicsUtilities
 
 using Gadfly, Compose
 using DataFrames, PrettyTables
+
+import Random: seed!
 
 import Markdown
 
@@ -438,8 +437,12 @@ const duration   = 15 ;
 const MAXPOP     = 20 ;
 const initial    = SIR(0.0, 4, 1, 0) ;
 const population = 5 ;
-labels   = [:AI  :AIF :I  :P  :R  :C]
-import EpidemicsCFTP: AI, AIF, I, P, R, C
+const α          = 0.06 ;
+const β          = 0.30 ;
+seed!(5) ;
+labels   = [:AI  :AIF :I  :P  :R  :C] ;
+import EpidemicsCFTP: AI, AIF, I, P, R, C ;
+
 pretty_table(map(eval, labels), header=vec(labels), alignment = :l)
 import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, 
                         ELEMENTS, LFE, LFET, LFER, MOST, NFZ
@@ -447,17 +450,9 @@ import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC,
 
 ```{julia}
 #| label: initial-epidemic
-infections1 = AIF[I(2.0,1,2), I(2.5,3,4), I(3.0,1,3), I(4.0,2,5), I(4.5,2,3), 
-        I(5.0,2,4), I(5.5,3,4), I(10.0,4,5), I(11.0,4,5)]
-extrainfs1  = I[I(9.1,1,3), I(11,2,4), I(12.75,2,5)]
-removals1   = R[R(0.5,3), R(1.0,5), R(2.0,4), R(7.0,5)]
-cremovals1  = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
-extrarems1  = R[R(8.5,2), R(12.5,1), R(14,3)] ∪ map(R, cremovals1)
-infs1 = infections1 ∪ extrainfs1
-rems1 = removals1 ∪ extrarems1
-uiv1  = Innovation(population, infs1, rems1)
-
-uev1 = Evolution(initial, uiv1) ;
+uiv1   = rand(Innovation(population, AIF[], R[];
+                    duration=duration, α=α, β=β)) ;
+uev1   = Evolution(initial, uiv1) ;
 
 uflow = table_trajectories1(duration, uev1.trajectory) ;
 axes_plot = plot(uflow, yintercept=1:initial.n,
@@ -500,6 +495,7 @@ depict("figure-1", new_figure(
         select=ELEMENTS),
         title="Incidents defining an epidemic")
 )
+
 ```
 
 ---
@@ -533,7 +529,9 @@ From incidents to unconditioned epidemic trajectories (3/3)
 ::: notes
 An update in algorithmic time, if there is no
 conditioning, simply involves replacement of one set
-of incidents by another.
+of incidents by another. 
+(Here there is a radical change, as epidemic 
+dies out at an early stage.)
 
 \bigskip
 
@@ -547,17 +545,9 @@ involving all of both infection and removal incidents.
 
 ```{julia}
 #| label: next-epidemic
-infections2 = AIF[I(9.00,4,5), I(7.20,4,5), I(4.20,3,4), 
-    I(2.20,4,5), I(1.50,1,2), I(1.00,2,3), I(0.50,1,2)]
-extrainfs2  = I[I(3.7,1,5), I(4.4,2,4), I(7.8,2,4), I(10.75,2,5)]
-removals2   = R[R(0.8,2), R(1.5,3), R(3.2,4), R(6.0,5), R(8.5,5)]
-extrarems2  = R[R(5,2), R(8.5,1), R(14,2)]
-cremovals2  = C[C(3.5,3), C(6.5,3), C(8.0,4), C(12.0,5), C(13.0,5)]
-infs2 = infections2 ∪ extrainfs2
-rems2 = removals2 ∪ extrarems2 ∪ R[R(4.1,3), R(5.9,3), R(7.6,4), R(12.3,5), R(12.9,5)]
-uiv2  = Innovation(population, infs2, rems2)
-
+uiv2 = rand(uiv1) ;
 uev2 = Evolution(initial, uiv2) ;
+
 ```
 
 ```{julia}
@@ -568,9 +558,9 @@ uev2 = Evolution(initial, uiv2) ;
 #|           incidents by a new set of incidents." 
 depict("figure-3", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
-    uev2, 
-    duration, theme=theme, 
-        select=MOST),
+                    uev2, 
+                    duration, theme=theme, 
+                    select=MOST),
         title="Updated unconditioned epidemic")
 )
 ```
@@ -638,9 +628,11 @@ Here is the initial configuration again.
 #| label: fig-figure-4a
 #| fig-cap: "No change yet to removals or infections;" 
 tsplit = 0.0 * duration
-rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
-uiv = Innovation(population, infs1, rems)
-uev = Evolution(initial, uiv)
+rems  = [x for x in uiv1.removals if x.t > tsplit] ∪ 
+            [x for x in uiv2.removals if x.t ≤ tsplit]
+uivx = Innovation(population, uiv1.infections, rems;
+                    duration=duration, α=α, β=β)
+uev  = Evolution(initial, uivx)
 depict("figure-4b", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -659,6 +651,7 @@ Now we use the immigration-death process of removals
 to work forwards along the process-time axis removing old removals and
 adding new ones. At present we are not applying conditioning.
 Here we are 1/3 of the way through dealing with removals.
+Note that the removals have now rendered the epidemic extinct!
 
 \par
 :::
@@ -669,9 +662,11 @@ Here we are 1/3 of the way through dealing with removals.
 #| fig-cap: "Replace first third of removals, infections unchanged;" 
 intensity = 0.1
 tsplit = (1.0/3.0) * duration
-rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
-uiv = Innovation(population, infs1, rems)
-uev = Evolution(initial, uiv)
+rems = [x for x in uiv1.removals if x.t > tsplit] ∪ 
+            [x for x in uiv2.removals if x.t ≤ tsplit]
+uivx = Innovation(population, uiv1.infections, rems;
+                    duration=duration, α=α, β=β)
+uev  = Evolution(initial, uivx)
 depict("figure-4b", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -705,9 +700,11 @@ and confirm that the light-orange nodes with vertical arrows
 #| label: fig-figure-4c
 #| fig-cap: "Replace first two-thirds of removals, infections unchanged;" 
 tsplit = (2.0/3.0) * duration
-rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
-uiv = Innovation(population, infs1, rems)
-uev = Evolution(initial, uiv)
+rems = [x for x in uiv1.removals if x.t > tsplit] ∪ 
+            [x for x in uiv2.removals if x.t ≤ tsplit]
+uivx = Innovation(population, uiv1.infections, rems;
+                    duration=duration, α=α, β=β)
+uev  = Evolution(initial, uivx)
 depict("figure-4c", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -732,9 +729,8 @@ have now been removed, and all new removals have been added.
 
 -------------------------------
 
-Notice that nothing was done for this simulation in the last 1/3
-of removal work, not surprising since most timelines were 
-by then removed, and so there isn't much scope for removals to arrive.
+Notice that nothing was done for this simulation in the last 2/3
+of removal work, because the new epidemic had by then run its course.
 
 \par
 :::
@@ -744,9 +740,11 @@ by then removed, and so there isn't much scope for removals to arrive.
 #| label: fig-figure-4d
 #| fig-cap: "All removals resampled, infections as yet unchanged;" 
 tsplit = 1.0 * duration
-rems = [x for x in rems1 if x.t > tsplit] ∪ [x for x in rems2 if x.t ≤ tsplit]
-uiv = Innovation(population, infs1, rems)
-uev = Evolution(initial, uiv)
+rems = [x for x in uiv1.removals if x.t > tsplit] ∪ 
+            [x for x in uiv2.removals if x.t ≤ tsplit]
+uivx = Innovation(population, uiv1.infections, rems;
+                    duration=duration, α=α, β=β)
+uev  = Evolution(initial, uivx)
 depict("figure-4d", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -781,6 +779,9 @@ in conditioned removals.
 for an inactivated removal will be rejected
 if it leads to that removal being activated,
 but statistically the effect will be the same as if it wasn't re-sampled.
+3. Because of this re-sampling, we **won't** get the same final result 
+as in the
+preliminary run.
 
 \par
 :::
@@ -789,10 +790,10 @@ but statistically the effect will be the same as if it wasn't re-sampled.
 #| echo: false
 #| label: fig-figure-4e
 #| fig-cap: "Re-sample all removal timelines, infections as yet unchanged;" 
-tsplit = 1.0 * duration
-rems = [EpidemicsCFTP.alter(x,rand(2:population)) for x in rems]
-uiv = Innovation(population, infs1, rems)
-uev = Evolution(initial, uiv)
+rems = [EpidemicsCFTP.alter(x,rand(2:population)) for x in uiv2.removals]
+uivx = Innovation(population, uiv1.infections, rems;
+                    duration=duration, α=α, β=β)
+uev  = Evolution(initial, uivx)
 depict("figure-4e", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -824,9 +825,11 @@ one infection has been dropped.
 #| label: fig-figure-4f
 #| fig-cap: "Re-sample last third of infections;" 
 tsplit = (2.0/3.0) * duration
-infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
-uiv = Innovation(population, infs, rems)
-uev = Evolution(initial, uiv)
+infs = [x for x in uiv2.infections if x.t > tsplit] ∪ 
+            [x for x in uiv1.infections if x.t ≤ tsplit]
+uivx = Innovation(population, infs, uivx.removals;
+                    duration=duration, α=α, β=β)
+uev  = Evolution(initial, uivx)
 depict("figure-4f", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -848,7 +851,7 @@ Illustration of technical point (7/8)
 -------------------------------
 ::: notes
 And here is how matters stand after 2/3 of the work is
-done. Much more change at this stage.
+done. Still little change at this stage.
 
 \par
 :::
@@ -858,9 +861,10 @@ done. Much more change at this stage.
 #| label: fig-figure-4g
 #| fig-cap: "Re-sample last two-thirds of infections;" 
 tsplit = (1.0/3.0) * duration
-infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
-uiv = Innovation(population, infs, rems)
-uev = Evolution(initial, uiv)
+infs = [x for x in uiv2.infections if x.t > tsplit] ∪ 
+            [x for x in uiv1.infections if x.t ≤ tsplit]
+uiv  = Innovation(population, infs, uivx.removals)
+uev  = Evolution(initial, uivx)
 depict("figure-4g", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -897,9 +901,11 @@ monotonicity.
 #| label: fig-figure-4h
 #| fig-cap: "All infections now re-sampled." 
 tsplit = 0.0 * duration
-infs = [x for x in infs2 if x.t > tsplit] ∪ [x for x in infs1 if x.t ≤ tsplit]
-uiv = Innovation(population, infs, rems)
-uev = Evolution(initial, uiv)
+infs = [x for x in uiv2.infections if x.t > tsplit] ∪ 
+            [x for x in uiv1.infections if x.t ≤ tsplit]
+uivx = Innovation(population, infs, uivx.removals;
+                    duration=duration, α=α, β=β)
+uev  = Evolution(initial, uivx)
 depict("figure-4h", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev, 
@@ -956,12 +962,19 @@ to test the underlying logic by implementing the algorithm in computer code
 
 Initial conditional epidemic
 ----------------------------
-
 ```{julia}
 #| echo: false
 #| label: conditional-evolution1
-civ1 = Innovation(population, infs1, removals1, cremovals1)
-cev1 = CEvolution(initial, civ1) ;
+initiali = AIF[I(0.3*k-0.01,k, k+1) for k in 1:(population-1)]
+initialr = R[]
+initialc = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
+initiali = AIF[I(0.25*x.t,k,k+1) for (k, x) in enumerate(initialc[1:end-1])]
+civ0 = Innovation(population, initiali, initialr, initialc;
+                    duration=duration, α=α, β=β) ;
+cev0 = CEvolution(initial, civ0) ;
+cev1 = CEvolution(cev0, rand(civ0)) ;
+civ1 = Innovation(population, cev1.infections, cev1.removals, cev1.cremovals;
+                    duration=duration, α=α, β=β) ;
 ```
 
 ```{julia}
@@ -981,8 +994,8 @@ depict("figure-5", new_figure(
 
 
 ::: notes
-Here is a slightly different initial epidemic,
-which includes \emph{conditional removals}, indicated
+Here is a different initial epidemic,
+including \emph{conditional removals}, indicated
 by purple circles.
 
 * Essentially we change it in the same way as in the 
@@ -1035,7 +1048,7 @@ and we will discuss them briefly below.
 ```{julia}
 #| echo: false
 #| label: conditional-evolution2
-civ2 = Innovation(population, infs2, removals2, cremovals2)
+civ2 = rand(civ1) ;
 cev2 = CEvolution(cev1, civ2) ;
 ```
 
@@ -1066,12 +1079,13 @@ it can be computed in entirety from the updated conditional epidemic.
 
 * Of course, when computing the update, we have to compute it set-by-step
 when working backwards in process time.
-* Here there are three discrepancies between LFE and epidemic trajectory,
-over intervals \([1.5,2.0]\), \(4.2,5.0\), and \([9.0,10.0]\). 
-* At times \(2.00\), \(3.00\), \(5.00\) and \(10.00\)
+* Here there is a single discrepancy between LFE and epidemic trajectory,
+over the time interval \([5.56,5.74]\). 
+* At times \(0.88\), \(1.62\), \(2.00\)
 there are perpetuations (an old infection
 has to be retained to ensure conditioning is not broken); 
-at the second time \(3.00\) the perpetuation ends up forming part of
+at the first two times (\(0.88\), \(1.62\)) 
+the perpetuation ends up forming part of
 the epidemic trajectory.
 
 \par
@@ -1114,9 +1128,8 @@ lead to such an activation (a ``no-fly" portion of the timeline);
 2. An infection rooted in the susceptible zone may be such that
 it makes a portion of its timeline _before_ its time into ``no-fly".
 
-Infection proposals at \(0.5\) and \(7.2\) are rejected
-as they would infect the NFZ, activating a removal.
-An infection proposal at \(1,0\) extends the NFZ.
+In this particular case neither of these two mechanisms 
+play a part.
 
 The NFZ is evaluated recursively,
 working backwards
@@ -1315,7 +1328,7 @@ any of the conditioned removal times.
 2. All inactivated removals have to occur before their respective infections
 (in order to avoid activation).
 3. Variants on this construction can be used to show that CFTP
-for the perfect epidemic must coalese in finite time;
+for the perfect epidemic must coalesce in finite time;
 4. However to get a sensible stochastic bound on coalescence time would require a 
 lot more work!
 :::
@@ -1323,7 +1336,7 @@ lot more work!
 ```{julia}
 infectionssmall = I[I(k*0.3, k, k+1) for k in range(1, population-1)]
 removalssmall   = R[R(k*0.1-0.05, k+1) for k in range(1, population-1)]
-cremovals       = C[alter(x, population) for x in cremovals1]
+cremovals       = C[alter(x, population) for x in initialc]
 civsmall = Innovation(population, infectionssmall, removalssmall, cremovals)
 cevsmall = Evolution(initial, civsmall) ;
 ```

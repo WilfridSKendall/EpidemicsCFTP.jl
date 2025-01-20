@@ -2,6 +2,8 @@
 
 ## Forthcoming
 
+- [ ] Examples: clean up code producing innovations
+- [ ] Discuss with Simon Spenser
 - [ ] Clean up perfect SIR simulations: 
   - [ ] I want a GIF and an MP4 for small-pox dataset requiring just 128 steps of algorithmic time;
   - [ ] I want a systematic colour scheme;
@@ -12,9 +14,10 @@
 - [ ] Visual proof of monotonicity for LFE and NFZ.
 - [ ] Visual proof of finite coalescence time using small set analysis and image in appendix.
 - [ ] Study Gareth Roberts' remarks on "occult removals". Could this hide useful monotonicity structure?
+- [ ] Is there a `domCFTP` approach? for example pure birth with barrier, birth-rate dependent on number of removals alone?
 - [ ] What about compartment models:
   - [ ] Two compartments?
-  - [ ] Each individual in its own compartment?
+  - [ ] Each individual in its own compartment? (I fera monotonicity will fai!! but it would be useful to see how.)
 - [ ] Need more useful statistical treatments:
   - [ ] likelihood test for presumed $\alpha$ and $\beta$?
   - [ ] steepest ascent search for m.a.p. estimator?

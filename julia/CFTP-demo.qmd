@@ -575,42 +575,11 @@ The coalesced trajectory is drawn in gold.
 
 {{< pagebreak >}}
 
-Creation of `mp4`
------------------
-1. Use the following to create a sequence of `mp4` movies.
-```{bash}
-for char in a b c d e ; \
-    do ffmpeg -r 12 -i animation/demo-$char-%04d.png -vf scale=258:-1 \
-    -vcodec libx264 -crf 25 -pix_fmt yuv420p animation-$char-Y.mp4 ; \
-done
-```
-(Without the `vf` option we get `height not divisible by 2 (576x259)` error here!)
+Creation of movies and `GIF`s
+-----------------------------
 
-2. This produces a sequence of files `animation-{a,b,c,d,e}-Y.mp4`. 
-Add pauses of \(10\) seconds at end of each to form `animation-{a,b,c,d,e}-X.mp4`.
-```{bash}
-for char in a b c d e ; \
-    do ffmpeg -i animation-$char-Y.mp4 \
-    -vf tpad=stop_mode=clone:stop_duration=2 animation-$char-X.mp4 ; \
-done
-```
+1. For `MP4` use `make movie` 
+(see [the perfect simulation `MP4`](https://wilfridskendall.github.io/talks/PerfectEpidemics/animation/animate.mp4));
 
-3. We now need to concatenate
-these files:
-```{bash}
-ffmpeg -f concat -safe 0 \
-    -i <(for f in ./animation-*-X.mp4; do echo "file '$PWD/$f'"; done) \
-    -c copy animation-XX.mp4
-```
-
-4. To have a further pause of \(30\) seconds at the end, do
-```{bash}
-ffmpeg -i animation-XX.mp4 -vf tpad=stop_mode=clone:stop_duration=30 animation.mp4
-```
-
-5. Finally clean up intermediate files.
-```{bash}
-rm -f animation-*.mp4
-```
-
-6. [Result is here.](https://wilfridskendall.github.io/talks/PerfectEpidemics/animation/animation.mp4)
+2. For `GIF` use `make animate`
+(see [the perfect simulation `GIF`](https://wilfridskendall.github.io/talks/PerfectEpidemics/animation/animation-IS-256.gif)).

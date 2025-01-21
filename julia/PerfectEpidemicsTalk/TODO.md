@@ -1,10 +1,12 @@
-#  TODO list for Perfect Epidemics 17 January 2025
+#  TODO list for Perfect Epidemics 
+
+#  17 January 2025
 
 ## Forthcoming
 
 - [x] Examples: clean up code producing innovations
 - [ ] Discuss with Simon Spencer
-- [ ] Clean up perfect SIR simulations: 
+- [ ] **Clean up perfect SIR simulations:** 
   - [ ] I want a GIF and an MP4 for small-pox dataset requiring just 128 steps of algorithmic time;
   - [ ] I want a systematic colour scheme;
   - [ ] How about a closer focus on what is happening in top-right corner for maximal process? (early time, high number of actual infectives).
@@ -17,9 +19,5 @@
 - [ ] Is there a `domCFTP` approach? for example pure birth with barrier, birth-rate dependent on number of removals alone?
 - [ ] What about compartment models:
   - [ ] Two compartments?
-  - [ ] Each individual in its own compartment? (I fear monotonicity will fai!! but it would be useful to see how.)
-- [ ] Need more useful statistical treatments:
-  - [ ] likelihood test for presumed $\alpha$ and $\beta$?
-  - [ ] steepest ascent search for m.a.p. estimator?
-  - [ ] estimate posterior density for $\alpha$ and $\beta$? 
+  - [ ] **Each individual in its own compartment?** (I fear monotonicity will fai!! but it would be useful to see how.)
 

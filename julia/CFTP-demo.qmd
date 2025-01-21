@@ -505,66 +505,60 @@ where appropriate.
 We start with the initial configuration of maximal and minimal evolutions at time `0`,
 and then plot continuation of the final CFTP cycle. Note that times are displayed
 as _negative_, counting up to time `0`!
-The coalesced trajectory is drawn in black.
+The coalesced trajectory is drawn in gold.
 
-::: {layout-nrow=3}
+::: {layout-ncol=2}
 ![](animation/demo-e-0000.pdf)
 
 ![](animation/demo-e-0010.pdf)
 
 ![](animation/demo-e-0020.pdf)
+
+![](animation/demo-e-0030.pdf)
 :::
 
-::: {layout-nrow=3}
-![](animation/demo-e-0030.pdf)
+::: {layout-ncol=2}
 
 ![](animation/demo-e-0040.pdf)
 
 ![](animation/demo-e-0050.pdf)
-:::
 
-::: {layout-nrow=3}
 ![](animation/demo-e-0060.pdf)
 
 ![](animation/demo-e-0070.pdf)
 
 ![](animation/demo-e-0080.pdf)
-:::
 
-
-::: {layout-nrow=3}
 ![](animation/demo-e-0090.pdf)
 
 ![](animation/demo-e-0100.pdf)
 
 ![](animation/demo-e-0110.pdf)
-:::
 
-::: {layout-nrow=3}
 ![](animation/demo-e-0120.pdf)
 
 ![](animation/demo-e.pdf)
-
-Finally, here is an animation using the `animate` package for `LaTeX`: see
-https://latex-beamer.com/tutorials/gif-latex-beamer/.  
-\animategraphics[type=png,controls={play,stop}]{12}{animation/demo-e-}{0000}{0128}
-
 :::
 
 {{< pagebreak >}}
 
+Finally, here is a sequence of animations of CFTP cycles,
+using the [`animate`](https://ctan.org/pkg/animate)
+package for `LaTeX`:
+[`latex-beamer.com/tutorials/gif-latex-beamer`](https://latex-beamer.com/tutorials/gif-latex-beamer/) provides a quick guide. The animations are created from `png` files
+and run over time ranges \([-2^n,0]\) for \(n=3, 4, 5, 6, 7, 8\).
 
-End states of all the cycles up to coalescence
-----------------------------------------------
+::: {layout-ncol=2}
 
-::: {layout-nrow=5}
-![](animation/demo-a.pdf){ width=49% }
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-a-}{0000}{0008}
 
-![](animation/demo-b.pdf){ width=49% }
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-b-}{0000}{0016}
 
-![](animation/demo-c.pdf){ width=49% }
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-c-}{0000}{0032}
 
-![](animation/demo-d.pdf){ width=49% }
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-d-}{0000}{0064}
 
-![](animation/demo-e.pdf){ width=49% }
 :::
+
+\animategraphics[type=png,controls={play,stop},width=6in]{12}{animation/demo-e-}{0000}{0128}
+

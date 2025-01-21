@@ -48,6 +48,10 @@ using EpidemicsCFTP, EpidemicsUtilities, Gadfly, Compose, Markdown ;
 
 # Set-up details and utilities
 
+::: {.callout-caution}
+Now supplanted by `figures.qmd`.
+:::
+
 Hidden cells load required modules, load theme, set up and establish graphics size and coordinates,
 and define labelling functions for \(y\)-axis.
 Overall simulation parameters are set as constants. 

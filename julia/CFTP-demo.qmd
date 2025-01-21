@@ -497,6 +497,40 @@ for (epithet, cycle_length) ∈ [("a", 8), ("b", 16), ("c", 32), ("d", 64), ("e"
         tag="demo-$epithet")
 end
 ```
+
+
+{{< pagebreak >}}
+
+Sequence of animations of CFTP cycles
+-------------------------------------
+
+This uses the [`animate`](https://ctan.org/pkg/animate)
+package for `LaTeX`:
+[`latex-beamer.com/tutorials/gif-latex-beamer`](https://latex-beamer.com/tutorials/gif-latex-beamer/) provides a quick guide. Animations run over
+discrete
+algorithmic time ranges \([-2^k,0]\) for \(k=3, 4, 5, 6, 7\). Case \(k=7\)
+delivers coalescence and is displayed in double size.
+
+::: {layout-ncol=2}
+
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-a-}{0000}{0008}  
+
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-b-}{0000}{0016}  
+
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-c-}{0000}{0032}  
+
+\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-d-}{0000}{0064}  
+
+:::
+
+::: {layout-nrow=2}
+
+\animategraphics[type=png,controls={play,stop},width=6in]{12}{animation/demo-e-}{0000}{0128}  
+
+\(k=7\): time range \(-128\) to \(0\), delivers coalescence as gold trajectory.
+
+:::
+
 Final (coalescent) cycle
 ------------------------
 There follow a selection of figures illustrating the final cycle of the CFTP algorithm, 
@@ -515,9 +549,6 @@ The coalesced trajectory is drawn in gold.
 ![](animation/demo-e-0020.pdf)
 
 ![](animation/demo-e-0030.pdf)
-:::
-
-::: {layout-ncol=2}
 
 ![](animation/demo-e-0040.pdf)
 
@@ -526,7 +557,9 @@ The coalesced trajectory is drawn in gold.
 ![](animation/demo-e-0060.pdf)
 
 ![](animation/demo-e-0070.pdf)
+:::
 
+::: {layout-ncol=2}
 ![](animation/demo-e-0080.pdf)
 
 ![](animation/demo-e-0090.pdf)
@@ -542,23 +575,42 @@ The coalesced trajectory is drawn in gold.
 
 {{< pagebreak >}}
 
-Finally, here is a sequence of animations of CFTP cycles,
-using the [`animate`](https://ctan.org/pkg/animate)
-package for `LaTeX`:
-[`latex-beamer.com/tutorials/gif-latex-beamer`](https://latex-beamer.com/tutorials/gif-latex-beamer/) provides a quick guide. The animations are created from `png` files
-and run over time ranges \([-2^n,0]\) for \(n=3, 4, 5, 6, 7, 8\).
+Creation of `mp4`
+-----------------
+1. Use the following to create a sequence of `mp4` movies.
+```{bash}
+for char in a b c d e ; \
+    do ffmpeg -r 12 -i animation/demo-$char-%04d.png -vf scale=258:-1 \
+    -vcodec libx264 -crf 25 -pix_fmt yuv420p animation-$char-Y.mp4 ; \
+done
+```
+(Without the `vf` option we get `height not divisible by 2 (576x259)` error here!)
 
-::: {layout-ncol=2}
+2. This produces a sequence of files `animation-{a,b,c,d,e}-Y.mp4`. 
+Add pauses of \(10\) seconds at end of each to form `animation-{a,b,c,d,e}-X.mp4`.
+```{bash}
+for char in a b c d e ; \
+    do ffmpeg -i animation-$char-Y.mp4 \
+    -vf tpad=stop_mode=clone:stop_duration=2 animation-$char-X.mp4 ; \
+done
+```
 
-\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-a-}{0000}{0008}
+3. We now need to concatenate
+these files:
+```{bash}
+ffmpeg -f concat -safe 0 \
+    -i <(for f in ./animation-*-X.mp4; do echo "file '$PWD/$f'"; done) \
+    -c copy animation-XX.mp4
+```
 
-\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-b-}{0000}{0016}
+4. To have a further pause of \(30\) seconds at the end, do
+```{bash}
+ffmpeg -i animation-XX.mp4 -vf tpad=stop_mode=clone:stop_duration=30 animation.mp4
+```
 
-\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-c-}{0000}{0032}
+5. Finally clean up intermediate files.
+```{bash}
+rm -f animation-*.mp4
+```
 
-\animategraphics[type=png,controls={play,stop},width=3in]{12}{animation/demo-d-}{0000}{0064}
-
-:::
-
-\animategraphics[type=png,controls={play,stop},width=6in]{12}{animation/demo-e-}{0000}{0128}
-
+6. [Result is here.](https://wilfridskendall.github.io/talks/PerfectEpidemics/animation/animation.mp4)

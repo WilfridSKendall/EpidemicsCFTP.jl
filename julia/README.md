@@ -45,7 +45,7 @@ make movie
 and make a `gif` animation using
 
 ```
-make animate
+make animation
 ```
 
 ## Checking whether any changes of code alter figures
@@ -96,7 +96,11 @@ See [`Julia-2024.pdf`](file:///home/wilfrid/ms/PerfectEpidemics/juliaReading/Jul
   - [ ] Map out posterior distribution up to a normalizing factor.
   - [ ] likelihood test for presumed $\alpha$ and $\beta$?
   - [ ] steepest ascent search for m.a.p. estimator?
-  - [ ] estimate posterior density for $\alpha$ and $\beta$? 
+  - [ ] estimate posterior density for $\alpha$ and $\beta$​? 
+- [ ] **Clean up perfect SIR simulations:** 
+  - [x] I want an `MP4` for small-pox dataset requiring just 128 steps of algorithmic time;
+  - [x] Ditto for `GIF`
+  - [x] I want a systematic colour scheme;
+  - [ ] How about a closer focus on what is happening in top-right corner for maximal process? (early time, high number of actual infectives).
 - [x] `24/02/2024` Extend `production.qmd` to use more recent code and to cover more figures. (Now done in `figures.qmd`.)
 
-## 

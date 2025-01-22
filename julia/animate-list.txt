@@ -1,5 +1,0 @@
-file 'animate-a.mp4'
-file 'animate-b.mp4'
-file 'animate-c.mp4'
-file 'animate-d.mp4'
-file 'animate-e.mp4'

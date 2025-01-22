@@ -50,7 +50,7 @@ evmax0 = extremal_evolution(initial_max, duration, cremoval_times,
     maximal=true,  size=size, α=α, β=β, all_cremovals_observed=true) ;
 
 
-seed!(6) ;
+seed!(6) ; # Figures for the talk use `seed!(6)`.
 
 
 
@@ -340,11 +340,12 @@ end ;
 # ===============================
 @info "Preparing the simulation"
 
-max_length = 128
+max_length = 256 # This influences CFTP outcome _via_ `cycle_length` in `innovation_stream`.
 stream = innovation_stream(max_length, iv_ST, iv_sRWM, iv_aRWM)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 
-#lexicon = ["01", "02", "03", "04", "05", "06", "07"] 
+#lexicon = ["01", "02", "03", "04", "05", "06", "07"]      # NEEDS max_length = 512 
+#lexicon = ["01", "02", "03", "04", "05", "06"]            # NEEDS max_length = 256
 lexicon = ["01", "02", "03", "04", "05"] # For reduced "size" and IS, only need up to `"05"`
 cycles_lexicon = [(c, 4 * 2^k) for (k, c) ∈ enumerate(lexicon)]    
 

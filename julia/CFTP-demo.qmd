@@ -115,6 +115,7 @@ evmax0 = extremal_evolution(initial_max, duration, cremoval_times,
 
 
 The random `seed!` is fixed, in order to ensure repeatability.
+Figures for the talk use `seed!(6)`.
 ```{julia}
 #| label: initializing random seed
 seed!(6) ;
@@ -487,7 +488,7 @@ The work of each CFTP cycle is carried out by the function `graphic_cycle!`. Not
 how CFTP works through cycles.
 ```{julia}
 #| label: building figures
-max_length = 256
+max_length = 256 # This influences CFTP outcome _via_ `cycle_length` in `innovation_stream`.
 stream = innovation_stream(max_length)
 canvas = [deepcopy(lines_plot) for iteration ∈ 1:max_length]
 

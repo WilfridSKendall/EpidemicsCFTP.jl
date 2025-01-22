@@ -18,15 +18,21 @@ JULIA           := $(HOME)/.juliaup/bin/julia
 
 MONTAGE         := /usr/bin/montage -label '%f' -geometry '360x360>+1+1' 
 
-FRATE           := 10
-FPAUSE          := 3
-
 START           := xdg-open
+
+.PHONY: main verify verify-image verify-image verify-animation reset-verify-image \
+	verify-animation reset-verify-image reset-verify-animation listings list  \
+	clean install movie animation 
 
 # ====================
 # Main targets
 main: $(PRODUCTS)
 verify: main verify-image verify-animation
+
+# ====================
+# list all targets
+list:
+	@grep '^[^#[:space:]].*:' Makefile
 
 # ====================
 # Clean-up
@@ -49,24 +55,29 @@ install:
 
 # ====================
 # Animation as MPEG: see https://trac.ffmpeg.org/wiki/Slideshow
+FRATE           := 10
+FPAUSE1         :=  3
+FPAUSE2         := 25
 movie: CFTP-demo.pdf
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-a*.png' \
-		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-a.mp4
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE1) animate-a.mp4
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-b*.png' \
-		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-b.mp4
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE1) animate-b.mp4
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-c*.png' \
-		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-c.mp4
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE1) animate-c.mp4
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-d*.png' \
-		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE) animate-d.mp4
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE1) animate-d.mp4
 	ffmpeg -framerate $(FRATE) -pattern_type glob -i 'animation/demo-e*.png' \
-		-vf tpad=stop_mode=clone:stop_duration=25 animate-e.mp4
+		-vf tpad=stop_mode=clone:stop_duration=$(FPAUSE2) animate-e.mp4
 	# Now merge these videos
-	ffmpeg -f concat -i animate-list.txt -c copy animate.mp4
+	ffmpeg -f concat -safe 0 -i \
+		<(for c in a b c d e ; do echo "file '$$PWD/animate-$$c.mp4'"; done) \
+		-c copy animate.mp4
 	rm animate-*.mp4
-
+	
 # ====================
 # Animation as GIF
-animate: animate.gif ; $(START) "$<" 2> /dev/null
+animation: animate.gif ; $(START) "$<" 2> /dev/null
 %.gif: %.jl 
 	$(JULIA) $<
 	rm animation/script*.*

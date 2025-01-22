@@ -52,7 +52,7 @@ $(biblio): $(biblio-source)
 		-e "s/Connor, Stephen B/SBC/"    \
 		"$<" > $(biblio)
 
-web:    $(title)-handout.pdf $(title)-notes-2x2.pdf $(title).pdf
+web:    $(title)-handout.pdf $(title)-notes-2x2.pdf $(title).pdf animate-IS-256.gif animate.mp4
 	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/
 	make -C $(HOME)/HTML/WilfridSKendall deploy
 

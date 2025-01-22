@@ -22,7 +22,7 @@ QUARTO_OPT    := --highlight-style tango
 
 INKSCAPE      := /usr/bin/inkscape
 
-.PHONY: main handout web notes full see see_handout see_notes qrcode
+.PHONY: main handout web web-GIF web-MP4 web-animations notes full see see_handout see_notes qrcode
 
 ##################################################
 
@@ -52,9 +52,9 @@ $(biblio): $(biblio-source)
 		-e "s/Connor, Stephen B/SBC/"    \
 		"$<" > $(biblio)
 
-web:    $(title)-handout.pdf $(title)-notes-2x2.pdf $(title).pdf animate-IS-256.gif animate.mp4
-	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/
+web:    web-PDF web-GIF web-MP4
 	make -C $(HOME)/HTML/WilfridSKendall deploy
+
 
 qrcode: image/talk_URL.jpg
 	qrencode -s 6 -l H -o image/talk_URL.png "https://wilfridskendall.github.io/talks/$(title)/$(title)-handout.pdf"
@@ -62,6 +62,15 @@ qrcode: image/talk_URL.jpg
 	rm image/talk_URL.png
 
 #################################################
+
+web-PDF: $(title)-handout.pdf $(title)-notes-2x2.pdf $(title).pdf 
+	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)
+
+web-GIF: animation/*.gif
+	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/animation
+	
+web-MP4: animation/*.mp4
+	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/animation
 
 %-handout.pdf: %.qmd $(biblio) $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \

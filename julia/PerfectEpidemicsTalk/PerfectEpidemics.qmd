@@ -1164,8 +1164,10 @@ Example
     - _all_ removals are recorded;
     - no further removals after last observed removal
     (makes life easier).
-* Coding in [_julia_](https://julialang.org/) [@BezansonEdelmanKarpinskiShah-2017],  we can construct
-[a perfect simulation GIF](https://wilfridskendall.github.io/talks/PerfectEpidemics/animation/animation-IS-256.gif) yielding a draw from unobserved pattern of infections.
+* Coding in [_julia_](https://julialang.org/) [@BezansonEdelmanKarpinskiShah-2017],  we obtain
+[a perfect simulation GIF](https://wilfridskendall.github.io/talks/PerfectEpidemics/animation/animate-IS-256.gif) 
+or [MP4](https://wilfridskendall.github.io/talks/PerfectEpidemics/animation/animate.mp4)
+yielding a draw from unobserved pattern of infections.
 
 [\only<1-6>{
 \uncover<6>{\includegraphics[height=1.5in]{image/demo-a.pdf}}

@@ -221,8 +221,8 @@ A `KilledRemoval` should be created (by conversion) only in:
 and it should be the case that `KilledRemoval`s are precisely those
 `AbstractRemoval`s which have `target` in the removal zone.
 
-::: {.callout-warning}
-The above list of functions (creating `KilledRemoval`) should be reduced!
+:::{.callout-warning}
+The above list of functions (creating `KilledRemoval`) should be **reduced**!
 :::
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledRemoval` as `KR`.

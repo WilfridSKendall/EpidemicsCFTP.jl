@@ -28,11 +28,11 @@ AbstractIncident
 
 The type [`AbstractIncident`](@ref) has sub-types
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref), generic incidents corresponding
-to potential removals and potential incidents respectively. The illustration @fig-sub-types
+to potential removals and potential incidents respectively. The illustration
 provides a visual key to the various concrete sub-types of 
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref):
 
-![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.pdf){#fig-sub-types}
+![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.pdf)
 
 #### `AbstractRemoval`
 `AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref),

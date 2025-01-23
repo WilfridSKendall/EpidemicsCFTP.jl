@@ -13,10 +13,10 @@ The package
 provides 
 [`julia`](https://julialang.org/) 
 object types and methods
-to perform perfect simulation of epidemics conditioned on observed (_active_) removals.
+to perform perfect simulation (_CFTP_) of epidemics conditioned on observed (_active_) removals.
 The aim is to provide 
 Coupling from the Past
-[ProppWilson-1996a; _CFTP_](@cite)
+[ProppWilson-1996a](@cite)
 for a `S-I-R` epidemic
 conditioned on all (observed) removal times and 
 making transitions according to the following rates:

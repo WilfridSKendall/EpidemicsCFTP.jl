@@ -10,5 +10,7 @@ TEMP-*
 docs/build/
 src/ARCHIVE/
 
+docs/src/CFTP.bib
+
 *.kate-swp
 *.pdf

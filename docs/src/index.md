@@ -14,11 +14,10 @@ provides
 [`julia`](https://julialang.org/) 
 object types and methods
 to perform perfect simulation of epidemics conditioned on observed (_active_) removals.
-
-
 The aim is to provide 
 Coupling from the Past
-(_CFTP_) for a `S-I-R` epidemic
+[ProppWilson-1996a; _CFTP_](@cite)
+for a `S-I-R` epidemic
 conditioned on all (observed) removal times and 
 making transitions according to the following rates:
 ```math
@@ -29,15 +28,20 @@ I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I    \,.
 \end{aligned}
 ```
 
-The simulation mechanism uses "algorithmic time" to vary an event-based simulation
-in a way that is reversible with respect to algorithmic time,
-respects the conditioning on active removals,
-and possesses sufficient monotonicity to permit construction of a classical 
-CFTP algorithm.
+The simulation mechanism uses "algorithmic time" to vary an event-based simulation such that 
 
-![Screen shot of a resulting simulation.](image/introduction-18-one-iteration.png)
+1. detailed balance holds with respect to algorithmic time, 
+2. respects the conditioning on active removals,
+3. possesses sufficient monotonicity to permit construction of a classical CFTP algorithm.
 
--------------------------------
+![A snap-shot of a simulation produced by `EpidemicsCFTP`.](image/introduction-18-one-iteration.pdf)
+
+    
+**Reference**
+
+```@bibliography
+```
+
 
 ## Information 
 ### Specifics concerning `EpidemicsCFTP`  
@@ -46,6 +50,9 @@ Here is the documentation string for the module (under development):
 ```@docs
 EpidemicsCFTP
 ```
+
+-------------------------------
+
 
 Software version information is as follows:
 ```@eval
@@ -90,3 +97,4 @@ Run `make doctest` to perform doctests.)
     - run `make documentation
     - run `make html-documentation` (for `gitbook` documentation)
     - or `make pdf-documentation` (for `pdf` documentation).
+

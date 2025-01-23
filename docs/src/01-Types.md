@@ -6,43 +6,45 @@ a real-valued attribute `t` corresponding to a (process) time.
 ```@docs
 AbstractTimedOccurrence
 ```
-This has sub-types `AbstractIncident` 
+The type [`AbstractTimedOccurrence`](@ref) 
+has sub-types `AbstractIncident` 
 (whose sub-types correspond to various kinds of _possible_ infections and removals)
 and `SIR` 
 (representing the state of the `S-I-R` 
 incident at a particular moment of time). 
 
 ### The state of an epidemic
-`SIR` is a type for recording the state of a `S-I-R` epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
+The purpose of the type `SIR` is 
+to provide a structure for recording the state of a `S-I-R` epidemic at a stipulated time, based on [`AbstractTimedOccurrence`](@ref).
 ```@docs
 SIR
 ```
 
 ### Abstract incidents
-`AbstractIncident` is a generic type for incidents taking place in time, based on [`AbstractTimedOccurrence`](@ref).
+`AbstractIncident` is a generic type for incidents taking place in time, derived from [`AbstractTimedOccurrence`](@ref).
 ```@docs
 AbstractIncident
 ```
 
-It has sub-types
+The type [`AbstractIncident`](@ref) has sub-types
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref), generic incidents corresponding
-to potential removals and potential incidents respectively. The illustration
+to potential removals and potential incidents respectively. The illustration @fig-sub-types
 provides a visual key to the various concrete sub-types of 
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref):
 
-![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.png)
+![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.pdf){#fig-sub-types}
 
 #### `AbstractRemoval`
-`AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref)
-Further generic sub-types are
+`AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref),
+itself possessing generic sub-types
 [`OperativeRemoval`](@ref) and [`NonOperativeRemoval`](@ref), used to distinguish between
 potential removal incidents
-that will, respectively will not, be allowed to form part of 
+according to whether or not they may form part of 
 an epidemic trajectory.
 
 Concrete sub-types are tabulated as follows:
 
-| _Type of `AbstractRemoval`_ | _Sub-type of ..._             | _Explanation_                              |
+| _Type of `AbstractRemoval`_ | _Immediate parent type_       | _Explanation_                              |
 |:----------------------------|:------------------------------|:-------------------------------------------|
 | [`Removal`](@ref)           | [`OperativeRemoval`](@ref)    | Remove an infection if `target` infected   | 
 | [`CRemoval`](@ref)          | [`OperativeRemoval`](@ref)    | As above but **conditioned** to be removed | 
@@ -58,7 +60,7 @@ NonOperativeRemoval
 ```
 
 #### Two different kinds of [`OperativeRemoval`](@ref)s
-`Removal` and `CRemoval` are specific potential removal incidents: 
+`Removal` and `CRemoval` represent specific potential removal incidents: 
 `CRemoval` is reserved for realized removals (which in our application
 are always conditioned to happen).
 ```@docs
@@ -78,14 +80,15 @@ RemovalMarker(::AbstractRemoval)
 
 ### `AbstractInfection`
 `AbstractInfection` incidents are sub-typed as
-[`OperativeInfection`](@ref) and [`NonOperativeInfection`](@ref), used to distinguish between
+[`OperativeInfection`](@ref) and [`NonOperativeInfection`](@ref),
+used to distinguishes between
 potential infection incidents
-that will, respectively will not, be allowed to form part of 
+according to whether or not they are allowed to form part of 
 an epidemic trajectory.
 
 Concrete sub-types are tabulated as follows:
 
-| _Type of `AbstractInfection`_ | _Sub-type of ..._             | _Explanation_                               |
+| _Type of `AbstractInfection`_ | _Immediate parent type_       | _Explanation_                               |
 |:------------------------------|:------------------------------|:--------------------------------------------|
 | [`Infection`](@ref)           |[`OperativeInfection`](@ref)   | Supplied by new [`Innovation`](@ref)        |
 | [`PInfection`](@ref)          |[`OperativeInfection`](@ref)   | Held over from previous [`Innovation`](@ref)|

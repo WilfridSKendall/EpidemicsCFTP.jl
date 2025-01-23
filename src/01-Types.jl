@@ -20,9 +20,10 @@ abstract type AbstractTimedOccurrence end
 
 Sub-type of [`AbstractTimedOccurrence`](@ref).
 
-Expects a field `kind` which is a `String`. This field is
+Expects a field `kind` which is a `String`,
 used by function `show`
-to represent the particular kind of incident.
+to represent the particular kind of incident
+symbolically.
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractIncident` as `AI`.
 """
@@ -34,8 +35,8 @@ abstract type AbstractIncident <: AbstractTimedOccurrence end
     AbstractRemoval
 
 This represents an abstract removal using a sub-type of [`AbstractIncident`](@ref).  
-Inherits requirement for a field `t<:Real` from `AbstractTimedOccurrence`).  
-Also expects field `target<:Int`.
+It inherits requirement for a field `t<:Real` from `AbstractTimedOccurrence`).  
+It also expects field `target<:Int`.
 
 If the potential removal is to become realized 
 then `target` must index a time line which is infectious just before time `t`.
@@ -48,8 +49,8 @@ abstract type AbstractRemoval <: AbstractIncident end
     OperativeRemoval
 
 This represents an _operative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
-It inherits from `AbstractTimedOccurrence` an expectation of field `t<:Real`. 
-Also expects a field `target<:Int`.
+It inherits the field `t<:Real` from `AbstractTimedOccurrence`. 
+It also expects a field `target<:Int`.
 
 The `target` field labels the timeline being considered as host for the removal incident:
 it must be a positive integer.  
@@ -64,8 +65,8 @@ abstract type OperativeRemoval <: AbstractRemoval end
     NonOperativeRemoval
 
 This represents a _nonoperative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
-It inherits from `AbstractTimedOccurrence` an expectation of field `t<:Real`. 
-Also expects a field `target<:Int`.
+It inherits a field `t<:Real` from `AbstractTimedOccurrence`. 
+It also expects a field `target<:Int`.
 
 The `target` field labels the timeline being considered as host for the removal incident:
 it must be a positive integer.  
@@ -79,9 +80,9 @@ abstract type NonOperativeRemoval <: AbstractRemoval end
 """
     AbstractInfection
 
-This represents an abstract infection using a sub-type of [`AbstractIncident`](@ref).
-Inherits expectation of field `t<:Real` from `AbstractTimedOccurrence`).  
-Also expects fields `target<:Int` and `infectee<:Int`,
+This represents an abstract infection using a sub-type of [`AbstractIncident`](@ref),
+inheriting a field `t<:Real` from `AbstractTimedOccurrence`).  
+It also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
 Under conditioning on removals,
@@ -99,8 +100,8 @@ abstract type AbstractInfection <: AbstractIncident end
     OperativeInfection
 
 This represents an _operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
-It inherits from [`AbstractTimedOccurrence`](@ref) an expectation of field `t<:Real`. 
-Also expects fields `target<:Int` and `infectee<:Int`,
+It inherits a field `t<:Real` from [`AbstractTimedOccurrence`](@ref). 
+It also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
 If the potential infection is to become realized 
@@ -118,8 +119,8 @@ abstract type OperativeInfection <: AbstractInfection end
     NonOperativeInfection
 
 This represents a _non-operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
-It inherits from [`AbstractTimedOccurrence`](@ref) an expectation of field `t<:Real`.  
-Also expects fields `target<:Int` and `infectee<:Int`,
+It inherits a field `t<:Real` from [`AbstractTimedOccurrence`](@ref).  
+It also expects fields `target<:Int` and `infectee<:Int`,
 such that `target < infectee`.
 
 Such an incident will never be realized.
@@ -216,11 +217,13 @@ A `KilledRemoval` should be created (by conversion) only in:
 
 * [`EpidemicsCFTP.kill_irrelevant_removals`](@ref) 
 * one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::AbstractInnovation));
-* and [`EpidemicsCFTP.inactive_removals`](@ref)  
-(This list of functions should be reduced!),
-
+* and [`EpidemicsCFTP.inactive_removals`](@ref) 
 and it should be the case that `KilledRemoval`s are precisely those
 `AbstractRemoval`s which have `target` in the removal zone.
+
+::: {.callout-warning}
+The above list of functions (creating `KilledRemoval`) should be reduced!
+:::
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledRemoval` as `KR`.
 
@@ -643,7 +646,7 @@ end
     SIR(::Real, ::Int, ::Int, ::Int)
 
 This represents a state `sir` of a `S-I-R` epidemic
-(with fields `s`, `i`, `r` being non-negative integers adding up to the
+(with fields `s`, `i`, `r` being non-negative integers adding up to
 the population size `n`)
 at a specified time `t` (a real number). Note that `n` is 
 a computed field, calculated
@@ -656,9 +659,6 @@ SIR₀.₁₀(1:2:3)
 
 julia> sir.n
 6
-
-julia> sir == SIR(0.1, 1, 2, 3, 6)
-true
 ```
 """
 struct SIR <: AbstractTimedOccurrence

@@ -3,6 +3,8 @@ import Random: AbstractRNG, SamplerTrivial # Is this necessary?!
 import Distributions
 import Distributions: Categorical
 DocMeta.setdocmeta!(EpidemicsCFTP, :DocTestSetup, :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations); recursive=true)
+
+
 makedocs(;
     modules=[EpidemicsCFTP],
     authors="Wilfrid S Kendall <W.S.Kendall@warwick.ac.uk>",

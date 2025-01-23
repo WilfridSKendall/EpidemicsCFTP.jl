@@ -4,7 +4,7 @@ This is a `julia` package, currently under development, which is intended to imp
 
 Requirements
 ------------
-The package is being implemented using `Julia` 1.9.2 (as of `26-02-2024`)
+The package is being implemented using `Julia` 1.11 (as of `20-01-2025`)
 
 > [!NOTE]
 >

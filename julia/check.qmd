@@ -270,12 +270,12 @@ In a total of \(110\) independent \(Z\)-tests, two of the \(p\)-values are at or
 This is not very surprising: probabilities of \(k\) tests out of \(100\) producing \(p\)-value lower than \(0.01\) 
 are
 
-| $k$ | probability of $k$ or more tests at lower than $0.01$ |
-| --- | -----------------------------------------------------:|
-| $1$ | $0.6400$                                              |
-| $2$ | $0.2642$                                              |
-| $3$ | $0.0794$                                              |
-| $4$ | $0.0184$                                              |
+| $k$ | _probability of $k$ or more tests at lower than $0.01$_ |
+| --- | -------------------------------------------------------:|
+| $1$ | $0.6400$                                                |
+| $2$ | $0.2642$                                                |
+| $3$ | $0.0794$                                                |
+| $4$ | $0.0184$                                                |
 
 :::
 

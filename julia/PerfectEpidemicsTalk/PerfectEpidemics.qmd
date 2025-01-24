@@ -890,10 +890,11 @@ Illustration of technical point (8/8)
 ::: notes
 Finally the entire process time range is dealt with.
 In this unconditioned case all removals and infections are removed
-and replaced by new ones. Under conditioning, however, each individual
+and replaced by new ones. 
+
+Under conditioning, however, each individual
 decision (to remove, resample, or introduce) has to be tested to see
 if it affects the pattern of conditioned removals.
-
 We now need to consider how to do this efficiently, but
 also in a manner that allows us to reason about the crucial
 monotonicity.
@@ -1325,8 +1326,8 @@ Previous instances of this talk {-}
 : {tbl-colwidths="[10,38,37,15]"}
 :::
 
-A "near-maximal" configuration {-}
-==============================
+Appendix A: A "near-maximal" configuration {-}
+==========================================
 ::: notes
 1. For a "near-maximal configuration", we set relevant infections to occur
 in order on or before a fixed small time \(\delta=1.5>0\),
@@ -1341,6 +1342,7 @@ lot more work!
 :::
 
 ```{julia}
+#| label: near-maximal
 infectionssmall = I[I(k*0.3, k, k+1) for k in range(1, population-1)]
 removalssmall   = R[R(k*0.1-0.05, k+1) for k in range(1, population-1)]
 cremovals       = C[alter(x, population) for x in initialc]
@@ -1362,6 +1364,214 @@ depict("figure-A", new_figure(
 ```
 
 
+Appendix B: Updating a conditional epidemic {-}
+===============================================
+We now work through the update of the conditional
+epidemic in stages.
+
+::: notes
+Seeking to convey the pixel-by-pixel nature of the update!
+:::
+
+---
+
+Initial conditional epidemic (1/8)
+----------------------------
+::: notes
+Here is the initial epidemic (actually itself produced
+using a conditional update from a rather extreme initial state).
+\par
+:::
+
+```{julia}
+#| echo: false
+#| label: fig-figure-B1
+#| fig-cap: "Initial epidemic with conditioned removals indicated by \
+#|           purple circles." 
+#civ0 = Innovation(population, initiali, initialr, initialc;
+#                    duration=duration, α=α, β=β) ;
+#cev0 = CEvolution(initial, civ0) ;
+#cev1 = CEvolution(cev0, rand(civ0)) ;
+#civ2 = rand(civ1) ;
+#cev2 = CEvolution(cev1, civ2) ;
+depict("figure-B1", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    cev1, 
+                    duration, theme=theme, 
+                    select=MOST | LFE),
+    title="Initial conditioned epidemic")
+)
+```
+
+---
+
+Conditional epidemic (2/8)
+--------------------
+::: notes
+Now we replace inactivated removals. A
+Conditioning does not affect this step.
+Here we are 1/3 of the way through dealing with removals.
+
+Not many changes arise from removal-replacement,
+because the initial epidemic is fast so leaves no
+room for inactivated removals.
+\par
+:::
+
+```{julia}
+#| echo: false
+#| label: fig-figure-B2
+#| fig-cap: "Replace first third of removals, infections unchanged;" 
+intensity = 0.1
+tsplit = (1.0/3.0) * duration
+rems = [x for x in civ1.removals if x.t > tsplit] ∪ 
+            [x for x in civ2.removals if x.t ≤ tsplit]
+civx = Innovation(population, civ1.infections, rems, civ1.cremovals;
+                    duration=duration, α=α, β=β)
+cevx  = CEvolution(cev1, civx)
+depict("figure-B2", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    cevx, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated conditioned epidemic")
+)
+```
+
+---
+
+Conditional epidemic (3/8)
+--------------------
+
+::: notes
+Now 2/3 of the way through dealing with removals.
+\par
+:::
+
+```{julia}
+#| echo: false
+#| label: fig-figure-B3
+#| fig-cap: "Replace second third of removals, infections unchanged;" 
+intensity = 0.1
+tsplit = (2.0/3.0) * duration
+rems = [x for x in civ1.removals if x.t > tsplit] ∪ 
+            [x for x in civ2.removals if x.t ≤ tsplit]
+civx = Innovation(population, civ1.infections, rems, civ1.cremovals;
+                    duration=duration, α=α, β=β)
+cevx  = CEvolution(cev1, civx)
+depict("figure-B3", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    cevx, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated conditioned epidemic")
+)
+```
+
+---
+
+Conditional epidemic (4/8)
+--------------------
+
+::: notes
+Now  all the way through dealing with removals.
+\par
+:::
+
+```{julia}
+#| echo: false
+#| label: fig-figure-B4
+#| fig-cap: "Replace remaining removals, infections unchanged;" 
+intensity = 0.1
+tsplit = (3.0/3.0) * duration
+rems = [x for x in civ1.removals if x.t > tsplit] ∪ 
+            [x for x in civ2.removals if x.t ≤ tsplit]
+civx = Innovation(population, civ1.infections, rems, civ1.cremovals;
+                    duration=duration, α=α, β=β)
+cevx  = CEvolution(cev1, civx)
+depict("figure-B4", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    cevx, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, tsplit, population+1), 
+                fill("red"), fillopacity(intensity))
+            ),
+    title="Partially updated conditioned epidemic")
+)
+```
+---
+
+Conditional epidemic (5/8)
+--------------------
+
+:::notes
+At this stage we now re-sample the timelines for all removals.
+
+No nodes change time, but timelines for removal nodes are
+all re-sampled.
+
+NEEDS WORK: NOT YET RE-SAMPLING INACTIIVATED REMOVALS
+\par
+:::
+
+
+```{julia}
+#| echo: false
+#| label: fig-figure-B5
+#| fig-cap: "Re-sample all removal timelines, infections as yet unchanged;" 
+#rems = [EpidemicsCFTP.alter(x,rand(2:population)) for x in civ2.removals]
+rems = cev2.removals
+civx = Innovation(population, civ1.infections, rems, cev2.cremovals; ## rems wrong
+                    duration=duration, α=α, β=β)
+cevx = Evolution(initial, civx)
+depict("figure-B5", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    cevx, 
+                    duration, theme=theme, 
+                    select=MOST),
+    Guide.annotation(compose(context(), 
+            rectangle(0.0, 0, duration, population+1), 
+                fill("blue"), fillopacity(intensity))
+            ),
+    title="Partially updated conditioned epidemic")
+)
+```
+
+---
+
+Eventual conditional epidemic after use of an innovation (8/8)
+--------------------------------------------------------
+::: notes
+Finally the entire process time range is dealt with.
+In this conditioned case each addition or deletion of removal or infections
+is tested to see whether it would lead to a contravention of the conditioning. 
+\par
+:::
+
+```{julia}
+#| echo: false
+#| label: fig-figure-B8
+#| fig-cap: "All infections now re-sampled. Green infections \
+#|           are \"perpetuated\"." 
+depict("figure-B8", new_figure(
+    draw_evolution!(deepcopy(lines_plot), 
+                    cev2, 
+                    duration, theme=theme, 
+                    select=MOST),
+    title="Fully updated conditioned epidemic")
+)
+```
+
 Other technical information {-}
 ===========================
 
@@ -1371,6 +1581,7 @@ Software versions {-}
 -----------------
 Software used in computations:
 ```{julia}
+#| label: software-details
 #| echo: false
 #| eval: true
 #| cache: false

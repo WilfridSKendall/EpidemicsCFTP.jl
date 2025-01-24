@@ -28,8 +28,7 @@ I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I    \,.
 \end{aligned}
 ```
 
-The simulation mechanism uses "algorithmic time" to vary an event-based simulation such that 
-
+The simulation mechanism uses "algorithmic time" to vary an event-based simulation such that  
 1. detailed balance holds with respect to algorithmic time, 
 2. respects the conditioning on active removals,
 3. possesses sufficient monotonicity to permit construction of a classical CFTP algorithm.
@@ -37,24 +36,41 @@ The simulation mechanism uses "algorithmic time" to vary an event-based simulati
 ![A snap-shot of a simulation produced by `EpidemicsCFTP`.](image/introduction-18-one-iteration.pdf)
 
     
-**Reference**
+#### Reference
 
 ```@bibliography
 ```
 
 
 ## Information 
-### Specifics concerning `EpidemicsCFTP`  
 
-Here is the documentation string for the module (under development):
-```@docs
-EpidemicsCFTP
+
+#### General advice on installation
+General advice on developing a `julia` package is given at 
+[`julialang.org/contribute/developing_package`](https://julialang.org/contribute/developing_package/).
+Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):  
+* Inform `pkg` that the package folder exists and is under development with `dev`. (You may wish to do this within a particular `julia` environment.)  
+```julia
+(v1.0) pkg> dev ~/.julia/dev/EpidemicsCFTP
 ```
+* Check that the package can be seen by `julia`.  
+```julia
+(v1.0) pkg> status
+```
+* Check that everything passes: by triggering performance of unit tests.  
+```julia
+(v1.0) pkg> test EpidemicsCFTP
+```
+(An alternative way to test the package is to run `make test` in the directory `EpidemicsCFTP`.
+Run `make doctest` to perform doctests.)
+* Commit and push to `github` with `make commit`.
+* Documentation is produced as follows: in directory `EpidemicsCFTP`,  
+    - run `make documentation
+    - run `make html-documentation` (for `gitbook` documentation)
+    - or `make pdf-documentation` (for `pdf` documentation).
 
--------------------------------
+#### Specifics concerning `EpidemicsCFTP`  
 
-
-Software version information is as follows:
 ```@eval
 import Markdown, EpidemicsCFTP
 Markdown.parse("""
@@ -65,36 +81,8 @@ Markdown.parse("""
 """)
 ```
 
--------------------------------
-
-
-### General advice on installation
-General advice on developing a `julia` package is given at 
-[`julialang.org/contribute/developing_package`](https://julialang.org/contribute/developing_package/).
-Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
-
-* Inform `pkg` that the package folder exists and is under development with `dev`. (You may wish to do this within a particular `julia` environment.)  
-```julia
-(v1.0) pkg> dev ~/.julia/dev/EpidemicsCFTP
+Documentation string for the module (under development):
+```@docs
+EpidemicsCFTP
 ```
-
-* Check that the package can be seen by `julia`.  
-```julia
-(v1.0) pkg> status
-```
-
-* Check that everything passes: by triggering performance of unit tests.  
-```julia
-(v1.0) pkg> test EpidemicsCFTP
-```
-(An alternative way to test the package is to run `make test` in the directory `EpidemicsCFTP`.
-Run `make doctest` to perform doctests.)
-
-* Commit and push to `github` with `make commit`.
-
-* Documentation is produced as follows: in directory `EpidemicsCFTP`, 
-
-    - run `make documentation
-    - run `make html-documentation` (for `gitbook` documentation)
-    - or `make pdf-documentation` (for `pdf` documentation).
 

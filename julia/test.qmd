@@ -74,7 +74,7 @@ Here are tables of the fields of `Innovation` and `Evolution`
 are computed
 from input data):
 
-::: {layout-ncol=2}
+::: {layout-ncol=2 layout-valign="bottom"}
 
 ```{julia}
 #| echo: false
@@ -111,6 +111,8 @@ The corresponding `Evolution` of an (_unconditioned_) epidemic is given as follo
 ```{julia}
 uev1 = Evolution(initial, uiv1)
 ```
+
+{{< pagebreak >}}
 
 Construction of conditioned epidemic
 ------------------------------------

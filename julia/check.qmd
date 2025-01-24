@@ -216,7 +216,7 @@ display_simulation_results(data)
 ```
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(21\) independent \(Z\)-tests there is just one \(p\)-value at or below \(0.01\) level.
+In a sequence of \(21\) independent \(Z\)-tests there are no \(p\)-values at or below \(0.01\) level.
 :::
 
 \newpage
@@ -236,7 +236,7 @@ display_simulation_results(data)
 
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(31\) independent \(Z\)-tests there are no \(p\)-values at or below \(0.01\) level.
+In a sequence of \(31\) independent \(Z\)-tests there are two \(p\)-values at or below \(0.01\) level.
 :::
 
 
@@ -258,16 +258,27 @@ display_simulation_results(data)
 
 ::: {.callout-tip}
 ## Assessment
-In a sequence of \(47\) independent \(Z\)-tests, two of the \(p\)-values are at or below level \(0.01\).
+In a sequence of \(47\) independent \(Z\)-tests, none of the \(p\)-values are at or below level \(0.01\).
 :::
 
+
+{{< pagebreak >}}
 
 ::: {.callout-tip}
 ## Overall assessment
-In a total of \(110\) independent \(Z\)-tests, three of the \(p\)-values are at or below level \(0.01\).
+In a total of \(110\) independent \(Z\)-tests, two of the \(p\)-values are at or below level \(0.01\).
+This is not very surprising: probabilities of \(k\) tests out of \(100\) producing \(p\)-value lower than \(0.01\) 
+are
+
+| $k$ | probability of $k$ or more tests at lower than $0.01$ |
+| --- | -----------------------------------------------------:|
+| $1$ | $0.6400$                                              |
+| $2$ | $0.2642$                                              |
+| $3$ | $0.0794$                                              |
+| $4$ | $0.0184$                                              |
+
 :::
 
-{{< pagebreak >}}
 
 Appendices {.unnumbered}
 ==========

@@ -15,6 +15,8 @@ license:    "CC BY"
 
 from: markdown+tex_math_single_backslash
 
+execute:
+    cache: true
 jupyter: julia-1.11
 
 format: 

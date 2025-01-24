@@ -1,37 +1,39 @@
 # Getting going again, December 2024 
 
-Worked with `julia 1.9.2` but `quarto` issues. Need to change to `1.11.2`.
+Worked with `julia 1.9.2` but `quarto` issues. 
 
-1. Need to change `julia` location to `$(HOME)/.juliaup/bin/julia`.
-2. Installed packages `IJulia`, `Revise`, `Documenter`, at top-level.
-3. Amend production of PDFs because  `DocumenterLaTeX` is now [deprecated](https://github.com/JuliaDocs/Documenter.jl/pull/1493). Replace ``DocumenterLaTeX.LaTeX` by `Documenter.LaTeX` in `make_latex.jl` and remove `using DocumenterLaTeX`.
-4. Added start-up script `~/.julia/config/startup.jl` to load `Revise` and to activate relevant environment on starting up `julia`.
-5. NB [workflow tips](https://discourse.julialang.org/t/nice-workflows-for-using-and-developing-in-julia-1-9/96017)
+- [x] Need to change to `1.11.2`.
+
+- [x] Need to change `julia` location to `$(HOME)/.juliaup/bin/julia`.
+- [x] Installed packages `IJulia`, `Revise`, `Documenter`, at top-level.
+- [x] Amend production of PDFs because  `DocumenterLaTeX` is now [deprecated](https://github.com/JuliaDocs/Documenter.jl/pull/1493). Replace ``DocumenterLaTeX.LaTeX` by `Documenter.LaTeX` in `make_latex.jl` and remove `using DocumenterLaTeX`.
+- [x] Added start-up script `~/.julia/config/startup.jl` to load `Revise` and to activate relevant environment on starting up `julia`.
+- [x] NB [workflow tips](https://discourse.julialang.org/t/nice-workflows-for-using-and-developing-in-julia-1-9/96017)
 
 ## Package `EpidemicsCFTP`
 
-- [ ] Work through `Makefile`
+- [x] Work through `Makefile`
   - [x] Use `] up` in `julia`: quite slow as there is a lot to do!
   - [x] `make test`
   - [x] `make doctest` 
   - [x] finally (for documents!) `make`.
-- [ ] Study "todo" list in `Readme.pdf`.
+- [x] Study "todo" list in `Readme.pdf`.
 
 ## Package `EpidemicsUtilities`
 
-- [ ] Work through `Makefile`
+- [x] Work through `Makefile`
   - [x] Use `] up` in `julia`.  There is an issue with `Colors` versus `Compose` and `Gadfly`.
   - [x] `make test`
   - [x] (for documents!) `make -B`. Note this has a working example of `quarto`. 
-- [ ] Study "todo" list in `Readme.pdf`.
+- [x] Study "todo" list in `Readme.pdf`.
 
 ## Main code
 
-- [ ] Work through `Makefile`
+- [x] Work through `Makefile`
 
   - [x] Use `] up` in `julia`. 
 
-  - [ ] `make` targets:
+  - [x] `make` targets:
 
     - [x] `Notes-on-sampling.pdf` (no `julia` code! sets out programme for future parameter estimation. Useful to check basic `quarto` operation.)
 
@@ -60,4 +62,4 @@ Worked with `julia 1.9.2` but `quarto` issues. Need to change to `1.11.2`.
     
     - [x] `animate` Note that the animations don't always end with coalescence: ==why not!?== Amend `animate.jl`?
 
-- [ ] Study "todo" list in `Readme.pdf`.
+- [x] Study "todo" list in `Readme.pdf`.

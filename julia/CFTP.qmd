@@ -26,7 +26,9 @@ format:
        - Scale=0.7
     include-in-header:
         - "SIR.sty"
-
+        
+execute:
+    cache: true
 jupyter:    julia-1.11
 ---
 

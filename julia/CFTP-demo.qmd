@@ -33,6 +33,8 @@ format:
     include-in-header:
         - "SIR.sty"
 
+execute:
+    cache: false
 jupyter:    julia-1.11
 ---
 

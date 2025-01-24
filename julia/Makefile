@@ -7,12 +7,25 @@ PRODUCTS        := figures.qmd production.pdf introduction.pdf check.pdf test.pd
 CSL             := $(HOME)/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 
 QUARTO          := /usr/local/bin/quarto
+QUARTO_OPTIONS  :=  --csl=$(CSL) 
+## Cache now set on per-`qmd` basis, as inline `julia` code not supported by cache.
 # QUARTO_CACHE    ?=  --no-cache
-#QUARTO_CACHE    ?= --cache-refresh
-QUARTO_CACHE    ?= --cache
-
-QUARTO_OPTIONS  :=  --csl=$(CSL) $(QUARTO_CACHE)
-#QUARTO_OPTIONS  :=  $(QUARTO_CACHE)
+# QUARTO_CACHE    ?= --cache-refresh
+# QUARTO_CACHE    ?= --cache
+## Issues with cache? Follow discussion of `IJulia` at
+## https://quarto.org/docs/computations/julia.html#ijulia
+##```{julia}
+##   using Pkg
+##   Pkg.add("IJulia")
+##```
+## followed by
+##```{julia}
+##   using Conda
+##    Conda.add("jupyter-cache")
+##```
+## **However:**
+## "Inline expressions cannot be used with Jupyter Cache."
+# QUARTO_OPTIONS  :=  --csl=$(CSL) $(QUARTO_CACHE)
 
 JULIA           := $(HOME)/.juliaup/bin/julia
 

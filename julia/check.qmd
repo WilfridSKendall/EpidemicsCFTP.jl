@@ -26,6 +26,8 @@ format:
     include-in-header:
         - "SIR.sty"
 
+execute:
+    cache: true
 jupyter:    julia-1.11
 ---
 
@@ -53,7 +55,8 @@ import Random
 
 ```{julia}
 #| include: false
-Random.seed!(2)
+#Random.seed!(2)
+Random.seed!(6)
 ```
 
 # Testing the generation of an `Innovation`

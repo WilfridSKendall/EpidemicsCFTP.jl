@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.2"
+julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "eb13ee4dd5e3fbc8a4413f3f889adcd0df5d743d"
+project_hash = "7d0890a18e8b6774b0ae7139234900c160804665"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]

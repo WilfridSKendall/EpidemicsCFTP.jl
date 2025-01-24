@@ -1,8 +1,15 @@
-using Documenter, EpidemicsCFTP
+using Documenter, DocumenterCitations, EpidemicsCFTP
 import Random: AbstractRNG, SamplerTrivial # Is this necessary?!
 import Distributions
 import Distributions: Categorical
+
 DocMeta.setdocmeta!(EpidemicsCFTP, :DocTestSetup, :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations); recursive=true)
+
+
+bib = CitationBibliography(
+    joinpath(@__DIR__, "src", "refs.bib");
+    style=:authoryear
+)
 
 
 makedocs(;
@@ -24,6 +31,7 @@ makedocs(;
         "Exceptions"              => "04-Exceptions.md",
         "Index"                   => "05-index.md",
     ],
+    plugins=[bib],
 )
 
 

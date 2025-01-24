@@ -9,6 +9,7 @@ TEMP-*
 
 docs/build/
 src/ARCHIVE/
+test/runtests.jl
 
 docs/src/CFTP.bib
 

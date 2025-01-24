@@ -24,6 +24,9 @@ format:
         date-format:     "D MMMM YYYY"
         logo:            image/WarwickStatistics-small.png
         titlegraphic:    image/talk_URL.jpg
+        
+        number-sections: true
+        number-depth:    1
 
         theme:           Boadilla
         mainfont:        "Times New Roman"
@@ -61,7 +64,7 @@ theme = create_theme(load_theme("config/theme.yml"))
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-Introduction   {#sec-introduction}
+Introduction   {#sec-introduction -}
 ============
 
 :::: {.columns layout="[ 65, 35 ]" layout-valign="top"}
@@ -84,8 +87,8 @@ This is initial work on using perfect simulation (CFTP) for epidemics.
 WSK acknowledges the support of UK EPSRC grant EP/R022100.
 
 
-1: Introduction to Perfect Simulation  {#sec-perfection}
-=====================================
+Introduction to Perfect Simulation  {#sec-perfection}
+==================================
 * @ProppWilson-1996a invented exact simulation / Coupling from the Past (CFTP) / perfect simulation;
 
 * The term “perfect simulation” [@Kendall-1998d] should make you suspicious:
@@ -181,7 +184,7 @@ Classic CFTP for a simple random walk (I)
 is an exact draw from equilibrium!
 
 \begin{center}
-\only<1| handout:0>{\includegraphics[width=4in]{image/basic-rw3.png}}\only<2| handout:0>{\includegraphics[width=4in]{image/basic-rw4.png}}\only<3| handout:0>{\includegraphics[width=4in]{image/basic-rw5.png}}\only<4| handout:0>{\includegraphics[width=4in]{image/basic-rw6.png}}\only<5| handout:1>{\includegraphics[width=4in]{image/basic-rwCFTP.png}}%
+\only<1| handout:0>{\includegraphics[width=3.5in]{image/basic-rw3.png}}\only<2| handout:0>{\includegraphics[width=3.5in]{image/basic-rw4.png}}\only<3| handout:0>{\includegraphics[width=3.5in]{image/basic-rw5.png}}\only<4| handout:0>{\includegraphics[width=3.5in]{image/basic-rw6.png}}\only<5| handout:1>{\includegraphics[width=3.5in]{image/basic-rwCFTP.png}}%
 \end{center}
 
 ::: notes
@@ -204,8 +207,8 @@ Remarkably, this can easily be converted into a fully rigorous proof!
 \par
 :::
 
-2: A short section on some theory about CFTP  {#sec-theory}
-============================================
+A little theory about CFTP  {-}
+==========================
 * What about cases where monotonicity fails? or there isn’t a sensible “maximal” process? Ideas [@Kendall-1998d]: 
 	* cross-couple upper and lower envelope processes; 
 	* dominate by amenable “dominating process” (time-reversible, can draw from equilibrium, can couple target processes below dominating process). 
@@ -239,8 +242,8 @@ People who are interested in CFTP from a practical point of view may find it use
 :::
 
 
-3: Perfect Epidemics: a challenge problem for CFTP  {#sec-epidemics}
-==================================================
+Perfect Epidemics: a challenge problem for CFTP  {#sec-epidemics}
+===============================================
 _Many_ important inferential questions [@CoriKucharski-2024].
 
 Simplest models [versus [UK model with \(10^6\) agents!](https://github.com/BDI-pathogens/OpenABM-Covid19), @FraserEtAl-2023]:
@@ -303,7 +306,7 @@ Before running, one must learn to walk!
 :::
 
 
-The first question asked about a new epidemic
+The first question asked about a new epidemic {-}
 =============================================
 ::: notes
 I am skipping over very influential early work on this incident,
@@ -328,8 +331,8 @@ mean number of new infectives produced per infective at _start_ of epidemic with
 Evidently \(\alpha \; s_0/\beta \gg 1\) -- as was sadly later confirmed, a sorrow for us all.  
 ![](image/Diamond_Princess.jpg){width=2in}
 
-4: Inference on the R-number
-============================
+Inference on the R-number {-}
+=========================
 :::notes
 The "R-number" was the subject of continuing interest throughout the COVID-19 pandemic!
 
@@ -356,8 +359,8 @@ most needed when hardly any information is available (a simplified example for a
 
 5. Can we use \structure{perfect simulation}?
 
-5: An easier question
-=====================
+An easier question {-}
+==================
 An absurdly simple variant of contact tracing:  
 "When did the infections occur, supposing we only observe removals?"  
 \small 
@@ -567,7 +570,7 @@ depict("figure-3", new_figure(
 )
 ```
 
-Crucial technical point
+Crucial technical point {-}
 =======================
 
 * Updates in algorithmic time \(\tau\) are then 
@@ -1209,7 +1212,7 @@ and remarkably fast execution using very good ``just in time" compilation techni
 \par
 :::
 
-So what?
+So what? {-}
 ========
 ::: notes
 In effect, perfect simulation supplies a well-behaved stochastic integration mechanism,
@@ -1251,7 +1254,7 @@ as a sub-population on its own;
 :::
 
 
-Conclusion  {#sec-conclusion}
+Conclusion  {#sec-conclusion -}
 ==========
 * If MCMC burn-in is a concern, 
 try to build a perfect simulation!
@@ -1284,7 +1287,7 @@ a particle model as discussed in @Liggett-1985. However I do not yet see a close
 \par
 :::
 
-References {.allowframebreaks .t} 
+References {.allowframebreaks .t -} 
 ==========
 
 \scriptsize
@@ -1294,10 +1297,11 @@ References {.allowframebreaks .t}
 :::
 
 
-Image information
+
+Image information {-}
 -----------------
 ::: {style="font-size: 15%;"} 
-| Image         | Attribution                              |              |
+| _Image_       | _Attribution_                            |              |
 | ------------- | ---------------------------------------- | ------------ |
 | [_Terry Pratchett_](https://commons.wikimedia.org/wiki/File:Terry_Pratchett_(3x4_cropped).jpg) | Luigi Novi       | [_CC BY 3.0_](<https://creativecommons.org/licenses/by/3.0>) |
 | Classic CFTP for a simple random walk | Result of code written by WSK | | 
@@ -1308,12 +1312,12 @@ Image information
 
 ---
 
-Previous instances of this talk
+Previous instances of this talk {-}
 -------------------------------
 \scriptsize
 
 ::: {style="font-size: 15%;"} 
-| Date     | Title             |          | Location         |
+| _Date_   | _Title_           |          | _Location_       |
 | -------- | ----------------- | -------- | ---------------- |
 | 19/04/24 | Perfect Epidemics | Short Research Talk (12min) | Warwick |
 | 15/05/24 | McMC and Perfect Simulation  | Graduate Seminar, Aristotle Univ. (50min) | Thessaloniki | 
@@ -1321,7 +1325,7 @@ Previous instances of this talk
 : {tbl-colwidths="[10,38,37,15]"}
 :::
 
-A "near-maximal" configuration
+A "near-maximal" configuration {-}
 ==============================
 ::: notes
 1. For a "near-maximal configuration", we set relevant infections to occur
@@ -1358,7 +1362,7 @@ depict("figure-A", new_figure(
 ```
 
 
-Other technical information
+Other technical information {-}
 ===========================
 
 \scriptsize
@@ -1385,6 +1389,5 @@ Markdown.parse("""
 |This Quarto script         |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
 """)
 ```
-
-Revision history
-----------------
+Revision notes {-}
+--------------

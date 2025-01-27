@@ -30,4 +30,4 @@ qrencode -s 3 -l H -o "image/talk_URL.png" \
 
 ```
 
-or simply `make qrcode`.
+or simply `make qrcode`. Use `make web` to place PDFs on my Bithub website (*via* `make deploy` on `~/HTML/WilfridSKendall`).

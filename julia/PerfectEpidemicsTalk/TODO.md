@@ -14,7 +14,7 @@
       - [ ] LFE probably shouldn't be defined as trajectory! Perhaps first compute number of different paths infecting each incident? 
 - [ ] Follow-up further on Paul Jenkins' remarks concerning links to "look-down" representation. I don't think there is a big thing here, but need to tie it down.
 - [ ] Clean up Classic RW CFTP illustration: need to produce figures using `julia` within the `qmd` document.
-- [ ] Visual discussion of developing use of LFE and NFZ in continuous algorithmic time.
+- [ ] Visual discussion of developing use of LFE and NFZ in continuous algorithmic time (1/2).
 - [ ] Visual proof of monotonicity for LFE and NFZ.
 - [ ] Visual proof of finite coalescence time using small set analysis and image in appendix.
 - [ ] Study Gareth Roberts' remarks on "occult removals". Could this hide useful monotonicity structure?

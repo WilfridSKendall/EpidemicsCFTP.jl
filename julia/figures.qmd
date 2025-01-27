@@ -243,8 +243,8 @@ pretty_table(
 #|           conditioned removals); the No-Fly Zone (the blue-grey region     \
 #|           which must not be infected if the _unconditioned_ removals are   \      
 #|           not to be activated). These are relevant when seeking to update  \
-#|           the current evolution, though NFZ must be recomputed using new   \
-#|           removals and infections                                          \
+#|           the current evolution, though both are recomputed using new      \
+#|           removals and infections working recursively from the right.      \
 #|           [Figure 4, @ConnorKendall-2023]."
 depict("figure-4", new_figure(
     draw_evolution!(deepcopy(lines_plot), cev1, duration, theme=theme, 
@@ -258,7 +258,7 @@ Note that NFZ and LFE are calculated anew at each update, _after_ updating the C
 They summarize recursive calculations, running backwards in process time, aimed at determining whether
 new infections should be allowed to proceed. (LFE applies to infections targetting at or below epidemic trajectory;
 NFZ to infections targetting above epidemic trajectory.)
-or 
+
 
 
 

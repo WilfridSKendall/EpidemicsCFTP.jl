@@ -85,8 +85,7 @@ web-MP4: animation/*.mp4
 	-M classoption=notes -M classoption=handout
 
 $(version): $(title).qmd
-	git log -1    > $(version)
-	git describe >> $(version)
+	git log --decorate -1 > $(version)
 	
 %-2x2.pdf: %.pdf
 	$(PDFNUP) --tidy --landscape --frame 'true' --scale '0.95' --nup '2x2' $^ -o $@

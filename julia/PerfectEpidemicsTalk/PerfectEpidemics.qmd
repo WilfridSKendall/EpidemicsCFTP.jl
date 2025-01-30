@@ -91,9 +91,8 @@ Introduction to Perfect Simulation  {#sec-perfection}
 ==================================
 * @ProppWilson-1996a invented exact simulation / Coupling from the Past (CFTP) / perfect simulation;
 
-* The term “perfect simulation” [@Kendall-1998d] should make you suspicious:
-perfection is never achieved. 
-This is why the term was chosen!
+* The term “perfect simulation” [@Kendall-1998d] was chosen so as to make you suspicious:
+perfection is never achieved!
 
 * Key ideas of “_classic CFTP_”: 
 	- extend simulation _backwards_ through time not forwards;
@@ -104,15 +103,16 @@ This is why the term was chosen!
 (can boost to use Ising model to do simple image reconstruction).
 
 :::notes
-Here's a very brief summary of CFTP / perfect simulation.
+Here is a very brief summary of CFTP / perfect simulation.
 
 1. Jim Propp described the discovery of CFTP as like walking down the street and suddenly noticing
 a 50\$ bill lying on the ground.
 
 2. In particular, “exact simulation” cannot 
 somehow miraculously defeat numerical approximation error `:-)`.
+And, as with all simulation, its validity depends on correctness of code!
 
-3. We will cover these key ideas in a single very specific example.
+3. We will illustrate these key ideas by considering a single very specific example.
 
 4. @ProppWilson-1996a show how to vary random walk CFTP to get exact samples for a
 \structure{critical} Ising model
@@ -127,10 +127,10 @@ to model images, hence CFTP can be used for image reconstruction.
 
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
-* Consider a simple random walk on \(\{0, 1, 2, 3, 4, 5, 6, 7, 8, 9\}\).
+* Consider a simple random walk on \(0{:}9=\{0, 1, 2, 3, 4, 5, 6, 7, 8, 9\}\).
    - \(\Prob{+1\text{ jump }}=p\in(0,1)\), while \(\Prob{-1 \text{ jump }} = 1{-}p\), **except that** 
-   - at state \(9\) replace \(+1\) jump by staying still, **and**
-   - at state \(0\) replace \(-1\) jump by staying still.
+   - \qquad at state \(9\) replace the \(+1\) jump by "staying still", **and**
+   - \qquad at state \(0\) replace the \(-1\) jump by "staying still".
 * Conventional MCMC picks a starting point, then runs the simple random walk for long time till approximate equilibrium.
 
 * How long? One way to _estimate_ this is to run two
@@ -146,20 +146,21 @@ If probability of meeting by time \(T\) is high, then deviation of \(X_T\) from 
 
 ::: notes
 This random process is asymmetric simple random walk on the integers, 
-but forbidding any transitions
-outside the specified state-space. 
+modified by forbidding any transitions
+outside the specified state-space \(0{:}9\). 
 
-1. The process is irreducible \_and_ aperiodic, so equilibrium is
+1. The process is irreducible _and_ aperiodic, so equilibrium is
 a truncated Geometric distribution (hint: use reversibility to check this!).
 
-2. Conventional MCMC is overkill here, of course: we could simulate directly from the equilibrium distribution.
+2. Of course even conventional MCMC is overkill here: 
+simulation directly from the equilibrium distribution
+is simple and efficient.
 
-3. This observation was originally formalized by Aldous. Here we use ``synchronous` coupling -- variants are possible but not particularly useful.
+3. This observation was originally formalized by Aldous. Here we use "synchronous" coupling -- variants are possible but not particularly useful.
 
-4. Clearly not true in our case: coupling can only occur at \(0\) or \(9\)!
-
-5. In this case the blue and red evolutions can only couple at a boundary,
-so self-evidently the value at time of coupling cannot be a draw from the
+4. In our case coupling can only occur at \(0\) or \(9\)!
+So here the blue and red evolutions can only couple at a boundary; thus
+self-evidently the value at time of coupling cannot be a draw from the
 equilibrium!
 
 \par
@@ -169,7 +170,7 @@ equilibrium!
 
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
-* So now start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
+* Start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
 
 * If not coupled by time \(0\), than back-off to time \(-2T\) and repeat.
 
@@ -225,17 +226,22 @@ can be used to carry out perfect simulation for stable point processes [@Kendall
 [Want to implement CFTP in R? see @Kendall-2014b.]
 
 ::: notes
-1. To be computationally effective, the WSK (1998) fixes still require some associated notion of partial order and (perhaps weak) amenability of the dominating process.
+1. To be computationally effective, the WSK (1998) ideas still require 
+a (perhaps weak) notion of partial order,
+and also the ability to simulate the dominating process.
 2. Basic ideas: use the notion of regenerative sets (``small sets"),
-and (Foster-)Lyapunov arguments. Note that the recipes given for these tend not to be computationally practical:
-they simply show the possibility of (possibly computationally infeasible) CFTP.
+and (Foster-)Lyapunov arguments. Note that the resulting recipes 
+tend not to be computationally practical:
+they simply suggest
+the _possibility_ of (possibly computationally infeasible) CFTP.
 They are intended as a challenge: when can one find _practical_ methods?
-3. (Locally finite) point processes cannot in general be treated using Classic CFTP, 
-because the "top" pattern would have points _everywhere_.
+3. (Locally finite) point processes are generally not accessible 
+_via_ Classic CFTP; 
+the "top" pattern would have points _everywhere_.
 More generally, the "in principle" results encourage us to try
 CFTP out on a wide variety of models
 [For example, for \(M/G/k\) multiserver queues, @ConnorKendall-2014; @Connor-2016].
-4. This is the end of the visual introduction to CFTP.  ==
+4. This is the end of the visual introduction to CFTP.
 People who are interested in CFTP from a practical point of view may find it useful to work through @Kendall-2014b.
 
 \par
@@ -248,7 +254,7 @@ _Many_ important inferential questions [@CoriKucharski-2024].
 
 Simplest models [versus [UK model with \(10^6\) agents!](https://github.com/BDI-pathogens/OpenABM-Covid19), @FraserEtAl-2023]:
 
-**S-I-R deterministic epidemic:** 
+**\SIR{} deterministic epidemic:** 
 susceptibles \(s\), infectives \(i\), removals \(r\)
 (constant total population \(s+i+r=n\)):
 \[
@@ -262,7 +268,7 @@ r' \quad&=\quad \beta\; i \,.
 \]
 \pause
 
-**S-I-R stochastic epidemic:** a Markov chain \((S, I, R)\)
+**\SIR{} stochastic epidemic:** a Markov chain \((S, I, R)\)
 ​ with transitions
 \[
 \begin{aligned}
@@ -286,7 +292,7 @@ point of view!
 Here are two classical models (one deterministic, one stochastic)
 from mathematical epidemiology.
 Even the exceedingly
-simple case of deterministic S-I-R permits only \emph{partial} closed-form solution.
+simple case of deterministic \SIR{} permits only \emph{partial} closed-form solution.
 
 ----------------------------------
 
@@ -379,26 +385,26 @@ but unobserved infection times \structure{must be inferred}.
    * potential removals, activated if timeline is infected;
    * potential infections, activated if timeline is infected *and* if designated target timeline is lowest uninfected timeline.
 
-3. Poisson point processes _of appropriate rates_ yield an S-I-R epidemic.
+3. Poisson point processes _of appropriate rates_ yield an \SIR{} epidemic.
 
-4. First step: evolve whole S-I-R trajectory in *algorithmic time* 
+4. First step: evolve whole \SIR{} trajectory in *algorithmic time* 
 (alter potential infections and removals
 using immigration-death in discrete algorithmic time).
 
-5. Result: _trajectory-valued chain_, unconditioned S-I-R as equilibrium.
+5. Result: _trajectory-valued chain_, unconditioned \SIR{} as equilibrium.
 
 :::notes
 An important step on the way is to focus on just one aspect
 of inference:
 
 1. Instead of trying to tackle inference concerning the parameters,
-let's concentrate on the large number of nuisance parameters
+we concentrate on the large number of nuisance parameters
 provide by (typically unobserved) infection times.
 2. This is a compromise: instead of tracking individuals
 as in the stochastic epidemic model, we effectively track the numbers
 of individuals in various categories.
 3. Poisson point processes generate incidents, which then
-collectively influence the S-I-R trajectory.
+collectively influence the \SIR{} trajectory.
 4. I learned the phrase ``algorithmic time" from Andrew Stuart.  
 We move from Poisson points spread out along timelines to
 discrete immigration-death processes producing patterns
@@ -427,7 +433,7 @@ infections need to specify which timeline is going to be infected.
 * The rates of the Poisson processes generating the (proposed) 
 incidents are chosen to ensure that the numbers of actual 
 susceptibles, infectives and removals form a Markov chain
-with rates as required for a S-I-R epidemic.
+with rates as required for a \SIR{} epidemic.
 * For an infection incident to be activated, it must sit on an infected portion
 of its timeline and must point to the least of the uninfected timelines
 (calculating at the process time of the incident).
@@ -942,11 +948,11 @@ Consequently:
   * a conditioned removal timeline can be altered only if it doesn't de-activate;
   * an infection cannot be removed if that action loses a conditioned removal;
   * an infection can be introduced only if no new observed removals result.
-* Does this produce a _feasible_ and suitably monotonic algorithm?
-* \structure{Housekeeping details} required to establish that
-monotonicity still works. Key notions: 
-_last feasible epidemic_ (\structure{LFE})
-and _no-fly zone_ (\structure{NFZ}).
+* Does this produce a _feasible_ and suitably _monotonic_ algorithm?
+* \structure{Housekeeping details} used to establish that
+monotonicity still works: 
+_last feasible epidemic_ (\LFE)
+and _no-fly zone_ (\NFZ).
 
 ::: notes
 Monotonicity is a key concept here. (Note however
@@ -959,7 +965,9 @@ using the notion of Dominated CFTP.
 2. The heart of the matter lies in establishing (some variant of) monotonicity.
 3. Additionally. for a complicated algorithm such as this one, it is important
 to test the underlying logic by implementing the algorithm in computer code
-(which has a way of revealing false hidden assumptions!).
+(which often reveals the falsity of hidden assumptions!).
+4. \LFE and \NFZ are useful vocabulary for arguing
+for monotonicity, but also computationally helpful.
 
 \par
 :::
@@ -1029,15 +1037,15 @@ We have noted removals are easy.
 Re-sampling the conditioned removal timelines is a simple accept-reject
 step for each conditioned removal.
 
-The key to dealing with infections that target the infected region
+The key to dealing with infections targetting infected region
 is also rather simple:
 
 1. Always add them (because it won't make a difference).
 2. Delete them only if it is clear that this will not result in 
 a conditioned removal falling out of the infected region.
 3. Implementation amounts to referring to a
-recursively-defined _last feasible epidemic_ (LFE).
-The LFE coincides with the actual epidemic trajectory exactly when
+recursively-defined _last feasible epidemic_ (\LFE).
+The \LFE coincides with the actual epidemic trajectory exactly when
 deletion of the infection in question will lead to 
 a conditioned removal falling out of the infected region;
 therefore
@@ -1075,16 +1083,16 @@ depict("figure-6", new_figure(
 
 ---
 
-Last feasible epidemic (LFE)
+Last feasible epidemic (\LFE)
 ----------------------------
 ::: notes
-First we draw the LFE.
-Because it is defined recursively working backwards in process time,
+First we draw the \LFE.
+As it is defined recursively working backwards in process time,
 it can be computed in entirety from the updated conditional epidemic.
 
 * Of course, when computing the update, we have to compute it set-by-step
 when working backwards in process time.
-* Here there is a single discrepancy between LFE and epidemic trajectory,
+* Here there is a single discrepancy between \LFE and epidemic trajectory,
 over the time interval \([5.56,5.74]\). 
 * At times \(0.88\), \(1.62\), \(2.00\)
 there are perpetuations (an old infection
@@ -1113,18 +1121,18 @@ depict("figure-7", new_figure(
 ```
 
 ::: notes
-A relatively simple induction argument shows that the LFE depends
+A relatively simple induction argument shows that the \LFE depends
 monotonically on the epidemic trajectory!
 :::
 
 ---
 
-No-fly zone (NFZ)
+No-fly zone (\NFZ)
 -----------------
 ::: notes
-The NFZ is used to decide whether to accept proposals
+The \NFZ is used to decide whether to accept proposals
 of infections targeting the susceptible region. More 
-complicated than LFE; two phenomena interact.
+complicated than \LFE; two phenomena interact.
 
 1. An infection rooted in the infection zone must be assessed
 to see whether its introduction would lead to activating a removal,
@@ -1136,10 +1144,10 @@ it makes a portion of its timeline _before_ its time into ``no-fly".
 In this particular case neither of these two mechanisms 
 play a part.
 
-The NFZ is evaluated recursively,
+The \NFZ is evaluated recursively,
 working backwards
 in process time.
-A more involved induction argument shows that the NFZ depends
+A more involved induction argument shows that the \NFZ depends
 monotonically on the epidemic trajectory.
 This implies monotonicity of the algorithmic-time evolution
 of the conditioned epidemic: hence CFTP is feasible!
@@ -1197,7 +1205,7 @@ being unobserved?
 * Use an independence sampler: draw from the (unconditioned) number of
 initial infectives, accept if this leads to observed removals exactly at the
 list of conditioned removals.  
-* (One can alternatively employ a random-walk Metropolis sampler, so long as
+* (One can alternatively employ a random-walk Metropolis sampler, if
 the prior for the initial number of infectives is suitably monotonic.)
 
 --------------------------
@@ -1205,10 +1213,14 @@ the prior for the initial number of infectives is suitably monotonic.)
 \scriptsize
 
 **Technical note:**  
-The simulation implementation uses
+The language
 [`julia`](https://julialang.org/) [@BezansonEdelmanKarpinskiShah-2017],
-which combines rapid development, an expressive syntax (very useful for involved algorithms),
-and remarkably fast execution using very good ``just in time" compilation techniques.
+is chosen because it allows for rapid development 
+by using an expressive type-based syntax 
+(very useful for involved algorithms),
+and 
+can deliver
+remarkably fast execution using very good ``just in time" compilation techniques.
 
 \par
 :::
@@ -1241,6 +1253,7 @@ integrate out pattern of unobserved infections.
 ::: notes
 
 Other compartment models presenting varying degrees of challenge:
+a preliminary discussion is given in an appendix.
 
 1. Split population into a small number of interacting sub-populations;
 
@@ -1282,8 +1295,11 @@ At the Warwick talk in January 2025,
 Paul Jenkins asked whether this might be related to the "look-down" argument in population genetics
 [@DonnellyKurtz-1996]? My provisional answer, after recalling @DonnellyKurtz-1996 later in the day,
 is:  
+
+\medskip\noindent
 as far as I can tell, the "look-down" argument is related in the sense that it also involves
-a particle model as discussed in @Liggett-1985. However I do not yet see a closer connection.
+a particle model as discussed in @Liggett-1985. However I 
+have not yet found a closer connection.
 
 \par
 :::
@@ -1364,8 +1380,8 @@ depict("figure-A", new_figure(
 ```
 
 
-Appendix B: Updating a conditional epidemic {-}
-===============================================
+Appendix B: Updating a conditional epidemic INCOMPLETE {-}
+===========================================
 We now work through the update of the conditional
 epidemic in stages.
 
@@ -1571,6 +1587,227 @@ depict("figure-B8", new_figure(
     title="Fully updated conditioned epidemic")
 )
 ```
+
+
+
+Appendix C: Compartment models INCOMPLETE {-}
+==============================
+* _I believe_ this approach to CFTP can be applied to compartmentalized populations!
+
+* Consider the extreme case in which every individual \(j\) has
+infectivity (outgoing to individual \(k\)) \(\alpha_{j,k}\) and removal parameter \(\beta_j\).
+
+* Suppose the conditioning on removals is specifically about 
+named individuals \(j\) being removed at specified times \(r_j\);  
+suppose also there are no "occult" (unobserved) removals
+for any other individuals.
+
+* This would apply, for example, in the case of the _Diamond Princess_
+if \(\alpha\), \(\beta\) depended on age and location of cabin 
+on the ship.
+
+:::notes
+We expect to model \(\alpha_{j,k}\) and \(\beta_j\)
+in terms of a simple parametric model 
+using explanatory variables
+that are observable _ab initio_.
+
+\par
+:::
+
+---
+
+Timelines and incidents for the compartmental generalization
+------------------------------------------------------------
+1. Individuals no longer exchangeable, so \SIR state space
+is unsuitable.
+
+2. Given population \(N\in\NaturalNumbers\), the ground space is a tuple
+of \(n\) timelines \((i, [0,T)\), one timeline per individual \(i\),
+where \(T\) is the final time of observation
+of the epidemic.
+
+3. Typical element of
+state-space: a locally-finite point pattern of  
+
+   - infections \(\Infection=\Infection_{i,j}(t)\), marked by timelines \(i\)
+   at various times \(t\),
+   each infection marked by a target timeline \(j\) other than its mark \(k\);
+   - (inactivated) removals \(\Removal=\Removal_i(t)\), marked by timelines \(i\) at times \(t\);
+   - conditional removals \(\CRemoval=\CRemoval_i(t)\), marked by timelines \(i\) at times \(t\).
+   
+4. Initial stipulations:  
+
+   - the \(\Infection\)s, \(\Removal\)s and \(\CRemoval\)s
+   all occur at different times;
+   - there is at most one \(\CRemoval\) per timeline;
+   - for convenience, no \(\Infection\) or \(\Removal\) occur after a \(\CRemoval\) on the same timeline;
+
+5. Epidemic can be viewed as a tuple of intervals on different timelines;  
+
+   - intervals end at the \(\CRemoval\) in the timeline or at time \(T\);
+   - intervals on initially infected timelines start at time \(0\);
+   - intervals on eventually infected timelines start at the first time \(t\)
+   an \(\Infection\) targets the timeline while marked by a timeline infected at \(t\).
+
+:::notes
+1. "\SIR state space":
+\(\{(s,i,r): s, i, r \in \NaturalNumbers, \; s+i+j=n\}\);
+
+2. one timeline per individual;
+
+3. locally-finite point pattern of incidents, derived from several
+independent Poisson processes on \([0,T)\) for each timeline \(i\);
+
+   - intensity of \(\Infection_{i,j}\) is \(\alpha_{i,j}\);
+   - intensity of \(\Removal_i\) is \(\beta_i\);
+   - the \(\CRemoval_i\) are not random but stipulated by the conditioning.
+   
+4. "different times" follows from independent Poisson process assumption.
+We censor  \(\Infection\) or \(\Removal\) occurring after a \(\CRemoval\) on the same timeline, as they will play no part in the epidemic dynamics.
+
+5. the simple epidemic trajectory is replaced by a set!
+We can re-order individual so that (for example) conditionally removed timeline come first, and initially infected timelines take priority
+in the two categories of "conditionally removed" and
+"not conditionally removed".
+:::
+
+---
+
+Process dynamics
+----------------
+Recall that infections and removals _after_ a conditional removal
+have been censored out.
+A valid configuration must satisfy the following, derived from
+the process dynamics:
+
+1. initially infected timelines \(i\) possess no \(\Removal_i\)
+and contribute \((i, [0,t))\) to the epidemic if possessing a (single) \(\CRemoval_i(t)\),
+otherwise \((i, [0,T)\);
+
+2. other timelines \(k\)
+only contribute if they possess \(\Infection_{k,i}(s)\) such
+that timeline \(k\) is infected at time \(s\), in which case the
+earliest \(s\) is chosen and the contribution is \((i, [s,t))\)
+where \(t\) is the time of conditional removal \(\CRemoval_i(t)\)
+of the timeline,
+or \(T\) is there is no conditional removal;
+
+3. the inactivated removal \(\Removal_i(t)\) lies on a timeline \(i\) that is not initially infected
+only if \(t<s\), where \(s\) is
+the time of first infection.
+
+So each timeline is divided into a _susceptible interval_
+(empty if it is initially infected),
+an _infected interval_
+(empty if it is never infected),
+and a _removed interval_
+(empty if it has no conditioned removal).
+
+:::notes
+1. a \(\Removal_i\) on an initially infected timeline would violate
+conditioning by being activated.
+
+2. the first \(\Infection\) connecting from an infected timeline
+will infect the target timeline if it is not already infected.
+
+3. inactivated removals simply occur as a Poisson point pattern
+on the initial uninfected interval of each timeline not initially infected.
+:::
+
+---
+
+Dynamics in algorithmic time
+----------------------------
+This closely corresponds to the evolution of the \SIR epidemic above,
+but does not resample the mark \(i\) for 
+each conditional removal \(\CRemoval_i\);
+
+1. Remove all \(\Removal\)s, and re-sample inactivated removals
+on the susceptible intervals of each timeline.
+Recompute \(\NFZ\) as a collection of \((i, [0,t_i))\)
+using the latest time \(t_i=t\) of re-sampled \(\Removal_i(t)\).
+
+2. List in _time-reverse order_ original infections together with sampled
+_new_ candidate \(\widetilde{\Infection}\)s
+in complements of the removed intervals.
+
+3. Work iteratively
+through this list. Would discarding original \(\Infection_{i,j}(t)\) 
+result in failure to infect a
+conditional removal?. If so, \alert{retain} \(\Infection_{i,j}(t)\)
+as _perpetuated infection_ \(\PInfection_{i,j}(t)\), otherwise 
+\alert{discard}. 
+
+4. Otherwise, at \(\widetilde{\Infection}_{a,b}(u)\), consider the latest
+update of \(\NFZ\). 
+
+   - If \(a\) infected at \(u\) and \(u\) is in \(b\) component
+   of latest \(\NFZ\), \alert{discard} \(\widetilde{\Infection}_{a,b}(u)\);
+   - If \(a\) is not infected at \(u\) but \(u\) lies on \(b\) component
+   of latest \(\NFZ\), \alert{update} \(\NFZ\) by adding/replacing interval of \(\NFZ\) at
+   \(a\) using \((a, [0,u))\);
+   - Otherwise \alert{retain} \(\widetilde{\Infection}_{a,b}(u)\)
+   as \(\Infection_{a,b}(u)\).
+
+As in \SIR case, this has the conditioned epidemic as
+unique equilibrium
+   
+:::notes
+The \SIR epidemic resamples the marks of \(\CRemoval\)s 
+to maintain irreducibility. The conditioning
+here means irreducibility does not fail.
+
+1. Use 
+Poisson process of intensity 
+\(\beta_i\) on susceptible interval of timeline \(i\). 
+The \(\NFZ\) will be iteratively updated
+in what follows.
+
+2. Use a Poisson process of intensity \(\alpha_{a,b}\)
+to generate the candidate \(\widetilde{\Infection}_{a,b}\).
+
+3. When computing whether removal of an infection results in 
+uninfected 
+conditional removals, use current pattern of infections.
+The \SIR case uses \LFE; the necessary
+reformulation in set-theoretic terms means more computation is required here.
+(But note the
+transition from \(\Infection_{i,j}(t)\) to \(\PInfection_{i,j}(t)\) can occur only if timeline \(b\) transits from susceptible to infected at time \(t\),
+and even then only if no subsequent infection happens early enough!.)
+
+4. Note how \(\NFZ\) grows in extent as this iteration proceeds,
+so as to prohibit infection of \(\Removal\)s previously encountered.
+:::
+
+---
+
+Monotonicity
+------------
+For CFTP we need to know that, for coupled iterations
+(using the same pattern of innovations of new \(\Infection\)s
+and \(\Removal\)s), if two variants are started so that
+the infected region of one contains the other, then this
+persists through development of the algorithmic time.
+
+It suffices to prove two detailed lemmas
+
+1. If the old infected region of one contains the other,
+then the \NFZ of the one is contained in the \NFZ of the other;
+
+2. If the old infected region of one contains the other,
+and the \NFZ of the one is contained in the \NFZ of the other,
+then the new infected region of the one is contained in the other.
+
+Then CFTP makes sense, and it is only necessary to show that
+accessibility of a set of near-maximal configurations
+guarantees eventual coalescence.
+
+:::notes
+I have manuscript notes on how to prove these lemmas.
+The proofs seem reasonably straightforward!
+:::
+
 
 Other technical information {-}
 ===========================

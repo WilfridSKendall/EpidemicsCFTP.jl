@@ -172,8 +172,8 @@ Classic CFTP for a simple random walk (I)
 -----------------------------------------
 * Start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
 
-* If not coupled by time \(0\), than back-off to time \(-2T\) and repeat.
-
+* If not coupled by time \(0\), than back-off to time \(-2T\) and repeat.  
+\alert{NB} re-use randomness!
 
 * May need to iterate back-off doubling several times.
 
@@ -292,11 +292,11 @@ point of view!
 Here are two classical models (one deterministic, one stochastic)
 from mathematical epidemiology.
 Even the exceedingly
-simple case of deterministic \SIR{} permits only \emph{partial} closed-form solution.
+simple case of deterministic \SIR{} permits only _partial_ closed-form solution.
 
 ----------------------------------
 
-The assumption of homogeneous mixing of population greatly simplifies the mathematics \emph{and}
+The assumption of homogeneous mixing of population greatly simplifies the mathematics _and_
 statistics.
 Without this assumption one ends up with huge numbers of parameters, which is very bad news statistically speaking.
 A lot of research has been done on how to deal with more realistic models!
@@ -322,7 +322,13 @@ This is related to drawing inferences about \(\beta\).
 
 -----------------------------------------
 
-See Mizumoto \emph{et al} (2020) for very early analysis of the \emph{Diamond Princess} outbreak.
+See Mizumoto _et al_ (2020) for very early analysis of the _Diamond Princess_ outbreak.
+
+-----------------------------------------
+
+\alert{Question:} is there a dataset for the _Diamond Princess_ outbreak?
+and how detailed is it?
+
 :::
 
 "What is the R-number?"  
@@ -350,6 +356,10 @@ with behaviour.
 
 We will seek to make headway in using perfect simulation
 to aid inference.
+
+-----------------------------------------
+
+Reference (for example a blog) to the "simplified example"?
 :::
 
 Important, because the R-number controls severity of epidemic. However:
@@ -410,7 +420,11 @@ We move from Poisson points spread out along timelines to
 discrete immigration-death processes producing patterns
 that evolve in algorithmic time.
 5. But we shall quickly move to _continuous_ algorithmic time.
+This will allow us to exploit the classic connection for
+dynamically reversible Markov processes, between conditioning
+and restriction of state space.
 
+\par
 :::
 
 ---
@@ -1009,7 +1023,7 @@ depict("figure-5", new_figure(
 
 ::: notes
 Here is a different initial epidemic,
-including \emph{conditional removals}, indicated by purple circles.
+including _conditional removals_, indicated by purple circles.
 
 * Essentially we change it in the same way as in the 
 unconditioned case (working ``pixel-by-pixel''), but
@@ -1725,7 +1739,7 @@ each conditional removal \(\CRemoval_i\);
 
 1. Remove all \(\Removal\)s, and re-sample inactivated removals
 on the susceptible intervals of each timeline.
-Recompute \(\NFZ\) as a collection of \((i, [0,t_i))\)
+Recompute \(\NFZ\) as a union of \((i, [0,t_i))\)
 using the latest time \(t_i=t\) of re-sampled \(\Removal_i(t)\).
 
 2. List in _time-reverse order_ original infections together with sampled
@@ -1774,7 +1788,7 @@ The \SIR case uses \LFE; the necessary
 reformulation in set-theoretic terms means more computation is required here.
 (But note the
 transition from \(\Infection_{i,j}(t)\) to \(\PInfection_{i,j}(t)\) can occur only if timeline \(b\) transits from susceptible to infected at time \(t\),
-and even then only if no subsequent infection happens early enough!.)
+and even then only if no subsequent infection happens early enough!.) 
 
 4. Note how \(\NFZ\) grows in extent as this iteration proceeds,
 so as to prohibit infection of \(\Removal\)s previously encountered.
@@ -1804,8 +1818,10 @@ accessibility of a set of near-maximal configurations
 guarantees eventual coalescence.
 
 :::notes
-I have manuscript notes on how to prove these lemmas.
+I have manuscript notes on ideas to prove these lemmas.
 The proofs seem reasonably straightforward!
+except that ...
+\alert{I now think I have a counterexample related to 2nd requirement, "\LFE".}
 :::
 
 
@@ -1828,13 +1844,13 @@ ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
-|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
-|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
-|Quarto                     |`$(quartoversion)`             | ---                          |                            |
-|Running under `julia`      |`$VERSION`                     | ---                          |                            |
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_      |
+|:--------------------------|:------------------------------|:------------------------|:--------------------------|
+|`quarto`                   |`$(quartoversion)`             | ---                          |                           |
+|Running under `julia`      |`$VERSION`                     | ---                          |                           |
+|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`    |
 |Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
-|This Quarto script         |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
+|This `quarto` script       |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                 |
 """)
 ```
 Revision notes {-}

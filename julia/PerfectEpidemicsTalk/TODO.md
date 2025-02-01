@@ -8,7 +8,7 @@
 
 - [x] Discuss with Simon Spencer
 
-- [ ] Differentiate each C from the point where it has effect
+- [ ] Differentiate graphical representation of each C from the point where it has effect
 
 - [ ] Add supporting literature for inference, as discussed with Simon
 

@@ -1550,7 +1550,7 @@ At this stage we now re-sample the timelines for all removals.
 No nodes change time, but timelines for removal nodes are
 all re-sampled.
 
-NEEDS WORK: NOT YET RE-SAMPLING INACTIIVATED REMOVALS
+\alert{NEED TO ADD RE-SAMPLING OF INACTIIVATED REMOVALS}
 \par
 :::
 
@@ -1578,6 +1578,17 @@ depict("figure-B5", new_figure(
 ```
 
 ---
+Eventual conditional epidemic after use of an innovation (6/8)
+--------------------------------------------------------
+\alert{Still to be done:} 1/3 of way through new infections, display current \LFE and \NFZ.
+
+---
+
+Eventual conditional epidemic after use of an innovation (7/8)
+--------------------------------------------------------
+\alert{Still to be done:} 2/3 of way through new infections, display current \LFE and \NFZ.
+
+---
 
 Eventual conditional epidemic after use of an innovation (8/8)
 --------------------------------------------------------
@@ -1585,6 +1596,8 @@ Eventual conditional epidemic after use of an innovation (8/8)
 Finally the entire process time range is dealt with.
 In this conditioned case each addition or deletion of removal or infections
 is tested to see whether it would lead to a contravention of the conditioning. 
+
+\alert{ADD \NFZ AND \LFE!}
 \par
 :::
 
@@ -1604,11 +1617,11 @@ depict("figure-B8", new_figure(
 
 
 
-Appendix C: Compartment models INCOMPLETE {-}
-==============================
-* _I believe_ this approach to CFTP can be applied to compartmentalized populations!
+Appendix C: Naive approach to compartment models fails {-}
+======================================================
+* Consider a modification of this approach to the case of compartmentalized populations.
 
-* Consider the extreme case in which every individual \(j\) has
+* Focus on the extreme case in which every individual \(j\) has
 infectivity (outgoing to individual \(k\)) \(\alpha_{j,k}\) and removal parameter \(\beta_j\).
 
 * Suppose the conditioning on removals is specifically about 
@@ -1637,7 +1650,7 @@ Timelines and incidents for the compartmental generalization
 is unsuitable.
 
 2. Given population \(N\in\NaturalNumbers\), the ground space is a tuple
-of \(n\) timelines \((i, [0,T)\), one timeline per individual \(i\),
+of \(n\) timelines \((i, [0,T))\), one timeline per individual \(i\),
 where \(T\) is the final time of observation
 of the epidemic.
 
@@ -1657,7 +1670,7 @@ state-space: a locally-finite point pattern of
    - there is at most one \(\CRemoval\) per timeline;
    - for convenience, no \(\Infection\) or \(\Removal\) occur after a \(\CRemoval\) on the same timeline;
 
-5. Epidemic can be viewed as a tuple of intervals on different timelines;  
+5. Epidemic can be viewed as a union of intervals on different timelines;  
 
    - intervals end at the \(\CRemoval\) in the timeline or at time \(T\);
    - intervals on initially infected timelines start at time \(0\);
@@ -1796,15 +1809,15 @@ so as to prohibit infection of \(\Removal\)s previously encountered.
 
 ---
 
-Monotonicity
-------------
+Requirements for monotonicity
+-----------------------------
 For CFTP we need to know that, for coupled iterations
 (using the same pattern of innovations of new \(\Infection\)s
 and \(\Removal\)s), if two variants are started so that
 the infected region of one contains the other, then this
 persists through development of the algorithmic time.
 
-It suffices to prove two detailed lemmas
+It would suffice to prove two detailed lemmas
 
 1. If the old infected region of one contains the other,
 then the \NFZ of the one is contained in the \NFZ of the other;
@@ -1813,15 +1826,39 @@ then the \NFZ of the one is contained in the \NFZ of the other;
 and the \NFZ of the one is contained in the \NFZ of the other,
 then the new infected region of the one is contained in the other.
 
-Then CFTP makes sense, and it is only necessary to show that
+Then CFTP would make sense, and it would only be necessary to show that
 accessibility of a set of near-maximal configurations
 guarantees eventual coalescence.
 
 :::notes
-I have manuscript notes on ideas to prove these lemmas.
-The proofs seem reasonably straightforward!
-except that ...
-\alert{I now think I have a counterexample related to 2nd requirement, "\LFE".}
+Unfortunately, although
+
+1. the first lemma can be proved used a case-by-case analysis;
+
+2. \alert{but the second lemma is not true}: see next slide for a counterexample!
+
+:::
+
+---
+
+Counterexample to monotonicity
+------------------------------
+
+![](image/counterexample.jpg)
+
+:::notes
+There is a counterexample for a population of size \(3\):
+
+* in the minimal case only timelines 1 and 2 are infected, and on the second step it turns out that the \(1\to2\) infection must be perpetuated;
+
+* however in the maximal case there is an early \(1\to3\) infection and a late \(3\to2\) infection which survives to step 2 with a minor modification
+of the \(3\to2\) infection time: the presence of this means the \(\to2\) infection is _not_ perpetuated,
+but it turns out (because there happen to be no suitable new infections) that the \(1\to3\) infection must be perpetuated.
+
+We find that the Minimal 2 infection region is not a subset of the Maximal 2 infection region!
+(though a renumbering of the Minimal 2 population _would_ be a subset -- not a surprise given our previous results!).
+
+\structure{Question:} is there a way round this using the CFTP "crossover" trick?
 :::
 
 

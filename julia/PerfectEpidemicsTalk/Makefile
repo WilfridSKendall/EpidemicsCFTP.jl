@@ -98,8 +98,7 @@ image/%.pdf: image/%.svg
 	$(INKSCAPE) --export-area-drawing --export-type="pdf" $<
 
 %.jpg: %.png ; convert $^ $@ ; rm $^
-
-image/talk_URL.jpg: image/talk_URL.png
+: 
 	convert -scale 25% "$<" "$@"
 	rm "$<" 
 

@@ -28,6 +28,9 @@ format:
         number-sections: true
         number-depth:    1
 
+        toc:             true
+        toc-title:       "Sections"
+
         theme:           Boadilla
         mainfont:        "Times New Roman"
         monofont:        "JuliaMono"
@@ -1707,6 +1710,7 @@ Recall that infections and removals _after_ a conditional removal
 have been censored out.
 A valid configuration must satisfy the following, derived from
 the process dynamics:
+\pause
 
 1. initially infected timelines \(i\) possess no \(\Removal_i\)
 and contribute \((i, [0,t))\) to the epidemic if possessing a (single) \(\CRemoval_i(t)\),
@@ -1720,9 +1724,14 @@ where \(t\) is the time of conditional removal \(\CRemoval_i(t)\)
 of the timeline,
 or \(T\) is there is no conditional removal;
 
-3. the inactivated removal \(\Removal_i(t)\) lies on a timeline \(i\) that is not initially infected
+3. every inactivated removal \(\Removal_i(t)\) lies on a timeline \(i\) that is not initially infected
 only if \(t<s\), where \(s\) is
 the time of first infection.
+
+4. every conditioned removal \(\CRemoval_i(t)\) lies at the
+right-end \(t\) of an infected interval.
+
+\pause[\thebeamerpauses]
 
 So each timeline is divided into a _susceptible interval_
 (empty if it is initially infected),
@@ -1749,6 +1758,7 @@ Dynamics in algorithmic time
 This closely corresponds to the evolution of the \SIR epidemic above,
 but does not resample the mark \(i\) for 
 each conditional removal \(\CRemoval_i\);
+\pause
 
 1. Remove all \(\Removal\)s, and re-sample inactivated removals
 on the susceptible intervals of each timeline.
@@ -1777,8 +1787,10 @@ update of \(\NFZ\).
    - Otherwise \alert{retain} \(\widetilde{\Infection}_{a,b}(u)\)
    as \(\Infection_{a,b}(u)\).
 
-As in \SIR case, this has the conditioned epidemic as
-unique equilibrium
+\pause[\thebeamerpauses]
+   
+As in \SIR case, the conditioned epidemic is the
+unique equilibrium.
    
 :::notes
 The \SIR epidemic resamples the marks of \(\CRemoval\)s 
@@ -1817,7 +1829,8 @@ and \(\Removal\)s), if two variants are started so that
 the infected region of one contains the other, then this
 persists through development of the algorithmic time.
 
-It would suffice to prove two detailed lemmas
+It would suffice to prove two technical results:
+\pause
 
 1. If the old infected region of one contains the other,
 then the \NFZ of the one is contained in the \NFZ of the other;
@@ -1826,6 +1839,7 @@ then the \NFZ of the one is contained in the \NFZ of the other;
 and the \NFZ of the one is contained in the \NFZ of the other,
 then the new infected region of the one is contained in the other.
 
+\pause[\thebeamerpauses]
 Then CFTP would make sense, and it would only be necessary to show that
 accessibility of a set of near-maximal configurations
 guarantees eventual coalescence.
@@ -1833,9 +1847,9 @@ guarantees eventual coalescence.
 :::notes
 Unfortunately, although
 
-1. the first lemma can be proved used a case-by-case analysis;
+1. the first result can be proved used a case-by-case analysis;
 
-2. \alert{but the second lemma is not true}: see next slide for a counterexample!
+2. \alert{nevertheless the second result is not true}: see next slide for a counterexample!
 
 :::
 
@@ -1844,7 +1858,7 @@ Unfortunately, although
 Counterexample to monotonicity
 ------------------------------
 
-![](image/counterexample.jpg)
+![](image/counterexample.jpg){height=3in}
 
 :::notes
 There is a counterexample for a population of size \(3\):
@@ -1852,7 +1866,7 @@ There is a counterexample for a population of size \(3\):
 * in the minimal case only timelines 1 and 2 are infected, and on the second step it turns out that the \(1\to2\) infection must be perpetuated;
 
 * however in the maximal case there is an early \(1\to3\) infection and a late \(3\to2\) infection which survives to step 2 with a minor modification
-of the \(3\to2\) infection time: the presence of this means the \(\to2\) infection is _not_ perpetuated,
+of the \(3\to2\) infection time: the presence of this means the \(1\to2\) infection is _not_ perpetuated,
 but it turns out (because there happen to be no suitable new infections) that the \(1\to3\) infection must be perpetuated.
 
 We find that the Minimal 2 infection region is not a subset of the Maximal 2 infection region!

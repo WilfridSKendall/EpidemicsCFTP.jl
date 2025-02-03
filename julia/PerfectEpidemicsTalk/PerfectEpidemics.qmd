@@ -10,8 +10,8 @@ author:
     - name:           S B Connor
       affiliation:    University of York Department of Mathematics
       affilation-url: https://www-users.york.ac.uk/~sbc502/
-institute: Warwick, York
-license:    "CC BY"
+institute:   Warwick, York
+license:     "CC BY"
 
 from: markdown+tex_math_single_backslash
 
@@ -27,9 +27,6 @@ format:
         
         number-sections: true
         number-depth:    1
-
-        toc:             true
-        toc-title:       "Sections"
 
         theme:           Boadilla
         mainfont:        "Times New Roman"

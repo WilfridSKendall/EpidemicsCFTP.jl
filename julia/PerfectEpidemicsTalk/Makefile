@@ -22,7 +22,8 @@ QUARTO_OPT    := --highlight-style tango
 
 INKSCAPE      := /usr/bin/inkscape
 
-.PHONY: main handout web web-GIF web-MP4 web-animations notes full see see_handout see_notes qrcode
+.PHONY: main handout notes full see see_handout see_notes \
+	web web-GIF web-MP4 web-animations qrcode
 
 ##################################################
 
@@ -30,11 +31,12 @@ main:           $(beamer)
 handout:        $(handout-2x2)
 notes:          $(notes-2x2)
 
-full:           $(handout) $(handout-2x2) $(beamer)
+full:           $(handout) $(handout-2x2) $(notes-2x2) $(beamer) \
+		README.pdf TODO.pdf
 
-see:            main;    xdg-open $(beamer)
+see:            main;           xdg-open $(beamer)
 see_handout:    $(handout-2x2); xdg-open $(handout-2x2)
-see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
+see_notes:      $(notes-2x2);   xdg-open $(notes-2x2)
 
 #################################################
 
@@ -43,8 +45,9 @@ see_notes:      $(notes-2x2); xdg-open $(notes-2x2)
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)                                    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)
 
-%.tex: %.qmd $(biblio)
-	$(QUARTO) render $< --to=latex $(QUARTO_OPT)
+%.tex: %.qmd $(biblio) ; $(QUARTO) render $< --to=latex $(QUARTO_OPT)
+
+%.pdf: %.md ; $(QUARTO) render $< --to=pdf
 
 $(biblio): $(biblio-source)
 	sed --regexp-extended -f $(HOME)/lib/bibfix.sed \
@@ -52,16 +55,12 @@ $(biblio): $(biblio-source)
 		-e "s/Connor, Stephen B/SBC/"    \
 		"$<" > $(biblio)
 
-web:    web-PDF web-GIF web-MP4
-	make -C $(HOME)/HTML/WilfridSKendall deploy
-
+#################################################
 
 qrcode: image/talk_URL.jpg
-	qrencode -s 6 -l H -o image/talk_URL.png "https://wilfridskendall.github.io/talks/$(title)/$(title)-handout.pdf"
-	convert -scale 25% image/talk_URL.png image/talk_URL.jpg
-	rm image/talk_URL.png
 
-#################################################
+web:    web-PDF web-GIF web-MP4
+	make -C $(HOME)/HTML/WilfridSKendall deploy
 
 web-PDF: $(title)-handout.pdf $(title)-notes-2x2.pdf $(title).pdf 
 	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)
@@ -71,6 +70,8 @@ web-GIF: animation/*.gif
 	
 web-MP4: animation/*.mp4
 	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/animation
+
+#################################################
 
 %-handout.pdf: %.qmd $(biblio) $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
@@ -84,16 +85,19 @@ web-MP4: animation/*.mp4
 	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
 	-M classoption=notes -M classoption=handout
 
-$(version): $(title).qmd
-	git log --decorate -1 > $(version)
+$(version): $(title).qmd ; git log --decorate -1 > $(version)
 	
 %-2x2.pdf: %.pdf
 	$(PDFNUP) --tidy --landscape --frame 'true' --scale '0.95' --nup '2x2' $^ -o $@
 
 image/%.pdf: image/%.svg
-	$(INKSCAPE) --export-area-drawing --export-type="pdf" $< 
+	$(INKSCAPE) --export-area-drawing --export-type="pdf" $<
 
 %.jpg: %.png ; convert $^ $@ ; rm $^
+
+image/talk_URL.jpg: image/talk_URL.png
+	convert -scale 25% "$<" "$@"
+	rm "$<" 
 
 image/talk_URL.png:
 	qrencode -s 1 -l H -o "$@" \

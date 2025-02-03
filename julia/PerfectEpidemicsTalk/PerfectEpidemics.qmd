@@ -254,7 +254,7 @@ _Many_ important inferential questions [@CoriKucharski-2024].
 
 Simplest models [versus [UK model with \(10^6\) agents!](https://github.com/BDI-pathogens/OpenABM-Covid19), @FraserEtAl-2023]:
 
-**\SIR{} deterministic epidemic:** 
+**\SIR deterministic epidemic:** 
 susceptibles \(s\), infectives \(i\), removals \(r\)
 (constant total population \(s+i+r=n\)):
 \[
@@ -266,9 +266,10 @@ i' \quad&=\quad \left(\alpha \; s - \beta\;\right)\;i \,,
 r' \quad&=\quad \beta\; i \,.
 \end{aligned}
 \]
-\pause
 
-**\SIR{} stochastic epidemic:** a Markov chain \((S, I, R)\)
+. . .
+
+**\SIR stochastic epidemic:** a Markov chain \((S, I, R)\)
 ​ with transitions
 \[
 \begin{aligned}
@@ -278,7 +279,8 @@ r' \quad&=\quad \beta\; i \,.
 \end{aligned}
 \]
 
-\pause
+. . .
+
 Both models make an \structure{unrealistic assumption}: 
 \alert{homogeneous mixing.}
 
@@ -292,7 +294,7 @@ point of view!
 Here are two classical models (one deterministic, one stochastic)
 from mathematical epidemiology.
 Even the exceedingly
-simple case of deterministic \SIR{} permits only _partial_ closed-form solution.
+simple case of deterministic \SIR permits only _partial_ closed-form solution.
 
 ----------------------------------
 
@@ -332,11 +334,14 @@ and how detailed is it?
 :::
 
 "What is the R-number?"  
-\pause
+
+. . .
+
 The R-number is \(\alpha \; s_0/\beta\): 
 mean number of new infectives produced per infective at _start_ of epidemic with initially \(s_0\) susceptibles.  
 @Whittle-1955's threshold theorem: R-number \(\gg1\) means positive chance of epidemic infecting significant proportion of the population.
-\pause
+
+. . .
 
 [*Wikipedia:*](https://en.wikipedia.org/wiki/COVID-19_pandemic_on_Diamond_Princess) 
 "The British-registered _Diamond Princess_ was the first cruise ship to have a major `[COVID-19]` outbreak on board, with the ship quarantined at Yokohama from 4 February 2020 for about a month. Of 3711 passengers and crew, around 700 people became infected and 9 people died."  
@@ -382,7 +387,9 @@ An absurdly simple variant of contact tracing:
 \small 
 [@GibsonRenshaw-1998; @ONeillRoberts-1999; @GibsonRenshaw-2001]
 
-\pause\bigskip
+. . .
+
+\bigskip
 
 An important step on the way: generating an
 _unconditioned_ epidemic.
@@ -395,13 +402,13 @@ but unobserved infection times \structure{must be inferred}.
    * potential removals, activated if timeline is infected;
    * potential infections, activated if timeline is infected *and* if designated target timeline is lowest uninfected timeline.
 
-3. Poisson point processes _of appropriate rates_ yield an \SIR{} epidemic.
+3. Poisson point processes _of appropriate rates_ yield an \SIR epidemic.
 
-4. First step: evolve whole \SIR{} trajectory in *algorithmic time* 
+4. First step: evolve whole \SIR trajectory in *algorithmic time* 
 (alter potential infections and removals
 using immigration-death in discrete algorithmic time).
 
-5. Result: _trajectory-valued chain_, unconditioned \SIR{} as equilibrium.
+5. Result: _trajectory-valued chain_, unconditioned \SIR as equilibrium.
 
 :::notes
 An important step on the way is to focus on just one aspect
@@ -414,7 +421,7 @@ provide by (typically unobserved) infection times.
 as in the stochastic epidemic model, we effectively track the numbers
 of individuals in various categories.
 3. Poisson point processes generate incidents, which then
-collectively influence the \SIR{} trajectory.
+collectively influence the \SIR trajectory.
 4. I learned the phrase ``algorithmic time" from Andrew Stuart.  
 We move from Poisson points spread out along timelines to
 discrete immigration-death processes producing patterns
@@ -447,7 +454,7 @@ infections need to specify which timeline is going to be infected.
 * The rates of the Poisson processes generating the (proposed) 
 incidents are chosen to ensure that the numbers of actual 
 susceptibles, infectives and removals form a Markov chain
-with rates as required for a \SIR{} epidemic.
+with rates as required for a \SIR epidemic.
 * For an infection incident to be activated, it must sit on an infected portion
 of its timeline and must point to the least of the uninfected timelines
 (calculating at the process time of the incident).
@@ -1295,8 +1302,7 @@ will be helpful to compare with a simpler model using fewer parameters).
 * Still to be done: statistical estimation of parameters, generalization
 to other compartment models.
 
-* Thank you for your attention! **\alert{QUESTIONS?}**
-
+* Thank you for your attention! **\alert{QUESTIONS?}**  
 ![](image/talk_URL.jpg){width=1in fig-align="center"}
 
 ::: notes
@@ -1707,7 +1713,8 @@ Recall that infections and removals _after_ a conditional removal
 have been censored out.
 A valid configuration must satisfy the following, derived from
 the process dynamics:
-\pause
+
+. . .
 
 1. initially infected timelines \(i\) possess no \(\Removal_i\):
 if they possess a (single) \(\CRemoval_i(t)\)
@@ -1756,7 +1763,8 @@ Dynamics in algorithmic time
 This closely corresponds to the evolution of the \SIR epidemic above,
 but does not resample the mark \(i\) for 
 each conditional removal \(\CRemoval_i\);
-\pause
+
+. . .
 
 1. Remove all \(\Removal\)s, and re-sample inactivated removals
 on the susceptible intervals of each timeline.
@@ -1828,7 +1836,8 @@ the infected region of one contains the other, then this
 persists through development of the algorithmic time.
 
 It would suffice to prove two technical results:
-\pause
+
+. . .
 
 1. If the old infected region of one contains the other,
 then the \NFZ of the one is contained in the \NFZ of the other;

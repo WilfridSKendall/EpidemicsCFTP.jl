@@ -1709,24 +1709,25 @@ A valid configuration must satisfy the following, derived from
 the process dynamics:
 \pause
 
-1. initially infected timelines \(i\) possess no \(\Removal_i\)
-and contribute \((i, [0,t))\) to the epidemic if possessing a (single) \(\CRemoval_i(t)\),
+1. initially infected timelines \(i\) possess no \(\Removal_i\):
+if they possess a (single) \(\CRemoval_i(t)\)
+then they contribute \((i, [0,t))\) to the epidemic,
 otherwise \((i, [0,T)\);
 
 2. other timelines \(k\)
 only contribute if they possess \(\Infection_{k,i}(s)\) such
 that timeline \(k\) is infected at time \(s\), in which case the
 earliest \(s\) is chosen and the contribution is \((i, [s,t))\)
-where \(t\) is the time of conditional removal \(\CRemoval_i(t)\)
+when \(\CRemoval_i(t)\) is the conditional removal
 of the timeline,
-or \(T\) is there is no conditional removal;
+otherwise \((i, [s,T))\);
 
-3. every inactivated removal \(\Removal_i(t)\) lies on a timeline \(i\) that is not initially infected
-only if \(t<s\), where \(s\) is
-the time of first infection.
+3. every inactivated removal \(\Removal_i(t)\) 
+satisfies \(t<s\), where \(s\) is
+the time of first infection of the timeline \(i\).
 
-4. every conditioned removal \(\CRemoval_i(t)\) lies at the
-right-end \(t\) of an infected interval.
+4. every conditioned removal \(\CRemoval_i(t)\) is at the
+right \(t\) of an infected interval.
 
 \pause[\thebeamerpauses]
 

@@ -47,7 +47,10 @@ see_notes:      $(notes-2x2);   xdg-open $(notes-2x2)
 
 %.tex: %.qmd $(biblio) ; $(QUARTO) render $< --to=latex $(QUARTO_OPT)
 
-%.pdf: %.md ; $(QUARTO) render $< --to=pdf
+%.pdf: %.md
+	sed -e "1i----\nThis version of \`$<\`:\n" -f $(versionsed) $(version)  | \
+	$(QUARTO) render $< - --to=pdf
+	-rm $*.upa $*.upb
 
 $(biblio): $(biblio-source)
 	sed --regexp-extended -f $(HOME)/lib/bibfix.sed \

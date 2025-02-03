@@ -1885,12 +1885,10 @@ We find that the Minimal 2 infection region is not a subset of the Maximal 2 inf
 
 Other technical information {-}
 ===========================
-
 \scriptsize
 
-Software versions {-}
------------------
-Software used in computations:
+Software used in computations {-}
+-----------------------------
 ```{julia}
 #| label: software-details
 #| echo: false
@@ -1901,15 +1899,13 @@ ownversion    = "$(read(Cmd(`git describe --tags`),       String)[1:end-1])"
 ownbranch     = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3], "Date:   " => "", " +0000" => "")
 
-Markdown.parse("""
-|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_      |
+Markdown.parse("""|_Software_                 |_Version_                      | _Branch_                     |_Last commit_      |
 |:--------------------------|:------------------------------|:------------------------|:--------------------------|
 |`quarto`                   |`$(quartoversion)`             | ---                          |                           |
 |Running under `julia`      |`$VERSION`                     | ---                          |                           |
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`    |
-|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
-|This `quarto` script       |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                 |
-""")
+|`EpidemicsCFTP`            |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`    |
+|`EpidemicsUtilities`       |`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+|This `quarto` script       |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                 |""")
 ```
 Revision notes {-}
 --------------

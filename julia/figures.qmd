@@ -28,7 +28,7 @@ format:
         - "SIR.sty"
 
 execute:
-    cache: true
+    cache: false
 jupyter:    julia-1.11
 ---
 

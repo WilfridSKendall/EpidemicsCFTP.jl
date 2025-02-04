@@ -6,7 +6,7 @@
   - [ ] Read papers suggested by Simon
   - [ ] Add supporting literature for inference, as discussed with Simon
   - [ ] Follow-up further on Paul Jenkins' remarks concerning links to "look-down" representation. I don't think there is a big thing here, but need to tie it down.
-- [ ] Differentiate graphical representation of each C from the point where it has effect
+- [x] Differentiate graphical representation of each C from the point where it has effect
 - [ ] Use better running example (need more action in the centre of the time-scale)
 - [ ] What about compartment models:
   - [ ] Case of two compartments?

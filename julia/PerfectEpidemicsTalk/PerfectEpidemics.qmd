@@ -131,18 +131,15 @@ Classic CFTP for a simple random walk (I)
    - \(\Prob{+1\text{ jump }}=p\in(0,1)\), while \(\Prob{-1 \text{ jump }} = 1{-}p\), **except that** 
    - \qquad at state \(9\) replace the \(+1\) jump by "staying still", **and**
    - \qquad at state \(0\) replace the \(-1\) jump by "staying still".
-* Conventional MCMC picks a starting point, then runs the simple random walk for long time till approximate equilibrium.
-
-* How long? One way to _estimate_ this is to run two
-(or several?) coupled copies till they meet.
-If probability of meeting by time \(T\) is high, then deviation of \(X_T\) from equilibrium is statistically small;
-
-* Generally \alert{not true} that location _at_ coupling is a draw from equilibrium.
-
+* Conventional MCMC picks a starting point, then runs the simple random walk for long time till approximate equilibrium.  
 \begin{center}
 \only<1-5| handout:0>{\uncover<5>{\includegraphics[width=3in]{image/basic-rw1.png}}}
 \only<6-7| handout:1>{\includegraphics[width=3in]{image/basic-rw2.png}}
 \end{center}
+* How long? One way to _estimate_ this is to run two
+(or several?) coupled copies till they meet.
+If probability of meeting by time \(T\) is high, then deviation of \(X_T\) from equilibrium is statistically small;
+* Generally \alert{not true} that location _at_ coupling is a draw from equilibrium.
 
 ::: notes
 This random process is asymmetric simple random walk on the integers, 
@@ -171,22 +168,15 @@ equilibrium!
 Classic CFTP for a simple random walk (I)
 -----------------------------------------
 * Start at top (\(9\)) and bottom (\(0\)) at negative time \(-T\), run to time \(0\). 
-
-* If not coupled by time \(0\), than back-off to time \(-2T\) and repeat.  
-\alert{NB} re-use randomness!
-
-* May need to iterate back-off doubling several times.
-
-
-* When coupled, top and bottom yield a common value at time \(0\).
-
-
-* The common value
-is an exact draw from equilibrium!
-
 \begin{center}
 \only<1| handout:0>{\includegraphics[width=3.5in]{image/basic-rw3.png}}\only<2| handout:0>{\includegraphics[width=3.5in]{image/basic-rw4.png}}\only<3| handout:0>{\includegraphics[width=3.5in]{image/basic-rw5.png}}\only<4| handout:0>{\includegraphics[width=3.5in]{image/basic-rw6.png}}\only<5| handout:1>{\includegraphics[width=3.5in]{image/basic-rwCFTP.png}}%
 \end{center}
+
+* If not coupled by time \(0\), than back-off to time \(-2T\) and repeat.  
+\alert{NB} re-use randomness!
+* May need to iterate back-off doubling several times.
+* When coupled, top and bottom yield a common value at time \(0\).
+* The common value (golden thread) is an exact draw from equilibrium!
 
 ::: notes
 1. Ideally one needs to choose \(T\) neither too small nor
@@ -213,17 +203,15 @@ A little theory about CFTP  {-}
 * What about cases where monotonicity fails? or there isn’t a sensible “maximal” process? Ideas [@Kendall-1998d]: 
 	* cross-couple upper and lower envelope processes; 
 	* dominate by amenable “dominating process” (time-reversible, can draw from equilibrium, can couple target processes below dominating process). 
-
 * Theoretical limits:  _in principle_ we can show that
 	- _Classical CFTP_ equivalent to uniform ergodicity [@FossTweedie-1998]; 
 	- _Dominated CFTP_ achievable under geometric ergodicity [@Kendall-2004c]; 
 	- Dominated CFTP can work in some **non**-geometrically ergodicity cases [@ConnorKendall-2007a; _nb_ corrigendum @ConnorKendall-2007b].
-
-* _Dominated CFTP_ 
+* Dominated CFTP
 can be used to carry out perfect simulation for stable point processes [@KendallMoeller-2000];
 
-* Detailed expositions: @Kendall-2005a, @Huber-2015.  
-[Want to implement CFTP in R? see @Kendall-2014b.]
+    * Detailed expositions: @Kendall-2005a, @Huber-2015.  
+[Want to implement CFTP in [R](https://www.r-project.org/)? see @Kendall-2014b.]
 
 ::: notes
 1. To be computationally effective, the WSK (1998) ideas still require 
@@ -397,17 +385,13 @@ _unconditioned_ epidemic.
 1. Thus \(n\), \(\alpha\), \(\beta\) are known​,
 removal times are observed,  
 but unobserved infection times \structure{must be inferred}.
-
 2. Visualize \(n\) timelines, along which incidents are scattered: 
    * potential removals, activated if timeline is infected;
    * potential infections, activated if timeline is infected *and* if designated target timeline is lowest uninfected timeline.
-
 3. Poisson point processes _of appropriate rates_ yield an \SIR epidemic.
-
 4. First step: evolve whole \SIR trajectory in *algorithmic time* 
 (alter potential infections and removals
 using immigration-death in discrete algorithmic time).
-
 5. Result: _trajectory-valued chain_, unconditioned \SIR as equilibrium.
 
 :::notes
@@ -544,9 +528,9 @@ the initial number of infectives (here we specify \(I_0=1\)).
 ```{julia}
 #| echo: false
 #| label: fig-figure-2
-#| fig-cap: "Activate (a) _infection_ if target on lowest uninfected timeline; \
-#|           (b) _removal_ if in infected region, then remove lowest infected  \
-#|           (purple disk if different timeline). " 
+#| fig-cap: "(a) _Infection_ activates if target lies on the lowest uninfected timeline; and \
+#|           (b) _removal_ activates if on infected timeline; remove lowest infected         \
+#|               (purple disk). " 
 depict("figure-2", new_figure(
     draw_evolution!(deepcopy(lines_plot), uev1, duration, theme=theme, 
         select=MOST),
@@ -586,8 +570,8 @@ uev2 = Evolution(initial, uiv2) ;
 #| echo: false
 #| label: fig-figure-3
 #| fig-cap: "A step in algorithmic time for the unconditioned \
-#|           epidemic simply involves replacing the original  \
-#|           incidents by a new set of incidents." 
+#|           epidemic simply involves replacing all original  \
+#|           incidents by an entirely new set of incidents." 
 depict("figure-3", new_figure(
     draw_evolution!(deepcopy(lines_plot), 
                     uev2, 
@@ -603,29 +587,28 @@ Crucial technical point {-}
 * Updates in algorithmic time \(\tau\) are then 
 (algorithmic-)_time-reversible_:
 so restriction to subset \(S\) of state-space 
-(of _activated_ removals occurring precisely at
-specified set of times)
+(the _activated_ / _conditioned_ removals must occur precisely at
+specified set of process times)
 implies a new equilibrium which is the old equilibrium 
 conditioned to lie in \(S\).
 * For later purposes it is
 convenient to stage the replacement as follows:  
-  1. Replace removals (\(R\)s);
-  2. Re-sample timelines (though not times) of \(R\)s;
-  3. Replace infections (\(I\)s).
+  1. Replace removals (\(\Removal\)s);
+  2. Re-sample timelines (though not times) of \(\Removal\)s;
+  3. Replace infections (\(\Infection\)s).
 * Re-express using continuously
 varying \(\tau\).
 Process time runs over \([0,T]\).   
   1. For \(2n T < \tau < (2n{+}1) T\),
-  update old \(R\)s with times in \((0, \tau-2nT)\);
+  update old \(\Removal\)s with times in \((0, \tau-2nT)\);
   2. For \(\tau=(2n{+}1) T\), resample
-   timelines (not times) of \(R\)s;
+   timelines (not times) of \(\Removal\)s;
   3. For \((2n{+}1) T< \tau < (2n{+}2) T\),
-  update old \(I\)s in \(((2n{+}2) T-\tau, T)\).
+  update old \(\Infection\)s in \(((2n{+}2) T-\tau, T)\).
 * Thus the original update is expressible as a (continuous)
 composition of updates, each of which satisfies detailed
 balance in equilibrium.
-* The connection "restriction\(=\)conditioning" is thereby
-preserved.
+* The connection "restriction\(=\)conditioning" still holds.
 * Crucially, step 2 ensures composition action
 is irreducible over \(S\)!  
 (So equilibrium under conditioning is unique.)
@@ -972,7 +955,7 @@ Consequently:
 * Does this produce a _feasible_ and suitably _monotonic_ algorithm?
 * \structure{Housekeeping details} used to establish that
 monotonicity still works: 
-_last feasible epidemic_ (\LFE)
+_laziest feasible epidemic_ (\LFE)
 and _no-fly zone_ (\NFZ).
 
 ::: notes
@@ -995,11 +978,11 @@ for monotonicity, but also computationally helpful.
 
 ---
 
-Initial conditional epidemic
+Initial conditioned epidemic
 ----------------------------
 ```{julia}
 #| echo: false
-#| label: conditional-evolution1
+#| label: conditioned-evolution1
 initiali = AIF[I(0.3*k-0.01,k, k+1) for k in 1:(population-1)]
 initialr = R[]
 initialc = C[C(3.5,1), C(6.5,4), C(8.0,3), C(12.0,5), C(13.0,5)]
@@ -1030,16 +1013,16 @@ depict("figure-5", new_figure(
 
 ::: notes
 Here is a different initial epidemic,
-including _conditional removals_, indicated by purple circles.
+including _conditioned removals_, indicated by purple circles.
 
 * Essentially we change it in the same way as in the 
 unconditioned case (working ``pixel-by-pixel''), but
 forbidding any change  if that breaks conditioning.
 * Dealing with removals is easy: it amounts to removing
 all inactivated removals and replacing them with a new 
-bunch, and then resampling the conditional removal
+bunch, and then resampling the conditioned removal
 timelines, accepting only those changes which do not
-de-activate the conditional removals.
+de-activate the conditioned removals.
 * But we need to take more care about whether or not we can
 take away or add in _infections_.
 
@@ -1065,7 +1048,7 @@ is also rather simple:
 2. Delete them only if it is clear that this will not result in 
 a conditioned removal falling out of the infected region.
 3. Implementation amounts to referring to a
-recursively-defined _last feasible epidemic_ (\LFE).
+recursively-defined _laziest feasible epidemic_ (\LFE).
 The \LFE coincides with the actual epidemic trajectory exactly when
 deletion of the infection in question will lead to 
 a conditioned removal falling out of the infected region;
@@ -1081,7 +1064,7 @@ and we will discuss them briefly below.
 
 ```{julia}
 #| echo: false
-#| label: conditional-evolution2
+#| label: conditioned-evolution2
 civ2 = rand(civ1) ;
 cev2 = CEvolution(cev1, civ2) ;
 ```
@@ -1109,7 +1092,7 @@ Last feasible epidemic (\LFE)
 ::: notes
 First we draw the \LFE.
 As it is defined recursively working backwards in process time,
-it can be computed in entirety from the updated conditional epidemic.
+it can be computed in entirety from the updated conditioned epidemic.
 
 * Of course, when computing the update, we have to compute it set-by-step
 when working backwards in process time.
@@ -1269,7 +1252,7 @@ integrate out pattern of unobserved infections.
   to find *maximum a posterior* estimates of \(\alpha\) and \(\beta\);
     - or even, with some computational effort, compute the entire posterior joint density for \(\alpha\) and \(\beta\)!
 
-* Finally: generalize to other suitable compartment models?
+* Finally: can we generalize to other suitable compartment models?
 
 ::: notes
 
@@ -1389,7 +1372,7 @@ cevsmall = Evolution(initial, civsmall) ;
 ```{julia}
 #| echo: false
 #| label: fig-figure-A
-#| fig-cap: "A conditional epidemic in which all                  \
+#| fig-cap: "A conditioned epidemic in which all                  \
 #|           activated infections occur before time 3.0,          \
 #|           also before smallest observed removal time.          "
 depict("figure-A", new_figure(
@@ -1400,9 +1383,9 @@ depict("figure-A", new_figure(
 ```
 
 
-Appendix B: Updating a conditional epidemic INCOMPLETE {-}
+Appendix B: Updating a conditioned epidemic INCOMPLETE {-}
 ===========================================
-We now work through the update of the conditional
+We now work through the update of the conditioned
 epidemic in stages.
 
 ::: notes
@@ -1411,11 +1394,11 @@ Seeking to convey the pixel-by-pixel nature of the update!
 
 ---
 
-Initial conditional epidemic (1/8)
+Initial conditioned epidemic (1/8)
 ----------------------------
 ::: notes
 Here is the initial epidemic (actually itself produced
-using a conditional update from a rather extreme initial state).
+using a conditioned update from a rather extreme initial state).
 \par
 :::
 
@@ -1584,19 +1567,19 @@ depict("figure-B5", new_figure(
 ```
 
 ---
-Eventual conditional epidemic after use of an innovation (6/8)
+Eventual conditioned epidemic after use of an innovation (6/8)
 --------------------------------------------------------
 \alert{Still to be done:} 1/3 of way through new infections, display current \LFE and \NFZ.
 
 ---
 
-Eventual conditional epidemic after use of an innovation (7/8)
+Eventual conditioned epidemic after use of an innovation (7/8)
 --------------------------------------------------------
 \alert{Still to be done:} 2/3 of way through new infections, display current \LFE and \NFZ.
 
 ---
 
-Eventual conditional epidemic after use of an innovation (8/8)
+Eventual conditioned epidemic after use of an innovation (8/8)
 --------------------------------------------------------
 ::: notes
 Finally the entire process time range is dealt with.
@@ -1667,7 +1650,7 @@ state-space: a locally-finite point pattern of
    at various times \(t\),
    each infection marked by a target timeline \(j\) other than its mark \(k\);
    - (inactivated) removals \(\Removal=\Removal_i(t)\), marked by timelines \(i\) at times \(t\);
-   - conditional removals \(\CRemoval=\CRemoval_i(t)\), marked by timelines \(i\) at times \(t\).
+   - conditioned removals \(\CRemoval=\CRemoval_i(t)\), marked by timelines \(i\) at times \(t\).
    
 4. Initial stipulations:  
 
@@ -1700,16 +1683,16 @@ independent Poisson processes on \([0,T)\) for each timeline \(i\);
 We censor  \(\Infection\) or \(\Removal\) occurring after a \(\CRemoval\) on the same timeline, as they will play no part in the epidemic dynamics.
 
 5. the simple epidemic trajectory is replaced by a set!
-We can re-order individual so that (for example) conditionally removed timeline come first, and initially infected timelines take priority
-in the two categories of "conditionally removed" and
-"not conditionally removed".
+We can re-order individual so that (for example) conditionedly removed timeline come first, and initially infected timelines take priority
+in the two categories of "conditionedly removed" and
+"not conditionedly removed".
 :::
 
 ---
 
 Process dynamics
 ----------------
-Recall that infections and removals _after_ a conditional removal
+Recall that infections and removals _after_ a conditioned removal
 have been censored out.
 A valid configuration must satisfy the following, derived from
 the process dynamics:
@@ -1725,7 +1708,7 @@ otherwise \((i, [0,T)\);
 only contribute if they possess \(\Infection_{k,i}(s)\) such
 that timeline \(k\) is infected at time \(s\), in which case the
 earliest \(s\) is chosen and the contribution is \((i, [s,t))\)
-when \(\CRemoval_i(t)\) is the conditional removal
+when \(\CRemoval_i(t)\) is the conditioned removal
 of the timeline,
 otherwise \((i, [s,T))\);
 
@@ -1762,7 +1745,7 @@ Dynamics in algorithmic time
 ----------------------------
 This closely corresponds to the evolution of the \SIR epidemic above,
 but does not resample the mark \(i\) for 
-each conditional removal \(\CRemoval_i\);
+each conditioned removal \(\CRemoval_i\);
 
 . . .
 
@@ -1778,7 +1761,7 @@ in complements of the removed intervals.
 3. Work iteratively
 through this list. Would discarding original \(\Infection_{i,j}(t)\) 
 result in failure to infect a
-conditional removal?. If so, \alert{retain} \(\Infection_{i,j}(t)\)
+conditioned removal?. If so, \alert{retain} \(\Infection_{i,j}(t)\)
 as _perpetuated infection_ \(\PInfection_{i,j}(t)\), otherwise 
 \alert{discard}. 
 
@@ -1814,7 +1797,7 @@ to generate the candidate \(\widetilde{\Infection}_{a,b}\).
 
 3. When computing whether removal of an infection results in 
 uninfected 
-conditional removals, use current pattern of infections.
+conditioned removals, use current pattern of infections.
 The \SIR case uses \LFE; the necessary
 reformulation in set-theoretic terms means more computation is required here.
 (But note the

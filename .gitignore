@@ -18,6 +18,8 @@ image/production*
 VERSION.txt
 Manifest.toml
 
+Reading
+
 *.aux
 *.bbl
 *.bib-old

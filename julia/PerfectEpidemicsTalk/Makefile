@@ -44,7 +44,7 @@ see_notes:      $(notes-2x2);   xdg-open $(notes-2x2)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)                                    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)
-	-rm $*.upa $*.upb
+	-rm $*.upa
 
 %.tex: %.qmd $(biblio) ; $(QUARTO) render $< --to=latex $(QUARTO_OPT)
 

@@ -11,6 +11,8 @@ format:
         - text: |
             \usepackage[xetex]{animate}
 
+# Assumes technical settings in `_metadata.yml`
+            
 jupyter:      julia-1.11
 execute:
     cache:    false

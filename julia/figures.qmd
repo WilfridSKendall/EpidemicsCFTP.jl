@@ -3,15 +3,14 @@ title:  "Proposed figures for Perfect Epidemics"
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
-csl: /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 
 format:
   pdf:
     include-in-header:
         - "SIR.sty"
 
-execute:
-    cache: true
+# Assumes technical settings in `_metadata.yml`
+
 jupyter:    julia-1.11
 ---
 

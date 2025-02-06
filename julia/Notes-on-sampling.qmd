@@ -4,6 +4,8 @@ author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
 
+# Assumes technical settings in `_metadata.yml`
+
 jupyter:    julia-1.9
 ---
 

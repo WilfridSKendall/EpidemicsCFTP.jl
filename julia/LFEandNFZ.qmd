@@ -9,8 +9,8 @@ format:
     include-in-header:
         - "SIR.sty"
         
-execute:
-    cache: true
+# Assumes technical settings in `_metadata.yml`
+
 jupyter:    julia-1.11
 ---
 
@@ -157,7 +157,7 @@ for i ∈ 1:population
     println("\nInitial condition ", sprint(show, MIME("text/plain"), initial))
     ev_lo  = extremal_evolution(initial, duration, cremoval_times; maximal=false)
     ev_hi  = extremal_evolution(initial, duration, cremoval_times)
-    coalesced = ≃(ev_hi, ev_lo)
+    coalesced = (ev_hi ≃ ev_lo)
     for j ∈ REPLICATES
         ev_hi, ev_lo = ev_hi ⋄ ivl[j], ev_lo ⋄ ivl[j] 
         for ev in [ev_hi, ev_lo]
@@ -167,9 +167,9 @@ for i ∈ 1:population
         end
         @test ev_lo ⪯ ev_hi                                                                 # <3>
 
-        @test (! coalesced) || ≃(ev_hi, ev_lo)                                              # <4>
-        coalesced = ≃(ev_hi, ev_lo)    
-        print(≃(ev_hi, ev_lo) ? "c"         : "-")
+        @test (! coalesced) || (ev_hi ≃ ev_lo)                                              # <4>
+        coalesced = (ev_hi ≃ ev_lo)    
+        print((ev_hi ≃ ev_lo) ? "c"         : "-")
         print((j % 10) == 0   ? " "         : "" )
         print((j % 80) == 0   ? "\n       " : "" )
     end

@@ -3,31 +3,14 @@ title:  "Tests of Innovations for Epidemics"
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
-csl: /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
-
-
-date-format: "D MMMM YYYY"
-papersize:  a4
-
-tbl-cap-location: top
-
-from: markdown+tex_math_single_backslash
 
 format:
-  html:
-    code-fold: true
   pdf:
-    link-citations: true
-    numbersections: true
-    mainfont: "Times New Roman"
-    monofont: "JuliaMono"
-    monofontoptions:
-       - Scale=0.7
     include-in-header:
         - "SIR.sty"
 
-execute:
-    cache: true
+# Assumes technical settings in `_metadata.yml`
+
 jupyter:    julia-1.11
 ---
 

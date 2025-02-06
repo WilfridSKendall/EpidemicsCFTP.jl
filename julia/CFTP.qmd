@@ -8,8 +8,8 @@ format:
     include-in-header:
         - "SIR.sty"
         
-execute:
-    cache: true
+# Assumes technical settings in `_metadata.yml`
+
 jupyter:    julia-1.11
 ---
 

@@ -130,6 +130,13 @@ animation/VERIFY_%.png: animation/%.png
 
 	
 ## ====================
+## Automatic conversion of qmd to pdf
+%.pdf: %.qmd $(VERSION) _metadata.yml $(VERSION) ; @echo "Creating $@" ; \
+	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(VERSIONSED) $(VERSION)  | \
+	$(QUARTO) render $< - --to pdf $(QUARTO_OPTIONS)
+	-rm $*.upa $*.upb
+
+## ====================
 ## Creating PDFs of listings in `PRINTING` directory
 listings: $(PRODUCTS) ; make --directory=PRINTING listings
 	cp $(PRODUCTS) PRINTING
@@ -157,13 +164,6 @@ README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 ## ====================
 ## Further dependencies
 introduction.pdf: config/theme.yml
-
-## ====================
-## Automatic conversion of qmd to pdf
-%.pdf: %.qmd $(VERSION) _metadata.yml $(VERSION) ; @echo "Creating $@" ; \
-	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(VERSIONSED) $(VERSION)  | \
-	$(QUARTO) render $< - --to pdf $(QUARTO_OPTIONS)
-	-rm $*.upa $*.upb
 
 #################################################
 ## Updating `VERSION.txt`

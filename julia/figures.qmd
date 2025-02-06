@@ -184,10 +184,10 @@ Draft of Figure 4 [@ConnorKendall-2023]
 We now graph the generating incidents corresponding to a conditional form of the epidemic (`cev1`).
 
 **Caption in draft paper:** 
-"Illustration of no-fly zone, epidemic trajectory and last-viable epidemic for this graphical representation."
+"Illustration of no-fly zone, epidemic trajectory and {==laziest feasible==} epidemic for this graphical representation."
 
 We construct an adapted `Innovation` and a corresponding `CEvolution` as follows.
-The No-Fly Zone (NFZ) and Last Feasible Epidemic (LFE) are computed
+The No-Fly Zone (NFZ) and Laziest / Last Feasible Epidemic (LFE) are computed
 based on the supplied `Innovation` (it would normally computed as part of an
 update of the `CEvolution` using a further `Innovation`). The logic of the
 accept/reject constituent of the updating procedure is that LFE infections are
@@ -221,7 +221,7 @@ pretty_table(
 #| echo: false
 #| label: fig-figure-4
 #| fig-cap: "`[figure-4.pdf]` The conditional epidemic evolution is           \
-#|           accompanied here by the Last Feasible Epidemic (the red          \
+#|           accompanied here by the Laziest Feasible Epidemic (the red       \
 #|           _slowest_ epidemic which does not violate constraints imposed by \
 #|           conditioned removals); the No-Fly Zone (the blue-grey region     \
 #|           which must not be infected if the _unconditioned_ removals are   \      
@@ -232,7 +232,7 @@ pretty_table(
 depict("figure-4", new_figure(
     draw_evolution!(deepcopy(lines_plot), cev1, duration, theme=theme, 
         select=MOST | LFE | NFZ),
-        title="Conditioned epidemic with Last Feasible Epidemic and No-Fly Zone"),
+        title="Conditioned epidemic with Laziest Feasible Epidemic and No-Fly Zone"),
     figdir="Figure"
 )
 ```

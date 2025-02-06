@@ -1,5 +1,5 @@
 ---
-title:  "Creating the `LFE` trajectory"
+title:  "Checking the `LFE` and `NFZ`"
 author: "Wilfrid Kendall"
 date:   today
 
@@ -19,7 +19,7 @@ jupyter:    julia-1.11
 #| eval: true
 #| cache: false
 #| tags: [parameters]
-source = "LFE.qmd"
+source = "LFEandNFZ.qmd"
 
 using Random, Test
 import EpidemicsCFTP: EpidemicsCFTP, 
@@ -51,7 +51,7 @@ const duration = 5.0 ; const population = 5 ; const α=0.3 ; const β=0.2 ;
 ```
 
 It is useful to
-have some abbreviations for various `AbstractIncident`s.
+have some abbreviations for various `AbstractIncident`s, namely
 ```{julia}
 import EpidemicsCFTP: AI, I, P, R, C
 ```
@@ -69,7 +69,7 @@ Random.seed!(44) ;
 
 We will be using the following functions from `EpidemicsCFTP`:
 ```{julia}
-import EpidemicsCFTP: last_feasible_evolution, is_correct_LFE, is_correct_NFZ ;
+import EpidemicsCFTP: laziest_feasible_evolution, is_correct_LFE, is_correct_NFZ ;
 ```
 
 Conditional removal times (`cremoval_times`) are specified as 
@@ -114,7 +114,7 @@ for i ∈ 1:population                                                          
     for (ev, traj) ∈ [(ev_lo, traj_lo), (ev_hi, traj_hi)]                           # <2>
         computed_LFE = convert(Vector{AI}, [z for z ∈ traj if
                 ! (z isa OperativeInfection) || startup < z.infectee ≤ crcount])
-        LFE = last_feasible_evolution(duration, ev, iv)
+        LFE = laziest_feasible_evolution(duration, ev, iv)
         @test CEvolution(ev.initial, LFE).history == LFE                            # <3>
         @test computed_LFE == sort(ev.cremovals ∪ ev.removals ∪ [P(z) for z ∈ ev.infections 
                 if z isa OperativeInfection && startup < z.infectee ≤ crcount])     # <4>
@@ -209,7 +209,6 @@ Markdown.parse("""
 |Quarto                 |`$(quartoversion)`             | ---                          |                            |
 | `julia` version       |`$VERSION`                     | ---                          |                            |
 | `EpidemicsCFTP`       |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
-| `EpidemicsUtilities`  |`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
 | Script `$(source)`    |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
 """)
 ```

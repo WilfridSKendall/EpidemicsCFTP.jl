@@ -350,14 +350,14 @@ Adding infections from the \LFE
 if EpidemicsCFTP.is_correct_LFE(ev2)
     Markdown.parse("""
 To determine how to replace infections, 
-we could apply `EpidemicsCFTP.last_feasible_evolution` to `ev1_3`
+we could apply `EpidemicsCFTP.laziest_feasible_evolution` to `ev1_3`
 (in fact the resulting `ev1_4` yields the final `ev2.LFE`!).
 The construction of `ev1_4.LFE=ev2.LFE` in @fig-test-05-LFE has been checked using `EpidemicsCFTP.is_correct_LFE` and is **valid**.
 """)
 else
     Markdown.parse("""
 To determine how to replace infections, 
-we could apply `EpidemicsCFTP.last_feasible_evolution` to `ev1_3`
+we could apply `EpidemicsCFTP.laziest_feasible_evolution` to `ev1_3`
 (in fact the resulting `ev1_4`  yields the final `ev2.LFE`!),
 According to `EpidemicsCFTP.is_correct_LFE`, the construction of `ev1_4.LFE` is **not** valid.
 """)
@@ -365,10 +365,10 @@ end
 ```
 
 ```{julia}
-last_feasible_new_infections = AIF[z for z ∈ ev2.LFE ∩ iv2c.infections]
+laziest_feasible_new_infections = AIF[z for z ∈ ev2.LFE ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ ev2.LFE ∩ ev1_3.infections]
 other_older_infections       = setdiff(ev1_3.infections, AIF[z for z ∈ ev2.LFE if z isa AIF])
-iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
+iv1_4 = Innovation(initial.n, perpetuated_infections ∪ laziest_feasible_new_infections ∪ 
                         other_older_infections, ev1_3.removals, ev1_3.cremovals)
 ev1_4 = CEvolution(initial, iv1_4, LFE=ev2.LFE)
 ```

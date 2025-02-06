@@ -682,14 +682,14 @@ ev2 = ev1 ⋄ iv2c ;
 if EpidemicsCFTP.is_correct_LFE(ev2)
     Markdown.parse("""
 To determine how to replace infections, 
-we could apply `EpidemicsCFTP.last_feasible_evolution0` to `ev1_3`
+we could apply `EpidemicsCFTP.laziest_feasible_evolution0` to `ev1_3`
 (in fact the resulting `ev1_4` yields the final `ev2.LFE`!).
-The construction of `ev1_4.LFE=ev2.LFE` in @fig-introduction-10-last-feasible-epidemic has been checked using `EpidemicsCFTP.is_correct_LFE` and is **valid**.
+The construction of `ev1_4.LFE=ev2.LFE` in @fig-introduction-10-laziest-feasible-epidemic has been checked using `EpidemicsCFTP.is_correct_LFE` and is **valid**.
 """)
 else
     Markdown.parse("""
 To determine how to replace infections, 
-we could apply `EpidemicsCFTP.last_feasible_evolution` to `ev1_3`
+we could apply `EpidemicsCFTP.laziest_feasible_evolution` to `ev1_3`
 (in fact the resulting `ev1_4`  yields the final `ev2.LFE`!),
 According to `EpidemicsCFTP.is_correct_LFE`, the construction of `ev1_4.LFE` is **not** valid.
 """)
@@ -699,18 +699,18 @@ end
 
 ```{julia}
 #| echo: false
-#| label: fig-introduction-10-last-feasible-epidemic
-#| fig-cap: "This adds the last feasible evolution trajectory (coloured in pink) \
-#|           to the step one evolution.        [`10-last-feasible-epidemic`]"
-last_feasible_new_infections = AIF[z for z ∈ ev2.LFE ∩ iv2c.infections]
+#| label: fig-introduction-10-laziest-feasible-epidemic
+#| fig-cap: "This adds the laziest feasible evolution trajectory (coloured in pink) \
+#|           to the step one evolution.        [`10-laziest-feasible-epidemic`]"
+laziest_feasible_new_infections = AIF[z for z ∈ ev2.LFE ∩ iv2c.infections]
 perpetuated_infections       = P[PInfection(z) for z ∈ ev2.LFE ∩ ev1_3.infections]
 other_older_infections       = setdiff(ev1_3.infections, AIF[z for z ∈ ev2.LFE if z isa AIF])
-iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪ 
+iv1_4 = Innovation(initial.n, perpetuated_infections ∪ laziest_feasible_new_infections ∪ 
                         other_older_infections, ev1_3.removals, ev1_3.cremovals)
 ev1_4 = CEvolution(initial, iv1_4, LFE=ev2.LFE)
 
 
-depict("introduction-10-last-feasible-epidemic", new_figure(
+depict("introduction-10-laziest-feasible-epidemic", new_figure(
     draw_evolution!(deepcopy(figure_zones), ev1_4, duration, theme=theme, select=MOST | LFE),
         title="Initial evolution with LFE infections")
 )
@@ -742,7 +742,7 @@ end
 #| label: fig-introduction-11-no-fly-zone
 #| fig-cap: "Second step in algorithmic time with \"no-fly zone\", removing potential         \
 #|           infections which would infect \"no-fly zone\" and illustrating trajectory and    \
-#|           zones (by shading) of the last feasible evolution. [`11-no-fly-zone`]" 
+#|           zones (by shading) of the laziest feasible evolution. [`11-no-fly-zone`]" 
 figure_zones2 = draw_regions!(deepcopy(incidents_template), 
     duration, ev2, theme=theme, select=BOUNDARIES | REGIONS)
 depict("introduction-11-no-fly-zone", new_figure(

@@ -1,9 +1,10 @@
 ## Tests for `EpidemicsCFTP`
 # =========================
+BANNER = 41
 
 ### Testing `isless`
 # ----------------------------------------------------------
-@testset "EpidemicsCFTP: $(rpad(isless, 23))" begin
+@testset "$(rpad("EpidemicsCFTP: extremal", BANNER))" begin
     import EpidemicsCFTP: Removal_order
     for typeR1 ∈ allconcretesubtypes(AbstractRemoval)
         for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
@@ -52,7 +53,7 @@ end
 
 ### Testing `alter`
 # -------------------
-@testset "EpidemicsCFTP: $(rpad(string(alter), 23))" begin
+@testset "$(rpad("EpidemicsCFTP: $alter", BANNER))" begin
     crem = C(0.15, 1)
     @test alter(crem, 100) == C(0.15, 100)
     @test_throws ArgumentError   alter(crem, -100)
@@ -65,7 +66,7 @@ end
 
 ### Testing various actions
 # -------------------------
-@testset "EpidemicsCFTP: $(rpad("actions", 23))" begin
+@testset "$(rpad("EpidemicsCFTP: actions", BANNER))" begin
     infect = EpidemicsCFTP.infect
     remove = EpidemicsCFTP.remove
     update = EpidemicsCFTP.update
@@ -130,7 +131,7 @@ end
 
 ### Testing `evolution`
 # --------------------
-@testset "EpidemicsCFTP: $(rpad(string(evolution), 23))" begin
+@testset "$(rpad("EpidemicsCFTP: evolution computation", BANNER))" begin
     population     = 6
     initial_state1 = SIR(0.0, 1, 2, 3)
     innov1a        = Innovation(population, I[], R[R(0.5, 4)])
@@ -209,7 +210,7 @@ end
 
 ### Testing maximal and minimal constructions
 # -------------------------------------------
-@testset "EpidemicsCFTP: $(rpad("extremal", 23))" begin
+@testset "$(rpad("EpidemicsCFTP: testing extremals", BANNER))" begin
     initial = SIR(0.0, 2, 1, 0)
     pop     = initial.n
     ev_max  = extremal_evolution(initial, 4.0, [1.0, 2.0, 3.0])
@@ -230,7 +231,7 @@ end
 
 ### Testing `create_start` and `create_finis` _via_ `CEvolution`
 # -------------------------------------------------------------
-@testset "EpidemicsCFTP: $(rpad("interval computation", 23))" begin
+@testset "$(rpad("EpidemicsCFTP: interval computation", BANNER))" begin
     initial        = SIR(0.0, 2, 1, 0)
     n              = initial.n
     innov1         = Innovation(n, I[I(1,1,2), I(2,2,3)], R[], C[C(3,2)])
@@ -269,14 +270,14 @@ struct FakeIncident <: AbstractIncident end
 
     
 # Function `update` does not accept this!
-@testset "EpidemicsCFTP: $(rpad("SIR fake", 23))" begin
+@testset "$(rpad("EpidemicsCFTP: SIR fake", 41))" begin
     @test_throws UndefVarError update(SIR(0.0, 1, 2, 3), FakeIncident())
 end
 
 
-### Testing updating of a `CEvolution` by an `Innovaton`
-# -----------------------------------------------------
-@testset "EpidemicsCFTP: $(rpad("Testing one-step", 23))" begin
+### Testing updating of a `CEvolution` by an `Innovation`
+# -------------------------------------------------------
+@testset "$(rpad("EpidemicsCFTP: Testing one-step", BANNER))" begin
 begin
     initial = SIR(0,4,1,0,5)
     ev1 = CEvolution(initial, AI[I(2,1,2), C(2,1), C(4,2)])

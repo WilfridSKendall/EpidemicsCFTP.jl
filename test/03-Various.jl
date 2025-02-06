@@ -1,4 +1,5 @@
 # # Various tests
+BANNER = 41
 
 # Initial condition and duration
 duration    = 5.0
@@ -31,8 +32,8 @@ ev1   = CEvolution(initial, iv1)
 iv1_1   = Innovation(initial.n, infections, R[], cremovals)
 ev1_1   = CEvolution(initial, iv1_1)
 
-begin ; title = "Removing Removals"
-    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+begin ; title = "EpidemicsCFTP: Removing Removals"
+    @testset "$(rpad(title, BANNER))" begin
         @test ev1_1.trajectory == ev1.trajectory
         @test ev1_1.history    == ev1.history
         @test ev1_1.chronology == setdiff(ev1.chronology, ev1.removals)
@@ -54,10 +55,10 @@ iv1_2 = Innovation(initial.n, iv1_1.infections,
     EpidemicsCFTP.inactive_removals(ev1, iv2c), iv1_1.cremovals)
 ev1_2 = CEvolution(initial, iv1_2)
 
-begin ; title = "Inserting Removals"
+begin ; title = "EpidemicsCFTP: Inserting Removals"
     early_removals = [z for z ∈ ev1_2.chronology if z isa AIR && z < ev1_2.start[z.target]]
     late_removals  = [z for z ∈ ev1_2.chronology if z isa AIR && z > ev1_2.finis[z.target]]
-    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+    @testset "$(rpad(title, BANNER))" begin
         @test ev1_2.trajectory == ev1.trajectory
         @test [z for z ∈ ev1_2.chronology if z isa R]  == early_removals
         @test [z for z ∈ ev1_2.chronology if z isa KR] == late_removals
@@ -69,8 +70,8 @@ iv1_3 = Innovation(initial.n, iv1_2.infections, iv1_2.removals,
     EpidemicsCFTP.resulting_cremovals(ev1_2, iv2c))
 #ev1_3 = CEvolution(initial, iv1_3, envelope0=envelope0, envelope=envelope)
 ev1_3 = CEvolution(initial, iv1_3)
-begin ; title = "Modifying CRemovals"
-    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+begin ; title = "EpidemicsCFTP: Modifying CRemovals"
+    @testset "$(rpad(title, BANNER))" begin
         @test ev1_3.trajectory == ev1.trajectory
         @test ev1_3.infections == ev1.infections
         @test [z for z ∈ ev1_3.chronology if z isa R]  == early_removals
@@ -79,19 +80,19 @@ begin ; title = "Modifying CRemovals"
     end
 end ;
 
-# ### Testing the last feasible epidemic
+# ### Testing the laziest feasible epidemic
 
-last_feasible_history =
-    EpidemicsCFTP.last_feasible_evolution(duration, ev1_3, iv2c)
-last_feasible_new_infections = AIF[z for z ∈ last_feasible_history ∩ iv2c.infections]
-perpetuated_infections       = P[PInfection(z) for z ∈ last_feasible_history ∩ ev1_3.infections]
-other_older_infections       = setdiff(ev1_3.infections, AIF[z for z ∈ last_feasible_history if z isa AIF])
-iv1_4 = Innovation(initial.n, perpetuated_infections ∪ last_feasible_new_infections ∪
+laziest_feasible_history =
+    EpidemicsCFTP.laziest_feasible_evolution(duration, ev1_3, iv2c)
+laziest_feasible_new_infections = AIF[z for z ∈ laziest_feasible_history ∩ iv2c.infections]
+perpetuated_infections       = P[PInfection(z) for z ∈ laziest_feasible_history ∩ ev1_3.infections]
+other_older_infections       = setdiff(ev1_3.infections, AIF[z for z ∈ laziest_feasible_history if z isa AIF])
+iv1_4 = Innovation(initial.n, perpetuated_infections ∪ laziest_feasible_new_infections ∪
                         other_older_infections, ev1_3.removals, ev1_3.cremovals)
-ev1_4 = CEvolution(initial, iv1_4, LFE=last_feasible_history)
-begin ; title = "Last feasible evolution"
+ev1_4 = CEvolution(initial, iv1_4, LFE=laziest_feasible_history)
+begin ; title = "EpidemicsCFTP: Laziest feasible evolution"
     LFE_target = [P(1.0,1,2), C(2.0,2), C(4.0,2)]
-    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+    @testset "$(rpad(title, BANNER))" begin
         @test ev1_4.LFE == LFE_target
     end
 end ;

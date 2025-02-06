@@ -1,7 +1,9 @@
 # Tests for types of `EpidemicsCFTP`
+BANNER = 41
+BANNER5 = BANNER-5
 
 ## Testing creation of concrete subtypes of `AbstractRemoval`
-@testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (A)" begin
+@testset "$(rpad("EpidemicsCFTP: $AbstractRemoval", BANNER5))  (A)" begin
     for typeR ∈ allconcretesubtypes(AbstractRemoval)
         @test_throws DomainError    typeR(0.05,-2)
         @test_throws DomainError    typeR(0.05, 0)
@@ -11,7 +13,7 @@
 end
 
 ## Testing conversion of concrete subtypes of `AbstractRemoval`
-@testset "EpidemicsCFTP: $(rpad(AbstractRemoval, 18))  (B)" begin
+@testset "$(rpad("EpidemicsCFTP: $AbstractRemoval", BANNER5))  (B)" begin
     for typeR1 ∈ allconcretesubtypes(AbstractRemoval)
         for typeR2 ∈ allconcretesubtypes(AbstractRemoval)
             @test typeR1(typeR2(0.05, 2)) == typeR1(0.05, 2)
@@ -21,7 +23,7 @@ end
 end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
-@testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (A)" begin
+@testset "$(rpad("EpidemicsCFTP: $AbstractInfection", BANNER5))  (A)" begin
     for typeI ∈ allconcretesubtypes(AbstractInfection)
         @test_throws DomainError  typeI(0.10,-1,   2)
         @test_throws DomainError  typeI(0.10, 1,  -2)
@@ -43,7 +45,7 @@ end
 end
 
 ## Testing creation of concrete subtypes of `AbstractInfection`
-@testset "EpidemicsCFTP: $(rpad(AbstractInfection, 18))  (B)" begin
+@testset "$(rpad("EpidemicsCFTP: $AbstractInfection", BANNER5))  (B)" begin
     for typeI1 ∈ allconcretesubtypes(AbstractInfection)
         for typeI2 ∈ allconcretesubtypes(AbstractInfection)
             @test typeI1(typeI2(0.05, 2, 3)) == typeI1(0.05, 2, 3)
@@ -53,7 +55,7 @@ end
 end
 
 ## Testing creation of `SIR`, state of epidemic
-@testset "EpidemicsCFTP: $(rpad(string(SIR), 23))" begin
+@testset "$(rpad("EpidemicsCFTP: $SIR", BANNER))" begin
     @test_throws DomainError SIR(0.0,-1, 2, 3)
     @test_throws DomainError SIR(0.0, 1, 2,-3)
     @test_throws DomainError SIR(0.0, 0, 0, 0)
@@ -71,7 +73,7 @@ end
 end
 
 ## Testing creation of concrete subtypes of `AbstractEvolution`
-@testset "EpidemicsCFTP: $(rpad(AbstractEvolution, 23))" begin
+@testset "$(rpad("EpidemicsCFTP: $AbstractEvolution", BANNER))" begin
     initial    = SIR(0, 2, 1, 0)
     infections = [NF(0,2,3), XI(2, 2, 3), I(7,1,2), P(5,1,2)]
     removals   = [R(1, 1), KR(2, 3), R(0.11, 2)]
@@ -83,7 +85,7 @@ end
 end
 
 ## Testing construction of `Innovation`
-@testset "EpidemicsCFTP: $(rpad(string(Innovation), 23))" begin
+@testset "$(rpad("EpidemicsCFTP: $Innovation", BANNER))" begin
     population = 3
     infects    = I[I(0.60, 1, 2)]
     allinfects = Union{I, P}[P(0.70, 1, 2)]
@@ -125,7 +127,7 @@ end
 
 # ### Testing unconditioned version of `AbstractEvolution`
 # This tests is intended to check that fields are correctly filled.
-begin ;  title = string(Evolution)
+begin
     duration    = 5.0
     initial     = SIR(0.0, 4, 1, 0) 
 
@@ -142,7 +144,7 @@ begin ;  title = string(Evolution)
     iv1   = Innovation(initial.n, infections, removals, cremovals)
     ev1   = CEvolution(initial, iv1)
 
-    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
+    @testset "$(rpad("EpidemicsCFTP: $Evolution", BANNER))" begin
         @test uev1.infections  == sort(infections)
         @test uev1.removals    == sort(uremovals)
         @test uev1.chronology  == sort(infections ∪ uremovals)
@@ -152,7 +154,7 @@ begin ;  title = string(Evolution)
 end
 
 ## Testing construction of `CEvolution`
-@testset "EpidemicsCFTP: $(rpad(CEvolution, 23))" begin
+@testset "$(rpad("EpidemicsCFTP: $CEvolution", BANNER))" begin
     begin
     initial    = SIR(0.0, 2, 1, 0)
     
@@ -174,7 +176,9 @@ end
     @test ev.NFZ2  == Real[0, 0.5, 0.5]
     @test ev.finis == AIR[C(2,1), C(4,2), RM(Inf,3)]
     end
+end
 
+@testset "$(rpad("EpidemicsCFTP: formation of evolutions", BANNER))" begin
     begin
     duration    = 5.0
     initial     = SIR(0.0, 4, 1, 0) 
@@ -192,14 +196,12 @@ end
     iv1   = Innovation(initial.n, infections, removals, cremovals)
     ev1   = CEvolution(initial, iv1)
 
-    @testset "EpidemicsCFTP: $(rpad(title, 23))" begin
-        @test sort(uremovals) == [R(z) for z ∈ sort(removals ∪ cremovals)]
-        @test ev1.infections   == sort(infections)
-        @test ev1.removals     == sort(removals)
-        @test ev1.chronology   == sort(infections ∪ removals ∪ cremovals)
-        @test ev1.trajectory   == trajectory
-        @test ev1.history      == history
-    end
+    @test sort(uremovals) == [R(z) for z ∈ sort(removals ∪ cremovals)]
+    @test ev1.infections   == sort(infections)
+    @test ev1.removals     == sort(removals)
+    @test ev1.chronology   == sort(infections ∪ removals ∪ cremovals)
+    @test ev1.trajectory   == trajectory
+    @test ev1.history      == history
     end
 end
 

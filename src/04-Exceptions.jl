@@ -12,7 +12,7 @@ abstract type BadIncident <: Exception end
     BadLFE
 
 An exception to report problems with an `LFE` as produced by 
-[`last_feasible_evolution`](@ref)
+[`laziest_feasible_evolution`](@ref)
 (typically arising as a field of a 
 [`CEvolution`](@ref)).
 """

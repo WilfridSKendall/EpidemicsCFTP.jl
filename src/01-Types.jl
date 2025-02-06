@@ -476,7 +476,7 @@ its `target` time line is not infected.
 
 A `KilledInfection` should be created (by conversion) only in the functions
 
-* [`EpidemicsCFTP.last_feasible_evolution`](@ref),
+* [`EpidemicsCFTP.laziest_feasible_evolution`](@ref),
 * [`EpidemicsCFTP.kill_irrelevant_infections`](@ref),
 * one of the constructors of [`CEvolution`](@ref CEvolution(ev::AbstractEvolution, iv::AbstractInnovation));
 * and [`EpidemicsCFTP.compute_nofly`](@ref)  
@@ -1038,7 +1038,7 @@ to compute start and finish incidents
 for infectious intervals.
 
 It possesses extra fields `LFE`, `NFZ1`,  `NFZ2`, and `NFZ` which are respectively
-the incidents involved in the last feasible epidemic, the maxima _per_ time line
+the incidents involved in the laziest feasible epidemic, the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, the monotonically increasing envelope of `NFZ1`, and the region which must
 not be infected if we are not to violate conditioning on removals.
@@ -1170,7 +1170,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation;
 #                     size::Int=0, t0::Real=-Inf, duration::Real=Inf)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
-    #                       last_feasible_evolution,
+    #                       laziest_feasible_evolution,
     #                       compute_nofly
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
@@ -1186,7 +1186,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation;
     recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
     
     duration = maximum(z.t for z in recomputed_cremovals)
-    LFE = last_feasible_evolution(duration, ev, iv)
+    LFE = laziest_feasible_evolution(duration, ev, iv)
     perpetuated_infections = P[z for z ∈ LFE if z isa P] 
     
     NFZ1 = repeat([-Inf], ev.initial.n)                                     # <1>

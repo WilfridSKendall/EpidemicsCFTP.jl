@@ -917,7 +917,7 @@ end
 # Computing the last feasible epidemic trajectory
 # -----------------------------------------------
 """
-    EpidemicsCFTP.last_feasible_evolution(::Real, ::AbstractEvolution, ::AbstractInnovation) ::Vector{AbstractIncident}
+    EpidemicsCFTP.laziest_feasible_evolution(::Real, ::AbstractEvolution, ::AbstractInnovation) ::Vector{AbstractIncident}
 
 Computes the last feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
 by a [`AbstractInnovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
@@ -959,16 +959,16 @@ AbstractIncident[𝒫₀.₀₀¹⁻²,ℐ₀.₈₅²⁻³,ℐ₀.₉₆³⁻�
 ### Example III
 Here is a simple test for validity of the `LFE` field.
 ```jldoctest LFE_test
-import EpidemicsCFTP: last_feasible_evolution
-last_feasible_evolution(duration, evx, iv) == evx.LFE
+import EpidemicsCFTP: laziest_feasible_evolution
+laziest_feasible_evolution(duration, evx, iv) == evx.LFE
 
 # output
 true
 ```
 """
-function last_feasible_evolution(duration::Real, 
+function laziest_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::AbstractInnovation) ::Vector{AbstractIncident}
-# import EpidemicsCFTP: last_feasible_evolution, resulting_cremovals
+# import EpidemicsCFTP: laziest_feasible_evolution, resulting_cremovals
         
     recomputed_cremovals = resulting_cremovals(ev, iv)                                              # <1>
     previous_active_infections  = [P(z) for z in ev.history if z isa OperativeInfection]            # <2>
@@ -1224,11 +1224,11 @@ while actual is taken from `CEvolution(::AbstractEvolution, ::AbstractInnovation
 
 ### Example
 ```jldoctest CEvolution; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
-import EpidemicsCFTP: inactive_removals, last_feasible_evolution, compute_nofly
+import EpidemicsCFTP: inactive_removals, laziest_feasible_evolution, compute_nofly
 initial = SIR(0,1,1,0)
 ev = CEvolution(initial, AI[C(4,1)])
 iv = Innovation(2, AI[I(4.2,1,2), R(4.9,2), C(4,1)])
-LFE = last_feasible_evolution(5, ev, iv)
+LFE = laziest_feasible_evolution(5, ev, iv)
 perpetuated = P[z for z ∈ LFE if z isa P]
 NFZ1 = repeat([-Inf], ev.initial.n)
 for z ∈ [z for z ∈ inactive_removals(ev, iv) if z < ev.finis[z.target]]
@@ -1351,7 +1351,7 @@ end ;
 Checks that the `LFE` field of a [`CEvolution`](@ref) is genuinely a 
 _last feasible evolution_. (Used primarily for **verification** that a
 given `LFE` field is correct.) The example indicates usage. 
-See example III from the doctests for [`last_feasible_evolution`](@ref) for
+See example III from the doctests for [`laziest_feasible_evolution`](@ref) for
 a further simple complementary test using that function.
 ### Example
 ```jldoctest

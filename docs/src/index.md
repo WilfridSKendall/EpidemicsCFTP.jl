@@ -74,10 +74,10 @@ run `make doctest` to perform doctests.)
 ```@eval
 import Markdown, EpidemicsCFTP
 Markdown.parse("""
-| _Software_             | _Version_                  | _Branch_                  | _Date of last commit_  |
-|:-----------------------|:---------------------------|:--------------------------|:-----------------------|
-| Running under `julia`  | `$VERSION`                 | --                        |                        |
-| Module `EpidemicsCFTP` | `$(EpidemicsCFTP.version)` | `$(EpidemicsCFTP.branch)` | $(EpidemicsCFTP.date)  |
+| _Software_       | _Version_                  | _Branch_                  | _Last commit_         |
+|:-----------------|:---------------------------|:--------------------------|:----------------------|
+| `julia` version  | `$VERSION`                 | --                        |                       |
+| `EpidemicsCFTP`  | `$(EpidemicsCFTP.version)` | `$(EpidemicsCFTP.branch)` | $(EpidemicsCFTP.date) |
 """)
 ```
 

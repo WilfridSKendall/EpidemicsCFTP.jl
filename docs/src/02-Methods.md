@@ -48,7 +48,7 @@ also other helper functions:
 | [`evolution_history`](@ref)                | Generates history for [`Evolution`](@ref)              |
 | [`extremal_evolution`](@ref)               | Generates extremal [`Evolution`](@ref) from `CRemoval`s|
 |                                            |                                                        |
-| [`EpidemicsCFTP.last_feasible_evolution`](@ref)    | Computes last feasible evolution (LFE)         |
+| [`EpidemicsCFTP.laziest_feasible_evolution`](@ref)    | Computes laziest feasible evolution (LFE)         |
 | [`EpidemicsCFTP.compute_nofly`](@ref)      | Computes adapted [`Infection`](@ref)s and nofly zone   |
 | [`EpidemicsCFTP.create_start`](@ref)       | Computes `start` for infectious intervals              |
 | [`EpidemicsCFTP.create_finis`](@ref)       | Computes `finis` for infectious intervals              |
@@ -74,7 +74,7 @@ extremal_evolution
 ```
 
 ```@docs 
-EpidemicsCFTP.last_feasible_evolution
+EpidemicsCFTP.laziest_feasible_evolution
 EpidemicsCFTP.compute_nofly
 EpidemicsCFTP.create_start
 EpidemicsCFTP.create_finis
@@ -109,7 +109,7 @@ EpidemicsCFTP.update
 ## Methods for debugging
 | _Method_                                | _Summary_                                                 |
 |:----------------------------------------|:----------------------------------------------------------|
-| [`EpidemicsCFTP.is_correct_LFE`](@ref)  |Checks whether `LFE` is indeed a _last_ feasible evolution!|
+| [`EpidemicsCFTP.is_correct_LFE`](@ref)  |Checks whether `LFE` is indeed a _laziest_feasible_evolution!_|
 | [`EpidemicsCFTP.is_correct_NFZ`](@ref)  |Checks whether `NFZ` is indeed a valid no-fly zone!        |
 ```@docs
 EpidemicsCFTP.is_correct_LFE

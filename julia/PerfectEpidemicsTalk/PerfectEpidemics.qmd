@@ -11,36 +11,16 @@ author:
       affiliation:    University of York Department of Mathematics
       affilation-url: https://www-users.york.ac.uk/~sbc502/
 institute:   Warwick, York
+
 license:     "CC BY"
 
-from: markdown+tex_math_single_backslash
-
-execute:
-    cache: true
 jupyter: julia-1.11
 
 format: 
     beamer:
-        date-format:     "D MMMM YYYY"
-        logo:            image/WarwickStatistics-small.png
-        titlegraphic:    image/talk_URL.jpg
-        
-        number-sections: true
-        number-depth:    1
-
-        theme:           Boadilla
-        mainfont:        "Times New Roman"
-        monofont:        "JuliaMono"
-        monofontoptions:
-              - Scale=0.7
-        incremental:     true
-        link-citations:  true
-        citecolor:       blue
-        hyperrefoptions:
-            - pdfstartview=Fit
-
         include-in-header:
             - "PerfectEpidemics.sty"
+
 ---
 
 ```{julia}
@@ -1255,7 +1235,6 @@ integrate out pattern of unobserved infections.
 * Finally: can we generalize to other suitable compartment models?
 
 ::: notes
-
 Other compartment models presenting varying degrees of challenge:
 a preliminary discussion is given in an appendix.
 
@@ -1267,7 +1246,6 @@ as a sub-population on its own;
 3. Allow parameters to change at specific times of day or week;
 
 4. Allow for some activated removals to be unobserved!
-
 \par
 :::
 
@@ -1289,7 +1267,7 @@ to other compartment models.
 ![](image/talk_URL.jpg){width=1in fig-align="center"}
 
 ::: notes
-Lots still to do!
+There is much still to be done!
 
 \bigskip
 

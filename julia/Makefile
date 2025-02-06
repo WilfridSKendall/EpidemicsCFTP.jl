@@ -2,16 +2,16 @@
 SHELL           := /usr/bin/bash
 LOCATION        := $(shell pwd)
 
-PRODUCTS        := figures.qmd production.pdf introduction.pdf check.pdf test.pdf LFEandNFZ.pdf CFTP.pdf CFTP-demo.pdf
+PRODUCTS        := $(addsuffix .pdf, \
+	figures production introduction check test LFEandNFZ CFTP CFTP-demo)
 
 CSL             := $(HOME)/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 
 QUARTO          := /usr/local/bin/quarto
 QUARTO_OPTIONS  :=  --csl=$(CSL) 
-## Cache now set on per-`qmd` basis, as inline `julia` code not supported by cache.
-# QUARTO_CACHE    ?=  --no-cache
-# QUARTO_CACHE    ?= --cache-refresh
-# QUARTO_CACHE    ?= --cache
+## Cache now set in `_metadata.yml`, 
+## but note that inline `julia` code is not supported by cache!
+##
 ## Issues with cache? Follow discussion of `IJulia` at
 ## https://quarto.org/docs/computations/julia.html#ijulia
 ##```{julia}
@@ -23,9 +23,6 @@ QUARTO_OPTIONS  :=  --csl=$(CSL)
 ##   using Conda
 ##    Conda.add("jupyter-cache")
 ##```
-## **However:**
-## "Inline expressions cannot be used with Jupyter Cache."
-# QUARTO_OPTIONS  :=  --csl=$(CSL) $(QUARTO_CACHE)
 
 JULIA           := $(HOME)/.juliaup/bin/julia
 
@@ -160,7 +157,7 @@ introduction.pdf: config/theme.yml
 # ====================
 # Automatic conversion of qmd to pdf
 # --cache-refresh seems to be good at loading modules anew.
-%.pdf: %.qmd $(UTILITIES) ; @echo "Creating $@" ; \
+%.pdf: %.qmd $(UTILITIES) _metadata.yml ; @echo "Creating $@" ; \
 	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
 # ====================

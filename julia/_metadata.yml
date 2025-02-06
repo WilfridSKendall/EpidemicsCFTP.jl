@@ -1,0 +1,33 @@
+# YAML to be shared amongst all scripts in this directory.
+
+filters:
+  - critic-markup
+
+csl: /home/wilfrid/lib/palndoc/CSL/ima-journal-of-applied-mathematics.csl
+
+
+from: markdown+tex_math_single_backslash
+
+toc: true
+
+date-format: "D MMMM YYYY"
+papersize:  a4
+
+tbl-cap-location: top
+
+## PDF format
+format:
+  pdf:
+    link-citations: true
+    numbersections: true
+    mainfont: "Times New Roman"
+    monofont: "JuliaMono"
+    monofontoptions:
+       - Scale=0.7
+    include-in-header:
+        - "SIR.sty"
+        - text: |
+            \usepackage[xetex]{animate}
+
+execute:
+    cache: true

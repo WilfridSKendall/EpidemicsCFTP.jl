@@ -40,10 +40,24 @@ see_notes:      $(notes-2x2);   xdg-open $(notes-2x2)
 
 #################################################
 
-%.pdf: %.qmd $(biblio) $(macros) $(version)
+%.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(version)
 	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)                                    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)
+	-rm $*.upa
+
+%-handout.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(version)
+	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
+	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
+	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
+	-M classoption=handout
+	-rm $*.upa
+
+%-notes.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(version)
+	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
+	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
+	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
+	-M classoption=notes -M classoption=handout
 	-rm $*.upa
 
 %.tex: %.qmd $(biblio) ; $(QUARTO) render $< --to=latex $(QUARTO_OPT)
@@ -76,18 +90,6 @@ web-MP4: animation/*.mp4
 	cp $^ $(HOME)/HTML/WilfridSKendall/talks/$(title)/animation
 
 #################################################
-
-%-handout.pdf: %.qmd $(biblio) $(version)
-	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
-	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
-	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
-	-M classoption=handout
-
-%-notes.pdf: %.qmd $(biblio) $(version)
-	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
-	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
-	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
-	-M classoption=notes -M classoption=handout
 
 $(version): $(title).qmd ; git log --decorate -1 > $(version)
 	

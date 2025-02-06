@@ -3,39 +3,13 @@ title:  "Perfect epidemic simulation IRL with `julia`"
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
-csl: /home/wilfrid/lib/palndoc/CSL/ima-journal-of-applied-mathematics.csl
 
+jupyter:    julia-1.11
+---
 
-toc: true
-
-date-format: "D MMMM YYYY"
-papersize:  a4
-
-tbl-cap-location: top
-
-from: markdown+tex_math_single_backslash
-
-include-in-header:
-    - text: |
-        \usepackage[xetex]{animate}
-
-
-format:
-  html:
-    code-fold: true
-  pdf:
-    link-citations: true
-    numbersections: true
-    mainfont: "Times New Roman"
-    monofont: "JuliaMono"
-    monofontoptions:
-       - Scale=0.7
-    include-in-header:
-        - "SIR.sty"
-
+---
 execute:
     cache: false
-jupyter:    julia-1.11
 ---
 
 ```{julia}

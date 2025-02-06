@@ -1,3 +1,29 @@
+from: markdown+tex_math_single_backslash
+
 filters:
   - critic-markup
 papersize: a4
+
+format: 
+    beamer:
+        date-format:     "D MMMM YYYY"
+        logo:            image/WarwickStatistics-small.png
+        titlegraphic:    image/talk_URL.jpg
+        
+        number-sections: true
+        number-depth:    1
+
+        theme:           Boadilla
+        mainfont:        "Times New Roman"
+        monofont:        "JuliaMono"
+        monofontoptions:
+              - Scale=0.7
+        incremental:     true
+        link-citations:  true
+        citecolor:       blue
+        hyperrefoptions:
+            - pdfstartview=Fit
+
+execute:
+    cache: true
+

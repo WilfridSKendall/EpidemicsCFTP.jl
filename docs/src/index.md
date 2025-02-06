@@ -33,7 +33,7 @@ The simulation mechanism uses "algorithmic time" to vary an event-based simulati
 2. respects the conditioning on active removals,
 3. possesses sufficient monotonicity to permit construction of a classical CFTP algorithm.
 
-![A snap-shot of a simulation produced by `EpidemicsCFTP`.](image/introduction-18-one-iteration.pdf)
+![A snap-shot of a simulation produced by `EpidemicsCFTP`.](image/introduction-11-no-fly-zone.pdf)
 
     
 #### Reference

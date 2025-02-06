@@ -13,7 +13,7 @@ QUARTO     := /usr/local/bin/quarto
 CSL        := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
 src_files  := $(wildcard src/*.jl) 
 doc_files  := $(wildcard docs/src/*.md) 
-doc_images := docs/src/image/introduction-18-one-iteration.pdf \
+doc_images := docs/src/image/introduction-11-no-fly-zone.pdf \
 	docs/src/image/introduction-01-key.pdf 
 test_files :=$(wildcard test/*.jl)
 

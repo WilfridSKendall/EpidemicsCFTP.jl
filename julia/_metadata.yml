@@ -31,4 +31,4 @@ format:
 
 ## Control of cache
 execute:
-    cache: false
+    cache: true

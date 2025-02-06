@@ -18,6 +18,9 @@ image/production*
 VERSION.txt
 Manifest.toml
 
+julia/animate.mp4
+julia/Figure/
+
 Reading
 
 *.aux

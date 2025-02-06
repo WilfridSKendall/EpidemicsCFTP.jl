@@ -1,15 +1,19 @@
 ---
-title:  "Perfect epidemic simulation IRL with `julia`"
-author: "Wilfrid Kendall"
-date:   today
+title:        "Perfect epidemic simulation IRL with `julia`"
+author:       "Wilfrid Kendall"
+date:         today
 bibliography: references.bib
 
-jupyter:    julia-1.11
----
+format:
+  pdf:
+    include-in-header:
+        - "SIR.sty"
+        - text: |
+            \usepackage[xetex]{animate}
 
----
+jupyter:      julia-1.11
 execute:
-    cache: false
+    cache:    false
 ---
 
 ```{julia}
@@ -38,7 +42,6 @@ import Test: @test
 
 Introduction
 ============
-
 Overview
 --------
 We follow @ONeillRoberts-1999 in considering a data set obtained from a smallpox outbreak 
@@ -385,13 +388,13 @@ owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
                         "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
-|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
-|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
-|Quarto                     |`$(quartoversion)`             | ---                          |                            |
-|Running under `julia`      |`$VERSION`                     | ---                          |                            |
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
-|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
-|Quarto script `$(source)`  |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
+|_Software_             |_Version_                      | _Branch_                     |_Last commit_               |
+|:----------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                 |`$(quartoversion)`             | ---                          |                            |
+| `julia` version       |`$VERSION`                     | ---                          |                            |
+| `EpidemicsCFTP`       |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+| `EpidemicsUtilities`  |`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+| Script `$(source)`    |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
 """)
 ```
 

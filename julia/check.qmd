@@ -294,10 +294,10 @@ ownbranch  = "$(read(Cmd(`git branch --show-current`), String)[1:end-1])"
 Markdown.parse("""
 | Software                     | Version                         | Branch                         |
 |:-----------------------------|:--------------------------------|-------------------------------:|
-| Quarto script `$(source)`    | `$(ownversion)`                 | `$(ownbranch)`                 |
+| Script `$(source)`           | `$(ownversion)`                 | `$(ownbranch)`                 |
 | Module `EpidemicsUtilities`  | `$(EpidemicsUtilities.version)` | `$(EpidemicsUtilities.branch)` |
 | Module `EpidemicsCFTP`       | `$(EpidemicsCFTP.version)`      | `$(EpidemicsCFTP.branch)`      |
-| Running under `julia`        | `$VERSION`                      | ---                            |
+| `julia` ver       sion       | `$VERSION`                      | ---                            |
 
 This script takes 
 - 8 minutes to run on `jemima`; 

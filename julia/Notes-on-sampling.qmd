@@ -3,35 +3,6 @@ title:  "Notes on sampling for perfect epidemic simulation"
 author: "Wilfrid Kendall"
 date:   today
 bibliography: references.bib
----
-
-
----
-toc: true
-
-date-format: "D MMMM YYYY"
-papersize:  a4
-
-tbl-cap-location: top
-
-from: markdown+tex_math_single_backslash
-
-include-before-body:
-  - text: |
-      \newcommand{\Expect}[1]{\operatorname{\mathbb{E}}\left[#1\right]}
-      \newcommand{\Prob}[1]{\operatorname{\mathbb{E}}\left[#1\right]}
-
-format:
-  html:
-    code-fold: true
-  pdf:
-    link-citations: true
-    numbersections: true
-    mainfont: "Times New Roman"
-    monofont: "JuliaMono"
-    monofontoptions:
-       - Scale=0.7
-
 
 jupyter:    julia-1.9
 ---
@@ -288,3 +259,4 @@ References {.unnumbered}
 
 ::: {#refs}
 :::
+

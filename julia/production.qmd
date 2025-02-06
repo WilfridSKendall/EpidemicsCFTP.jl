@@ -381,12 +381,12 @@ owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
                         "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
-| Software                  | Version                       |  Branch                  |
-|:--------------------------|:------------------------------|-------------------------:|
-|Quarto script `$(source)`  |`$(ownversion)`                | `$(ownbranch)`           |
-|Module `EpidemicsUtilities`|`$(EpidemicsUtilities.version)`| `$(EpidemicsUtilities.branch)`|
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     | `$(EpidemicsCFTP.branch)`|
-|Running under `julia`       | `$VERSION`                   | ---                            |
+| Software             | Version                       |  Branch                       |
+|:---------------------|:------------------------------|------------------------------:|
+| Script `$(source)`   |`$(ownversion)`                | `$(ownbranch)`                |
+| `EpidemicsUtilities` |`$(EpidemicsUtilities.version)`| `$(EpidemicsUtilities.branch)`|
+| `EpidemicsCFTP`      |`$(EpidemicsCFTP.version)`     | `$(EpidemicsCFTP.branch)`     |
+| `julia` version      | `$VERSION`                    | ---                           |
 """)
 ```
 

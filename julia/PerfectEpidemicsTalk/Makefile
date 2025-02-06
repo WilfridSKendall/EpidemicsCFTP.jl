@@ -1,21 +1,22 @@
 # ~/HTML/WilfridSKendall/PerfectEpidemics
-title             := PerfectEpidemics
-biblio-source     := CFTP.bib 
-version           := VERSION.txt
-versionsed        := version.sed
+title         := PerfectEpidemics
+biblio-source := CFTP.bib 
 
-source            := $(title).qmd
-biblio            := $(title).bib
-macros            := $(title).sty
-csl               := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
-beamer            := $(title).pdf
-handout           := $(title)-handout.pdf
-handout-2x2       := $(title)-handout-2x2.pdf
-notes             := $(title)-notes.pdf
-notes-2x2         := $(title)-notes-2x2.pdf
+source        := $(title).qmd
+biblio        := $(title).bib
+macros        := $(title).sty
+csl           := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
+beamer        := $(title).pdf
+handout       := $(title)-handout.pdf
+handout-2x2   := $(title)-handout-2x2.pdf
+notes         := $(title)-notes.pdf
+notes-2x2     := $(title)-notes-2x2.pdf
 
 
 ##################################################
+
+VERSION       := VERSION.txt
+VERSIONSED    := version.sed
 
 QUARTO	      := /usr/local/bin/quarto
 QUARTO_OPT    := --highlight-style tango
@@ -40,21 +41,21 @@ see_notes:      $(notes-2x2);   xdg-open $(notes-2x2)
 
 #################################################
 
-%.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(version)
-	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
+%.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(VERSION)
+	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(VERSIONSED) $(VERSION)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT)                                    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)
 	-rm $*.upa
 
-%-handout.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(version)
-	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
+%-handout.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(VERSION)
+	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(VERSIONSED) $(VERSION)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
 	-M classoption=handout
 	-rm $*.upa
 
-%-notes.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(version)
-	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(versionsed) $(version)  | \
+%-notes.pdf: %.qmd $(biblio) $(macros) _metadata.yml qrcode $(VERSION)
+	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(VERSIONSED) $(VERSION)  | \
 	$(QUARTO) render $< - --to=beamer $(QUARTO_OPT) --output $@    \
 	--citeproc --bibliography=$(biblio) --csl=$(csl)  \
 	-M classoption=notes -M classoption=handout
@@ -63,7 +64,7 @@ see_notes:      $(notes-2x2);   xdg-open $(notes-2x2)
 %.tex: %.qmd $(biblio) ; $(QUARTO) render $< --to=latex $(QUARTO_OPT)
 
 %.pdf: %.md
-	sed -e "1i----\nThis version of \`$<\`:\n" -f $(versionsed) $(version)  | \
+	sed -e "1i----\nThis version of \`$<\`:\n" -f $(VERSIONSED) $(VERSION)  | \
 	$(QUARTO) render $< - --to=pdf
 	-rm $*.upa $*.upb
 
@@ -91,7 +92,7 @@ web-MP4: animation/*.mp4
 
 #################################################
 
-$(version): $(title).qmd ; git log --decorate -1 > $(version)
+$(VERSION): $(title).qmd ; git log --decorate -1 > $(VERSION)
 	
 %-2x2.pdf: %.pdf
 	$(PDFNUP) --tidy --landscape --frame 'true' --scale '0.95' --nup '2x2' $^ -o $@

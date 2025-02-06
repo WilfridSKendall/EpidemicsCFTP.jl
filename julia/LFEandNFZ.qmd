@@ -4,26 +4,8 @@ author: "Wilfrid Kendall"
 date:   today
 
 
-toc: true
-
-date-format: "D MMMM YYYY"
-papersize:  a4
-
-tbl-cap-location: top
-
-from: markdown+tex_math_single_backslash
-
-
 format:
-  html:
-    code-fold: true
   pdf:
-    link-citations: true
-    numbersections: true
-    mainfont: "Times New Roman"
-    monofont: "JuliaMono"
-    monofontoptions:
-       - Scale=0.7
     include-in-header:
         - "SIR.sty"
         
@@ -222,11 +204,13 @@ owndate       = replace(split(read(Cmd(`git log -1`), String), "\n")[3],
                         "Date:   " => "", " +0000" => "")
 
 Markdown.parse("""
-|_Software_                 |_Version_                      | _Branch_                     |_Date of last commit_       |
-|:--------------------------|:------------------------------|:-----------------------------|:---------------------------|
-|Quarto                     |`$(quartoversion)`             | ---                          |                            |
-|Running under `julia`      |`$VERSION`                     | ---                          |                            |
-|Module `EpidemicsCFTP`     |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+|_Software_             |_Version_                      | _Branch_                     |_Last commit_               |
+|:----------------------|:------------------------------|:-----------------------------|:---------------------------|
+|Quarto                 |`$(quartoversion)`             | ---                          |                            |
+| `julia` version       |`$VERSION`                     | ---                          |                            |
+| `EpidemicsCFTP`       |`$(EpidemicsCFTP.version)`     |`$(EpidemicsCFTP.branch)`     |`$(EpidemicsCFTP.date)`     |
+| `EpidemicsUtilities`  |`$(EpidemicsUtilities.version)`|`$(EpidemicsUtilities.branch)`|`$(EpidemicsUtilities.date)`|
+| Script `$(source)`    |`$(ownversion)`                |`$(ownbranch)`                |`$owndate`                  |
 """)
 ```
 

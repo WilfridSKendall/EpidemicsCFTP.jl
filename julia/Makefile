@@ -1,11 +1,15 @@
-# Makefile for ~/ms/PerfectEpidemics/julia
+## Makefile for ~/ms/PerfectEpidemics/julia
 SHELL           := /usr/bin/bash
 LOCATION        := $(shell pwd)
 
-PRODUCTS        := $(addsuffix .pdf, \
-	figures production introduction check test LFEandNFZ CFTP CFTP-demo)
+TOPICS          := figures production introduction check test LFEandNFZ CFTP CFTP-demo
+SOURCES         := $(addsuffix .qmd, $(TOPICS))
+PRODUCTS        := $(addsuffix .pdf, $(TOPICS))
 
 CSL             := $(HOME)/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
+
+VERSION         := VERSION.txt
+VERSIONSED      := version.sed
 
 QUARTO          := /usr/local/bin/quarto
 QUARTO_OPTIONS  :=  --csl=$(CSL) 
@@ -34,18 +38,18 @@ START           := xdg-open
 	verify-animation reset-verify-image reset-verify-animation listings list  \
 	clean install movie animation 
 
-# ====================
-# Main targets
+## ====================
+## Main targets
 main: $(PRODUCTS)
 verify: main verify-image verify-animation
 
-# ====================
-# list all targets
+## ====================
+## list all targets
 list:
 	@grep '^[^#[:space:]].*:' Makefile
 
-# ====================
-# Clean-up
+## ====================
+## Clean-up
 clean:
 	-rm -f $(wildcard *.ipynb)
 	-rm -Rf .jupyter_cache
@@ -56,15 +60,15 @@ clean:
 	$(JULIA) -e 'import EpidemicsCFTP, EpidemicsUtilities ; \
 			println(EpidemicsCFTP.summary) ; println(EpidemicsUtilities.summary)'
 
-# ====================
-# Installation
+## ====================
+## Installation
 install:
 	@make -C EpidemicsCFTP install
 	@echo ----------
 	@make -C EpidemicsUtilities install
 
-# ====================
-# Animation as MPEG: see https://trac.ffmpeg.org/wiki/Slideshow
+## ====================
+## Animation as MPEG: see https://trac.ffmpeg.org/wiki/Slideshow
 FRATE           := 10
 FPAUSE1         :=  3
 FPAUSE2         := 25
@@ -85,15 +89,15 @@ movie: CFTP-demo.pdf
 		-c copy animate.mp4
 	rm animate-*.mp4
 	
-# ====================
-# Animation as GIF
+## ====================
+## Animation as GIF
 animation: animate.gif ; $(START) "$<" 2> /dev/null
 %.gif: %.jl 
 	$(JULIA) $<
 	rm animation/script*.*
 
-# ====================
-# Verification
+## ====================
+## Verification
 verify-image: $(wildcard image/VERIFY_*.png) $(wildcard animation/VERIFY_*.png)
 set-up-verify-image: ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
 reset-verify-image:  ; for f in image/VERIFY_*.png ; do cp $${f/VERIFY_/} $$f ; done
@@ -125,21 +129,21 @@ animation/VERIFY_%.png: animation/%.png
 	fi
 
 	
-# ====================
-# Creating PDFs of listings in `PRINTING` directory
+## ====================
+## Creating PDFs of listings in `PRINTING` directory
 listings: $(PRODUCTS) ; make --directory=PRINTING listings
 	cp $(PRODUCTS) PRINTING
 
-# --------------------
+## --------------------
 ## List Makefile
 include $(HOME)/lib/makefiles/listing-makefile.mak
 
 
-# --------------------
+## --------------------
 # README.pdf
 README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
-# --------------------
+## --------------------
 ## List configurations
 %.pdf: config/%.yml
 	@echo Constructing $@ from $<
@@ -150,24 +154,29 @@ README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 	$(QUARTO) render $(subst .pdf,.qmd,$@) --to pdf
 	@rm $(subst .pdf,.qmd,$@)
 
-# ====================
-# Further dependencies
+## ====================
+## Further dependencies
 introduction.pdf: config/theme.yml
 
-# ====================
-# Automatic conversion of qmd to pdf
-# --cache-refresh seems to be good at loading modules anew.
-%.pdf: %.qmd $(UTILITIES) _metadata.yml ; @echo "Creating $@" ; \
-	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+## ====================
+## Automatic conversion of qmd to pdf
+%.pdf: %.qmd $(VERSION) _metadata.yml $(VERSION) ; @echo "Creating $@" ; \
+	sed -e "1iThese notes were produced from \`$<\`:\n" -f $(VERSIONSED) $(VERSION)  | \
+	$(QUARTO) render $< - --to pdf $(QUARTO_OPTIONS)
+	-rm $*.upa $*.upb
 
-# ====================
-# NOTE
-# To ensure `papermill` works for the -P option:
-# First, in `bash`, do
-# bash> pip3 install papermill
-# then in `julia`, do
-#  julia> ENV["JUPYTER"]=""; Pkg.build("IJulia") 
-# to rebuild IJulia to use Julia's own Conda-based Jupyter, and then
-# julia> using Conda; Conda.add("papermill") 
-# as discussed in
-# https://github.com/quarto-dev/quarto-cli/discussions/5833
+#################################################
+## Updating `VERSION.txt`
+$(VERSION): $(SOURCES) ; git log --decorate -1 > $(VERSION)
+
+### ====================
+## NOTE
+## To ensure `papermill` works for the -P option:
+## First, in `bash`, do
+## bash> pip3 install papermill
+## then in `julia`, do
+##  julia> ENV["JUPYTER"]=""; Pkg.build("IJulia") 
+## to rebuild IJulia to use Julia's own Conda-based Jupyter, and then
+## julia> using Conda; Conda.add("papermill") 
+## as discussed in
+## https://github.com/quarto-dev/quarto-cli/discussions/5833

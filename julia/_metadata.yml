@@ -1,33 +1,34 @@
-# YAML to be shared amongst all scripts in this directory.
-
+## YAML to be shared amongst all scripts in this directory.
+## Allow {==...==} to indicate highlight, etc
 filters:
   - critic-markup
 
-csl: /home/wilfrid/lib/palndoc/CSL/ima-journal-of-applied-mathematics.csl
+## Bibligraphy style
+csl:                /home/wilfrid/lib/palndoc/CSL/ima-journal-of-applied-mathematics.csl
 
+## Allow for \(...\) and \[..\]
+from:               markdown+tex_math_single_backslash
 
-from: markdown+tex_math_single_backslash
+## Table of contents
+toc:                true
 
-toc: true
+## Date format
+date-format:        "D MMMM YYYY"
 
-date-format: "D MMMM YYYY"
-papersize:  a4
+## Location of table legends
+tbl-cap-location:   top
 
-tbl-cap-location: top
-
-## PDF format
+## Specifics of PDF format
 format:
   pdf:
+    papersize:      a4
     link-citations: true
     numbersections: true
-    mainfont: "Times New Roman"
-    monofont: "JuliaMono"
+    mainfont:       "Times New Roman"
+    monofont:       "JuliaMono"
     monofontoptions:
        - Scale=0.7
-    include-in-header:
-        - "SIR.sty"
-        - text: |
-            \usepackage[xetex]{animate}
 
+## Control of cache
 execute:
     cache: true

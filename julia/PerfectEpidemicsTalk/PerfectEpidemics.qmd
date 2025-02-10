@@ -1709,10 +1709,10 @@ then \(b_k^{+}\leq b_k^{-}\).
 at time \(a_k^\pm\): \(a_k^{+}\leq b_k^{-}\) by monotonicity
 for \(\Epidemic_{\tau=0}^\pm\). If there are no \(\tau{=}1\) infections
 infecting timeline \(k\) in \([a_k^\pm,b_k^\pm)\)
-then  \(\LFE_{\tau=1}^\pm(k)\) perpetuates \(a_k^\pm\) from \(\Epidemic_{\tau=0}^\pm\). The argument then works case-by-case as follows:
-    (a) no perpetuation occurs;
-    (b) \(\LFE^-_{\tau=1}(k)\) is perpetuated;
-    (c) only \(\LFE^+_{\tau=1}(k)\) is perpetuated.
+then  \(\LFE_{\tau=1}^\pm(k)\) perpetuates \(a_k^\pm\) from \(\Epidemic_{\tau=0}^\pm\). The argument then runs case-by-case as follows:
+    (a) no perpetuation occurs (infections shared);
+    (b) \(\LFE^-_{\tau=1}(k)\) is perpetuated (OK: no later infections);
+    (c) only \(\LFE^+_{\tau=1}(k)\) is perpetuated (OK: use \(\tau=0\) monotonicity).
 
 :::notes
 (1) Proposals are accepted only when they are higher than the

@@ -15,12 +15,6 @@ institute:   Warwick, York
 license:     "CC BY"
 
 jupyter: julia-1.11
-
-format: 
-    beamer:
-        include-in-header:
-            - "PerfectEpidemics.sty"
-
 ---
 
 ```{julia}
@@ -1067,8 +1061,8 @@ depict("figure-6", new_figure(
 
 ---
 
-Last feasible epidemic (\LFE)
-----------------------------
+Laziest feasible epidemic (\LFE)
+--------------------------------
 ::: notes
 First we draw the \LFE.
 As it is defined recursively working backwards in process time,
@@ -1133,8 +1127,9 @@ working backwards
 in process time.
 A more involved induction argument shows that the \NFZ depends
 monotonically on the epidemic trajectory.
-This implies monotonicity of the algorithmic-time evolution
-of the conditioned epidemic: hence CFTP is feasible!
+This, together with monotonicity of the \LFE, 
+implies monotonicity of the algorithmic-time evolution
+of the conditioned epidemic: hence CFTP can be implemented!
 
 \par
 :::
@@ -1294,7 +1289,9 @@ References {.allowframebreaks .t -}
 
 :::
 
+---
 
+\scriptsize
 
 Image information {-}
 -----------------
@@ -1308,19 +1305,17 @@ Image information {-}
 : {tbl-colwidths="[50,40,20]"}
 :::
 
----
-
 Previous instances of this talk {-}
 -------------------------------
 \scriptsize
 
 ::: {style="font-size: 15%;"} 
-| _Date_   | _Title_           |          | _Location_       |
-| -------- | ----------------- | -------- | ---------------- |
-| 19/04/24 | Perfect Epidemics | Short Research Talk (12min) | Warwick |
-| 15/05/24 | McMC and Perfect Simulation  | Graduate Seminar, Aristotle Univ. (50min) | Thessaloniki | 
-| 17/01/25 | Perfect Epidemics | Applied Probability Seminar (50min) | Warwick |
-: {tbl-colwidths="[10,38,37,15]"}
+| _Date_   | _Title_           |          |     | _Location_       |
+| -------- | ----------------- | -------- | --- | ---------------- |
+| 19/04/24 | Perfect Epidemics | Short Research Talk | 12min | Warwick |
+| 15/05/24 | McMC and Perfect Simulation  | Graduate Seminar, Aristotle Univ. | 50min | Thessaloniki | 
+| 17/01/25 | Perfect Epidemics | Applied Probability Seminar | 50min | Warwick |
+: {tbl-colwidths="[8,35,37, 5, 15]"}
 :::
 
 Appendix A: A "near-maximal" configuration {-}
@@ -1545,6 +1540,7 @@ depict("figure-B5", new_figure(
 ```
 
 ---
+
 Eventual conditioned epidemic after use of an innovation (6/8)
 --------------------------------------------------------
 \alert{Still to be done:} 1/3 of way through new infections, display current \LFE and \NFZ.
@@ -1582,9 +1578,181 @@ depict("figure-B8", new_figure(
 )
 ```
 
+Appendix C: Outline of the monotonicity proof {-}
+=============================================
+Summary of plan of proof: 
+-------------------------
+1. Let \(\Epidemic^\pm_{\tau{=}0}\)
+represent two epidemic trajectories (\(\pm\)) at algorithmic time \(\tau{=}0\), 
+viewed as
+subsets of "timeline-space" \(\bigcup_k \{k, [0,T)\}\).
+2. Suppose the _fast_
+\(\Epidemic^+_{\tau{=}0}\) is never later than the _slow_
+\(\Epidemic^-_{\tau{=}0}\)
+so \(\Epidemic^+_{\tau{=}0}\supseteq\Epidemic^-_{\tau{=}0}\);
+moreover suppose monotonicity holds for conditional removal marks:
+if \(\CRemoval_{\tau{=}0}^\pm\) are conditional
+removals at fixed process time \(t\) 
+then
+\(\CRemoval_{\tau{=}0}^+\) timeline \(\geq \CRemoval_{\tau{=}0}^-\) timeline.	
+3. Then a related monotonicity holds for the laziest feasible epidemics:
+\(\LFE^+_{\tau{=}1}\leq\LFE^-_{\tau{=}1}\) at algorithmic time \(\tau=1\).
+4. Likewise a similar monotonicity (but reversing the set-theoretic
+inclusion!) holds for \(\NFZ^+_{\tau{=}1}\subseteq\NFZ^-_{\tau{=}1}\).
+5. Now prove
+\(\Epidemic^+_{\tau{=}1}\supseteq\Epidemic^-_{\tau{=}1}\) 
+moreover if \(\CRemoval_{\tau{=}1}^+\) matches 
+\(\CRemoval_{\tau{=}1}^-\) at process time \(t\) then
+\(\CRemoval_{\tau{=}1}^+\) timeline \(\geq \CRemoval_{\tau{=}1}^-\) timeline.
+
+:::notes
+(1) Expressing epidemics in terms of subsets of "timeline-space" 
+(corresponding infected regions) eases discussion of
+monotonicity.
+We use \(\Epidemic^\pm_\tau\), \(\LFE^\pm_\tau\)
+_et cetera_ to refer simultaneously to fast (\(+\))
+and slow (\(-\)) entities at algorithmic time \(\tau\).
+
+(2) The timeline monotonicity for conditional removals is important!
+
+(3) The \LFE are viewed as non-decreasing sequences of infection times.
+Monotonicity for \LFE is relatively straightforward. Note the
+notation \(\LFE(k)\) for the intersection of \(\LFE\) with timeline \(k\).
+
+(4) Monotonicity for \NFZ requires a case-by-case analysis.
+
+(5) The \(\LFE_{\tau{=}1}\) and \(\NFZ_{\tau{=}1}\) monotonicities 
+depend only on monotonicity
+for the preceding \(\Epidemic_{\tau{=}0}\); 
+monotonicity for \(\Epidemic_{\tau{=}1}\)
+uses both these and also again the monotonicity for \(\Epidemic_{\tau{=}0}\).
+:::
+
+---
+
+\(\LFE_{\tau{=}1}\): recursive definition
+-----------------------------------------
+Let \(\LFE_{\tau{=}1}^\pm(k)\) be the (process) time of the latest infection
+of timeline \(k\) required for infection of all \(\CRemoval^\pm\)s
+of \(\Epidemic^\pm_{\tau{=}1}\).
+
+1. For the top timeline \(h\), 
+\(\LFE_{\tau{=}1}^\pm(n)\) must be
+no later than any
+\(\CRemoval^\pm\) on timeline \(n\); set \(\LFE_{\tau{=}1}^\pm(n)=T\)
+if no such \(\CRemoval^\pm\).
+2. For \(k<n\) with \(\LFE_{\tau{=}1}^\pm(k{+}1)=T\), again
+\(\LFE_{\tau{=}1}^\pm(k)\) must
+be no later than any
+\(\CRemoval^\pm\) on timeline \(k\); set \(\LFE_{\tau{=}1}^\pm(k)=T\)
+if no such \(\CRemoval^\pm\).
+3. Suppose \(n_0\) is largest \(k\) with \(\LFE_{\tau{=}1}^\pm(k)<T\).
+Working downwards through \(\ell=n_0{-}1, \ldots, 1\),
+\(\LFE_{\tau{=}1}^\pm(\ell)\) is the 
+time of the latest 
+infection targetting \(\ell{+}1\) and based in the infected region
+such that
+    (a) \(\LFE_{\tau{=}1}^\pm(\ell) \leq \LFE_{\tau{=}1}^\pm(\ell{+}1)\);
+    (b) \(\LFE_{\tau{=}1}^\pm(\ell)\) precedes any
+\(\CRemoval^\pm\) on timeline \(\ell\).
+4. Equivalently, \(\LFE_{\tau{=}1}^\pm(\ell)\) is the 
+time of the latest potential
+infection targetting \(\ell{+}1\)
+such that
+    (a) \(\LFE_{\tau{=}1}^\pm(\ell) \leq \LFE_{\tau{=}1}^\pm(\ell{+}1)\);
+    (b) \(\LFE_{\tau{=}1}^\pm(\ell)\) precedes any
+\(\CRemoval^\pm\) on timelines \(\ell, \ell{+}1, \ldots, n\).
 
 
-Appendix C: Naive approach to compartment models fails {-}
+:::notes
+(1) For the top timeline, we need only be sure that any \(\CRemoval\)s
+on this time line are activated. If there are no such \(\CRemoval\)s
+then we can set \(\LFE_{\tau{=}1}^\pm(n)=T\).
+
+(2) Working down through the timelines \(k\), until we encounter 
+a \(\CRemoval\) we can continue setting \(\LFE_{\tau{=}1}^\pm(k)=T\).
+
+(3) But after that we must ensure 
+    (a) infection of 
+the previous \(\LFE_{\tau{=}1}^\pm(\ell{+}1)<T\) (since we need infection to activate the \LFE for the next timeline up),  
+as well as 
+    (b)
+infection of any \(\CRemoval\)s on the current timeline \(\ell\).
+
+(4) Expanding "any
+\(\CRemoval^\pm\) on timeline \(\ell\)" to "any
+\(\CRemoval^\pm\) on timelines \(\ell, \ell{+}1, \ldots, n\)" doesn't affect \(\LFE_{\tau{=}1}^\pm(\ell)\), since
+"any
+\(\CRemoval^\pm\) on timelines \(\ell{+}1, \ell{+}2, \ldots, n\)"
+will be subsequent to \(\LFE_{\tau{=}1}^\pm(\ell{+}1)\geq \LFE_{\tau{=}1}^\pm(\ell)\).
+:::
+
+---
+
+\(\LFE_{\tau{=}1}\): monotonicity
+---------------------------------
+1. Re-sample the \(\CRemoval^\pm\) timelines using accept-reject using the
+same proposals. Since \(\Epidemic_{\tau=0}^+\supseteq\Epidemic_{\tau=0}^-\),
+it follows that \(\CRemoval\) timelines for \(\Epidemic_{\tau=1}^+\) can never be lower than those for \(\Epidemic_{\tau=1}^-\).
+2. Hence if \(\LFE^+_{\tau=1}(k)=T\) then \(\LFE^-_{\tau=1}(k)=T\) also.
+3. Now work inductively. Suppose the desired monotonicity holds for
+\(k{+}1\), \ldots, \(n\). Then \(\LFE^+_{\tau=1}(k)\leq \LFE^+_{\tau=1}(k{+}1)\leq\LFE^-_{\tau=1}(k{+}1)\) by induction. 
+But
+the set of "times of
+\(\CRemoval^-\) on timelines \(\ell, \ell{+}1, \ldots, n\)"
+is a subset of the set of "times of
+\(\CRemoval^+\) on timelines \(\ell, \ell{+}1, \ldots, n\)".
+So if \(b_k^{\pm}\) is the resulting
+right-constraint on \(\LFE^\pm_{\tau=1}(k)\)
+then \(b_k^{+}\leq b_k^{-}\). 
+4. Suppose \(\Epidemic_{\tau=0}^\pm\) infects timeline \(k\)
+at time \(a_k^\pm\): \(a_k^{+}\leq b_k^{-}\) by monotonicity
+for \(\Epidemic_{\tau=0}^\pm\). If there are no \(\tau{=}1\) infections
+infecting timeline \(k\) in \([a_k^\pm,b_k^\pm)\)
+then  \(\LFE_{\tau=1}^\pm(k)\) perpetuates \(a_k^\pm\) from \(\Epidemic_{\tau=0}^\pm\). The argument then works case-by-case as follows:
+    (a) no perpetuation occurs;
+    (b) \(\LFE^-_{\tau=1}(k)\) is perpetuated;
+    (c) only \(\LFE^+_{\tau=1}(k)\) is perpetuated.
+
+:::notes
+(1) Proposals are accepted only when they are higher than the
+relevant infected region. Since \(\Epidemic_{\tau=0}^+\supseteq\Epidemic_{\tau=0}^-\), proposals are more easily accepted for the
+fast epidemic.
+(2) Suppose timelines \(k\), \(k{+}1\), \ldots, \(n\) are clear of 
+\(\CRemoval^+\)s. Then the same must be true of \(\CRemoval^-\)s,
+whose timelines can be no higher.
+(3) The subset argument follows because in \(\Epidemic^+\) the
+conditional removals are never on lower timelines than the
+corresponding conditional removals in \(\Epidemic^-\).
+(4) The arguments here are case-by-case, using \(a^+_k\leq a^-_k\)
+and \(b^+_k\leq b^-_k\):
+    (a) no perpetuation: same potential infections
+    so monotonicity!
+    (b) perpetuation at \(\LFE^-_{\tau=1}(k)\): no infections between \(\LFE^-_{\tau=1}(k)\) and \(b^-_k\) forcing monotonicity;
+    (c) perpetuation only at \(\LFE^+_{\tau=1}(k)\): so \(\LFE^-_{\tau=1}(k)\) arises by infection, so has to lie in \((b^+_k,b^-_k]\),
+    forcing monotonicity: 
+    \(\LFE^-_{\tau=1}(k)\geq\Epidemic^-_{\tau=0}(k)\geq\Epidemic^+_{\tau=0}(k)=\LFE^+_{\tau=1}(k)\).
+:::
+
+---
+
+Monotonicity for \(\NFZ_{\tau{=}1}\):
+-----------------------------------
+
+:::notes
+To be added
+:::
+
+---
+
+Monotonicity for \(\Epidemic_{\tau{=}1}\):
+----------------------------------------
+
+:::notes
+To be added
+:::
+
+Appendix D: Naive approach to compartment models fails {-}
 ======================================================
 * Consider a modification of this approach to the case of compartmentalized populations.
 

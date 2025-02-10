@@ -24,6 +24,10 @@ format:
         hyperrefoptions:
             - pdfstartview=Fit
 
+        include-in-header:
+            - "PerfectEpidemics.sty"
+
+
 execute:
     cache: true
 

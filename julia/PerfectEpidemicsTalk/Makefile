@@ -15,7 +15,7 @@ notes-2x2     := $(title)-notes-2x2.pdf
 
 ##################################################
 
-VERSION       := VERSION.txt
+VERSION       := VERSION.md
 VERSIONSED    := version.sed
 
 QUARTO	      := /usr/local/bin/quarto

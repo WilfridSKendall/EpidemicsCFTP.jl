@@ -914,12 +914,12 @@ function extremal_evolution(initial::SIR, duration::Real, times::Vector{<:Real};
                 t0=t0, duration=duration, size=size)
 end
 
-# Computing the last feasible epidemic trajectory
+# Computing the laziest feasible epidemic trajectory
 # -----------------------------------------------
 """
     EpidemicsCFTP.laziest_feasible_evolution(::Real, ::AbstractEvolution, ::AbstractInnovation) ::Vector{AbstractIncident}
 
-Computes the last feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
+Computes the laziest feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
 by a [`AbstractInnovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
 from an [`AbstractEvolution`](@ref)
 and an [`AbstractInnovation`](@ref): see examples I and II. Example III gives an explicit use, in a partial correctness test 
@@ -1122,7 +1122,7 @@ end ;
     relevant_infections(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractInfection}
 
 Examines [`AbstractInfection`](@ref)s from [`AbstractInnovation`](@ref) and returns
-those which are relevant to construction of the "last feasible epidemic",
+those which are relevant to construction of the "laziest feasible epidemic",
 to wit, old infections in `ev.infections` used in `ev.history` plus new
 infections in `iv.infections` which are not irrelevant (see [`kill_irrelevant_infections`](@ref))
 and whose `target` is infected and whose `infectee` is susceptible.
@@ -1349,7 +1349,7 @@ end ;
     EpidemicsCFTP.is_correct_LFE(::CEvolution; ::Bool=false)::Bool
     
 Checks that the `LFE` field of a [`CEvolution`](@ref) is genuinely a 
-_last feasible evolution_. (Used primarily for **verification** that a
+_laziest feasible evolution_. (Used primarily for **verification** that a
 given `LFE` field is correct.) The example indicates usage. 
 See example III from the doctests for [`laziest_feasible_evolution`](@ref) for
 a further simple complementary test using that function.

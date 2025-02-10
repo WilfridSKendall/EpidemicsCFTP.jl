@@ -26,7 +26,7 @@ test_files :=$(wildcard test/*.jl)
 # PRIMARY TARGETS
 # ===============
 # Documentation
-documentation: test pdf-format html-format
+documentation: test html-format pdf-format
 #  * html format
 html-format: test docs/site/index.html
 #  * pdf format

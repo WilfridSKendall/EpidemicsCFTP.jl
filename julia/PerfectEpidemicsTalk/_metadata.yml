@@ -1,9 +1,24 @@
-from: markdown+tex_math_single_backslash
+## YAML to be shared amongst all scripts in this directory.
 
+## Allow {==...==} to indicate highlight, etc
+## See <https://github.com/mloubout/critic-markup>
+## also <https://github.com/mloubout/critic-markup#readme>.
+## Setup / download using
+## `quarto add mloubout/critic-markup`.
+## For some reason, doesn't work with `beamer`.
 filters:
   - critic-markup
+
+## Bibligraphy style
+csl:                /home/wilfrid/lib/palndoc/CSL/ima-journal-of-applied-mathematics.csl
+
+## Allow for \(...\) and \[..\]
+from: markdown+tex_math_single_backslash
+
+## Page dimensions
 papersize: a4
 
+## Standard beamer format
 format: 
     beamer:
         date-format:     "D MMMM YYYY"
@@ -23,11 +38,11 @@ format:
         citecolor:       blue
         hyperrefoptions:
             - pdfstartview=Fit
-
+## Home-brewed LaTeX macros
         include-in-header:
             - "PerfectEpidemics.sty"
 
-
+## Control of cache
 execute:
     cache: true
 

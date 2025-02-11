@@ -21,10 +21,17 @@
   - [ ] Sequence of snapshots {==part done==}
   - [ ] add iterations of NFZ
   - [ ] add iterations of LFE
-- [ ] Visual proof of monotonicity for LFE and NFZ.
+- [ ] Visual proof of monotonicity for LFE and NFZ
+  - [x] LFE
+  - [x] NFZ
+  - [x] Overall proof
+  - [ ] Final verifications
+  - [ ] Include different initial conditions
+  - [ ] Diagrams?
+  
 - [ ] Visual proof of finite coalescence time using small set analysis and image in appendix.
 - [ ] Is there a `domCFTP` approach? for example pure birth with barrier, birth-rate dependent on number of removals alone?
-- [ ] LFE: "Laziest Feasible Epidemic" rather than "Last Feasible Epidemic"?
+- [x] LFE: "Laziest Feasible Epidemic" rather than "Last Feasible Epidemic"?
 
 ------
 

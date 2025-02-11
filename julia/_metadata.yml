@@ -1,5 +1,10 @@
 ## YAML to be shared amongst all scripts in this directory.
+
 ## Allow {==...==} to indicate highlight, etc
+## See <https://github.com/mloubout/critic-markup>
+## also <https://github.com/mloubout/critic-markup#readme>.
+## Setup / download using
+## `quarto add mloubout/critic-markup`.
 filters:
   - critic-markup
 

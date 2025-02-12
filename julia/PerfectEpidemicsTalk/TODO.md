@@ -5,7 +5,8 @@
 - [x] Discuss with Simon Spencer
   - [ ] Read papers suggested by Simon
   - [ ] Add supporting literature for inference, as discussed with Simon
-  - [ ] Follow-up further on Paul Jenkins' remarks concerning links to "look-down" representation. I don't think there is a big thing here, but need to tie it down.
+  - [ ] Follow-up further on Paul Jenkins' remarks concerning links to "look-down" representation. I don't think there is a big thing here, but need to tie it down
+  - [ ] Check out @BallNeal-2025b.
 - [x] Differentiate graphical representation of each C from the point where it has effect
 - [ ] Use better running example (need more action in the centre of the time-scale)
 - [ ] What about compartment models:
@@ -25,7 +26,7 @@
   - [x] LFE
   - [x] NFZ
   - [x] Overall proof
-  - [ ] Final verifications
+  - [x] Final verifications
   - [ ] Include different initial conditions
   - [ ] Diagrams?
   

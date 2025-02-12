@@ -95,7 +95,6 @@ And, as with all simulation, its validity depends on correctness of code!
 The Ising model with an external field can be used
 to model images, hence CFTP can be used for image reconstruction.
 \par
-
 :::
 
 ---
@@ -206,7 +205,6 @@ CFTP out on a wide variety of models
 [For example, for \(M/G/k\) multiserver queues, @ConnorKendall-2014; @Connor-2016].
 (4) This is the end of the visual introduction to CFTP.
 People who are interested in CFTP from a practical point of view may find it useful to work through @Kendall-2014b.
-
 \par
 :::
 
@@ -273,29 +271,11 @@ However in this work we deal only with perfect simulation
 for homogeneous mixing.
 Before running, one must learn to walk!
 \par
-
 :::
 
 
 The first question asked about a new epidemic {-}
 =============================================
-::: notes
-I am skipping over very influential early work on this incident,
-which particularly focussed on the incubation period
-(a time when the subject is infectious, perhaps at time-varying rate, before symptoms appear).
-This is related to drawing inferences about \(\beta\).
-
------------------------------------------
-
-See Mizumoto _et al_ (2020) for very early analysis of the _Diamond Princess_ outbreak.
-
------------------------------------------
-
-\alert{Question:} is there a dataset for the _Diamond Princess_ outbreak?
-and how detailed is it?
-
-:::
-
 "What is the R-number?"  
 
 . . .
@@ -311,8 +291,41 @@ mean number of new infectives produced per infective at _start_ of epidemic with
 Evidently \(\alpha \; s_0/\beta \gg 1\) -- as was sadly later confirmed, a sorrow for us all.  
 ![](image/Diamond_Princess.jpg){width=2in}
 
+::: notes
+I am skipping over very influential early work on this incident,
+which particularly focussed on the incubation period
+(a time when the subject is infectious, perhaps at time-varying rate, before symptoms appear).
+This is related to drawing inferences about \(\beta\).
+
+-----------------------------------------
+
+See Mizumoto _et al_ (2020) for very early analysis of the _Diamond Princess_ outbreak.
+
+-----------------------------------------
+
+\alert{Question:} is there a dataset for the _Diamond Princess_ outbreak?
+and how detailed is it? 
+
+@RocklovSjodinWilderSmith-2020 focusses on \(R\)-number and refers to some public sources
+of cumulative daily totals.
+:::
+
 Inference on the R-number {-}
 =========================
+
+Important, because the R-number controls severity of epidemic. However:
+
+1. Modelling is \alert{tough}. _Either_ massive assumptions (homogeneous mixing) _or_ very many parameters;
+
+2. Inference is \alert{really} \alert{tough}: hard to get information about infection times;
+
+3. It is all \alert{especially} \alert{tough} in early stages. Answers are
+most needed when hardly any information is available (a simplified example for a Warwick UG second-year statistics module shows how tough this can be);
+
+4. Markov chain Monte Carlo (MCMC) can be used (see next slide) but what about burn-in?
+
+5. Can we use \structure{perfect simulation}?
+
 :::notes
 The "R-number" was the subject of continuing interest throughout the COVID-19 pandemic!
 
@@ -328,20 +341,13 @@ to aid inference.
 -----------------------------------------
 
 Reference (for example a blog) to the "simplified example"?
+
+-----------------------------------------
+
+The PhD thesis of @Bensoussane-2025 is a useful source of references.
+\par
 :::
 
-Important, because the R-number controls severity of epidemic. However:
-
-1. Modelling is \alert{tough}. _Either_ massive assumptions (homogeneous mixing) _or_ very many parameters;
-
-2. Inference is \alert{really} \alert{tough}: hard to get information about infection times;
-
-3. It is all \alert{especially} \alert{tough} in early stages. Answers are
-most needed when hardly any information is available (a simplified example for a Warwick UG second-year statistics module shows how tough this can be);
-
-4. Markov chain Monte Carlo (MCMC) can be used (see next slide) but what about burn-in?
-
-5. Can we use \structure{perfect simulation}?
 
 An easier question {-}
 ==================
@@ -389,7 +395,6 @@ that evolve in algorithmic time.
 This will allow us to exploit the classic connection for
 dynamically reversible Markov processes, between conditioning
 and restriction of state space.
-
 \par
 :::
 
@@ -397,30 +402,6 @@ and restriction of state space.
 
 From incidents to unconditioned epidemic trajectories (1/3)
 -----------------------------------------------------------
-
-
-::: notes
-As implied above, incidents comprising a single
-innovation are
-produced by Poisson point processes on 
-each of the timelines.
-
-\bigskip
-
-Colour-coding distinguishes infections from deaths. Note that
-infections need to specify which timeline is going to be infected.
-
-* The rates of the Poisson processes generating the (proposed) 
-incidents are chosen to ensure that the numbers of actual 
-susceptibles, infectives and removals form a Markov chain
-with rates as required for a \SIR epidemic.
-* For an infection incident to be activated, it must sit on an infected portion
-of its timeline and must point to the least of the uninfected timelines
-(calculating at the process time of the incident).
-* For a removal incident to be activated, it must sit on an infected 
-portion of its timeline.
-:::
-
 ```{julia}
 #| label: parameters
 #| include: false
@@ -489,17 +470,32 @@ depict("figure-1", new_figure(
 
 ```
 
+::: notes
+As implied above, incidents comprising a single
+innovation are
+produced by Poisson point processes on 
+each of the timelines.
+
+\bigskip
+
+Colour-coding distinguishes infections from deaths. Note that
+infections need to specify which timeline is going to be infected.
+
+* The rates of the Poisson processes generating the (proposed) 
+incidents are chosen to ensure that the numbers of actual 
+susceptibles, infectives and removals form a Markov chain
+with rates as required for a \SIR epidemic.
+* For an infection incident to be activated, it must sit on an infected portion
+of its timeline and must point to the least of the uninfected timelines
+(calculating at the process time of the incident).
+* For a removal incident to be activated, it must sit on an infected 
+portion of its timeline.
+:::
+
 ---
 
 From incidents to unconditioned epidemic trajectories (2/3)
 -----------------------------------------------------------
-
-::: notes
-Here is the resulting evolution of an epidemic.
-Note however that we need to specify
-the initial number of infectives (here we specify \(I_0=1\)).
-:::
-
 ```{julia}
 #| echo: false
 #| label: fig-figure-2
@@ -513,27 +509,16 @@ depict("figure-2", new_figure(
 )
 ```
 
+::: notes
+Here is the resulting evolution of an epidemic.
+Note however that we need to specify
+the initial number of infectives (here we specify \(I_0=1\)).
+:::
+
 ---
 
 From incidents to unconditioned epidemic trajectories (3/3)
 -----------------------------------------------------------
-::: notes
-An update in algorithmic time, if there is no
-conditioning, simply involves replacement of one set
-of incidents by another. 
-(Here there is a radical change, as epidemic 
-dies out at an early stage.)
-
-\bigskip
-
-But we need to refine this if we are to take account of
-conditioning: a simple accept/reject procedure will
-almost always reject proposals of entire innovations
-involving all of both infection and removal incidents.
-
-\par
-:::
-
 ```{julia}
 #| label: next-epidemic
 uiv2 = rand(uiv1) ;
@@ -555,6 +540,22 @@ depict("figure-3", new_figure(
         title="Updated unconditioned epidemic")
 )
 ```
+
+::: notes
+An update in algorithmic time, if there is no
+conditioning, simply involves replacement of one set
+of incidents by another. 
+(Here there is a radical change, as epidemic 
+dies out at an early stage.)
+
+\bigskip
+
+But we need to refine this if we are to take account of
+conditioning: a simple accept/reject procedure will
+almost always reject proposals of entire innovations
+involving all of both infection and removal incidents.
+\par
+:::
 
 Crucial technical point {-}
 =======================
@@ -601,7 +602,6 @@ It turns out to be convenient to work forwards in time
 for removals, then backwards in time for infections --
 and to re-assign random timelines (but not times) for removals
 in between these two phases.
-
 \par
 :::
 
@@ -609,10 +609,6 @@ in between these two phases.
 
 Illustration of technical point (1/8)
 -------------------------------
-::: notes
-Here is the initial configuration again.
-:::
-
 ```{julia}
 #| echo: false
 #| label: fig-figure-4a
@@ -632,20 +628,14 @@ depict("figure-4b", new_figure(
 )
 ```
 
+::: notes
+Here is the initial configuration again.
+:::
+
 ---
 
 Illustration of technical point (2/8)
 -------------------------------
-::: notes
-Now we use the immigration-death process of removals
-to work forwards along the process-time axis removing old removals and
-adding new ones. At present we are not applying conditioning.
-Here we are 1/3 of the way through dealing with removals.
-Note that the removals have now rendered the epidemic extinct!
-
-\par
-:::
-
 ```{julia}
 #| echo: false
 #| label: fig-figure-4b
@@ -670,21 +660,20 @@ depict("figure-4b", new_figure(
 )
 ```
 
+::: notes
+Now we use the immigration-death process of removals
+to work forwards along the process-time axis removing old removals and
+adding new ones. At present we are not applying conditioning.
+Here we are 1/3 of the way through dealing with removals.
+Note that the removals have now rendered the epidemic extinct!
+\par
+:::
+
 
 ---
 
 Illustration of technical point (3/8)
 -------------------------------
-::: notes
-Here we are 2/3 of the way through dealing with removals.
-
-Flip backwards and then forwards one slide, 
-and confirm that the light-orange nodes with vertical arrows
-(infections) are not changed at this stage.
-
-\par
-:::
-
 ```{julia}
 #| echo: false
 #| label: fig-figure-4c
@@ -708,23 +697,20 @@ depict("figure-4c", new_figure(
 )
 ```
 
----
+::: notes
+Here we are 2/3 of the way through dealing with removals.
 
-Illustration of technical point (4/8)
--------------------------------
-:::notes
-All removals have now been processed.
-Because we are not yet conditioning, all old removals 
-have now been removed, and all new removals have been added.
-
--------------------------------
-
-Notice that nothing was done for this simulation in the last 2/3
-of removal work, because the new epidemic had by then run its course.
+Flip backwards and then forwards one slide, 
+and confirm that the light-orange nodes with vertical arrows
+(infections) are not changed at this stage.
 
 \par
 :::
 
+---
+
+Illustration of technical point (4/8)
+-------------------------------
 ```{julia}
 #| echo: false
 #| label: fig-figure-4d
@@ -747,6 +733,18 @@ depict("figure-4d", new_figure(
     title="Partially updated unconditioned epidemic")
 )
 ```
+
+:::notes
+All removals have now been processed.
+Because we are not yet conditioning, all old removals 
+have now been removed, and all new removals have been added.
+
+-------------------------------
+
+Notice that nothing was done for this simulation in the last 2/3
+of removal work, because the new epidemic had by then run its course.
+\par
+:::
 
 ---
 
@@ -1066,11 +1064,11 @@ Laziest feasible epidemic (\LFE)
 --------------------------------
 ::: notes
 First we draw the \LFE.
-As it is defined recursively working backwards in process time,
-it can be computed in entirety from the updated conditioned epidemic.
+It is defined recursively, working _backwards_ in process time, and
+so can be computed from the updated conditioned epidemic.
 
-* Of course, when computing the update, we have to compute it set-by-step
-when working backwards in process time.
+* When computing the update, we compute the \LFE set-by-step
+working backwards in process time.
 * Here there is a single discrepancy between \LFE and epidemic trajectory,
 over the time interval \([5.56,5.74]\). 
 * At times \(0.88\), \(1.62\), \(2.00\)
@@ -1100,7 +1098,7 @@ depict("figure-7", new_figure(
 ```
 
 ::: notes
-A relatively simple induction argument shows that the \LFE depends
+A moderately straightforward induction argument shows that the \LFE depends
 monotonically on the epidemic trajectory!
 :::
 
@@ -1111,12 +1109,12 @@ No-fly zone (\NFZ)
 ::: notes
 The \NFZ is used to decide whether to accept proposals
 of infections targeting the susceptible region. More 
-complicated than \LFE; two phenomena interact.
+involved than \LFE as two phenomena interact;
 
-(1) An infection rooted in the infection zone must be assessed
-to see whether its introduction would lead to activating a removal,
-because it connects the infectious zone to a timeline which would
-lead to such an activation (a ``no-fly" portion of the timeline);
+(1) Infections rooted in the infection zone are assessed
+to see whether introduction would lead to activating removals,
+by connecting the infectious zone to a timeline
+leading to such an activation (a ``no-fly" portion of the timeline);
 (2) An infection rooted in the susceptible zone may be such that
 it makes a portion of its timeline _before_ its time into ``no-fly".
 
@@ -1439,12 +1437,6 @@ depict("figure-B2", new_figure(
 
 Conditional epidemic (3/8)
 --------------------
-
-::: notes
-Now 2/3 of the way through dealing with removals.
-\par
-:::
-
 ```{julia}
 #| echo: false
 #| label: fig-figure-B3
@@ -1468,6 +1460,11 @@ depict("figure-B3", new_figure(
     title="Partially updated conditioned epidemic")
 )
 ```
+
+::: notes
+Now 2/3 of the way through dealing with removals.
+\par
+:::
 
 ---
 
@@ -1599,7 +1596,7 @@ then
 3. Then a related monotonicity holds for the laziest feasible epidemics:
 \(\LFE^+_{\tau{=}1}\leq\LFE^-_{\tau{=}1}\) at algorithmic time \(\tau{=}1\).
 4. Likewise a similar monotonicity (but reversing the set-theoretic
-inclusion!) holds for \(\NFZ^+_{\tau{=}1}\subseteq\NFZ^-_{\tau{=}1}\).
+inclusion!) holds for no-fly zones: \(\NFZ^+_{\tau{=}1}\subseteq\NFZ^-_{\tau{=}1}\).
 5. Now prove
 \(\Epidemic^+_{\tau{=}1}\supseteq\Epidemic^-_{\tau{=}1}\) 
 moreover if \(\CRemoval_{\tau{=}1}^+\) matches 
@@ -1617,8 +1614,9 @@ and slow (\(-\)) entities at algorithmic time \(\tau\).
 (2) The timeline monotonicity for conditional removals is important!
 
 (3) The \LFE are viewed as non-decreasing sequences of infection times.
-Monotonicity for \LFE follows by a relatively straightforward recursive argument. Note the
-notation \(\LFE(k)\) for the intersection of \(\LFE\) with timeline \(k\).
+Monotonicity for \LFE follows by a relatively straightforward recursive argument. 
+\structure{Notation:}
+\(\LFE(k)\) is the intersection of \(\LFE\) with timeline \(k\).
 
 (4) Monotonicity for \NFZ requires analysis that is slightly more involved.
 
@@ -1626,7 +1624,8 @@ notation \(\LFE(k)\) for the intersection of \(\LFE\) with timeline \(k\).
 depend only on monotonicity
 for the preceding \(\Epidemic_{\tau{=}0}\); 
 monotonicity for \(\Epidemic_{\tau{=}1}\)
-uses both these and also again the monotonicity for \(\Epidemic_{\tau{=}0}\).
+uses these _plus_ monotonicity for \(\Epidemic_{\tau{=}0}\)
+to show monotonicity for \(\Epidemic_{\tau{=}1}\).
 :::
 
 ---
@@ -1634,17 +1633,17 @@ uses both these and also again the monotonicity for \(\Epidemic_{\tau{=}0}\).
 \(\LFE_{\tau{=}1}\): recursive construction
 -------------------------------------------
 Let \(\LFE_{\tau{=}1}^\pm(k)\) be the (process) time of the latest infection
-of timeline \(k\) required for infection of all \(\CRemoval^\pm\)s
-of \(\Epidemic^\pm_{\tau{=}1}\).
+of timeline \(k\) needed if all \(\CRemoval^\pm\)s
+of \(\Epidemic^\pm_{\tau{=}1}\) are to be infected.
 
-1. For the top timeline \(h\), 
-\(\LFE_{\tau{=}1}^\pm(n)\) must be
-no later than any
+1. For the top timeline \(n\), 
+\(\LFE_{\tau{=}1}^\pm(n)\) must 
+precede any
 \(\CRemoval^\pm\) on timeline \(n\); set \(\LFE_{\tau{=}1}^\pm(n)=T\)
 if no such \(\CRemoval^\pm\).
 2. For \(k<n\) with \(\LFE_{\tau{=}1}^\pm(k{+}1)=T\), again
 \(\LFE_{\tau{=}1}^\pm(k)\) must
-be no later than any
+precede any
 \(\CRemoval^\pm\) on timeline \(k\); set \(\LFE_{\tau{=}1}^\pm(k)=T\)
 if no such \(\CRemoval^\pm\).
 3. Suppose \(n_0\) is largest \(k\) with \(\LFE_{\tau{=}1}^\pm(k)<T\).
@@ -1670,12 +1669,15 @@ such that
 on this time line are activated. If there are no such \(\CRemoval\)s
 then we can set \(\LFE_{\tau{=}1}^\pm(n)=T\).
 
-(2) Working down through the timelines \(k\), until we encounter 
-a \(\CRemoval\) we can continue setting \(\LFE_{\tau{=}1}^\pm(k)=T\).
+(2) We apply similar reasoning
+working down through the timelines \(k\): 
+we can continue setting \(\LFE_{\tau{=}1}^\pm(k)=T\)
+until we encounter a \(\CRemoval\).
 
-(3) But after that we must ensure 
+(3) After that, timeline \(\ell\) must be infected early enough to insure:
     (a) infection of 
-the previous \(\LFE_{\tau{=}1}^\pm(\ell{+}1)<T\) (since we need infection to activate the \LFE for the next timeline up),  
+the previous \(\LFE_{\tau{=}1}^\pm(\ell{+}1)<T\) (there must be
+an early enough infection to activate the \LFE for timeline \(\ell{+}1\)),  
 as well as 
     (b)
 infection of any \(\CRemoval\)s on the current timeline \(\ell\).
@@ -1692,13 +1694,15 @@ will be subsequent to \(\LFE_{\tau{=}1}^\pm(\ell{+}1)\geq \LFE_{\tau{=}1}^\pm(\e
 
 \(\LFE_{\tau{=}1}\): monotonicity
 ---------------------------------
-1. Re-sample the \(\CRemoval^\pm\) timelines using accept-reject using the
-same proposals. Since \(\Epidemic_{\tau{=}0}^+\supseteq\Epidemic_{\tau{=}0}^-\),
-it follows that \(\CRemoval\) timelines for \(\Epidemic_{\tau{=}1}^+\) can never be lower than those for \(\Epidemic_{\tau{=}1}^-\).
-2. Hence if \(\LFE^+_{\tau{=}1}(k)=T\) then \(\LFE^-_{\tau{=}1}(k)=T\) also.
-3. Now work inductively. Suppose the desired monotonicity holds for
+1. Re-sample \(\CRemoval^\pm\) timelines by accept-reject:
+same proposals for both \(\pm\). 
+As \(\Epidemic_{\tau{=}0}^+\supseteq\Epidemic_{\tau{=}0}^-\),
+so \(\CRemoval\) timelines for \(\Epidemic_{\tau{=}1}^+\) no
+lower than for \(\Epidemic_{\tau{=}1}^-\).
+2. In particular, if \(\LFE^+_{\tau{=}1}(k)=T\) then \(\LFE^-_{\tau{=}1}(k)=T\) also.
+3. Now work inductively. Suppose monotonicity holds for
 \(k{+}1\), \ldots, \(n\). 
-Then \(\LFE^+_{\tau{=}1}(k)\leq \LFE^+_{\tau{=}1}(k{+}1)\leq\LFE^-_{\tau{=}1}(k{+}1)\) by induction. 
+Then \(\LFE^+_{\tau{=}1}(k)\leq \LFE^+_{\tau{=}1}(k{+}1)\leq\LFE^-_{\tau{=}1}(k{+}1)\). 
 But
 the set of "times of
 \(\CRemoval^-\) on timelines \(\ell, \ell{+}1, \ldots, n\)"
@@ -1711,28 +1715,28 @@ then \(b_k^{+}\leq b_k^{-}\).
 at time \(a_k^\pm\): \(a_k^{+}\leq a_k^{-} \leq b_k^{-}\) by monotonicity
 for \(\Epidemic_{\tau{=}0}^\pm\). If no \(\tau{=}1\) infections
 infect timeline \(k{+}1\) in \([a_k^\pm,b_k^\pm)\),
-then  \(\LFE_{\tau{=}1}^\pm(k)\) perpetuates \(a_k^\pm\) from \(\Epidemic_{\tau{=}0}^\pm\). The argument then runs case-by-case as follows:
-    (a) no perpetuation occurs (OK: infections shared);
-    (b) \(\LFE^-_{\tau{=}1}(k)\) is perpetuated (OK: no useful infections after perpetuation);
-    (c) only \(\LFE^+_{\tau{=}1}(k)\) is perpetuated (OK: use \(\tau{=}0\) monotonicity).
+then  \(\LFE_{\tau{=}1}^\pm(k)\) perpetuates \(a_k^\pm\) using \(\Epidemic_{\tau{=}0}^\pm(k)\). Then argue case-by-case:
+    (a) no perpetuation occurs (use fact, all infections are shared);
+    (b) \(\LFE^-_{\tau{=}1}(k)\) is perpetuated (so no useful infections after perpetuation);
+    (c) only \(\LFE^+_{\tau{=}1}(k)\) is perpetuated (then use \(\tau{=}0\) monotonicity).
 
 :::notes
-(1) Proposals are accepted only when they are higher than the
-relevant infected region. Since \(\Epidemic_{\tau{=}0}^+\supseteq\Epidemic_{\tau{=}0}^-\), proposals are more easily accepted for the
-fast epidemic.
+(1) Proposals are accepted only when higher than
+relevant infected region. Proposals _more easily_ accepted for
+fast epidemic (\(\Epidemic_{\tau{=}0}^+\supseteq\Epidemic_{\tau{=}0}^-\)).
 (2) Suppose timelines \(k\), \(k{+}1\), \ldots, \(n\) are clear of 
-\(\CRemoval^+\)s. Then the same must be true of \(\CRemoval^-\)s,
-whose timelines can be no higher.
-(3) The subset argument follows because in \(\Epidemic^+\) the  
-conditional removals are never on lower timelines than the
-corresponding conditional removals in \(\Epidemic^-\).
+\(\CRemoval^+\)s. Then same true of \(\CRemoval^-\)s,
+whose timelines are no higher than corresponding \(\CRemoval^+\)s.
+(3) The subset argument follows because \(\CRemoval\)s in \(\Epidemic^+\)
+are never on lower timelines than
+corresponding \(\CRemoval\)s in \(\Epidemic^-\).
 (4) The arguments here are case-by-case, using \(a^+_k\leq a^-_k\)
 and \(b^+_k\leq b^-_k\):
     (a) no perpetuation: same potential infections
     so monotonicity!
-    (b) perpetuation at \(\LFE^-_{\tau{=}1}(k)\): no infections between \(\LFE^-_{\tau{=}1}(k)\) and \(b^-_k\) forcing monotonicity;
+    (b) perpetuation at \(\LFE^-_{\tau{=}1}(k)\): no infections between \(\LFE^-_{\tau{=}1}(k)\) and \(b^-_k\), thus forcing monotonicity;
     (c) perpetuation only at \(\LFE^+_{\tau{=}1}(k)\): so \(\LFE^-_{\tau{=}1}(k)\) arises by infection, so has to lie in \((b^+_k,b^-_k]\),
-    forcing monotonicity: 
+    so forcing monotonicity: 
     \(\LFE^-_{\tau{=}1}(k)\geq\Epidemic^-_{\tau{=}0}(k)\geq\Epidemic^+_{\tau{=}0}(k)=\LFE^+_{\tau{=}1}(k)\).
 :::
 
@@ -1746,8 +1750,8 @@ and \(b^+_k\leq b^-_k\):
 timeline \(k\) and time \(t\) of \(\Removal\). Set 
 \(\NFZ_{\tau{=}1}^{\pm,*}=\{(k, [0,t^*_k]) : t^*_k>0\}\).
 2. Set \(\NFZ_{\tau{=}1}^{\pm,0}=\{(k, [0,t_k]):t_k>0\}\) as monotonic
-envelope of \(\NFZ_{\tau{=}1}^{\pm,*}\): \(\{t_k\}\) is the smallest non-decreasing sequence majorizing \(\{t^*_k\}\).
-3. Work backwards through new _non-removed_ \(\Infection\)s. 
+envelope of \(\NFZ_{\tau{=}1}^{\pm,*}\): \(\{t_k\}\) is smallest non-decreasing sequence majorizing \(\{t^*_k\}\).
+3. Work backwards through new _"non-removed"_ \(\Infection\)s. 
 At step \(j\), time \(t\), 
    (a) **accept** \(\Infection\) if it targets \(\NFZ_{\tau{=}1}^{\pm,j{-}1}\)
 at timeline \(k\) but infection fails: 
@@ -1760,7 +1764,8 @@ otherwise set \(\NFZ_{\tau{=}1}^{\pm,j}=\NFZ_{\tau{=}1}^{\pm,j{-}1}\) and
    \(\NFZ_{\tau{=}1}^{\pm,j{-}1}\).
 
 4. Set \(\NFZ_{\tau{=}1}^{\pm}=\NFZ_{\tau{=}1}^{\pm,j}\) if a total of \(j\)
-new \(\Infection\)s are proposed for \(\Epidemic^\pm_{\tau{=}1}\).
+new \(\Infection\)s are proposed for \(\Epidemic^\pm_{\tau{=}1}\), so no more 
+\(\Infection\)s remain!
 
 \bigskip
 \scriptsize
@@ -1770,17 +1775,17 @@ _Relevant_ accepted \(\Infection\)s are exactly those _not_ targetting
 the final \(\NFZ_{\tau{=}1}^{\pm}\).
 
 :::notes
-The \(\Removal\)s of \(\Epidemic^\pm_{\tau{=}1}\)
+\structure{Note:} \(\Removal\)s of \(\Epidemic^\pm_{\tau{=}1}\)
 are all determined _before_ considering new \(\Infection\)s!
 
 (1) Infections proposed for \(\Epidemic^\pm_{\tau{=}1}\) 
-are rejected if introduction would cause
-infection of part of \(\NFZ_{\tau{=}1}^{\pm,*}\).
-A proposal must be rejected if it directly 
+are rejected if they would
+infect part of \(\NFZ_{\tau{=}1}^{\pm,*}\).
+We reject proposals directly 
 infects part of \(\NFZ_{\tau{=}1}^{\pm,*}\), but
-we also need to account for the rejection of _indirect_ chains of 
-infection \ldots
-(2) The extension to \(\NFZ_{\tau{=}1}^{\pm,0}\) is a short-cut,
+must also reject if _indirect_ chains of 
+infection arise \ldots
+(2) The extension to \(\NFZ_{\tau{=}1}^{\pm,0}\) is a \alert{short-cut},
 justified because an \(\Infection\) can 
 infect its target if and only (b) it is based in the infected region
 and (b) the timeline immediately below the target timeline is infected
@@ -1790,23 +1795,23 @@ by \(\Epidemic^\pm_{\tau{=}0}\) is possible.
 \(\NFZ_{\tau{=}1}^{\pm,j}=\NFZ_{\tau{=}1}^{\pm,j{-}1}\cup\{(k{-}1,[0,t])\}\)
 (extending \(k^\text{th}\) timeline to \([0,t]\))
 only if \(\Infection\) hits \(\NFZ_{\tau{=}1}^{\pm,j{-}1}\)
-at target timeline \(k\) but either timeline \(k{-}1\) is
-_not_ currently infected at \(t\) or \(\Infection\) is _not_ based in the current infected region.
+at target timeline \(k\) but _either_ timeline \(k{-}1\) is
+_not_ currently infected at \(t\) _or_ \(\Infection\) is _not_ based in the current infected region.
 
-(Note infected region
-over time interval \([0,t)\) agrees with that for
+(\structure{Note:} infected subregion
+of time interval \([0,t)\) agrees with that for
 \(\Epidemic^\pm_{\tau{=}0}\) if no new \(\Infection\)s prior to \(t\)
 have yet been considered!) 
-
+\par
 :::
 
 ---
 
 \(\NFZ_{\tau{=}1}\): monotonicity
 ---------------------------------
-Establish monotonicity in turn for \(\NFZ_{\tau{=}1}^{\pm,*},
+Establish monotonicity for \(\NFZ_{\tau{=}1}^{\pm,*},
 \NFZ_{\tau{=}1}^{\pm,0}, \NFZ_{\tau{=}1}^{\pm,1}, 
-\NFZ_{\tau{=}1}^{\pm,2}, \ldots \):
+\NFZ_{\tau{=}1}^{\pm,2}, \ldots\) in turn:
 
 1. Since \(\Epidemic^+_{\tau{=}0}\supseteq\Epidemic^-_{\tau{=}0}\)
 and the set of \(\Removal\)s for \(\Epidemic^\pm_{\tau{=}1}\)
@@ -1818,13 +1823,13 @@ it follows that
 3. Given \(\NFZ_{\tau{=}1}^{+,j{-}1}\subseteq\NFZ_{\tau{=}1}^{-,j{-}1}\),
 create \(\NFZ_{\tau{=}1}^{\pm,j}\) by proposing
 \(\Infection\) at time \(t\)
-targetting timeline \(k\) with timeline in infected region for 
-\(\Epidemic_{\tau{=}0}^{+}\).
+targetting timeline \(k\), based in \(\Epidemic_{\tau{=}0}^{+}\) infected region.
 Then
 \(\NFZ_{\tau{=}1}^{+,j}=\NFZ_{\tau{=}1}^{+,j{-}1}\cup\{(k{-}1,[0,t])\}\)
-exactly when \(k\in\NFZ_{\tau{=}1}^{+,j{-}1}\) but infection in \(\Epidemic_{\tau{=}1}^{+}\) fails.
-    (a) We know 
-    \(k\in\NFZ_{\tau{=}1}^{-,j{-}1}\supseteq \NFZ_{\tau{=}1}^{+,j{-}1}\);
+exactly when \(\Infection\) fails to infect
+in \(\Epidemic_{\tau{=}1}^{+}\). Then
+    (a) we know \(k\) timeline at \(t\) is in
+    \(\NFZ_{\tau{=}1}^{-,j{-}1}\supseteq \NFZ_{\tau{=}1}^{+,j{-}1}\);
     (b) infection fails for \(\Epidemic_{\tau{=}1}^{+}\) because 
 timeline \(k{-}1\) is not infected at \(t\) in \(\Epidemic_{\tau{=}0}^{+}\).
 But we know \(\Epidemic_{\tau{=}0}^{+}\supseteq\Epidemic_{\tau{=}0}^{-}\),
@@ -1853,6 +1858,7 @@ of monotonic envelope operation.
 concerning agreement of initial segments of epidemics, to see that the epidemic monotonicity
 up to time \(t\) carries over from \(\Epidemic^\pm_{\tau{=}0}\)
 to the set-up when considering the \(\Infection\) proposal at time \(t\).
+\par
 :::
 
 ---
@@ -1861,23 +1867,24 @@ to the set-up when considering the \(\Infection\) proposal at time \(t\).
 ------------------------------------------
 Consider: 
 
-   - given epidemic monotonicity at algorithmic time \(\tau{=}0\) 
+   - there is epidemic monotonicity at algorithmic time \(\tau{=}0\) 
    (\(\Epidemic^+_{\tau{=}0}\supseteq\Epidemic^-_{\tau{=}0}\), also \(\CRemoval\)s in \(\Epidemic^+_{\tau{=}0}\) are never lower
 than in \(\Epidemic^-_{\tau{=}0}\));
-   - at algorithmic time \(\tau{=}1\) we have monotonicity of laziest feasible epidemic (\(\LFE_{\tau{=}1}^+(k)\leq \LFE_{\tau{=}1}^-(k)\) for all timelines \(k\));
-   - and we have monotonicity of no-fly zone (\(\NFZ_{\tau{=}1}^+ \subseteq \NFZ_{\tau{=}1}^-\)).
+   - at algorithmic time \(\tau{=}1\) there is monotonicity of laziest feasible epidemic (\(\LFE_{\tau{=}1}^+(k)\leq \LFE_{\tau{=}1}^-(k)\) for all timelines \(k\));
+   - and there is monotonicity of no-fly zone (\(\NFZ_{\tau{=}1}^+ \subseteq \NFZ_{\tau{=}1}^-\)).
 
-We now deduce epidemic monotonicity at algorithmic time \(\tau{=}1\)
+Deduce epidemic monotonicity at algorithmic time \(\tau{=}1\)  
 (\(\Epidemic^+_{\tau{=}1}\supseteq\Epidemic^-_{\tau{=}1}\)).
 
-There are two cases to consider (using \(\partial\NFZ\) to represent the right-most boundary for a \(\NFZ\), and similarly
-\(\partial\Epidemic\) to represent the _left_-most boundary for a \(\Epidemic\)):
+Two cases to consider. 
+Use \(\partial\NFZ\) to represent right-most boundary for a \(\NFZ\), and similarly
+use \(\partial\Epidemic\) to represent _left_-most boundary for a \(\Epidemic\)):
 
 
 1. \(\partial\NFZ^+_{\tau=1} \leq \LFE^+_{\tau=1} \leq \partial\NFZ^-_{\tau=1} \leq \LFE^-_{\tau=1}\);
 2. \(\partial\NFZ^+_{\tau=1} \leq \partial\NFZ^-_{\tau=1} \leq \LFE^+_{\tau=1} \leq \LFE^-_{\tau=1}\);
 
-In the first case there is nothing to be done: we simply use the remark
+In the first case there is nothing to be done: simply use the remark
 \[
 \partial\NFZ^\pm_{\tau=1} \quad\leq\quad \partial\Epidemic^\pm_{\tau=1}
 \quad\leq\quad \LFE^\pm_{\tau=1}\,.
@@ -1894,18 +1901,19 @@ Need to verify some "obvious" facts:
 \leq \LFE^\pm_{\tau=1}\).
 ::::
 :::
+
 ---
 
 \(\Epidemic_{\tau{=}1}\): monotonicity (II)
 -------------------------------------------
 
-In the second case we argue as follows. 
-We can localize to a particular timeline \(k\):
+In the second case argue as follows. 
+Localize to particular timeline \(k\):
 
 1. If the \(\Epidemic_{\tau=1}^-(k)\) infection is perpetuated,
-it must agree with \(\LFE_{\tau=1}^-(k)\) and so the monotonicity follows.
+it must agree with \(\LFE_{\tau=1}^-(k)\) and so monotonicity follows.
 2. If the \(\Epidemic_{\tau=1}^-(k)\) infection is no earlier
-than \(\LFE_{\tau=1}^+(k)\) then again the monotonicity follows.
+than \(\LFE_{\tau=1}^+(k)\) then again monotonicity follows.
 3. If the \(\Epidemic_{\tau=1}^-(k)\) infection is not perpetuated
 and occurs earlier than \(\LFE_{\tau=1}^+(k)\) then it is available
 as a possible candidate for \(\Epidemic_{\tau=1}^+(k)\)
@@ -1928,7 +1936,7 @@ timeline level.
 ::::
 ::::{.callout-tip}
 It should be possible to extend all this to cases where \(\Epidemic^+\)
-has more initial infectives than \(\Epidemic^-\): important when
+has \alert{more} initial infectives than \(\Epidemic^-\): important when
 varying initial condition!
 ::::
 :::
@@ -1954,7 +1962,6 @@ We want to model \(\alpha_{j,k}\) and \(\beta_j\)
 in terms of a simple parametric model 
 using explanatory variables
 that are observable _ab initio_.
-
 \par
 :::
 
@@ -2013,6 +2020,7 @@ We censor  \(\Infection\) or \(\Removal\) occurring after a \(\CRemoval\) on the
 We can re-order individual so that (for example) conditionedly removed timeline come first, and initially infected timelines take priority
 in the two categories of "conditionedly removed" and
 "not conditionedly removed".
+\par
 :::
 
 ---
@@ -2064,6 +2072,7 @@ will infect the target timeline if it is not already infected.
 
 (3) inactivated removals simply occur as a Poisson point pattern
 on the initial uninfected interval of each timeline not initially infected.
+\par
 :::
 
 ---
@@ -2133,6 +2142,7 @@ and even then only if no subsequent infection happens early enough!.)
 
 (4) Note how \(\NFZ\) grows in extent as this iteration proceeds,
 so as to prohibit infection of \(\Removal\)s previously encountered.
+\par
 :::
 
 ---
@@ -2167,7 +2177,7 @@ Unfortunately, although
 (1) the first result can be proved used a case-by-case analysis;
 
 (2) \alert{nevertheless the second result is not true}: see next slide for a counterexample!
-
+\par
 :::
 
 ---
@@ -2190,6 +2200,7 @@ We find that the Minimal 2 infection region is not a subset of the Maximal 2 inf
 (though a renumbering of the Minimal 2 population _would_ be a subset -- not a surprise given our previous results!).
 
 \structure{Question:} is there a way round this using the CFTP "crossover" trick?
+\par
 :::
 
 

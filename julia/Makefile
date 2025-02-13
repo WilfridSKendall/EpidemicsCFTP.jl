@@ -40,7 +40,7 @@ START           := xdg-open
 
 ## ====================
 ## Main targets
-main: $(PRODUCTS)
+main: $(PRODUCTS) README.pdf TODO.pdf
 verify: main verify-image verify-animation
 
 ## ====================
@@ -147,8 +147,8 @@ include $(HOME)/lib/makefiles/listing-makefile.mak
 
 
 ## --------------------
-# README.pdf
-README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+# For `README.pdf` and `TODO.pdf`
+%.pdf: %.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 
 ## --------------------
 ## List configurations

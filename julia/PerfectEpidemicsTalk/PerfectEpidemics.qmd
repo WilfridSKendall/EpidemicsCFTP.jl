@@ -584,20 +584,31 @@ is irreducible over \(S\)!
 (So equilibrium under conditioning is unique.)
 
 ::: notes
+It is convenient to express the algorithmic update in 
+_continuous_ time: applying a given innovation 
+over a continuous-time cycle of length
+\(2T\). The result is no longer reversible,
+but each individual steps satisfies detailed balance, so the important
+connection between conditioning and constraint remains valid.
+
 * In the case of discrete algorithmic time,
 it seems that arranging for conditioning
 would involve horrendous computation.
 Instead we unroll a "pixel-by-pixel" analysis
 into continuous algorithmic time.
 
-* Intuitively, we analyze first removals and then infections,
+* Intuitively, we analyze first removals 
+(\(\tau\) runs over algorithmic time range \((0,T)\))
+and then infections,
+(\(\tau\) runs over algorithmic time range \((T,2T)\))
 each working
 "pixel-by-pixel" along the process time axis.
 
 * It turns out to be convenient to work _forwards in process time_
 for removals, then _backwards in process time_ for infections --
 and to re-assign random timelines (but not times) for removals
-in between these two phases.
+in between these two phases
+(at algorithmic time \(\tau=T\)).
 \par
 :::
 
@@ -661,11 +672,13 @@ depict("figure-4b", new_figure(
 ```
 
 ::: notes
+::::{.callout-warning}
+At present we are not applying conditioning.
+::::
+
 * Now we use the immigration-death process of removals
 to work forwards along the process-time axis removing old removals and
 adding new ones. 
-
-* \alert{At present we are not applying conditioning.}
 
 * Here we are 1/3 of the way through dealing with removals.
 

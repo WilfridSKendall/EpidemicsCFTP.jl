@@ -148,7 +148,9 @@ include $(HOME)/lib/makefiles/listing-makefile.mak
 
 ## --------------------
 # For `README.pdf` and `TODO.pdf`
-%.pdf: %.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+%.pdf: %.md
+	$(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
+	-rm $*.upa $*.upb
 
 ## --------------------
 ## List configurations

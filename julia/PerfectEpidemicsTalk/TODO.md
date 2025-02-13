@@ -32,6 +32,7 @@
   
 - [ ] Visual proof of finite coalescence time using small set analysis and image in appendix.
 - [ ] Is there a `domCFTP` approach? for example pure birth with barrier, birth-rate dependent on number of removals alone?
+- [ ] `13-02-2025` convert 8-step analyses into movies?
 - [x] LFE: "Laziest Feasible Epidemic" rather than "Last Feasible Epidemic"?
 
 ------

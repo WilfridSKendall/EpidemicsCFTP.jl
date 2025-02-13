@@ -1,6 +1,6 @@
 # Julia notebooks for `EpidemicsCFTP`. 
 
-![](/home/wilfrid/ms/PerfectEpidemics/julia/animation/VERIFY_demo-e.png)
+![](animation/VERIFY_demo-e.png)
 
 ## Producing primary files
 Primary files are produced by `quarto`. At the time of writing these files are
@@ -52,7 +52,7 @@ make animation
 
 Illustrative figures are produced in the `image` subdirectory, such as
 
-![](/home/wilfrid/ms/PerfectEpidemics/julia/image/CFTP-01-minstep4.png)
+![](image/CFTP-01-minstep4.png)
 
 To check that  pictures have not changed from reference versions (`image/VERIFY_*.png`, `animation/VERIFY_*.png`), use one of
 ```bash

@@ -1,7 +1,6 @@
-## TODO list
+## TODO list 13/02/2025
 
 - [ ] `22/03/2024` Things remaining to be done for `CFTP-demo.qmd`:
-
   - [ ] Clean up the code!
     - [ ] Move some of the specialized choices and functions of section 2 into the [`EpidemicsUtilities`](file://EpidemicsUtilities/) module,
     - [ ] How to speed up by doing more in memory?!
@@ -17,11 +16,15 @@
   - [ ] likelihood test for presumed $\alpha$ and $\beta$?
   - [ ] steepest ascent search for m.a.p. estimator?
   - [ ] estimate posterior density for $\alpha$ and $\beta$​? 
+  - [ ] {==cover using references from Simon _etc_==}
 - [ ] **Clean up perfect SIR simulations:** 
   - [x] I want an `MP4` for small-pox dataset requiring just 128 steps of algorithmic time;
   - [x] Ditto for `GIF`
   - [x] I want a systematic colour scheme;
-  - [ ] How about a closer focus on what is happening in top-right corner for maximal process? (early time, high number of actual infectives).
+  - [ ] How about a closer focus on what is happening in top-right corner for maximal process? (early time, high number of actual infectives). {==Use `Compose.jl` function `clip`==}
 - [x] `24/02/2024` Extend `production.qmd` to use more recent code and to cover more figures. (Now done in `figures.qmd`.)
+- [ ] `13/02/2025`Re-work `PerfectEpidemicsTalk`  to produce a visual proof in a new file `proof.qmd`.
+- [ ] `13/02/2025` Revise SBC version of paper!
+- [ ] `13/02/2025` Do extra work for changing initial state.
 
  

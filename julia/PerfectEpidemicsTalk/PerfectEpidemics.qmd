@@ -129,7 +129,8 @@ is simple and efficient.
 
 (3) This observation was originally formalized by Aldous. Here we use "synchronous" coupling -- variants are possible but not particularly useful.
 
-(4) In our case coupling can only occur at \(0\) or \(9\)!
+(4) In the case of reflecting simple random walk,
+coupling can only occur at the boundary points \(0\) or \(9\)!
 So here the blue and red evolutions can only couple at a boundary; thus
 self-evidently the value at time of coupling cannot be a draw from the
 equilibrium!

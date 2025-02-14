@@ -32,8 +32,16 @@
   
 - [ ] Visual proof of finite coalescence time using small set analysis and image in appendix.
 - [ ] Is there a `domCFTP` approach? for example pure birth with barrier, birth-rate dependent on number of removals alone?
-- [ ] `13-02-2025` convert 8-step analyses into movies?
+- [ ] `13-02-2025` {--convert 8-step analyses into movies?--}
 - [x] LFE: "Laziest Feasible Epidemic" rather than "Last Feasible Epidemic"?
+- [ ] Introduce "No Hope Zone", NHR, for which LFE is left boundary.
+- [ ] Use IZ for "Infected Zone", for which EPI is left boundary. Also RZ for "Removed Zone" and SZ for "Susceptible Zone"
+- [ ] Mention total ordering of all possible incidents!
+- [ ] Determine significant useful properties:
+  - [ ] LFE and EPI coincide only at perpetuated infections;
+  - [ ] Other perpetuated infections lie on LFE only; 
+  - [ ] NFZ rejects only those potential infections which target its lower boundary and are sited in IZ; all other potential infections targeting NFZ or its monotone envelope are retained but will never become active. Potential infections targeting lower boundary of NFZ will extend the NFZ using the timeline immediately below target point ... {==Check algorithm!==}
+
 
 ------
 

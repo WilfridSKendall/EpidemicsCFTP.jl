@@ -62,7 +62,7 @@ gadfly_theme = Theme(
 set_default_plot_size(theme.figwidth, theme.figheight)
 ```
 
-
+{==Now need to develop a graphical proof of monotonicity==}
 
 Introduction to the \(\SIR\) epidemic
 =====================================

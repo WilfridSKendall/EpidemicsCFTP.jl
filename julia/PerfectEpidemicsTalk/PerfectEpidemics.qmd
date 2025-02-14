@@ -636,6 +636,11 @@ depict("figure-4b", new_figure(
 ```
 
 ::: notes
+::::{.callout-note}
+### TODO:
+Produce a movie instead of this sequence of 8 slides!
+::::
+
 * We now demonstrate this by a sequence of snapshots working forwards
 then backwards in process time.
 
@@ -682,9 +687,11 @@ adding new ones.
 
 * Here we are 1/3 of the way through dealing with removals.
 
-* {==Note that the removals have now rendered the epidemic extinct
+::::{.callout-note}
+Note that currently the removals have now rendered the epidemic extinct
 after just one individual has been infected as well as the original
-infective!==}
+infective!
+::::
 \par
 :::
 
@@ -758,8 +765,11 @@ depict("figure-4d", new_figure(
 * Because we are not yet conditioning, all old removals 
 have now been removed, and all new removals have been added.
 
-* {==Notice that nothing was done for this simulation in the last 2/3
-of removal work, because the new epidemic had by then run its course.==}
+::::{.callout-note}
+Notice that in the current version
+nothing was done for this simulation in the last 2/3
+of removal work, because the new epidemic had by then run its course.
+::::
 \par
 :::
 
@@ -819,8 +829,11 @@ Illustration of technical point (6/8)
 through process time._ Here is how matters stand after 1/3 of the work is
 done. 
 
-* {==Again, there is little scope for anything to be done yet:
-one infection has been dropped.==}
+::::{.callout-note}
+Again, there is little scope in the current version
+for anything to be done yet:
+one infection has been dropped.
+::::
 \par
 :::
 
@@ -857,7 +870,9 @@ Illustration of technical point (7/8)
 * And here is how matters stand after 2/3 of the work is
 done. 
 
-* {==Still little change at this stage.==}
+::::{.callout-note}
+Still little change at this stage in this version.
+::::
 
 \par
 :::
@@ -1035,7 +1050,7 @@ We have noted removals are easy.
 Re-sampling the conditioned removal timelines is a simple accept-reject
 step for each conditioned removal.
 
-The key to dealing with infections targetting infected region
+The key to dealing with infections targeting infected region
 is quite simple too:
 
 (1) Always add them (because it won't make a difference).
@@ -1050,7 +1065,7 @@ therefore
 this deletion is rejected and the retained infection is designated
 as **perpetuated** (coloured green!).
 Otherwise the infection can be deleted.
-(4) Infections targetting the susceptible region are trickier,
+(4) Infections targeting the susceptible region are trickier,
 and we will discuss them briefly below.
 \par
 :::
@@ -1378,6 +1393,12 @@ We now work through the update of the conditioned
 epidemic in stages.
 
 ::: notes
+
+::::{.callout-note}
+### TODO:
+Produce a movie instead of the following sequence of 8 slides!
+::::
+
 Seeking to convey the pixel-by-pixel nature of the update!
 :::
 
@@ -1420,9 +1441,11 @@ Now we replace inactivated removals. A
 Conditioning does not affect this step.
 Here we are 1/3 of the way through dealing with removals.
 
-Not many changes arise from removal-replacement,
+::::{.callout-note}
+Not many changes arise from removal-replacement in this version,
 because the initial epidemic is fast so leaves no
 room for inactivated removals.
+::::
 \par
 :::
 
@@ -1667,14 +1690,14 @@ if no such \(\CRemoval^\pm\).
 Working downwards through \(\ell=n_0{-}1, \ldots, 1\),
 \(\LFE_{\tau{=}1}^\pm(\ell)\) is the 
 time of the latest 
-infection targetting \(\ell{+}1\) and based in the infected region
+infection targeting \(\ell{+}1\) and based in the infected region
 such that
     (a) \(\LFE_{\tau{=}1}^\pm(\ell) \leq \LFE_{\tau{=}1}^\pm(\ell{+}1)\);
     (b) \(\LFE_{\tau{=}1}^\pm(\ell)\) precedes any
 \(\CRemoval^\pm\) on timeline \(\ell\).
 4. Equivalently, \(\LFE_{\tau{=}1}^\pm(\ell)\) is the 
 time of the latest potential
-infection targetting \(\ell{+}1\)
+infection targeting \(\ell{+}1\)
 such that
     (a) \(\LFE_{\tau{=}1}^\pm(\ell) \leq \LFE_{\tau{=}1}^\pm(\ell{+}1)\);
     (b) \(\LFE_{\tau{=}1}^\pm(\ell)\) precedes any
@@ -1788,7 +1811,7 @@ new \(\Infection\)s are proposed for \(\Epidemic^\pm_{\tau{=}1}\), so no more
 \scriptsize
 \structure{NB:} ignore \(\Infection\) proposals targeting \(\NFZ_{\tau{=}1}^{\pm,j{-}1}\): either these are rejected ((b) above) or 
 \(\NFZ_{\tau{=}1}^{\pm,j}\) is modified ((a) above) so they aren't relevant!
-_Relevant_ accepted \(\Infection\)s are exactly those _not_ targetting
+_Relevant_ accepted \(\Infection\)s are exactly those _not_ targeting
 the final \(\NFZ_{\tau{=}1}^{\pm}\).
 
 :::notes
@@ -1840,7 +1863,7 @@ it follows that
 3. Given \(\NFZ_{\tau{=}1}^{+,j{-}1}\subseteq\NFZ_{\tau{=}1}^{-,j{-}1}\),
 create \(\NFZ_{\tau{=}1}^{\pm,j}\) by proposing
 \(\Infection\) at time \(t\)
-targetting timeline \(k\), based in \(\Epidemic_{\tau{=}0}^{+}\) infected region.
+targeting timeline \(k\), based in \(\Epidemic_{\tau{=}0}^{+}\) infected region.
 Then
 \(\NFZ_{\tau{=}1}^{+,j}=\NFZ_{\tau{=}1}^{+,j{-}1}\cup\{(k{-}1,[0,t])\}\)
 exactly when \(\Infection\) fails to infect

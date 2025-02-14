@@ -5,6 +5,7 @@
 ## also <https://github.com/mloubout/critic-markup#readme>.
 ## Setup / download using
 ## `quarto add mloubout/critic-markup`.
+## For some reason, doesn't work with `beamer`!
 filters:
   - critic-markup
 
@@ -36,4 +37,4 @@ format:
 
 ## Control of cache
 execute:
-    cache: true
+    cache: false

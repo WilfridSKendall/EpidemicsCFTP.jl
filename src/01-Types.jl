@@ -1177,11 +1177,6 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation;
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
     
-    #if ev isa CEvolution
-    #    size = ev.size
-    #else
-    #    size = 0
-    #end
     size = (ev isa CEvolution ? ev.size : 0)
     
     # Extract only those `Removal`s that avoid activation: classify as
@@ -1191,28 +1186,28 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation;
     # Use `iv` to propose re-marks for `CRemoval`s of `ev`.
     recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
     
-#    # There must be at least one `CRemoval`.
-#    @assert length(ev.cremovals) > 0
-    # Classifications depend only on information prior to 
-    # last `CRemoval`. ISSUE if no `CRemoval`s!
+    # Classifications depend only on information prior to last `CRemoval`.
     duration = (isempty(recomputed_cremovals) ? 0.0 
                     : maximum(z.t for z in recomputed_cremovals))
-    LFE = laziest_feasible_evolution(duration, ev, iv)
+    # Compute `LFE`.
+    LFE = laziest_feasible_evolution(duration, ev, iv, recomputed_cremovals)
     perpetuated_infections = P[z for z ∈ LFE if z isa P] 
     
+    # Compute `NFZ` part (I).
     NFZ1 = repeat([-Inf], ev.initial.n)                                     # <1>
     for z ∈ [z for z ∈ removals if z < ev.finis[z.target]]
         NFZ1[z.target] = max(NFZ1[z.target], z.t)
     end
     NFZ2 = accumulate(max, NFZ1)
 
+    # Compute `NFZ` part (II).
     processed_infections, nofly_bound =                                     # <2>
         compute_nofly(ev, iv.infections ∪ perpetuated_infections, NFZ2)
     
     # Return the new `CEvolution`: NOTE it is built using a new `Innovation` `iv_mod`!
     iv_mod = Innovation(ev.initial.n, processed_infections, removals, recomputed_cremovals)
-    return CEvolution(ev.initial, iv_mod; LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2, NFZ=nofly_bound, 
-                      size=size, t0=t0, duration=duration)
+    return CEvolution(ev.initial, iv_mod; LFE=LFE, NFZ1=NFZ1, NFZ2=NFZ2,
+                      NFZ=nofly_bound, size=size, t0=t0, duration=duration)
 end
 # 1. Initial computation of `NFZ2`, a **list of times** 
 # indexed by time line ("level"), where each time is initially defined as

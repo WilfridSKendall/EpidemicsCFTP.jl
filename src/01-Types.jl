@@ -1143,6 +1143,7 @@ Note also the abbreviation of `CEvolution(ev, candidate)`
 as `ev ⋄ candidate`.
 
 We also cover here two ways in which exceptions can be raised.
+(We omit a third: it is an error not to specify any conditioned removals!)
 
 #### What happens on missing a conditioned removal:
 ```jldoctest CEvolution_setup
@@ -1167,25 +1168,35 @@ ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.
 """
 function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation; 
                     t0::Real=-Inf, duration::Real=Inf)::CEvolution
-#                     size::Int=0, t0::Real=-Inf, duration::Real=Inf)::CEvolution
     # import EpidemicsCFTP: inactive_removals,
     #                       resulting_cremovals,
     #                       laziest_feasible_evolution,
     #                       compute_nofly
+    
+    # Sanity checks: `CRemoval`s of `ev` and `iv` must agree up to marks.
     @assert length(ev.cremovals) == length(iv.cremovals)
     @assert all(x.t == y.t for (x,y) ∈ zip(ev.cremovals, iv.cremovals))
     
-    if ev isa CEvolution
-        size = ev.size
-    else
-        size = 0
-    end
+    #if ev isa CEvolution
+    #    size = ev.size
+    #else
+    #    size = 0
+    #end
+    size = (ev isa CEvolution ? ev.size : 0)
     
+    # Extract only those `Removal`s that avoid activation: classify as
+    # `KilledRemoval`s if in removed zone.
     removals = inactive_removals(ev, iv)
     
+    # Use `iv` to propose re-marks for `CRemoval`s of `ev`.
     recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
     
-    duration = maximum(z.t for z in recomputed_cremovals)
+#    # There must be at least one `CRemoval`.
+#    @assert length(ev.cremovals) > 0
+    # Classifications depend only on information prior to 
+    # last `CRemoval`. ISSUE if no `CRemoval`s!
+    duration = (isempty(recomputed_cremovals) ? 0.0 
+                    : maximum(z.t for z in recomputed_cremovals))
     LFE = laziest_feasible_evolution(duration, ev, iv)
     perpetuated_infections = P[z for z ∈ LFE if z isa P] 
     

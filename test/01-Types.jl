@@ -175,6 +175,10 @@ end
     @test ev.NFZ1  == Real[0, 0.5, 0.25]
     @test ev.NFZ2  == Real[0, 0.5, 0.5]
     @test ev.finis == AIR[C(2,1), C(4,2), RM(Inf,3)]
+
+    ev         = CEvolution(initial, infections ∪ removals)
+    #@test_throws AssertionError CEvolution(ev, Innovation(3, infections ∪ removals))
+    @test CEvolution(ev, Innovation(3, infections ∪ removals)) isa Any
     end
 end
 

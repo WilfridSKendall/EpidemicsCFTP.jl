@@ -1187,8 +1187,13 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation;
     recomputed_cremovals  = resulting_cremovals(ev, iv.cremovals)
     
     # Classifications depend only on information prior to last `CRemoval`.
-    duration = (isempty(recomputed_cremovals) ? 0.0 
-                    : maximum(z.t for z in recomputed_cremovals))
+    if t0 == -Inf
+        t0 = minimum(z.t for z in ev.chronology) # Should `iv` be used too?
+    end
+    if duration==Inf
+        duration = (isempty(recomputed_cremovals) ? 0.0 
+                    : maximum(z.t for z in recomputed_cremovals)) - t0
+    end
     # Compute `LFE`.
     LFE = laziest_feasible_evolution(duration, ev, iv, recomputed_cremovals)
     perpetuated_infections = P[z for z ∈ LFE if z isa P] 

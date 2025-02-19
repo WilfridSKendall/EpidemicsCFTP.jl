@@ -1188,7 +1188,7 @@ function CEvolution(ev::AbstractEvolution, iv::AbstractInnovation;
     
     # Classifications depend only on information prior to last `CRemoval`.
     if t0 == -Inf
-        t0 = minimum(z.t for z in ev.chronology) # Should `iv` be used too?
+        t0 = minimum(z.t for z in ev.chronology) # Note this chronology will include `initial`!
     end
     if duration==Inf
         duration = (isempty(recomputed_cremovals) ? 0.0 

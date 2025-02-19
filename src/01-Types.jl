@@ -734,7 +734,7 @@ time-ordered list of the union of the incident lists,
 and five keyword parameters `t0`, `duration`, `size`, `α`, and `β`.
 Note that `size`, `α`, and `β` are initialized at unrealistic negative values
 while `t0` and `duration` are initialized at unrealistic infinite values.
-If they are used (for example for random generatioon) then there is a need to test that they
+If they are used (for example for random generation) then there is a need to test that they
 have been assigned realistic values.
 """
 struct Innovation <: AbstractInnovation
@@ -796,7 +796,7 @@ end
     Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval};
                     t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0)
     
-Variant which omits `cremovals` list.
+Variant which omits `cremovals` list, which will be assumed to be empty.
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)

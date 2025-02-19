@@ -182,8 +182,9 @@ Instances should always possess fields as given in the table.
 
 ```@docs
 Innovation
-Innovation(::Int, ::Vector{AbstractIncident})
+Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval}, ::Vector{CRemoval})
 Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval})
+Innovation(::Int, ::Vector{AbstractIncident})
 ```
 
 ### Two kinds of `AbstractEvolution`

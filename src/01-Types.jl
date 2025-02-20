@@ -1143,7 +1143,7 @@ Note also the abbreviation of `CEvolution(ev, candidate)`
 as `ev ⋄ candidate`.
 
 We also cover here two ways in which exceptions can be raised.
-(We omit a third: it is an error not to specify any conditioned removals!)
+(We omit a third: **it is an error** not to specify any conditioned removals!)
 
 #### What happens on missing a conditioned removal:
 ```jldoctest CEvolution_setup
@@ -1228,6 +1228,8 @@ end
 
 This is the second way to construct a [`CEvolution`](@ref): 
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
+**Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
+and their default values are empty lists.
 ### Example
 ```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
@@ -1262,6 +1264,8 @@ end
 
 This is the third way:
 employing an [`Innovation`](@ref).
+**Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
+and their default values are empty lists.
 ### Example
 ```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)

@@ -13,5 +13,6 @@ test/runtests.jl
 
 docs/src/CFTP.bib
 
+*.compiled
 *.kate-swp
 *.pdf

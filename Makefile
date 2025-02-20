@@ -51,8 +51,8 @@ listings: README.pdf Makefile.pdf $(MODULE)-test.pdf
 
 # ============
 # Installation
-install: $(MODULE).compiled ; @touch $<
-$(MODULE).compiled: $(wildcard *.jl)
+install: .$(MODULE).compiled ; @touch $<
+.$(MODULE).compiled: $(wildcard *.jl)
 	@$(JULIA) -e 'Base.compilecache(Base.identify_package("$(MODULE)")) ; \
 		import $(MODULE); println($(MODULE).summary)'
 commit:

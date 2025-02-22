@@ -9,7 +9,8 @@
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 Concrete sub-types are expected to possess a field `t<:Real` (used by function [`isless`](@ref)
-to produce a preliminary time-ordering of lists of `AbstractTimedOccurrence` entities).
+to help produce a total ordering extending the partial ordering 
+(by time) of lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
 
@@ -23,7 +24,8 @@ Sub-type of [`AbstractTimedOccurrence`](@ref).
 Expects a field `kind` which is a `String`,
 used by function `show`
 to represent the particular kind of incident
-symbolically.
+symbolically. Data for the `kind` field are held in the
+internal dictionary `kindd`.
 
 The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractIncident` as `AI`.
 """
@@ -154,15 +156,15 @@ struct Removal <: OperativeRemoval
 
     function Removal(t::Real, target::Int)
         noun = "Removal($t, $target)"
-        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("ℛ", float(t), target))
+        return (target ≤ 0 ? 
+                throw(DomainError(noun, "non-positive mark")) :
+                new(kindd[Removal], float(t), target))
     end
 
     function Removal(z::AbstractRemoval)
         return Removal(z.t, z.target)
     end
 end
-
 
 """
     CRemoval(::Float64, ::Int)
@@ -186,8 +188,9 @@ struct CRemoval <: OperativeRemoval
 
     function CRemoval(t::Real, target::Int) 
         noun = "CRemoval($t, $target)"
-        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("𝒞", float(t), target))
+        return (target ≤ 0 ? 
+                throw(DomainError(noun, "non-positive mark")) :
+                new(kindd[CRemoval], float(t), target))
     end
 
 @doc """
@@ -240,8 +243,9 @@ struct KilledRemoval <: NonOperativeRemoval
 
 function KilledRemoval(t::Real, target::Int)
     noun = "KilledRemoval($t, $target)"
-    return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-            new("𝒦", float(t), target))
+    return (target ≤ 0 ? 
+            throw(DomainError(noun, "non-positive mark")) :
+            new(kindd[KilledRemoval], float(t), target))
 end
 
 @doc """
@@ -283,8 +287,9 @@ struct RemovalMarker <: NonOperativeRemoval
     
     function RemovalMarker(t::Real, target::Int)
         noun = "RemovalMarker($t, $target)"
-        return (target ≤ 0 ? throw(DomainError(noun, "non-positive mark")) :
-                new("ℳ⁺", float(t), target))
+        return (target ≤ 0 ? 
+                throw(DomainError(noun, "non-positive mark")) :
+                new(kindd[RemovalMarker], float(t), target))
     end
 
 @doc """
@@ -334,7 +339,7 @@ struct Infection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
-            new("ℐ", float(t), target, infectee)
+            return new(kindd[Infection], float(t), target, infectee)
         end
     end
 
@@ -384,7 +389,7 @@ struct PInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new("𝒫", float(t), target, infectee)
+            return new(kindd[PInfection], float(t), target, infectee)
         end
     end
 
@@ -446,7 +451,7 @@ struct NoFlyInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new("𝒩", float(t), target, infectee)
+            return new(kindd[NoFlyInfection], float(t), target, infectee)
         end
     end
     
@@ -504,7 +509,7 @@ struct KilledInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new("𝒦", float(t), target, infectee)
+            return new(kindd[KilledInfection], float(t), target, infectee)
         end
     end
     
@@ -573,7 +578,7 @@ struct ExpungedInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new("𝒳", float(t), target, infectee)
+            return new(kindd[ExpungedInfection], float(t), target, infectee)
         end
     end
 
@@ -618,7 +623,7 @@ struct InfectionMarker <: NonOperativeInfection
         elseif target < 0
             throw(DomainError(noun, "negative mark"))
         else
-            return new("ℳ⁻", float(t), target, infectee)
+            return new(kindd[InfectionMarker], float(t), target, infectee)
         end
     end
     
@@ -1490,3 +1495,17 @@ function InnovationStart_aRWM(prob::Vector{<: Real}, ρ::Real, mark::Real, shift
 end
 end
 
+# Here is the internal dictionary holding the strings 
+# for the `kind` field of various concrete incidents.
+kindd = Dict(
+    Removal           => "ℛ",
+    CRemoval          => "𝒞",
+    KilledRemoval     => "𝒦",
+    RemovalMarker     => "ℳ⁺",
+    Infection         => "ℐ",
+    PInfection        => "𝒫",
+    NoFlyInfection    => "𝒩",
+    KilledInfection   => "𝒦",
+    ExpungedInfection => "𝒳", 
+    InfectionMarker   => "ℳ⁻",
+        )

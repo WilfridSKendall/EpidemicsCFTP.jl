@@ -158,7 +158,7 @@ struct Removal <: OperativeRemoval
         noun = "Removal($t, $target)"
         return (target ≤ 0 ? 
                 throw(DomainError(noun, "non-positive mark")) :
-                new(kindd[Removal], float(t), target))
+                new(SymbolicRepresentation[Removal], float(t), target))
     end
 
     function Removal(z::AbstractRemoval)
@@ -190,7 +190,7 @@ struct CRemoval <: OperativeRemoval
         noun = "CRemoval($t, $target)"
         return (target ≤ 0 ? 
                 throw(DomainError(noun, "non-positive mark")) :
-                new(kindd[CRemoval], float(t), target))
+                new(SymbolicRepresentation[CRemoval], float(t), target))
     end
 
 @doc """
@@ -245,7 +245,7 @@ function KilledRemoval(t::Real, target::Int)
     noun = "KilledRemoval($t, $target)"
     return (target ≤ 0 ? 
             throw(DomainError(noun, "non-positive mark")) :
-            new(kindd[KilledRemoval], float(t), target))
+            new(SymbolicRepresentation[KilledRemoval], float(t), target))
 end
 
 @doc """
@@ -289,7 +289,7 @@ struct RemovalMarker <: NonOperativeRemoval
         noun = "RemovalMarker($t, $target)"
         return (target ≤ 0 ? 
                 throw(DomainError(noun, "non-positive mark")) :
-                new(kindd[RemovalMarker], float(t), target))
+                new(SymbolicRepresentation[RemovalMarker], float(t), target))
     end
 
 @doc """
@@ -339,7 +339,7 @@ struct Infection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
-            return new(kindd[Infection], float(t), target, infectee)
+            return new(SymbolicRepresentation[Infection], float(t), target, infectee)
         end
     end
 
@@ -389,7 +389,7 @@ struct PInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(kindd[PInfection], float(t), target, infectee)
+            return new(SymbolicRepresentation[PInfection], float(t), target, infectee)
         end
     end
 
@@ -451,7 +451,7 @@ struct NoFlyInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(kindd[NoFlyInfection], float(t), target, infectee)
+            return new(SymbolicRepresentation[NoFlyInfection], float(t), target, infectee)
         end
     end
     
@@ -509,7 +509,7 @@ struct KilledInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(kindd[KilledInfection], float(t), target, infectee)
+            return new(SymbolicRepresentation[KilledInfection], float(t), target, infectee)
         end
     end
     
@@ -578,7 +578,7 @@ struct ExpungedInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(kindd[ExpungedInfection], float(t), target, infectee)
+            return new(SymbolicRepresentation[ExpungedInfection], float(t), target, infectee)
         end
     end
 
@@ -623,7 +623,7 @@ struct InfectionMarker <: NonOperativeInfection
         elseif target < 0
             throw(DomainError(noun, "negative mark"))
         else
-            return new(kindd[InfectionMarker], float(t), target, infectee)
+            return new(SymbolicRepresentation[InfectionMarker], float(t), target, infectee)
         end
     end
     
@@ -1497,7 +1497,7 @@ end
 
 # Here is the internal dictionary holding the strings 
 # for the `kind` field of various concrete incidents.
-kindd = Dict(
+SymbolicRepresentation = Dict(
     Removal           => "ℛ",
     CRemoval          => "𝒞",
     KilledRemoval     => "𝒦",

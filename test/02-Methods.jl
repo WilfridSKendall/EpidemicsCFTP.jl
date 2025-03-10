@@ -411,3 +411,18 @@ begin
     @test dev2.NFZ        == ddev2.NFZ
 end
 end
+
+
+### Testing idempotence
+# ---------------------
+@testset "$(rpad("EpidemicsCFTP: Idempotence", BANNER))" begin
+begin
+    initial = SIR(0.0, 2, 1, 0)
+    iv   = Innovation(2, [I(2,1,2)], [R(1,2)], [C(3,2)])
+    cev0 = CEvolution(initial, iv)
+    cev1 = CEvolution(cev0, iv)
+    cev2 = CEvolution(cev1, iv)
+    @test !(cev0 ≅ cev1)
+    @test cev1 ≅ cev2
+end
+end

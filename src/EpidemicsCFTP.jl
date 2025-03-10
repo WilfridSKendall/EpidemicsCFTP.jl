@@ -55,7 +55,7 @@ export extremal_evolution
 
 export alter
 
-export ⪯, ≃, ⋄, ▷
+export ⪯, ≃, ⋄, ▷, ≅
     
 # # Used in `02-Methods.jl`
 export Categorical

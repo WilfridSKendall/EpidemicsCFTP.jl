@@ -8,6 +8,7 @@ or `Evolution` objects.
 ≃
 ⋄
 ▷
+≅
 ```
 
 ## A total ordering for incidents

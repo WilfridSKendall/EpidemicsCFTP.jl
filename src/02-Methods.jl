@@ -308,6 +308,80 @@ function ≃(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
     return (ev1 ⪯ ev2) && (ev2 ⪯ ev1)
 end
 
+"""
+    ≅(::Evolution, ::Evolution) ::Bool          (Use `\\cong`.)
+
+This checks whether two `AbstractEvolution`s are _equivalent_, meaning
+their types agree and their constituent fields all agree. In the case
+of `CEvolution` we also require agreement of the fields `LFE` and `NFZ`.
+The third and fourth example uses this to test the phenomenon of
+"idempotence": `cev1` differs from `cev2` and `cev3` because its
+construction did not compute the fields `LFE` and `NFZ`.
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+initial = SIR(0.0, 2, 1, 0)
+ev1 = Evolution(initial, Innovation(2, [I(2,1,2)], [R(1,2)]))
+ev2 = Evolution(initial, AI[I(2,1,2), R(1,2)])
+ev1 ≅ ev2
+
+# output
+true
+```
+### Example
+```jldoctest; setup = :(using EpidemicsCFTP)
+initial = SIR(0.0, 2, 1, 0)
+ev1 = Evolution(initial, Innovation(2, [I(2,1,2)], [R(1,2)]))
+ev2 = Evolution(initial, Innovation(2, [I(2,1,2)], R[]))
+ev1 ≅ ev2
+
+# output
+false
+```
+### Idempotence (I)
+```jldoctest; setup = :(using EpidemicsCFTP)
+initial = SIR(0.0, 2, 1, 0)
+iv   = Innovation(2, [I(2,1,2)], [R(1,2)], [C(3,2)])
+cev1 = CEvolution(initial, iv)
+cev2 = cev1 ⋄ iv 
+cev1 ≅ cev2
+
+# output
+false
+```
+### Idempotence (II)
+```jldoctest; setup = :(using EpidemicsCFTP)
+initial = SIR(0.0, 2, 1, 0)
+iv   = Innovation(2, [I(2,1,2)], [R(1,2)], [C(3,2)])
+cev1 = CEvolution(initial, iv)
+cev2 = cev1 ⋄ iv 
+cev3 = cev2 ⋄ iv 
+cev2 ≅ cev3
+
+# output
+true
+```
+"""
+function ≅(ev1::AbstractEvolution, ev2::AbstractEvolution)
+    return false
+end
+function ≅(ev1::Evolution, ev2::Evolution)
+    return (ev1.initial == ev2.initial) &&
+        (ev1.infections == ev2.infections) &&
+        (ev1.removals == ev2.removals) &&
+        (ev1.cremovals == ev2.cremovals) &&
+        (ev1.size == ev2.size) && (ev1.t0 == ev2.t0) &&
+        (ev1.duration == ev2.duration)
+end
+function ≅(ev1::CEvolution, ev2::CEvolution)
+    return (ev1.initial == ev2.initial) &&
+        (ev1.infections == ev2.infections) &&
+        (ev1.removals == ev2.removals) &&
+        (ev1.cremovals == ev2.cremovals) &&
+        (ev1.size == ev2.size) && (ev1.t0 == ev2.t0) &&
+        (ev1.duration == ev2.duration) &&
+        (ev1.LFE == ev2.LFE) && (ev1.NFZ == ev2.NFZ)
+end
+
 # Total ordering of incidents
 # ---------------------------
 # To note: this ordering is a refinement of time-ordering!

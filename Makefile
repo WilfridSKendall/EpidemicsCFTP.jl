@@ -20,6 +20,17 @@ test_files :=$(wildcard test/*.jl)
 # ========================
 .PHONY: documentation html-format pdf-format view test doc_images
 
+# ========================
+# To fix outdated doctests, the doctest function can be called with fix = true. 
+# This will run the doctests, and overwrite the old results with the new output.
+# This can be done just in the REPL:
+# 
+#  julia> using Documenter, MyPackage
+#  julia> doctest(MyPackage, fix=true)
+#
+# Alternatively, you can also pass the doctest = :fix keyword to makedocs.
+# ========================
+
 # ===================
 # GUI STARTS HERE
 # ===============

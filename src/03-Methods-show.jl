@@ -4,7 +4,8 @@
 
 fspec0  = FormatSpec(".2f")
 fexpr3  = FormatExpr("{1}{2}{3}")
-fexpr4a = FormatExpr("{1}{2}{3}⁻{4}")
+# fexpr4a = FormatExpr("{1}{2}{3}⁻{4}") # OLD
+fexpr4a = FormatExpr("{1}{2}{3}ᑉ{4}")
 fexpr4b = FormatExpr("{1}({2},\n  {3},\n  {4})")
 fexpr4c = FormatExpr("SIR{1}({2}:{3}:{4})")
 fexpr5  = FormatExpr("{1}({2},\n  {3},\n  {4},\n  {5})")
@@ -87,9 +88,9 @@ as input to produce a copy.
 ### Example
 ```jldoctest
 julia> I(0.10, 3, 4)
-ℐ₀.₁₀³⁻⁴
+ℐ₀.₁₀³ᑉ⁴
 julia> P(0.10, 3, 4)
-𝒫₀.₁₀³⁻⁴
+𝒫₀.₁₀³ᑉ⁴
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
@@ -128,13 +129,13 @@ Implementation of `show` for [`AbstractInnovation`](@ref) as three rows of lists
 julia> population = 3
 3
 julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²]
 julia> removals   = [R(0.1, 2), R(0.2, 3)] 
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
 julia> Innovation(population, infections, removals, C[])
 Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 ```
 """
@@ -154,7 +155,7 @@ end
 julia> population = 3
 3
 julia> infections = [I(0.7,1,2), P(0.5,1,2)] 
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²]
 julia> removals   = [R(0.1, 2), R(0.2, 3)]
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 
@@ -207,38 +208,38 @@ SIR₀.₀₀(2:1:0)
 julia> population = initial.n
 3
 julia> infections = [I(0.7,1,2), P(0.5,1,2)]
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²]
 julia> removals   = [R(0.1, 2), R(0.2, 3)]
 Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 julia> cremovals = [C(0.6, 2)]
 CRemoval[𝒞₀.₆₀²]
 julia> innovation = Innovation(population, infections, removals, C[])
 Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³])
 
 julia> Evolution(initial, innovation) 
 Evolution(SIR₀.₀₀(2:1:0),
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
-chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0)]
-history:    AbstractIncident[𝒫₀.₅₀¹⁻²])
+history:    AbstractIncident[𝒫₀.₅₀¹ᑉ²])
 
 julia> innovation = Innovation(population, infections, removals, cremovals)
 Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₆₀²])
 
 julia> Evolution(initial, innovation)
 Evolution(SIR₀.₀₀(2:1:0),
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₆₀²]
-chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²,ℐ₀.₇₀¹⁻²]
+chronology: AbstractIncident[ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹ᑉ²,𝒞₀.₆₀²,ℐ₀.₇₀¹ᑉ²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₅₀(1:2:0),SIR₀.₆₀(1:1:1)]
-history:    AbstractIncident[𝒫₀.₅₀¹⁻²,𝒞₀.₆₀²]) 
+history:    AbstractIncident[𝒫₀.₅₀¹ᑉ²,𝒞₀.₆₀²]) 
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution) 
@@ -261,8 +262,8 @@ incidents with line-breaking.
 ### Example
 ```jldoctest
 julia> infections = repeat([I(0.7,1,2), P(0.5,1,2)], 6)
-OperativeInfection[ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,
-    𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²]
+OperativeInfection[ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²,
+    𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²]
 ```
 """
 function Base.show(io::IO, ::MIME"text/plain", xv::Vector{<:AbstractTimedOccurrence}; 

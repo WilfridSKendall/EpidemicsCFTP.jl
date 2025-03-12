@@ -323,7 +323,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 ### Example
 ```jldoctest
 julia> Infection(0.2, 1, 2)
-ℐ₀.₂₀¹⁻²
+ℐ₀.₂₀¹ᑉ²
 ```
 """
 struct Infection <: OperativeInfection
@@ -351,7 +351,7 @@ Converts an [`AbstractInfection`](@ref) to an `Infection`.
 ### Example
 ```jldoctest
 julia> Infection(I(0.2, 1, 2))
-ℐ₀.₂₀¹⁻²
+ℐ₀.₂₀¹ᑉ²
 ```
 """
 function Infection(z::AbstractInfection)::Infection
@@ -373,7 +373,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 ### Example
 ```jldoctest
 julia> PInfection(0.2, 1, 2)
-𝒫₀.₂₀¹⁻²
+𝒫₀.₂₀¹ᑉ²
 ```
 """
 struct PInfection <: OperativeInfection
@@ -402,7 +402,7 @@ We often refer to this as "perpetuation".
 ### Example
 ```jldoctest
 julia> PInfection(I(0.2, 1, 2))
-𝒫₀.₂₀¹⁻²
+𝒫₀.₂₀¹ᑉ²
 ```
 """    
 function PInfection(z::AbstractInfection)::PInfection
@@ -435,7 +435,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 ### Example
 ```jldoctest
 julia> NoFlyInfection(0.2, 1, 2)
-𝒩₀.₂₀¹⁻²
+𝒩₀.₂₀¹ᑉ²
 ```
 """
 struct NoFlyInfection <: OperativeInfection
@@ -462,7 +462,7 @@ Converts an [`AbstractInfection`](@ref) to a `NoFlyInfection`.
 ### Example
 ```jldoctest
 julia> NoFlyInfection(I(0.2, 1, 2))
-𝒩₀.₂₀¹⁻²
+𝒩₀.₂₀¹ᑉ²
 ```
 """
 function NoFlyInfection(z::AbstractInfection)::NoFlyInfection
@@ -492,7 +492,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 ### Example
 ```jldoctest
 julia> KilledInfection(0.2, 1, 2)
-𝒦₀.₂₀¹⁻²
+𝒦₀.₂₀¹ᑉ²
 ```
 """
 struct KilledInfection <: NonOperativeInfection
@@ -520,7 +520,7 @@ Converts an [`AbstractInfection`](@ref) to a `KilledInfection`.
 ### Example
 ```jldoctest
 julia> KilledInfection(I(0.2, 1, 2))
-𝒦₀.₂₀¹⁻²
+𝒦₀.₂₀¹ᑉ²
 ```
 """
 function KilledInfection(z::AbstractInfection)::KilledInfection
@@ -561,7 +561,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 ### Example
 ```jldoctest
 julia> ExpungedInfection(0.2, 1, 2)
-𝒳₀.₂₀¹⁻²
+𝒳₀.₂₀¹ᑉ²
 ```
 """
 struct ExpungedInfection <: NonOperativeInfection
@@ -589,7 +589,7 @@ Converts an [`AbstractInfection`](@ref) to a `ExpungedInfection`.
 ### Example
 ```jldoctest
 julia> ExpungedInfection(I(0.2, 1, 2))
-𝒳₀.₂₀¹⁻²
+𝒳₀.₂₀¹ᑉ²
 ```
 """
 function ExpungedInfection(z::AbstractInfection)::ExpungedInfection
@@ -607,7 +607,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 ### Example
 ```jldoctest
 julia> InfectionMarker(0.2, 1, 2)
-ℳ⁻₀.₂₀¹⁻²
+ℳᑉ₀.₂₀¹ᑉ²
 ```
 """
 struct InfectionMarker <: NonOperativeInfection
@@ -634,7 +634,7 @@ Converts an [`AbstractInfection`](@ref) to an `InfectionMarker`.
 ### Example
 ```jldoctest
 julia> InfectionMarker(I(0.2, 1, 2))
-ℳ⁻₀.₂₀¹⁻²
+ℳᑉ₀.₂₀¹ᑉ²
 ```
 """
 function InfectionMarker(z::AbstractInfection)::InfectionMarker
@@ -769,7 +769,7 @@ Innovation(population, infections, removals, cremovals)
 
 # output
 Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])  
 ```
@@ -813,7 +813,7 @@ Innovation(population, infections, removals)
 
 # output
 Innovation(3,
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]) 
 ```
 """
@@ -839,7 +839,7 @@ Innovation(population, chron)
 
 # output
 Innovation(3,
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: AbstractInfection[𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₁.₀₀²])
 ```
@@ -913,7 +913,7 @@ julia> iv = Innovation(initial.n, [NF(14,1,2),P(10,1,2)],[R(4,3),R(2, 2)],[C(0,1
 julia> ev = Evolution(initial, iv) ;
 
 julia> ev.start
-AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[∞]¹⁻²,ℳ⁻[∞]²⁻³]
+AbstractInfection[ℳᑉ[-∞]⁰ᑉ¹,ℳᑉ[∞]¹ᑉ²,ℳᑉ[∞]²ᑉ³]
 julia> ev.finis
 AbstractRemoval[𝒞₀.₀₀¹,ℳ⁺[∞]²,ℳ⁺[∞]³]
 ```
@@ -951,10 +951,10 @@ Evolution(initial, innov)
 
 # output
 Evolution(SIR₀.₀₀(2:1:0),
-infections: OperativeInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+infections: OperativeInfection[𝒫₀.₅₀¹ᑉ²,𝒩₀.₇₀¹ᑉ²]
 removals:   Removal[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹ᑉ²,𝒩₀.₇₀¹ᑉ²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
@@ -998,10 +998,10 @@ Evolution(initial, infections ∪ removals ∪ cremovals)
 
 # output
 Evolution(SIR₀.₀₀(2:1:0),
-infections: AbstractInfection[𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+infections: AbstractInfection[𝒫₀.₅₀¹ᑉ²,𝒩₀.₇₀¹ᑉ²]
 removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²]
-chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹⁻²,𝒩₀.₇₀¹⁻²]
+chronology: AbstractIncident[𝒞₀.₀₀¹,𝒞₀.₀₅²,ℛ₀.₁₀²,ℛ₀.₂₀³,𝒫₀.₅₀¹ᑉ²,𝒩₀.₇₀¹ᑉ²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
@@ -1077,7 +1077,7 @@ cremovals  = [C(0.0, 1)]
 chronology = infections ∪ removals ∪ cremovals
 
 # output
-AbstractIncident[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,ℐ₀.₇₀¹⁻²,𝒫₀.₅₀¹⁻²,ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²,𝒞₀.₀₀¹]
+AbstractIncident[𝒩₀.₀₀²ᑉ³,𝒳₀.₂₀²ᑉ³,ℐ₀.₇₀¹ᑉ²,𝒫₀.₅₀¹ᑉ²,ℛ₀.₁₀¹,𝒦₀.₂₀³,ℛ₀.₁₀²,𝒞₀.₀₀¹]
 ```
 """
 struct CEvolution <: AbstractEvolution
@@ -1285,10 +1285,10 @@ CEvolution(initial, innov)
 
 # output
 CEvolution(SIR₀.₀₀(2:1:0),
-infections: AbstractInfection[𝒩₀.₀₀²⁻³,𝒳₀.₂₀²⁻³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+infections: AbstractInfection[𝒩₀.₀₀²ᑉ³,𝒳₀.₂₀²ᑉ³,𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 removals:   AbstractRemoval[ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒦₀.₂₀³]
 cremovals:  CRemoval[𝒞₀.₀₀¹]
-chronology: AbstractIncident[𝒩₀.₀₀²⁻³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²⁻³,𝒦₀.₂₀³,𝒫₀.₅₀¹⁻²,ℐ₀.₇₀¹⁻²]
+chronology: AbstractIncident[𝒩₀.₀₀²ᑉ³,𝒞₀.₀₀¹,ℛ₀.₁₀¹,ℛ₀.₁₀²,𝒳₀.₂₀²ᑉ³,𝒦₀.₂₀³,𝒫₀.₅₀¹ᑉ²,ℐ₀.₇₀¹ᑉ²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(2:0:1)]
 history:    AbstractIncident[𝒞₀.₀₀¹])
 ```
@@ -1507,5 +1507,5 @@ SymbolicRepresentation = Dict(
     NoFlyInfection    => "𝒩",
     KilledInfection   => "𝒦",
     ExpungedInfection => "𝒳", 
-    InfectionMarker   => "ℳ⁻",
+    InfectionMarker   => "ℳᑉ",
         )

@@ -15,12 +15,12 @@ cev ⋄ iv
 
 # output
 CEvolution(SIR₀.₀₀(1:1:0),
-infections: AbstractInfection[ℐ₀.₅₀¹⁻²]
+infections: AbstractInfection[ℐ₀.₅₀¹ᑉ²]
 removals:   AbstractRemoval[]
 cremovals:  CRemoval[𝒞₁.₀₀¹]
-chronology: AbstractIncident[ℐ₀.₅₀¹⁻²,𝒞₁.₀₀¹]
+chronology: AbstractIncident[ℐ₀.₅₀¹ᑉ²,𝒞₁.₀₀¹]
 trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₅₀(0:2:0),SIR₁.₀₀(0:1:1)]
-history:    AbstractIncident[ℐ₀.₅₀¹⁻²,𝒞₁.₀₀¹])
+history:    AbstractIncident[ℐ₀.₅₀¹ᑉ²,𝒞₁.₀₀¹])
 ```
 """
 function ⋄(cev::CEvolution, iv::AbstractInnovation)::CEvolution
@@ -46,12 +46,12 @@ cev ▷ sir
 
 # output
 CEvolution(SIR₀.₀₀(1:1:0),
-infections: AbstractInfection[ℐ₀.₀₀¹⁻²]
+infections: AbstractInfection[ℐ₀.₀₀¹ᑉ²]
 removals:   AbstractRemoval[]
 cremovals:  CRemoval[𝒞₁.₀₀²]
-chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²]
+chronology: AbstractIncident[ℐ₀.₀₀¹ᑉ²,𝒞₁.₀₀²]
 trajectory: SIR[SIR₀.₀₀(1:1:0),SIR₀.₀₀(0:2:0),SIR₁.₀₀(0:1:1)]
-history:    AbstractIncident[ℐ₀.₀₀¹⁻²,𝒞₁.₀₀²])
+history:    AbstractIncident[ℐ₀.₀₀¹ᑉ²,𝒞₁.₀₀²])
 ```
 ### Example 2 (maximal)
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -739,7 +739,7 @@ julia> states
 SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵ᑉ⁶]
 ```
 """
 function evolution(initial_state::SIR, chronology::Vector{<:AbstractIncident}; 
@@ -794,7 +794,7 @@ julia> states
 SIR[SIR₀.₀₁(1:2:3),SIR₀.₅₀(1:1:4),SIR₀.₆₀(0:2:4)]
 
 julia> history
-AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵ᑉ⁶]
 ```
 
 II: Basic use, conditioned (B)
@@ -811,7 +811,7 @@ julia> answer = evolution(initial_state, innovation, conditioned=true) ;
 julia> answer[1]
 SIR[SIR₀.₅₅(1:2:3),SIR₀.₆₀(0:3:3)]
 julia> answer[2]
-AbstractIncident[ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[ℐ₀.₆₀⁵ᑉ⁶]
 ```
 """
 function evolution(initial_state::SIR, innovation::AbstractInnovation; conditioned::Bool=false) ::Tuple{Vector{SIR},Vector{AbstractIncident}}
@@ -846,7 +846,7 @@ julia> initial_state = SIR(0.01, 1, 2, 3) ; population = 6 ;
 julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[R(0.5, 4)], C[]) ;
 
 julia> evolution_history(initial_state, innovation)
-AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[ℛ₀.₅₀⁴,ℐ₀.₆₀⁵ᑉ⁶]
 ```
 
 II: Basic use, conditioned (A)
@@ -857,7 +857,7 @@ ERROR: [EmployedRemoval] The (conditioned) evolution wrongly employed Removal(0.
 julia> innovation = Innovation(population, [I(0.6, 5, 6)], R[], [C(0.5, 4)]) ;
 
 julia> evolution_history(initial_state, innovation)
-AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[𝒞₀.₅₀⁴,ℐ₀.₆₀⁵ᑉ⁶]
 ```
 
 III: Basic use, conditioned (B)
@@ -870,7 +870,7 @@ ERROR: [MissedCRemoval] The (conditioned) evolution failed to employ CRemoval(0.
 julia> initial_state = SIR(0.55, 1, 2, 3) ;
 
 julia> evolution_history(initial_state, innovation, conditioned=true)
-AbstractIncident[ℐ₀.₆₀⁵⁻⁶]
+AbstractIncident[ℐ₀.₆₀⁵ᑉ⁶]
 ```
 """
 function evolution_history(initial_state::SIR, innovation::AbstractInnovation; conditioned::Bool=false) ::Vector{AbstractIncident}
@@ -922,12 +922,12 @@ extremal_evolution(initial, 3.0, [1.0, 2.0])
 
 # output
 CEvolution(SIR₀.₀₀(2:1:0),
-infections: AbstractInfection[ℐ₀.₀₀¹⁻²,ℐ₀.₀₀²⁻³]
+infections: AbstractInfection[ℐ₀.₀₀¹ᑉ²,ℐ₀.₀₀²ᑉ³]
 removals:   AbstractRemoval[]
 cremovals:  CRemoval[𝒞₁.₀₀³,𝒞₂.₀₀³]
-chronology: AbstractIncident[ℐ₀.₀₀¹⁻²,ℐ₀.₀₀²⁻³,𝒞₁.₀₀³,𝒞₂.₀₀³]
+chronology: AbstractIncident[ℐ₀.₀₀¹ᑉ²,ℐ₀.₀₀²ᑉ³,𝒞₁.₀₀³,𝒞₂.₀₀³]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₀.₀₀(1:2:0),SIR₀.₀₀(0:3:0),SIR₁.₀₀(0:2:1),SIR₂.₀₀(0:1:2)]
-history:    AbstractIncident[ℐ₀.₀₀¹⁻²,ℐ₀.₀₀²⁻³,𝒞₁.₀₀³,𝒞₂.₀₀³])
+history:    AbstractIncident[ℐ₀.₀₀¹ᑉ²,ℐ₀.₀₀²ᑉ³,𝒞₁.₀₀³,𝒞₂.₀₀³])
 ```
 ### Example (minimal)
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -936,12 +936,12 @@ extremal_evolution(initial, 3.0, [1.0, 2.0]; maximal=false)
 
 # output
 CEvolution(SIR₀.₀₀(2:1:0),
-infections: AbstractInfection[ℐ₁.₀₀¹⁻²]
+infections: AbstractInfection[ℐ₁.₀₀¹ᑉ²]
 removals:   AbstractRemoval[]
 cremovals:  CRemoval[𝒞₁.₀₀¹,𝒞₂.₀₀²]
-chronology: AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀₀²]
+chronology: AbstractIncident[ℐ₁.₀₀¹ᑉ²,𝒞₁.₀₀¹,𝒞₂.₀₀²]
 trajectory: SIR[SIR₀.₀₀(2:1:0),SIR₁.₀₀(1:2:0),SIR₁.₀₀(1:1:1),SIR₂.₀₀(1:0:2)]
-history:    AbstractIncident[ℐ₁.₀₀¹⁻²,𝒞₁.₀₀¹,𝒞₂.₀₀²])
+history:    AbstractIncident[ℐ₁.₀₀¹ᑉ²,𝒞₁.₀₀¹,𝒞₂.₀₀²])
 ```
 ### Example (size, maximal)
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -1027,7 +1027,7 @@ evx = CEvolution(ev, iv)
 evx.LFE
 
 # output
-AbstractIncident[𝒫₀.₀₀¹⁻²,ℐ₀.₈₅²⁻³,ℐ₀.₉₆³⁻⁴,𝒞₁.₀₀⁴,𝒞₂.₀₀⁴,ℐ₂.₁₆⁴⁻⁵,𝒞₃.₀₀³,𝒞₄.₀₀⁵]
+AbstractIncident[𝒫₀.₀₀¹ᑉ²,ℐ₀.₈₅²ᑉ³,ℐ₀.₉₆³ᑉ⁴,𝒞₁.₀₀⁴,𝒞₂.₀₀⁴,ℐ₂.₁₆⁴ᑉ⁵,𝒞₃.₀₀³,𝒞₄.₀₀⁵]
 ```
 
 ### Example III
@@ -1107,8 +1107,8 @@ history = AbstractIncident[R(0.5, 4), I(0.6, 5, 6)]
 start   = EpidemicsCFTP.create_start(initial, history) 
 
 # output
-AbstractInfection[ℳ⁻[-∞]⁰⁻¹,ℳ⁻[-∞]¹⁻²,ℳ⁻[-∞]²⁻³,ℳ⁻[-∞]³⁻⁴,ℳ⁻[-∞]⁴⁻⁵,ℐ₀.₆₀⁵⁻⁶,
-    ℳ⁻[∞]⁶⁻⁷]
+AbstractInfection[ℳᑉ[-∞]⁰ᑉ¹,ℳᑉ[-∞]¹ᑉ²,ℳᑉ[-∞]²ᑉ³,ℳᑉ[-∞]³ᑉ⁴,ℳᑉ[-∞]⁴ᑉ⁵,ℐ₀.₆₀⁵ᑉ⁶,
+    ℳᑉ[∞]⁶ᑉ⁷]
 
 ```
 """
@@ -1644,7 +1644,7 @@ rand(iv)
 
 # output
 Innovation(2,
-infections: AbstractInfection[ℐ₀.₁₃¹⁻²,ℐ₀.₁₄¹⁻²,ℐ₀.₉₂¹⁻²]
+infections: AbstractInfection[ℐ₀.₁₃¹ᑉ²,ℐ₀.₁₄¹ᑉ²,ℐ₀.₉₂¹ᑉ²]
 removals:   AbstractRemoval[ℛ₀.₀₄¹,ℛ₀.₀₈¹,ℛ₀.₁₀²,ℛ₀.₁₅²,ℛ₀.₂₁²,ℛ₀.₇₂²,ℛ₀.₇₃¹,ℛ₀.₈₈¹,ℛ₁.₃₄²,
     ℛ₁.₃₅²,ℛ₁.₄₈²,ℛ₁.₆₃²,ℛ₁.₈₁²,ℛ₁.₉₅¹]
 cremovals:  CRemoval[𝒞₁.₀₀¹])

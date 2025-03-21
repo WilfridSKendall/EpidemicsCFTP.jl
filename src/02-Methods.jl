@@ -390,14 +390,21 @@ end
     isless(x::AbstractIncident,  y::AbstractIncident)::Bool
 
 Implements comparison of two [`AbstractIncident`](@ref) quantities using time-order (`t` field):
-[`AbstractIncident`](@ref) quantities with the same `t` field are further partially ordered 
-using [`Infection`](@ref) `infectee`, [`Removal`](@ref) `target` and then by subtype as follows
+[`AbstractIncident`](@ref) quantities with the same `t` field are further partially ordered as follows:
+[`AbstractInfection`](@ref)s precede [`AbstractRemoval`](@ref)s,
+then
+(for [`Infection`](@ref),  [`PInfection`](@ref), ...)
+`target` and `infectee`, 
+or 
+(for [`Removal`](@ref), [`CRemoval`](@ref), ...)
+`target`. 
+Finally, ties are broken by subtype as follows
 (precomputed!),
 ```julia
     InfectionMarker < PInfection < Infection < NoFlyRemoval < KilledRemoval < 
         ExpungedRemoval < CRemoval < Removal < KilledRemoval < RemovalMarker
 ```
-and then using [`Infection`](@ref) `target` and `infectee`, [`Removal`](@ref) `target`.
+Thus two incidents of equal priority must be the same incident!
 
 Notice that `PInfection` and `CRemoval` take priority in, respectively,
 `AbstractInfection`s and `AbstractRemovals`.

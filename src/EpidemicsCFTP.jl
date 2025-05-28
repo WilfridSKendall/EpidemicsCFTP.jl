@@ -3,6 +3,13 @@ Implements a CFTP algorithm for epidemic `S-I-R` trajectories conditional on all
 """
 module EpidemicsCFTP
 
+using DocStringExtensions
+@template DEFAULT =
+    """
+    $(TYPEDSIGNATURES)
+    $(DOCSTRING)
+    """
+
 loc     = dirname(dirname(pathof(EpidemicsCFTP)))
 version = "$(read(Cmd(`git describe --tags`, dir=loc), String)[1:end-1])"
 branch  = "$(read(Cmd(`git branch --show-current`, dir=loc), String)[1:end-1])"
@@ -12,6 +19,7 @@ summary = "EpidemicsCFTP version $version, checked in on $date"
 
 # # Imports
 # # -------
+
 # # The functions `isless` and `rand` are overloaded in  `03-Methods.jl`!
 import Base: isless, rand
 # # The `Format` module is required in order to define `show` methods for the various types.

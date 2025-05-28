@@ -4,7 +4,7 @@
 # Abstract occurrence
 # -------------------------------
 """
-    AbstractTimedOccurrence
+$(TYPEDEF)
 
 This represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
@@ -17,7 +17,7 @@ abstract type AbstractTimedOccurrence end
 # Abstract incident
 # -------------------------------
 """
-    AbstractIncident
+$(TYPEDEF)
 
 Sub-type of [`AbstractTimedOccurrence`](@ref).
 
@@ -34,7 +34,7 @@ abstract type AbstractIncident <: AbstractTimedOccurrence end
 # AbstractIncidents representing removals
 # -------------------------------
 """
-    AbstractRemoval
+$(TYPEDEF)
 
 This represents an abstract removal using a sub-type of [`AbstractIncident`](@ref).  
 It inherits requirement for a field `t<:Real` from `AbstractTimedOccurrence`).  
@@ -48,7 +48,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 abstract type AbstractRemoval <: AbstractIncident end
 
 """
-    OperativeRemoval
+$(TYPEDEF)
 
 This represents an _operative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
 It inherits the field `t<:Real` from `AbstractTimedOccurrence`. 
@@ -64,7 +64,7 @@ then `target` must index a time line which is infectious just before the removal
 abstract type OperativeRemoval <: AbstractRemoval end
 
 """
-    NonOperativeRemoval
+$(TYPEDEF)
 
 This represents a _nonoperative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
 It inherits a field `t<:Real` from `AbstractTimedOccurrence`. 
@@ -80,7 +80,7 @@ abstract type NonOperativeRemoval <: AbstractRemoval end
 # AbstractIncidents representing infections
 # -------------------------------
 """
-    AbstractInfection
+$(TYPEDEF)
 
 This represents an abstract infection using a sub-type of [`AbstractIncident`](@ref),
 inheriting a field `t<:Real` from `AbstractTimedOccurrence`).  
@@ -99,7 +99,7 @@ The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `
 abstract type AbstractInfection <: AbstractIncident end
 
 """
-    OperativeInfection
+$(TYPEDEF)
 
 This represents an _operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
 It inherits a field `t<:Real` from [`AbstractTimedOccurrence`](@ref). 
@@ -118,7 +118,7 @@ whatever the value of `target`.
 abstract type OperativeInfection <: AbstractInfection end
 
 """
-    NonOperativeInfection
+$(TYPEDEF)
 
 This represents a _non-operative_ abstract infection using a sub-type of [`AbstractInfection`](@ref).
 It inherits a field `t<:Real` from [`AbstractTimedOccurrence`](@ref).  
@@ -133,7 +133,8 @@ abstract type NonOperativeInfection <: AbstractInfection end
 # Actual removals
 # -------------------------------
 """
-    Removal(::Float64, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Implements a potential removal using a sub-type of [`OperativeRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
@@ -167,7 +168,8 @@ struct Removal <: OperativeRemoval
 end
 
 """
-    CRemoval(::Float64, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Represent a conditioned removal using a sub-type of [`OperativeRemoval`](@ref), similar to `Removal`.
 The `target` field should always index a time line which is currently infectious 
@@ -194,8 +196,6 @@ struct CRemoval <: OperativeRemoval
     end
 
 @doc """
-    CRemoval(z::AbstractRemoval)::CRemoval
-
 Converts an [`AbstractRemoval`](@ref) to a `CRemoval`. 
 
 ### Example
@@ -211,7 +211,8 @@ end
 
 
 """
-    KilledRemoval(::Float64, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Implements a removal which can never be activated using a sub-type of [`AbstractRemoval`](@ref).  
 The `target` field labels the timeline being considered as host for the removal incident: it must be a positive integer.  
@@ -249,8 +250,6 @@ function KilledRemoval(t::Real, target::Int)
 end
 
 @doc """
-    KilledRemoval(::AbstractRemoval)::KilledRemoval
-    
 Converts an [`AbstractRemoval`](@ref) to a `KilledRemoval`. **In the future**
 this should happen _only_ at the
 stage of creating an [`Innovation`](@ref) containing [`CRemoval`](@ref)s, in which case the `CRemoval`s
@@ -269,7 +268,8 @@ end
 end
 
 """
-    RemovalMarker(::Float64, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 This is a marker normally placed at the end of an epidemic to signal completion of infected time lines.
 
@@ -293,8 +293,6 @@ struct RemovalMarker <: NonOperativeRemoval
     end
 
 @doc """
-    function RemovalMarker(::AbstractRemoval)::RemovalMarker
-    
 Converts an [`AbstractRemoval`](@ref) to a `RemovalMarker`.
 
 ### Example
@@ -312,7 +310,8 @@ end
 # Actual infections
 # -------------------------------
 """
-    Infection(::Float64, ::Int, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
     
 Represent a potential infection using a sub-type of [`OperativeInfection`](@ref),
 using mark time `t` and another mark `target` and a further mark `infectee`.
@@ -344,8 +343,6 @@ struct Infection <: OperativeInfection
     end
 
 @doc """
-    Infection(z::AbstractInfection)::Infection
-    
 Converts an [`AbstractInfection`](@ref) to an `Infection`.
 
 ### Example
@@ -360,7 +357,8 @@ end
 end
 
 """
-    PInfection(::Float64, ::Int, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Represent a perpetuated infection using a sub-type of [`OperativeInfection`](@ref)
 which is identical to `Infection` but with a different name.
@@ -394,8 +392,6 @@ struct PInfection <: OperativeInfection
     end
 
 @doc """
-    PInfection(z::AbstractInfection)::PInfection
-    
 Converts an [`AbstractInfection`](@ref) to a `PInfection`.
 We often refer to this as "perpetuation".
 
@@ -411,7 +407,8 @@ end
 end
 
 """
-    NoFlyInfection(::Float64, ::Int, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Represent an infection using a sub-type of [`OperativeInfection`](@ref)
 which is structurally identical to `Infection` but with a different name.
@@ -456,8 +453,6 @@ struct NoFlyInfection <: OperativeInfection
     end
     
 @doc """
-    NoFlyInfection(z::AbstractInfection)::NoFlyInfection
-
 Converts an [`AbstractInfection`](@ref) to a `NoFlyInfection`.
 ### Example
 ```jldoctest
@@ -471,9 +466,10 @@ end
 end
 
 """
-    KilledInfection(::Float64, ::Int, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
-Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
+Represents an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
 Intended to identify an `Infection` which 
 will never be activated because
@@ -514,8 +510,6 @@ struct KilledInfection <: NonOperativeInfection
     end
     
 @doc """
-    KilledInfection(::AbstractInfection)::KilledInfection
-
 Converts an [`AbstractInfection`](@ref) to a `KilledInfection`.
 ### Example
 ```jldoctest
@@ -531,7 +525,8 @@ end
 
 
 """
-    ExpungedInfection(::Float64, ::Int, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Represent an infection using a sub-type of [`NonOperativeInfection`](@ref)
 which is otherwise identical to `Infection` but with a different name.
@@ -583,8 +578,6 @@ struct ExpungedInfection <: NonOperativeInfection
     end
 
 @doc """
-    ExpungedInfection(::AbstractInfection)::ExpungedInfection
-
 Converts an [`AbstractInfection`](@ref) to a `ExpungedInfection`.
 ### Example
 ```jldoctest
@@ -598,7 +591,8 @@ end
 end
 
 """
-    InfectionMarker(::Float64, ::Int, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 This is a marker normally placed at the start of an epidemic to signal initial infected time lines.
 Differs from (for example) `Infection` in that the `target` mark can be zero.
@@ -628,8 +622,6 @@ struct InfectionMarker <: NonOperativeInfection
     end
     
 @doc """
-    InfectionMarker(::AbstractInfection)::InfectionMarker
-
 Converts an [`AbstractInfection`](@ref) to an `InfectionMarker`.
 ### Example
 ```jldoctest
@@ -648,7 +640,8 @@ end
 
 # ### An `SIR` state for an $\SIR$ epidemic
 """
-    SIR(::Real, ::Int, ::Int, ::Int)
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 This represents a state `sir` of a `S-I-R` epidemic
 (with fields `s`, `i`, `r` being non-negative integers adding up to
@@ -708,7 +701,7 @@ end
 
 # ### Abstract environment for an $\SIR$ epidemic
 """
-    AbstractEnvironment
+$(TYPEDEF)
 
 Represents variants of an entire innovation or environment structure
 for a single step of algorithmic time.
@@ -717,7 +710,7 @@ abstract type AbstractEnvironment end
 
 # ### Innovations
 """
-    AbstractInnovation
+$(TYPEDEF)
 
 Represents variants of an entire innovation
 for a single step of algorithmic time.
@@ -726,7 +719,8 @@ It is a generic sub-type of [`AbstractEnvironment`](@ref)
 abstract type AbstractInnovation <: AbstractEnvironment end
 
 """
-    Innovation
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 This represents an entire unconditioned innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -798,8 +792,8 @@ function Innovation(population::Int, infections::Vector{<:AbstractInfection},
 end
 
 @doc """
-    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval};
-                    t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0)
+$(TYPEDEF)
+$(TYPEDFIELDS)
     
 Variant which omits `cremovals` list, which will be assumed to be empty.
 
@@ -825,8 +819,8 @@ function Innovation(population::Int,
 end
 
 @doc """
-    Innovation(::Int, ::Vector{AbstractIncident};
-                t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0)
+$(TYPEDEF)
+$(TYPEDFIELDS)
     
 Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
 
@@ -857,7 +851,7 @@ end
     
 # ### Abstract evolution for an $\SIR$ epidemic
 """
-    AbstractEvolution 
+$(TYPEDEF)
 
 This represents variants of evolution of an `S-I-R` epidemic.
 It is a generic sub-type of [`AbstractEnvironment`](@ref)
@@ -866,7 +860,8 @@ abstract type AbstractEvolution <: AbstractEnvironment end
 
 # ### (Unconditioned) evolution for an $\SIR$ epidemic
 """
-    Evolution
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 This represents an _unconditional_ evolution of an SIR epidemic 
 based on a given [`AbstractInnovation`](@ref) 
@@ -934,8 +929,6 @@ struct Evolution <: AbstractEvolution
     duration    ::Real
 
 @doc """
-    Evolution(::SIR, ::AbstractInnovation)::Evolution
-
 An `Evolution` can be constructed using only an `initial` state 
 and an `AbstractInnovation`.
 
@@ -982,8 +975,6 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation;
     end
     
 @doc """
-    Evolution(::SIR, ::Vector{AbstractIncident})::Evolution
-
 An `Evolution` can be constructed using only an `initial` state 
 and a `chronology` (a `Vector{AbstractIncident}` of `AbstractIncident`s
 in increasing order).
@@ -1021,7 +1012,8 @@ end
                         
 # # ### (Conditioned) evolution for an $\SIR$ epidemic
 """
-    CEvolution::AbstractEvolution
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
@@ -1101,8 +1093,6 @@ struct CEvolution <: AbstractEvolution
     duration   ::Real
 
 @doc """
-        CEvolution(::AbstractEvolution, ::AbstractInnovation; size::Int=0)::CEvolution
-
 This is the first way to construct a [`CEvolution`](@ref): 
 updating an [`AbstractEvolution`](@ref) using a candidate `Innovation`.
 The procedure is as follows:
@@ -1227,10 +1217,6 @@ end
 # very careful attention!
 
 @doc """
-        CEvolution(SIR, Vector{AbstractIncident};
-                LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[],
-                size::Int=0)::CEvolution
-
 This is the second way to construct a [`CEvolution`](@ref): 
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
 **Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
@@ -1264,9 +1250,6 @@ function CEvolution(initial_state::SIR, chronology::Vector{AbstractIncident};
 end
 
 @doc """
-    CEvolution(::SIR, ::AbstractInnovation; 
-            LFE=AbstractIncident[], NFZ1=Real[], NFZ2=Real[], NFZ=Real[], size::Int=0)::CEvolution
-
 This is the third way:
 employing an [`Innovation`](@ref).
 **Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
@@ -1322,7 +1305,7 @@ end
 
 # ### Innovation starts
 """
-    AbstractInnovationStart
+$(TYPEDEF)
 
 This abstract type holds information which can be generated by `rand`, and
 then in turn can be combined with a `CEvolution` using `⋄` to generate
@@ -1332,7 +1315,8 @@ the `CEvolution` meets required conditions when started with the proposal.
 abstract type AbstractInnovationStart end
 
 """
-    InnovationStart_IS{::Categorical{Real, Vector{Real}}, ::Int} <: AbstractInnovationStart
+$(TYPEDEF)
+$(TYPEDFIELDS)
     
 The `InnovationStart_IS` information is a proposal of a positive integer to be used for the infection field
 for the `SIR` for the new initial state, accompanied by a specific `Categorical` distribution
@@ -1359,7 +1343,8 @@ function InnovationStart_IS(prior::Categorical, proposal::Int)::InnovationStart_
 end    
 
 @doc """
-    InnovationStart_IS(::Vector{Real}, ::Int)::InnovationStart_IS
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution.
@@ -1379,7 +1364,8 @@ end
 end
 
 """
-    InnovationStart_sRWM <: AbstractInnovationStart
+$(TYPEDEF)
+$(TYPEDFIELDS)
     
 The `InnovationStart_sRWM` information is again
 simply a specific `Categorical` distribution `prior`
@@ -1415,8 +1401,6 @@ function InnovationStart_sRWM(prior::Categorical, mark::Real, shift::Int)::Innov
 end    
 
 @doc """
-    InnovationStart_sRWM(Vector{Real})::InnovationStart_sRWM
-
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution
 and (by default) .
@@ -1437,7 +1421,8 @@ end
 
 
 """
-    InnovationStart_aRWM <: AbstractInnovationStart
+$(TYPEDEF)
+$(TYPEDFIELDS)
     
 The `InnovationStart_aRWM` information is again
 simply a specific `Categorical` distribution `prior`
@@ -1475,8 +1460,6 @@ function InnovationStart_aRWM(prior::Categorical, ρ::Real, mark::Real, shift::I
 end    
 
 @doc """
-    InnovationStart_aRWM(Vector{Real})::InnovationStart_aRWM
-
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution
 and (by default) .

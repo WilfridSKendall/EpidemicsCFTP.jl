@@ -3,10 +3,12 @@
 # The following simple notation enables concise expression of _CFTP_ algorithms.
 # ```
 """
-    ⋄(::CEvolution, ::AbstractInnovation) ::CEvolution (Use `\\diamond`.)
-
 The succinct statement `cev ⋄ iv` is an expressive shorthand for 
 [`CEvolution(cev, iv)`](@ref CEvolution).
+
+# Implementation
+Use `\\diamond` to get `⋄`.
+
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
@@ -28,16 +30,37 @@ function ⋄(cev::CEvolution, iv::AbstractInnovation)::CEvolution
 end
 
 """
-    ▷(::CEvolution, ::SIR) ::CEvolution (Use `\\triangleright`.)
+This variant of [`⋄`](@ref ⋄)
+applies a sequence of [`Innovation`](@ref Innovation)s 
+to evolve each of
+a tuple of [`CEvolution`](@ref CEvolution)s 
+(typically just two, typically
+produced using 
+[`extremal_evolution`](@ref extremal_evolution)).
+"""
+function ⋄(states::Vector{CEvolution}, innovs::Vector{Innovation}) ::Vector{CEvolution}
+    for iv in innovs
+        for i in 1:length(states)
+            states[i] = states[i] ⋄ iv
+        end
+    end
+    return states
+end
 
+
+"""
 Consider the action of an integer (or a `SIR`, or an `InnovationStart_sRWM`) on a `CEvolution` 
 through `▷`. 
 The succinct statement `cev ▷ sir` checks whether one can replace
 `cev.initial.i` by `sir.i`.
 This _includes_ checking whether the epidemic size, `cev.size` will not be exceeded,
 if it is positive.
-If so, then the resulting `CEvolution` is returned. 
-If not, then the original `CEvolution` is returned.
+If checks OK, return resulting `CEvolution`. 
+Otherwise, return original `CEvolution`.
+
+# Implementation
+Use ``\triangleright` to get `▷`.
+
 ### Example 1
 ```jldoctest; setup = :(using EpidemicsCFTP)
 cev = extremal_evolution(SIR(0, 1, 1, 0), 2.0, [1.0])
@@ -80,10 +103,8 @@ function ▷(cev::CEvolution, sir::SIR)::CEvolution
     return ▷(cev, sir.i)
 end
 
-"""
-    ▷(::CEvolution, ::Int)::CEvolution
-    
-Uses `Int` directly instead of using `i` field in `SIR` for `▷(::CEvolution, ::SIR) ::CEvolution`.
+"""    
+Use `Int` directly instead of using `i` field in `SIR` for `▷(::CEvolution, ::SIR) ::CEvolution`.
 """
 function ▷(cev::CEvolution, initial_infectives::Int)::CEvolution
     proposed_sir = alter_sir_infection(cev.initial, initial_infectives)
@@ -102,17 +123,13 @@ function ▷(cev::CEvolution, initial_infectives::Int)::CEvolution
 end
 
 """
-    ▷(::CEvolution, ::InnovationStart_IS)::CEvolution
-    
-Uses `InnovationStart_IS.proposal` in `▷(::CEvolution, ::Int)`.
+Use `InnovationStart_IS.proposal` in `▷(::CEvolution, ::Int)`.
 """
 function ▷(cev::CEvolution, innovation_start::InnovationStart_IS)::CEvolution
     return ▷(cev, innovation_start.proposal)
 end
 
 """
-    ▷(::CEvolution, ::InnovationStart_sRWM)
-                                                
 Consider the action of an `InnovationStart_sRWM` on a `CEvolution` 
 through `▷`. This implements a proposal of a `shift` `±1` and accepts this
 according to a (simple, symmetric) Random Walk Metropolis test (employing a 
@@ -182,8 +199,6 @@ function ▷(cev::CEvolution, proposal::InnovationStart_sRWM)::CEvolution
 end
 
 """
-    ▷(::CEvolution, ::InnovationStart_aRWM)
-                                                
 Consider the action of an `InnovationStart_aRWM` on a `CEvolution` 
 through `▷`. This implements a proposal of a `shift` `±1` 
 (with probability `ρ` for `-`)
@@ -227,12 +242,14 @@ end
 
 
 """
-    ⪯(::AbstractEvolution, ::AbstractEvolution) ::Bool (Use `\\preceq`.)
-
-This allows us to compare (weakly) two `AbstractEvolution`s
+Compares (weakly) two `AbstractEvolution`s
 with the same population `initial.n`, by comparing the `start` fields.
 Note that `ev1 ⪯ ev2` exactly when none of the activated infections of `ev1` precede
 the respective activated infections of `ev2`, so that `ev1` proceeds no faster than `ev2`.
+
+# Implementation
+Use `\\preceq` to obtain `⪯`.
+
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
@@ -250,11 +267,9 @@ function ⪯(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
 end
     
 """
-    ⪯(::CEvolution, ::CEvolution) ::Bool (Use `\\preceq`.)
-
-This specializes 
-[`⪯(::AbstractEvolution, ::AbstractEvolution)`](@ref)
-by allowing us to compare weakly two `CEvolution`s
+Specializes 
+[`⪯(::AbstractEvolution, ::AbstractEvolution)`](@ref),
+comparing weakly two `CEvolution`s
 with the same population `initial.n` _and_ the same `CRemoval` times,
 comparing not only the `start` fields as in the `AbstractEvolution` version, 
 but also checking that the `CRemoval` `target` fields in `ev1` are no higher
@@ -290,10 +305,10 @@ function ⪯(ev1::CEvolution, ev2::CEvolution) ::Bool
 end
 
 """
-    ≃(::AbstractEvolution, ::AbstractEvolution) ::Bool          (Use `\\simeq`.)
-
-This allows us to test equality (weakly) for two `AbstractEvolution`s
-with the same population `initial.n`, using [`⪯`](@ref) both ways.
+Tests equality (weakly) for two `AbstractEvolution`s
+with the same population `initial.n`, using [`⪯`](@ref).
+# Implementation
+Use `\\simeq` to produce `≃`.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
@@ -309,14 +324,14 @@ function ≃(ev1::AbstractEvolution, ev2::AbstractEvolution) ::Bool
 end
 
 """
-    ≅(::Evolution, ::Evolution) ::Bool          (Use `\\cong`.)
-
-This checks whether two `AbstractEvolution`s are _equivalent_, meaning
+Checks whether two `AbstractEvolution`s are _equivalent_, meaning
 their types agree and their constituent fields all agree. In the case
 of `CEvolution` we also require agreement of the fields `LFE` and `NFZ`.
-The third and fourth example uses this to test the phenomenon of
+The third and fourth examples use this to test the phenomenon of
 "idempotence": `cev1` differs from `cev2` and `cev3` because its
 construction did not compute the fields `LFE` and `NFZ`.
+# Implementation
+Use `\\cong` to produce `≅`.
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
 initial = SIR(0.0, 2, 1, 0)
@@ -387,9 +402,7 @@ end
 # To note: this ordering is a refinement of time-ordering!
 
 """
-    isless(x::AbstractIncident,  y::AbstractIncident)::Bool
-
-Implements comparison of two [`AbstractIncident`](@ref) quantities using time-order (`t` field):
+Compares two [`AbstractIncident`](@ref) quantities using time-order (`t` field):
 [`AbstractIncident`](@ref) quantities with the same `t` field are further partially ordered as follows:
 [`AbstractInfection`](@ref)s precede [`AbstractRemoval`](@ref)s,
 then
@@ -428,9 +441,9 @@ false
 julia> P(0.10, 2, 7) < R(0.10, 3)
 true
 ```
+"""
 
-    isless(::AbstractInfection, ::AbstractRemoval)
-
+"""
 Default is based purely on `time` mark.
 """
 function isless(x::AbstractInfection, y::AbstractRemoval)
@@ -438,13 +451,7 @@ function isless(x::AbstractInfection, y::AbstractRemoval)
         return x.t < y.t
     end
     return true
-end
-
-"""
-    isless(::AbstractRemoval, ::AbstractInfection) 
-
-Default is based purely on `time` mark.
-"""
+end,
 function isless(x::AbstractRemoval, y::AbstractInfection) 
     if x.t != y.t
         return x.t < y.t
@@ -457,8 +464,6 @@ Removal_order = Dict(CRemoval => 1, Removal => 2,
                      KilledRemoval => 3, RemovalMarker => 4)
 
 """
-    isless(::AbstractRemoval, ::AbstractRemoval) 
-
 If both are `AbstractRemoval` then first consider `time` mark.
 Then consider `target` mark.
 Finally differentiate according to subtype of `AbstractRemoval` (this sub-ordering is pre-computed).
@@ -478,8 +483,6 @@ Infection_order = Dict(InfectionMarker => 0, PInfection => 1, Infection => 2,
                        NoFlyInfection => 3, KilledInfection => 4, ExpungedInfection => 5)
 
 """
-    isless(::AbstractInfection, ::AbstractInfection)
-
 If both are `AbstractInfection` then first consider `time` mark.
 Then consider `target` mark.
 Then consider `infectee` mark.
@@ -502,8 +505,6 @@ end
 # Altering an `SIR` infection field
 # ---------------------------------
 """
-    alter_sir_infection(::SIR, ::Int)
-
 Returns a modification of its first argument such that
 the `i` field equals the second argument.
 ### Example 1
@@ -533,8 +534,6 @@ end
 # Altering `CRemoval` timeline
 # -------------------------------
 """
-    alter(rem::AbstractRemoval, timeline::Integer)::AbstractRemoval
-
 Produce a new [`AbstractRemoval`](@ref): same time `t` but changing
 the mark `target` of the [`AbstractRemoval`](@ref) `rem`
 to point to a positive `timeline` specified by the `Integer` argument.
@@ -565,9 +564,6 @@ end
 # Check if incident is activatable
 # -------------------------------
 """
-    EpidemicsCFTP.is_activatable(state::SIR, inc::AbstractInfection)::Bool
-    EpidemicsCFTP.is_activatable(state::SIR, inc::AbstractRemoval)::Bool
-
 Tests whether an incident should be activated for a given state.
 
 ### Example
@@ -589,7 +585,7 @@ false
 function is_activatable(state::SIR, z::AbstractInfection)::Bool
     z isa OperativeInfection && 
         z.t >= state.t && z.target > state.r && z.infectee == state.i + state.r + 1
-end
+end,
 function is_activatable(state::SIR, z::AbstractRemoval)::Bool
     z isa OperativeRemoval && 
         z.t >= state.t && z.target > state.r && z.target <= state.i + state.r
@@ -598,8 +594,6 @@ end
 # Activate an infection
 # -------------------------------
 """
-    EpidemicsCFTP.infect(t::Real, state::SIR)::SIR
-
 Change state of a `S-I-R` epidemic to activate an infection at time `t`.
 
 ### Example
@@ -615,8 +609,6 @@ end
 # Activate a removal
 # -------------------------------
 """
-    EpidemicsCFTP.remove(t::Real, state::SIR)::SIR
-
 Change state of a `S-I-R` epidemic to activate a removal at time `t`.
 
 ### Example
@@ -632,8 +624,6 @@ end
 # Update using an incident
 # -------------------------------
 """
-    EpidemicsCFTP.update(state::SIR, z::AbstractIncident)::SIR
-
 Applies [`AbstractIncident`](@ref)
 to a given state and returns resulting state if it is activated (and hence operative).
 Otherwise returns original state but with updated time `t`.
@@ -701,8 +691,6 @@ end
 # Test if two configurations agree (except for time!)
 # -------------------------------
 """
-    EpidemicsCFTP.is_same_config(state1::SIR, state2::SIR)::Bool
-
 Checks if the two [`SIR`](@ref) states have the same values for `s`, `i`, `r` fields
 (but not `t` field).
 
@@ -719,19 +707,19 @@ function is_same_config(state1::SIR, state2::SIR)::Bool
 # Evolve an epidemic
 # -------------------------------
 """
-    evolution(::SIR, ::Vector{<:AbstractIncident}; conditioned::Bool=false)          
-        ::Tuple{Vector{SIR},Vector{AbstractIncident}}
-
-Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
+Evolve a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
 an [`AbstractIncident`](@ref) vector. Returns
 a list of `SIR` states and a history `Vector{AbstractIncident}` of realized incidents.
-**NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
+**NOTE:** 
+
+ * the evolution starts at the time of the initial state! Earlier incidents are ignored.
+ * it is assumed that the `Vector{<:AbstractIncident}` is ordered by increasing value of `t`.
 
 If the keyword argument `conditioned` is set to its non-default value of `true`
 then an error is raised when the function attempts to realize a [`Removal`](@ref)
 or fails to realize a [`CRemoval`](@ref).
 
-Note that this method is employed in the construction of [`Evolution`](@ref)
+This method is employed in the construction of [`Evolution`](@ref)
 and (with the `conditioned` flag set to `true`) [`CEvolution`](@ref) objects.
 
 ### Example
@@ -771,13 +759,12 @@ function evolution(initial_state::SIR, chronology::Vector{<:AbstractIncident};
 end
 
 """
-    evolution(::SIR, ::AbstractInnovation; conditioned::Bool=false)          
-        ::Tuple{Vector{SIR},Vector{AbstractIncident}}
-
-Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
+Evolve a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
 an [`Innovation`](@ref). Returns
 a list of `SIR` states and a history `Vector{AbstractIncident}` of realized incidents.
-**NOTE:** the evolution starts at the time of the initial state! Earlier incidents are ignored.
+**NOTE:** 
+
+ * the evolution starts at the time of the initial state! Earlier incidents are ignored.
 
 If the keyword argument `conditioned` is set to its non-default value of `true`
 then an error is raised when the function attempts to realize a [`Removal`](@ref)
@@ -828,11 +815,6 @@ end
 
     
 """
-    evolution_history(::SIR, ::Vector{<:AbstractIncident}; conditioned::Bool=false)          
-        ::Vector{AbstractIncident}
-    evolution_history(::SIR, ::AbstractInnovation; conditioned::Bool=false)          
-        ::Vector{AbstractIncident}
-
 Evolves a `S-I-R` epidemic from an initial [`SIR`](@ref) state using
 an [`AbstractInnovation`](@ref). Returns
 only the _history_ of realized incidents `Vector{AbstractIncident}`.
@@ -882,8 +864,7 @@ AbstractIncident[ℐ₀.₆₀⁵ᑉ⁶]
 """
 function evolution_history(initial_state::SIR, innovation::AbstractInnovation; conditioned::Bool=false) ::Vector{AbstractIncident}
     return evolution_history(initial_state, innovation.chronology; conditioned=conditioned)
-end
-
+end,
 function evolution_history(initial_state::SIR, chronology::Vector{<:AbstractIncident}; conditioned::Bool=false) ::Vector{AbstractIncident}
     
     current_state, history = initial_state, AbstractIncident[]
@@ -906,11 +887,7 @@ end
 # Creating an extremal `CEvolution`
 # ---------------------------------
 """
-    extremal_evolution(::SIR, ::Real, ::Vector{<:Real}; ;
-        t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0,
-        maximal::Bool=true, all_cremovals_observed::Bool=false)::CEvolution
-    
-Creates an extremal `CEvolution`, placing `CRemoval`s at the times specified by the third argument,
+Create an extremal `CEvolution`, placing `CRemoval`s at the times specified by the third argument,
 and giving them targets which are maximal (`initial.n`) if keyword `maximal=true`, otherwise
 minimal (`i`-th `CRemoval` has target `i`). Infections are placed at the time of each `CRemoval`
 hence immediately prior in time, because of the defined total ordering for `AbstractIncident`s.
@@ -998,9 +975,7 @@ end
 # Computing the laziest feasible epidemic trajectory
 # -----------------------------------------------
 """
-    EpidemicsCFTP.laziest_feasible_evolution(::Real, ::AbstractEvolution, ::AbstractInnovation) ::Vector{AbstractIncident}
-
-Computes the laziest feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
+Compute the laziest feasible epidemic trajectory relevant for a [`CEvolution`](@ref) which will be updated
 by a [`AbstractInnovation`](@ref). This is used when constructing a [`CEvolution`](@ref) 
 from an [`AbstractEvolution`](@ref)
 and an [`AbstractInnovation`](@ref): see examples I and II. Example III gives an explicit use, in a partial correctness test 
@@ -1102,9 +1077,7 @@ end
 # Compute infectious interval for each time line
 # ----------------------------------------------
 """
-    create_start(::SIR, ::Vector{AbstractIncident})::Vector{AbstractInfection}
-    
-Returns `AbstractIncident`s possibly using `InfectionMarker`
+Return Vector of `AbstractIncident`s possibly using `InfectionMarker`
 to list the left-most ends of infectious intervals of time lines.
 
 ### Example
@@ -1138,9 +1111,7 @@ function create_start(z0::SIR, hist::Vector{AbstractIncident})::Vector{AbstractI
 end
     
 """
-    create_finis(::SIR, ::Vector{AbstractIncident})Vector{AbstractRemoval}
-    
-Returns `AbstractIncident`s (possibly using `RemovalMarker`) 
+Return Vector of `AbstractIncident`s (possibly using `RemovalMarker`) 
 to list the right-most ends of infectious intervals of time lines.
 
 Note that this currently presumes epidemic start and end incidents are marked
@@ -1178,9 +1149,7 @@ end
 # Kill irrelevant infections and removals
 # -------------------------------
 """
-    kill_irrelevant_infections(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractInfection}
-
-Examines [`AbstractInfection`](@ref)s from [`AbstractInnovation`](@ref) and determines which
+Examine [`AbstractInfection`](@ref)s from [`AbstractInnovation`](@ref) and determines which
 are irrelevant (occurring in removal zone for [`AbstractEvolution`](@ref)). converting these
 to [`KilledRemoval`](@ref)s.
 """
@@ -1189,9 +1158,7 @@ function kill_irrelevant_infections(ev::AbstractEvolution, iv::AbstractInnovatio
 end ;
 
 """
-    kill_irrelevant_removals(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractRemoval}
-
-Examines [`AbstractRemoval`](@ref)s from [`AbstractInnovation`](@ref) and determines which
+Examine [`AbstractRemoval`](@ref)s from [`AbstractInnovation`](@ref) and determines which
 are irrelevant (occurring in removal zone for [`Evolution`](@ref)). converting these
 to [`KilledRemoval`](@ref)s.
 """
@@ -1202,9 +1169,7 @@ end ;
 # Identify relevant infections
 # -------------------------------
 """
-    relevant_infections(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractInfection}
-
-Examines [`AbstractInfection`](@ref)s from [`AbstractInnovation`](@ref) and returns
+Examine [`AbstractInfection`](@ref)s from [`AbstractInnovation`](@ref) and return
 those which are relevant to construction of the "laziest feasible epidemic",
 to wit, old infections in `ev.infections` used in `ev.history` plus new
 infections in `iv.infections` which are not irrelevant (see [`kill_irrelevant_infections`](@ref))
@@ -1228,9 +1193,7 @@ end
 # Extract and classify inactive removals
 # -------------------------------
 """
-    inactive_removals(::AbstractEvolution, ::AbstractInnovation)::Vector{AbstractRemoval}
-    
-This function extracts and classifies the inactive [`AbstractRemoval`](@ref)s 
+Extract and classify the inactive [`AbstractRemoval`](@ref)s 
 from an [`AbstractEvolution`](@ref).
 Those which lie in the removals zone are converted to [`KilledRemoval`](@ref)s.
 
@@ -1259,9 +1222,7 @@ end
 # -------------------------------
 
 """
-    accept_reject(::CRemoval, ::CRemoval, ::Vector{Real}, ::Vector{Real})::CRemoval
-
-Performs an accept/reject procedure: accept the [`CRemoval`](@ref) `proposed_cremoval` only if it would actually
+Perform an accept/reject procedure: accept the [`CRemoval`](@ref) `proposed_cremoval` only if it would actually
 be activated based on period `start`s and `finis`s
 (expected to be generated by [`create_start`](@ref) and [`create_finis`](@ref) respectively): 
 otherwise retain the [`CRemoval`](@ref) `old_cremoval`.
@@ -1273,10 +1234,7 @@ function accept_reject(old_cremoval::CRemoval, proposed_cremoval::CRemoval,
 end
 
 """
-    resulting_cremovals(::AbstractEvolution, ::AbstractInnovation)::Vector{CRemoval}
-    resulting_cremovals(::AbstractEvolution, ::Vector{CRemoval})::Vector{CRemoval}
-
-Uses [`accept_reject`](@ref) to determine re-sampled set of [`CRemoval`](@ref)s
+Use [`accept_reject`](@ref) to determine re-sampled set of [`CRemoval`](@ref)s
 (perhaps extracted from [`AbstractInnovation`](@ref)).
 This uses the period markers
 generated by [`create_start`](@ref) and [`create_finis`](@ref) respectively
@@ -1286,7 +1244,7 @@ when `ev` is constructed.
 """
 function resulting_cremovals(ev::AbstractEvolution, iv::AbstractInnovation)::Vector{CRemoval}
     resulting_cremovals(ev, iv.cremovals)
-end
+end,
 function resulting_cremovals(ev::AbstractEvolution, cr::Vector{CRemoval})::Vector{CRemoval}
     [accept_reject(oldcr, propcr, ev.start, ev.finis) 
         for (oldcr, propcr) ∈ zip(ev.cremovals, cr)]
@@ -1297,9 +1255,7 @@ end
 # # ------------------
 
 """
-    compute_nofly(::CEvolution,::AbstractInnovation)::Tuple{Vector{AbstractInfection},Vector{Real}}
-    
-Performs a computation of the "true" boundary (`nofly_bound` in the code
+Compute the "true" boundary (`nofly_bound` in the code
 of function `compute_nofly`): commented-out
 works backwards through the new `Infection`s 
 as explained in annotations of the source-code
@@ -1429,10 +1385,8 @@ end ;
 # -------------------
 
 """
-    EpidemicsCFTP.is_correct_LFE(::CEvolution; ::Bool=false)::Bool
-    
-Checks that the `LFE` field of a [`CEvolution`](@ref) is genuinely a 
-_laziest feasible evolution_. (Used primarily for **verification** that a
+Check that the `LFE` field of a [`CEvolution`](@ref) is genuinely a 
+_laziest feasible evolution_. (Use primarily to **verify** that a
 given `LFE` field is correct.) The example indicates usage. 
 See example III from the doctests for [`laziest_feasible_evolution`](@ref) for
 a further simple complementary test using that function.
@@ -1506,9 +1460,7 @@ end
 # then the `LFE` is genuinely minimal, so `true` is returned!
 
 """
-    EpidemicsCFTP.is_correct_NFZ(ev::CEvolution)::Bool
-    
-Used primarily to check that the `NFZ` field of a [`CEvolution`](@ref) is genuinely a 
+Use primarily to check that the `NFZ` field of a [`CEvolution`](@ref) is genuinely a 
 _no-fly zone_. The function works through the
 [`ExpungedInfection`](@ref)s in the `infections` field, checking that in each case if one started
 from a putative success for the `ExpungedInfection` then one
@@ -1571,9 +1523,7 @@ end
 # Random samplers
 # ---------------
 """
-    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_IS})
-    
-Enables sampling from an `InnovationStart_IS` to return an `Int` which is
+Enable sampling from an `InnovationStart_IS` to return an `Int` which is
 the proposed new initial number of infections.
 ### Example
 ```jldoctest
@@ -1591,9 +1541,7 @@ function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::Inn
 end
 
 """
-    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_sRWM})
-    
-Enables sampling from an `InnovationStart_sRWM`.
+Enable sampling from an `InnovationStart_sRWM`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
@@ -1614,9 +1562,7 @@ function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_sRWM}):In
 end
 
 """
-    Base.rand(::AbstractRNG, ::SamplerTrivial{InnovationStart_aRWM})
-    
-Enables sampling from an `InnovationStart_aRWM`.
+Enable sampling from an `InnovationStart_aRWM`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
@@ -1638,9 +1584,7 @@ end
 
 
 """
-    Base.rand(::AbstractRNG, ::SamplerTrivial{Innovation})::Innovation
-
-Enables sampling of a new `Innovation`.
+Enable sampling of a new `Innovation`.
 ### Example 1
 ```jldoctest
 using EpidemicsCFTP.abbreviations

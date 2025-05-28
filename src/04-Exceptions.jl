@@ -1,17 +1,14 @@
 # Exceptions
 # ----------
 """
-    BadIncident
 
-An exception to report misuse of an incident. Doctests are supplied below for 
+Reports misuse of an incident. Doctests are supplied below for 
 specific sub-types.
 """
 abstract type BadIncident <: Exception end
 
 """
-    BadLFE
-
-An exception to report problems with an `LFE` as produced by 
+Reports problems with an `LFE` as produced by 
 [`laziest_feasible_evolution`](@ref)
 (typically arising as a field of a 
 [`CEvolution`](@ref)).
@@ -19,9 +16,7 @@ An exception to report problems with an `LFE` as produced by
 abstract type BadLFE <: Exception end
 
 """
-    BadNFZ
-
-An exception to report problems with an `NFZ` 
+Report problems with an `NFZ` 
 (typically arising as a field of a 
 [`CEvolution`](@ref)).
 """
@@ -29,9 +24,7 @@ abstract type BadNFZ <: Exception end
 
 # ### Specific `BadIncident` exceptions
 """
-    MissedCRemoval
-
-This is raised when a [`CRemoval`](@ref) is missed by
+Raised when a [`CRemoval`](@ref) is missed by
 `evolution`.
 
 ### Example
@@ -54,9 +47,7 @@ end
 
 
 """
-    EmployedRemoval
-
-This is raised when a [`Removal`](@ref) is not missed by
+Raised when a [`Removal`](@ref) is not missed by
 [`evolution`}(@ref).
 
 ### Example
@@ -79,9 +70,7 @@ end
 
 # ### Specific `BadLFE` and `BadNFZ` exceptions
 """
-    NonMinimalLFE
-
-An exception to report a non-minimal `LFE`.
+Reports a non-minimal `LFE`.
 """
 struct NonMinimalLFE <: Exception
     evolution ::AbstractEvolution
@@ -89,9 +78,7 @@ end
 
 
 """
-    EmptyLFE
-
-An exception to report an empty `LFE`.
+Reports an empty `LFE`.
 """
 struct EmptyLFE <: Exception
     ev ::AbstractEvolution
@@ -100,9 +87,7 @@ end
 
 
 """
-    ExpungedInfectionGivesValidTrajectory
-    
-An exception to report a faulty `NFZ`.
+Reports a faulty `NFZ`.
 """
 struct ExpungedInfectionGivesValidTrajectory <: BadNFZ
     ev ::CEvolution
@@ -112,9 +97,7 @@ end
 
 # ### Display of `Exception`s based on `BadIncident`
 """
-    Base.show(io::IO, e::BadIncident)
-    
-Printing a `BadIncident` exception.
+Prints a `BadIncident` exception.
 Sub-types of this exception are:
 [`EmployedRemoval`](@ref) and [`MissedCRemoval`](@ref), typically raised respectively when a 
 conditioned evolution uses a [`Removal`](@ref) which _is_ _not_ conditioned to appear in the trajectory,
@@ -125,18 +108,14 @@ function Base.show(io::IO, e::BadIncident)
 end
 
 """
-    Base.show(io::IO, e::MissedCRemoval)
-    
-Printing a `MissedCRemoval` exception.
+Prints a `MissedCRemoval` exception.
 """
 function Base.show(io::IO, e::MissedCRemoval)
     print(io, "[$(typeof(e))] The (conditioned) evolution failed to employ $(e.incident)")
 end
 
 """
-    Base.show(io::IO, e::EmployedRemoval)
-    
-Printing a `EmployedRemoval` exception.
+Prints a `EmployedRemoval` exception.
 """
 function Base.show(io::IO, e::EmployedRemoval)
     print(io, "[$(typeof(e))] The (conditioned) evolution wrongly employed $(e.incident)")
@@ -146,9 +125,7 @@ end
 
 # ### Display of `Exception`s based on `BadLFE`
 """
-    Base.show(io::IO, e::BadLFE)
-    
-Printing a `BadLFE` exception.
+Prints a `BadLFE` exception.
 """
 function Base.show(io::IO, e::BadLFE)
     print(io, "[$(typeof(e))] The following LFE is faulty:\n\t$(e.ev)")
@@ -159,9 +136,7 @@ end
 
 # ### Display of `Exception`s based on `BadNFZ`
 """
-    Base.show(io::IO, e::BadNFZ)
-    
-Printing a `BadNFZ` exception.
+Prints a `BadNFZ` exception.
 """
 function Base.show(io::IO, e::BadNFZ)
     print(io, "[$(typeof(e))] The following NFZ is faulty at $(e.z):\n\t$(e.ev.NFZ)")

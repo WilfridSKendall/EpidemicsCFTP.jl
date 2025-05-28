@@ -38,9 +38,7 @@ end
 # # Actual display functions
 # # -------------------------------
 """
-    Base.show(::IO, ::MIME"text/plain", ::AbstractRemoval)
-    
-Implementation of `show` for [`AbstractRemoval`](@ref), using `MIME("text/plain")` as the
+Implements `show` for [`AbstractRemoval`](@ref), using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscript for the `target` field.
 
@@ -58,9 +56,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractRemoval)
 end
 
 """
-    Base.show(::IO, ::AbstractRemoval)
-
-This applies when used with `print`, being the string produced
+Applies when used with `print`, being the string produced
 buy `repr`, and can be used 
 as input to produce a copy.
 ### Example
@@ -77,8 +73,6 @@ function Base.show(io::IO, z::AbstractRemoval)
 end
 
 """
-    Base.show(::IO, ::MIME"text/plain", ::AbstractInfection)
-    
 Implementation of `show` for [`AbstractInfection`](@ref), using `MIME("text/plain")` as the
 middle of three arguments and employing subscripts and 2 decimal places for time `t`,
 and superscripts for the `target` and `infectee` fields.
@@ -99,8 +93,6 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractInfection)
 end
 
 """
-    show(::IO, ::AbstractInfection)
-
 This applies when used with `print`, being the string produced
 buy `repr`, and can be used 
 as input to produce a copy.
@@ -119,9 +111,7 @@ function Base.show(io::IO, z::AbstractInfection)
 end
 
 """
-    Base.show(::IO, ::MIME"text/plain", ::AbstractInnovation)
-    
-Implementation of `show` for [`AbstractInnovation`](@ref) as three rows of lists of incidents
+Implements `show` for [`AbstractInnovation`](@ref) as three rows of lists of incidents
 -- or two rows if no [`CRemoval`](@ref)s. We illustrate this second version here.
 
 ### Example
@@ -148,8 +138,6 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractInnovation)
 end
 
 """
-    Base.show(::IO, ::AbstractInnovation)
-    
 ### Example
 ```jldoctest
 julia> population = 3
@@ -177,9 +165,7 @@ end
 
 
 """
-    Base.show(::IO, ::MIME"text/plain", ::SIR)
-    
-Implementation of `show` for [`SIR`](@ref) using subscript and 2 decimal places for time.
+Implements `show` for [`SIR`](@ref) using subscript and 2 decimal places for time.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -194,10 +180,8 @@ function Base.show(io::IO, ::MIME"text/plain", z::SIR)
 end
 
 
-"""
-    Base.show(::IO, ::MIME"text/plain", ::AbstractEvolution)
-    
-Implementation of `show` for [`AbstractEvolution`](@ref) as three rows of lists of incidents
+"""   
+Implements `show` for [`AbstractEvolution`](@ref) as three rows of lists of incidents
 -- or two rows if no [`CRemoval`](@ref)s -- together with further calculations. 
 We illustrate both these versions here.
 
@@ -254,9 +238,7 @@ function Base.show(io::IO, ::MIME"text/plain", z::AbstractEvolution)
 end
 
 """
-    show(::IO, ::MIME"text/plain", ::Vector{<:AbstractTimedOccurrence}; ::Int, ::String)
-
-Implementation of `show` for vector of [`AbstractTimedOccurrence`](@ref)
+Implements `show` for vector of [`AbstractTimedOccurrence`](@ref)
 incidents with line-breaking.
 
 ### Example

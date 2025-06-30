@@ -134,10 +134,14 @@ README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 	@$(JULIA) --color=yes test/00-runtests.jl
 
 docs/build/index.md: $(src_files) $(doc_files) $(doc_images)
-	@$(JULIA) --color=yes docs/make.jl
+	cd docs ; \
+	$(JULIA) --color=yes make.jl
+	# @$(JULIA) --color=yes docs/make.jl
 
 docs/build/$(MODULE).tex: $(doc_files) $(src_files) $(doc_images)
-	@$(JULIA) --color=yes docs/make_latex.jl
+	cd docs ; \
+	$(JULIA) --color=yes make_latex.jl
+	# @$(JULIA) --color=yes docs/make_latex.jl
 
 # Needs pygments for python
 docs/build/$(MODULE).pdf: docs/build/$(MODULE).tex

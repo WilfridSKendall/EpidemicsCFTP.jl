@@ -5,6 +5,8 @@ Manifest.toml
 
 *.stamp
 
+config
+
 TEMP-*
 
 docs/build/
@@ -16,3 +18,4 @@ docs/src/CFTP.bib
 *.compiled
 *.kate-swp
 *.pdf
+*.svg

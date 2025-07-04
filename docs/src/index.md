@@ -68,7 +68,7 @@ The simulation mechanism uses "algorithmic time" to vary an event-based simulati
 2. successive trajectories maintain the conditioning on active (observed) removals,
 3. the mechanism possesses sufficient monotonicity to permit construction of a classical CFTP algorithm.
 
-Figure 1.1 illustrates a single step of this procedure.
+Figure 1.1 (see also cover page of manual) illustrates a single step of this procedure.
 
 ![Snap-shot of single algorithmic time step towards a conditional epidemic equilibrium,
 together with associated geometric structures.](image/snapshot2-adorned.pdf)
@@ -111,15 +111,15 @@ Markdown.parse("""
 
 ## Tutorial
 Consider the production of an `S-I-R` epidemic
-with initial state
+with `initial` state given by
 ```@example CFTP
 initial                                                        # hide
 ```
-The simulation is driven by `iv1`,
+The simulation is driven by an "innovation"`iv1`,
 a randomly generated set of potential infections and removals 
-(an "innovation": Figure 3.1).
-The innovation `iv1` is used to generate `ev1`, an `S-I-R` epidemic trajectory
-(an "evolution": Figure 3.2).
+(Figure 3.1).
+The innovation `iv1` generates an "evolution" `ev1`, an `S-I-R` epidemic trajectory
+(Figure 3.2).
 ```@example CFTP
 iv1 = rand(Innovation(initial.n, AI[], duration=duration, α=α, β=β)) ;
 ev1 = Evolution(initial, iv1) 
@@ -139,10 +139,8 @@ ev1                                                            # hide
 ```
 ![Initial set of incidents (algorithmic time 0).](image/tutorial-iv1.pdf) ![Corresponding evolution (algorithmic time 0).](image/tutorial-ev1.pdf)
 
-We now generate a new trajectory `ev2`,
-based on a random innovation `iv2=rand(iv1)` (Figure 3.3).
-This innovation `iv2` is used in turn to generate `ev2`, 
-a further `S-I-R` epidemic trajectory
+We consider a new random innovation `iv2=rand(iv1)` (Figure 3.3).
+This innovation `iv2` is used in turn to generate a further `S-I-R` epidemic trajectory `ev2`
 (Figure 3.4).
 ```@example CFTP
 iv2 = rand(iv1) ;

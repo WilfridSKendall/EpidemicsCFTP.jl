@@ -11,14 +11,12 @@ export PYTHONPATH=/home/wilfrid/lib/python
 
 QUARTO     := /usr/local/bin/quarto
 CSL        := /home/wilfrid/lib/pandoc/CSL/ima-journal-of-applied-mathematics.csl
-src_files  := $(wildcard src/*.jl) 
-doc_files  := $(wildcard docs/src/*.md) 
-doc_images := docs/src/image/introduction-11-no-fly-zone.pdf \
-	docs/src/image/introduction-01-key.pdf 
+src_files  := $(wildcard src/*.jl)
+doc_files  := $(wildcard docs/src/*.md) docs/src/graphics-setup.jl
 test_files :=$(wildcard test/*.jl)
 
 # ========================
-.PHONY: documentation html-format pdf-format view test doc_images
+.PHONY: documentation html-format pdf-format view test
 
 # ========================
 # To fix outdated doctests, the doctest function can be called with fix = true. 
@@ -39,9 +37,9 @@ test_files :=$(wildcard test/*.jl)
 # Documentation
 documentation: test html-format pdf-format
 #  * html format
-html-format: test docs/site/index.html
+html-format:   test docs/site/index.html
 #  * pdf format
-pdf-format:  docs/build/$(MODULE).pdf
+pdf-format:  test docs/build/$(MODULE).pdf
 	echo "\\setmonofont[Scale = 0.75]{JuliaMono}"        > docs/build/custom.sty
 	echo "\\chapterstyle{verville}"                     >> docs/build/custom.sty
 	echo "\\renewcommand{\\afterpartskip}{\\vfil}"      >> docs/build/custom.sty
@@ -107,7 +105,7 @@ docs/site/index.html: docs/build/index.md
 
 
 
-$(MODULE)-test.pdf: $(MODULE)-test.qmd
+$(MODULE)-test.pdf: # $(MODULE)-test.qmd
 	$(QUARTO) render $< --to pdf
 	rm $<
 $(MODULE)-test.qmd: $(test_files)
@@ -133,15 +131,13 @@ README.pdf: README.md ; $(QUARTO) render $< --to pdf $(QUARTO_OPTIONS)
 .test.stamp: $(src_files) $(test_files)
 	@$(JULIA) --color=yes test/00-runtests.jl
 
-docs/build/index.md: $(src_files) $(doc_files) $(doc_images)
+docs/build/index.md: $(src_files) $(doc_files)
 	cd docs ; \
 	$(JULIA) --color=yes make.jl
-	# @$(JULIA) --color=yes docs/make.jl
 
-docs/build/$(MODULE).tex: $(doc_files) $(src_files) $(doc_images)
+docs/build/$(MODULE).tex: $(doc_files) $(src_files)
 	cd docs ; \
 	$(JULIA) --color=yes make_latex.jl
-	# @$(JULIA) --color=yes docs/make_latex.jl
 
 # Needs pygments for python
 docs/build/$(MODULE).pdf: docs/build/$(MODULE).tex

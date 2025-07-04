@@ -1,4 +1,17 @@
 # Types
+
+```@setup CFTP
+using EpidemicsCFTP, EpidemicsCFTP.abbreviations
+using EpidemicsUtilities
+import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, LFER, MOST, NFZ
+
+const duration = 2.0;
+const α, β     = 0.2, 1.5;
+const initial  = SIR(0.0, 5, 1, 0);
+
+include("../src/graphics-setup.jl")
+```
+
 ## Abstract timed occurrences
 Most entities of `EpidemicsCFTP` are based on the generic type [`AbstractTimedOccurrence`](@ref).
 The only requirement on objects of this type is that they should possess
@@ -28,11 +41,76 @@ AbstractIncident
 
 The type [`AbstractIncident`](@ref) has sub-types
 [`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref), generic incidents corresponding
-to potential removals and potential incidents respectively. The illustration
+to potential removals and potential incidents respectively. Figure 4.1
 provides a visual key to the various concrete sub-types of 
-[`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref):
+[`AbstractRemoval`](@ref) and [`AbstractInfection`](@ref).
 
-![Visual key to various sub-types of `AbstractIncident`.](image/introduction-01-key.pdf)
+```@example CFTP
+set_default_plot_size(theme.figwidth, 0.6theme.figheight)          # hide
+key_template = plot(yintercept=1:3,                                # hide
+    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),     # hide
+    Coord.cartesian(xmin=0, xmax=3, ymin=0.5, ymax=3 + 0.25),      # hide
+    style(default_color=theme.background),                         # hide
+    gadfly_theme) ;                                                # hide
+                                                                   # hide
+key_template = new_figure(key_template,                            # hide
+    Scale.y_continuous(labels=(i ->                                # hide
+            EpidemicsUtilities.timelinelabel_raw(i; n=initial.n))),# hide
+    Guide.yticks(ticks=collect(1:3)),                              # hide
+    ) ;                                                            # hide
+                                                                   # hide
+push!(key_template, Scale.y_continuous(                            # hide
+        labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?            # hide
+        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) : # hide
+        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))), # hide
+    ) ;                                                            # hide
+                                                                   # hide
+x, dx = 0.1, 0.18                                                  # hide
+x1    = x + 0.5dx                                                  # hide
+                                                                   # hide
+# Do the next figure programmatically!                             # hide
+depict("key", new_figure(key_template,                             # hide
+    Guide.annotation(compose(context(),                            # hide
+        draw_elements([I(x,1,3), P(x+2dx,2,3),                     # hide
+            NoFlyInfection(x+4dx,1,3),                             # hide
+            ExpungedInfection(x+6dx,2,3),                          # hide
+            KilledInfection(x+8dx,1,3),                            # hide
+            R(x+10dx,2),                                           # hide
+            KilledRemoval(x+12dx,1),                               # hide
+            C(x+14dx,2)], theme=theme),                            # hide
+        draw_elements([I(x+dx,1,3),                                # hide 
+            P(x+3dx,2,3),                                          # hide
+            NoFlyInfection(x+5dx,1,3),                             # hide
+            ExpungedInfection(x+7dx,2,3),                          # hide
+            KilledInfection(x+9dx,1,3),                            # hide
+            R(x+11dx,2),                                           # hide
+            KilledRemoval(x+13dx,1),                               # hide
+            C(x+15dx,2)], theme=theme),                            # hide
+        draw_elements([I(x+dx,1,3),                                # hide 
+            P(x+3dx,2,3),                                          # hide
+            NoFlyInfection(x+5dx,1,3),                             # hide
+            ExpungedInfection(x+7dx,2,3),                          # hide
+            KilledInfection(x+9dx,1,3),                            # hide
+            R(x+11dx,1),                                           # hide
+            KilledRemoval(x+13dx,2),                               # hide
+            C(x+15dx,1)], activated=true, theme=theme),            # hide
+        )),                                                        # hide
+    Guide.annotation(compose(context(),                            # hide
+        text(x1,      0.53, "Infection",          hcenter),        # hide
+        text(x1+ 2dx, 0.35, "PInfection",         hcenter),        # hide
+        text(x1+ 4dx, 0.53, "NoFlyInfection",     hcenter),        # hide
+        text(x1+ 6dx, 0.35, "ExpungedInfection",  hcenter),        # hide
+        text(x1+ 8dx, 0.53, "KilledInfection",    hcenter),        # hide
+        text(x1+10dx, 0.35, "Removal",            hcenter),        # hide
+        text(x1+12dx, 0.53, "Killed Removal",     hcenter),        # hide
+        text(x1+14dx, 0.35, "CRemoval",           hcenter),        # hide
+        fontsize(6pt))),                                           # hide
+    ), imagetype="pdfonly")                                        # hide
+                                                                   # hide
+set_default_plot_size(theme.figwidth, theme.figheight)             # hide
+```
+
+![Recognition chart for various varieties of abstract incidents.](image/key.pdf)
 
 #### `AbstractRemoval`
 `AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref),

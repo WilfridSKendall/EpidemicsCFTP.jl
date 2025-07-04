@@ -12,8 +12,8 @@ or `Evolution` objects.
 ```
 
 ## A total ordering for incidents
-A total ordering is provided by [`Base.isless`](@ref)
-(with effective signature `isless(::AbstractIncident,::AbstractIncident)`), 
+A total ordering is provided by 
+[`Base.isless`](@ref)`(::AbstractIncident,::AbstractIncident)`, 
 based principally on time `t` of occurrence of 
 the two arguments, which should be 
 instances of
@@ -23,8 +23,7 @@ If necessary, further consideration uses
 `target` mark (and `infectee` mark if applicable).
 Finally a pre-computed order of subtypes is employed.
 ```@docs
-isless(::AbstractInfection, ::AbstractRemoval)
-isless(::AbstractRemoval,   ::AbstractInfection) 
+isless(::AbstractIncident,  ::AbstractIncident)
 isless(::AbstractRemoval,   ::AbstractRemoval) 
 isless(::AbstractInfection, ::AbstractInfection)
 ```

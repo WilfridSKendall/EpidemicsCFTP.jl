@@ -59,7 +59,7 @@ If checks OK, return resulting `CEvolution`.
 Otherwise, return original `CEvolution`.
 
 # Implementation
-Use ``\triangleright` to get `▷`.
+Use ``\\triangleright` to get `▷`.
 
 ### Example 1
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -417,7 +417,7 @@ Finally, ties are broken by subtype as follows
     InfectionMarker < PInfection < Infection < NoFlyRemoval < KilledRemoval < 
         ExpungedRemoval < CRemoval < Removal < KilledRemoval < RemovalMarker
 ```
-Thus two incidents of equal priority must be the same incident!
+Thus two incidents of equal priority must be the same incident.
 
 Notice that `PInfection` and `CRemoval` take priority in, respectively,
 `AbstractInfection`s and `AbstractRemovals`.
@@ -442,21 +442,11 @@ julia> P(0.10, 2, 7) < R(0.10, 3)
 true
 ```
 """
-
-"""
-Default is based purely on `time` mark.
-"""
-function isless(x::AbstractInfection, y::AbstractRemoval)
+function isless(x::AbstractIncident, y::AbstractIncident)
     if x.t != y.t
         return x.t < y.t
     end
-    return true
-end,
-function isless(x::AbstractRemoval, y::AbstractInfection) 
-    if x.t != y.t
-        return x.t < y.t
-    end
-    return false
+    return (x isa AbstractInfection) && (y isa AbstractRemoval)
 end
 
 # Possible efficiency gain: implement as `Tuple`?

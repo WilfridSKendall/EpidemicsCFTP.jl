@@ -10,19 +10,14 @@ using EpidemicsCFTP, EpidemicsCFTP.abbreviations
 using EpidemicsUtilities
 import EpidemicsUtilities: ACTIVATED, REGIONS, BOUNDARIES, BASIC, ELEMENTS, LFE, LFET, LFER, MOST, NFZ
 
-# Specific `Gadfly` and 'Compose' imports, to avoid clashes.
-import Compose: context, compose, line, text, fontsize, 
-    hcenter, linewidth, stroke
-import Gadfly: Coord, Geom, Guide, Scale, Theme, Plot,
-    plot, layer, style, set_default_plot_size, pt, mm
-using PrettyTables
-
 import Random
 Random.seed!(2)
 
 const duration = 2.0;
 const α, β     = 0.2, 1.5;
 const initial  = SIR(0.0, 5, 1, 0);
+
+include("../src/graphics-setup.jl")
 
 iv1 = Innovation(initial.n,
     AIF[I(0.11, 2, 3), I(0.2, 2, 5), P(0.4, 1, 2), I(0.5, 2, 5),  I(0.6, 2, 4), I(0.75, 1, 2), 
@@ -33,52 +28,16 @@ iv1 = Innovation(initial.n,
     C[  C(1.3, 2), C(0.8, 1), C(1.7, 4), C(1.8, 4), C(1.92, 5) ];
     duration=duration, α=α, β=β)
 ev1 = CEvolution(initial, iv1)
-
-flow = table_trajectories1(duration, ev1.trajectory) ;
-
-theme = create_theme(load_theme("../config/theme.yml"))
-
-gadfly_theme = Theme(
-    panel_fill=theme.blank,
-    default_color=theme.default,
-    background_color=theme.background,
-    major_label_font="CMU Serif",   minor_label_font="CMU Serif",
-    minor_label_color=theme.legend, major_label_color=theme.legend,
-    major_label_font_size=8pt,     minor_label_font_size=6pt,
-    grid_line_width=0mm,
-)
-
-set_default_plot_size(theme.figwidth, theme.figheight)
-
-curves_template = plot(flow, yintercept=1:initial.n,
-    Geom.hline(style=:dash, size=0.1mm, color=theme.scaffold),
-    Coord.cartesian(xmin=0, xmax=duration, ymin=0, ymax=initial.n + 0.25),
-    Guide.xlabel("Process time", orientation=:horizontal),
-    style(default_color=theme.background),
-    gadfly_theme) ;
-
-push!(curves_template, layer(flow, x=:t, y=:empty, Geom.line,
-    style(line_width=2theme.trail, default_color=theme.scaffold))) ;
-
-incidents_template = new_figure(curves_template,
-    Scale.y_continuous(labels=(initial.n ≤ EpidemicsUtilities.MAXPOP ?
-        i -> EpidemicsUtilities.timelinelabels_circled(i; n=initial.n) :
-        i -> EpidemicsUtilities.timelinelabels_bracketed(i; n=initial.n))),
-    Guide.yticks(ticks=collect(1:(initial.n))),
-    Guide.ylabel("Time lines")) ;
-
-push!(curves_template,
-    Scale.y_continuous(labels=(i -> EpidemicsUtilities.timelinelabel_raw(i; n=initial.n))),
-    Guide.ylabel("Numbers of individuals")) ;
-
-figure03 = new_figure(curves_template, 
-    layer(flow, x=:t, y=:infectives, Geom.step,
-        style(line_width=theme.boundary, default_color=theme.colour(I))),
-    layer(flow, x=:t, y=:removals, Geom.step,
-        style(line_style=[:dashdot], line_width=theme.boundary, default_color=theme.colour(R))),
-    layer(flow[flow.susceptibles.!=0, :], x=:t, y=:susceptibles, Geom.step,
-        style(line_style=[:dash], line_width=theme.boundary, default_color=theme.scaffold)),
-) ;  nothing
+iv2 = rand(iv1) ;
+ev2 = ev1 ⋄ iv2 ;
+                                                             # hide
+figure_zones2a = draw_regions!(deepcopy(incidents_template), # hide
+    duration, ev2, theme=theme, select=BOUNDARIES | REGIONS) # hide
+depict("snapshot2-adorned", new_figure(                      # hide
+    draw_evolution!(deepcopy(figure_zones2a), ev2, duration, # hide
+        theme=theme, select=MOST | LFE | NFZ)),              # hide
+    imagetype="pdfonly"                                      # hide
+) ;  nothing                                                 # hide
 ```
 
 # Introduction
@@ -93,74 +52,52 @@ to perform perfect simulation (_CFTP_) of epidemics conditioned on observed (_ac
 The aim is to provide 
 Coupling from the Past
 [ProppWilson-1996a](@cite)
-for a `S-I-R` epidemic
+for a stochastic `S-I-R` epidemic
 conditioned on all (observed) removal times and 
 making transitions according to the following rates:
 ```math
 \begin{aligned}
-S \to S-1\,, \quad I \to I+1 \qquad & \text{ at rate } \alpha \; S I \,,
+S \to S-1\,, \quad &I \to I+1 \qquad && \text{ at rate } \alpha \; S I \,,
 \cr
-I \to I-1\,, \quad R \to R+1 \qquad & \text{ at rate } \beta \; I    \,.
+I \to I-1\,, \quad &R \to R+1 \qquad && \text{ at rate } \beta \; I    \,.
 \end{aligned}
 ```
 
-The simulation mechanism uses "algorithmic time" to vary an event-based simulation such that  
-1. detailed balance holds with respect to algorithmic time, 
-2. respects the conditioning on active removals,
-3. possesses sufficient monotonicity to permit construction of a classical CFTP algorithm.
+The simulation mechanism uses "algorithmic time" to vary an event-based simulation of the epidemic trajectory such that:  
+1. the random trajectory converges in law to the conditioned `S-I-R` epidemic as algorithmic time tends to infinity, 
+2. successive trajectories maintain the conditioning on active (observed) removals,
+3. the mechanism possesses sufficient monotonicity to permit construction of a classical CFTP algorithm.
 
-Given an initial conditional evolution `ev1` and a conditional innovation `iv1`,
-here we compute the next step `ev2` in the algorithmic development of `ev1`.
-```@example CFTP
-iv2c = rand(iv1) ;
-ev2 = ev1 ⋄ iv2c ;
+Figure 1.1 illustrates a single step of this procedure.
 
-figure_zones2 = draw_regions!(deepcopy(incidents_template),                                           # hide
-    duration, ev2, theme=theme, select=BOUNDARIES | REGIONS)                                          # hide
-depict("snapshot", new_figure(                                                                        # hide
-    draw_evolution!(deepcopy(figure_zones2), ev2, duration, theme=theme, select=MOST | LFE | NFZ)),   # hide
-    imagetype="pdfonly"                                                                               # hide
-) ;  nothing                                                                                          # hide
-```
-
-![A snap-shot of a simulation of a single step towards a conditional epidemic.](image/snapshot.pdf)
-
-    
-#### Reference
-
-```@bibliography
-```
+![Snap-shot of single algorithmic time step towards a conditional epidemic equilibrium,
+together with associated geometric structures.](image/snapshot2-adorned.pdf)
 
 
 ## Information 
 
-
-#### General advice on installation
+### General advice on installation
 General advice on developing a `julia` package is given at 
 [`julialang.org/contribute/developing_package`](https://julialang.org/contribute/developing_package/).
-Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):  
-* Inform `pkg` that the package folder exists and is under development with `dev` (it is best to do this within a particular `julia` environment):  
-```julia
-(julia) pkg> dev ~/.julia/dev/EpidemicsCFTP
-```
-* Check that the package can be seen by `julia`:  
-```julia
-(julia) pkg> status
-```
-* Check that everything passes by triggering performance of unit tests and doctests:  
-```julia
-(julia) pkg> test EpidemicsCFTP
-```
+Here is a basic summary. Working in `pkg` mode (using `]` at `julia` prompt):
+
+* Inform `pkg` that the package exists and is under development with `dev` (it is best to do this within a particular `julia` environment) using `pkg> dev ~/.julia/dev/EpidemicsCFTP`
+* Check that the package can be seen by `julia` using `pkg> status`
+* Check for code problems by triggering unit tests and doctests using `pkg> test EpidemicsCFTP`  
 (Alternatively run `make test` in the directory `EpidemicsCFTP`;
-run `make doctest` to perform doctests.)
+run `make doctest` to perform doctests alone.)
 * Commit and push to `github` with `make commit`.
 * Documentation is produced as follows: in directory `EpidemicsCFTP`,  
     - run `make documentation`
     - or `make html-format` (for `gitbook` documentation)
     - or `make pdf-format` (for `pdf` documentation).
 
-#### Specifics concerning `EpidemicsCFTP`  
+### Specifics concerning `EpidemicsCFTP`  
+```@docs
+EpidemicsCFTP
+```
 
+Version information:
 ```@eval
 import Markdown, EpidemicsCFTP
 Markdown.parse("""
@@ -171,9 +108,68 @@ Markdown.parse("""
 """)
 ```
 
-Documentation string for the module (under development):
-```@docs
-EpidemicsCFTP
+
+## Tutorial
+Consider the production of an `S-I-R` epidemic
+with initial state
+```@example CFTP
+initial                                                        # hide
+```
+The simulation is driven by `iv1`,
+a randomly generated set of potential infections and removals 
+(an "innovation": Figure 3.1).
+The innovation `iv1` is used to generate `ev1`, an `S-I-R` epidemic trajectory
+(an "evolution": Figure 3.2).
+```@example CFTP
+iv1 = rand(Innovation(initial.n, AI[], duration=duration, α=α, β=β)) ;
+ev1 = Evolution(initial, iv1) 
+set_default_plot_size(theme.figwidth, 0.5theme.figheight) # hide
+depict("tutorial-iv1", new_figure(                             # hide
+    draw_innovation!(deepcopy(incidents_template),             # hide
+    iv1, theme=theme, select=ELEMENTS))                        # hide
+)                                                              # hide
+figure_zones1 = draw_regions!(deepcopy(incidents_template),    # hide
+    duration, ev1, theme=theme, select=BOUNDARIES | REGIONS)   # hide
+depict("tutorial-ev1", new_figure(                             # hide
+    draw_evolution!(deepcopy(figure_zones1), ev1, duration,    # hide
+        theme=theme, select=MOST)),                            # hide
+    imagetype="pdfonly"                                        # hide
+) ; nothing                                                    # hide
+ev1                                                            # hide
+```
+![Initial set of incidents (algorithmic time 0).](image/tutorial-iv1.pdf) ![Corresponding evolution (algorithmic time 0).](image/tutorial-ev1.pdf)
+
+We now generate a new trajectory `ev2`,
+based on a random innovation `iv2=rand(iv1)` (Figure 3.3).
+This innovation `iv2` is used in turn to generate `ev2`, 
+a further `S-I-R` epidemic trajectory
+(Figure 3.4).
+```@example CFTP
+iv2 = rand(iv1) ;
+ev2 = Evolution(initial, iv2) 
+                                                             # hide
+depict("tutorial-iv2", new_figure(                           # hide
+    draw_innovation!(deepcopy(incidents_template),           # hide
+    iv2, theme=theme, select=ELEMENTS))                      # hide
+)                                                            # hide
+                                                             # hide
+figure_zones2 = draw_regions!(deepcopy(incidents_template),  # hide
+    duration, ev2, theme=theme, select=BOUNDARIES | REGIONS) # hide
+depict("tutorial-ev2", new_figure(                           # hide
+    draw_evolution!(deepcopy(figure_zones2), ev2, duration,  # hide
+        theme=theme, select=MOST)),                          # hide
+    imagetype="pdfonly"                                      # hide
+) ; nothing                                                  # hide
+ev2                                                          # hide
+```
+![Incidents generating a single step of algorithmic time.](image/tutorial-iv2.pdf)
+ ![State after a single step of algorithmic time.](image/tutorial-ev2.pdf)
+
+
+    
+#### Reference
+
+```@bibliography
 ```
 
 

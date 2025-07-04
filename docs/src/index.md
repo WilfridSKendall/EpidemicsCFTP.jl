@@ -48,7 +48,8 @@ The package
 provides 
 [`julia`](https://julialang.org/) 
 object types and methods
-to perform perfect simulation (_CFTP_) of epidemics conditioned on observed (_active_) removals.
+to perform perfect simulation (_CFTP_) of epidemics conditioned on 
+the set of observed (_active_) removal times.
 The aim is to provide 
 Coupling from the Past
 [ProppWilson-1996a](@cite)

@@ -151,9 +151,12 @@ julia> Removal(0.1, 4)
 ```
 """
 struct Removal <: OperativeRemoval
-    kind      ::String     
-    t         ::Float64
-    target    ::Int
+    "String representation"
+    kind::String     
+    "Time of occurrence of R"
+    t::Float64
+    "Timeline whose infection yields activation"
+    target::Int
 
     function Removal(t::Real, target::Int)
         noun = "Removal($t, $target)"
@@ -184,9 +187,12 @@ julia> CRemoval(0.1, 4)
 ```
 """
 struct CRemoval <: OperativeRemoval
-    kind      ::String     
-    t         ::Float64
-    target    ::Int
+    "String representation"
+    kind::String     
+    "Time of occurrence of R"
+    t::Float64
+    "Timeline whose infection yields activation"
+    target::Int
 
     function CRemoval(t::Real, target::Int) 
         noun = "CRemoval($t, $target)"
@@ -238,9 +244,12 @@ julia> KilledRemoval(0.1, 4)
 ```
 """
 struct KilledRemoval <: NonOperativeRemoval
-    kind      ::String     
-    t         ::Float64
-    target    ::Int
+    "String representation"
+    kind::String     
+    "Time of occurrence of R"
+    t::Float64
+    "Timeline whose infection yields activation"
+    target::Int
 
 function KilledRemoval(t::Real, target::Int)
     noun = "KilledRemoval($t, $target)"
@@ -326,10 +335,14 @@ julia> Infection(0.2, 1, 2)
 ```
 """
 struct Infection <: OperativeInfection
-    kind      ::String
-    t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    "String representation"
+    kind::String
+    "Time of occurrence of I"
+    t::Float64
+    "Timeline needing to be lowest susceptible"
+    target::Int
+    "Timeline whose infection yields activation"
+    infectee::Int
 
     function Infection(t::Real, target::Int, infectee::Int)
         noun = "Infection($t, $target, $infectee)"
@@ -375,10 +388,14 @@ julia> PInfection(0.2, 1, 2)
 ```
 """
 struct PInfection <: OperativeInfection
-    kind      ::String
-    t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    "String representation"
+    kind::String
+    "Time of occurrence of I"
+    t::Float64
+    "Timeline needing to be lowest susceptible"
+    target::Int
+    "Timeline whose infection yields activation"
+    infectee::Int
     
     function PInfection(t::Real, target::Int, infectee::Int)
         noun = "PInfection($t, $target, $infectee)"
@@ -436,10 +453,14 @@ julia> NoFlyInfection(0.2, 1, 2)
 ```
 """
 struct NoFlyInfection <: OperativeInfection
-    kind      ::String
-    t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    "String representation"
+    kind::String
+    "Time of occurrence of I"
+    t::Float64
+    "Timeline needing to be lowest susceptible"
+    target::Int
+    "Timeline whose infection yields activation"
+    infectee::Int
     
     function NoFlyInfection(t::Real, target::Int, infectee::Int) 
         noun = "NoFlyInfection($t, $target, $infectee)"
@@ -492,11 +513,14 @@ julia> KilledInfection(0.2, 1, 2)
 ```
 """
 struct KilledInfection <: NonOperativeInfection
-
-    kind      ::String
-    t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    "String representation"
+    kind::String
+    "Time of occurrence of I"
+    t::Float64
+    "Timeline needing to be lowest susceptible"
+    target::Int
+    "Timeline whose infection yields activation"
+    infectee::Int
     
     function KilledInfection(t::Real, target::Int, infectee::Int)
         noun = "KilledInfection($t, $target, $infectee)"
@@ -560,11 +584,14 @@ julia> ExpungedInfection(0.2, 1, 2)
 ```
 """
 struct ExpungedInfection <: NonOperativeInfection
-
-    kind      ::String
-    t         ::Float64
-    target    ::Int
-    infectee  ::Int
+    "String representation"
+    kind::String
+    "Time of occurrence of I"
+    t::Float64
+    "Timeline needing to be lowest susceptible"
+    target::Int
+    "Timeline whose infection yields activation"
+    infectee::Int
     
     function ExpungedInfection(t::Real, target::Int, infectee::Int)
         noun = "ExpungedInfection($t, $target, $infectee)"
@@ -643,12 +670,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-This represents a state `sir` of a `S-I-R` epidemic
-(with fields `s`, `i`, `r` being non-negative integers adding up to
-the population size `n`)
-at a specified time `t` (a real number). Note that `n` is 
-a computed field, calculated
-at initialization of the state structure and accessed as `sir.n`.
+This represents a state `sir` of a `S-I-R` epidemic.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -660,10 +682,15 @@ julia> sir.n
 ```
 """
 struct SIR <: AbstractTimedOccurrence
+    "Time of occurrence of SIR"
     t::Float64
+    "Number of susceptibles"
     s::Int
+    "Number of infectives"
     i::Int
+    "Number of removed"
     r::Int
+    "Total population number (computed as `n=s+i+r`)"
     n::Int
 
     function SIR(t::Real, s::Int, i::Int, r::Int, n::Int)

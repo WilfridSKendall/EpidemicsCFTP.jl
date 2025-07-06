@@ -267,7 +267,7 @@ from the original maximal trajectory will coalesce with those
 derived from the original minimal trajectory. This phenomenon
 makes perfect simulation possible.
 
-#### Reference
+#### References
 
 ```@bibliography
 ```

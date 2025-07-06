@@ -856,6 +856,9 @@ function Innovation(population::Int,
 end
 
 @doc """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+    
 Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
 
 ### Example
@@ -1142,11 +1145,7 @@ struct CEvolution <: AbstractEvolution
     start      ::Vector{AbstractInfection}
     "Finishes of infectious intervals."
     finis      ::Vector{AbstractRemoval}
-    "Starting time of epidemic."
-    t0         ::Real
-    "Duration of epidemic."
-    duration   ::Real
-    # Remaining fields are special to `CEvolution`
+    # Next four fields are special to `CEvolution`
     "Incidents forming least feasible evolution."
     LFE        ::Vector{AbstractIncident}
     "No-fly zone (I)."
@@ -1155,6 +1154,11 @@ struct CEvolution <: AbstractEvolution
     NFZ2       ::Vector{Real}
     "No-fly zone (III) -- final version."
     NFZ        ::Vector{Real}
+    # Previous four fields are special to `CEvolution`
+    "Starting time of epidemic."
+    t0         ::Real
+    "Duration of epidemic."
+    duration   ::Real
 
 @doc """
 This is the first way to construct a [`CEvolution`](@ref): 

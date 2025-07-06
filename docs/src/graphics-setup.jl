@@ -4,7 +4,8 @@
 import Compose: context, compose, line, text, fontsize, 
     hcenter, linewidth, stroke
 import Gadfly: Coord, Geom, Guide, Scale, Theme, Plot,
-    plot, layer, style, set_default_plot_size, pt, mm
+    plot, layer, style, set_default_plot_size, pt, mm,
+    hstack
 # using PrettyTables
 
 theme = create_theme(load_theme("../config/theme.yml"))

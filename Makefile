@@ -45,8 +45,6 @@ pdf-format:  test docs/build/$(MODULE).pdf
 	echo "\\renewcommand{\\afterpartskip}{\\vfil}"      >> docs/build/custom.sty
 	echo "\\renewcommand\\thepart{\\Alph{part}}"        >> docs/build/custom.sty
 	latexmk -cd -g -xelatex -shell-escape docs/build/$(MODULE).tex
-	xdg-open $<
-
 
 # Serve documentation (not yet working)
 view: serve
@@ -143,3 +141,5 @@ docs/build/$(MODULE).tex: $(doc_files) $(src_files)
 docs/build/$(MODULE).pdf: docs/build/$(MODULE).tex
 	cd docs/build ; \
 	latexmk -f -interaction=nonstopmode -view=none -lualatex -shell-escape $(notdir $<)
+	xdg-open $@
+

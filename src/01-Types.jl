@@ -27,7 +27,7 @@ to represent the particular kind of incident
 symbolically. Data for the `kind` field are held in the
 internal dictionary `kindd`.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractIncident` as `AI`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractIncident` as `AI`.
 """
 abstract type AbstractIncident <: AbstractTimedOccurrence end
 
@@ -43,7 +43,7 @@ It also expects field `target<:Int`.
 If the potential removal is to become realized 
 then `target` must index a time line which is infectious just before time `t`.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractRemoval` as `AIR`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractRemoval` as `AIR`.
 """
 abstract type AbstractRemoval <: AbstractIncident end
 
@@ -94,7 +94,7 @@ activated (`NonoOperativeInfection`), because their targets are
 on "removed" portions of time lines or because they would if activated
 lead to removal of inactivated `Removal` incidents.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractInfection` as `AIF`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractInfection` as `AIF`.
 """
 abstract type AbstractInfection <: AbstractIncident end
 
@@ -142,7 +142,7 @@ The `Removal` is realized if the specified timeline is infectious just before ti
 
 If activated in course of evolution of a conditioned epidemic then an error will be raised.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `Removal` as `R`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `Removal` as `R`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP)
@@ -176,9 +176,9 @@ $(TYPEDFIELDS)
 
 Represent a conditioned removal using a sub-type of [`OperativeRemoval`](@ref), similar to `Removal`.
 The `target` field should always index a time line which is currently infectious 
-(a deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
+(a partly deterministic constraint, since the epidemic is conditional on observation of the times of all removals).
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `CRemoval` as `C`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `CRemoval` as `C`.
 
 ### Example
 ```jldoctest
@@ -235,7 +235,7 @@ and it should be the case that `KilledRemoval`s are precisely those
 The above list of functions (creating `KilledRemoval`) should be **reduced**!
 :::
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledRemoval` as `KR`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledRemoval` as `KR`.
 
 ### Example
 ```jldoctest
@@ -282,7 +282,7 @@ $(TYPEDFIELDS)
 
 This is a marker normally placed at the end of an epidemic to signal completion of infected time lines.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `RemovalMarker` as `RM`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `RemovalMarker` as `RM`.
 ### Example
 ```jldoctest
 julia> RemovalMarker(0.1, 4)
@@ -326,7 +326,7 @@ Represent a potential infection using a sub-type of [`OperativeInfection`](@ref)
 using mark time `t` and another mark `target` and a further mark `infectee`.
 Marks `target` and `infectee` must be positive integers with `target < infectee`.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `Infection` as `I`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `Infection` as `I`.
 
 ### Example
 ```jldoctest
@@ -379,7 +379,7 @@ Intended to identify an `Infection` from a previous iteration of the CFTP
 algorithm which has had to be carried over to avoid failure to activate
 a `CRemoval`.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `PInfection` as `P`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `PInfection` as `P`.
 
 ### Example
 ```jldoctest
@@ -444,7 +444,7 @@ to an error being raised when some
 [`Removal`](@ref) 
 (as opposed to a [`CRemoval`](@ref)) is activated.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `NoFlyInfection` as `NF`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `NoFlyInfection` as `NF`.
 
 ### Example
 ```jldoctest
@@ -504,7 +504,7 @@ A `KilledInfection` should be created (by conversion) only in the functions
 * and [`EpidemicsCFTP.compute_nofly`](@ref)  
 (This list of functions should be reduced!).
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledInfection` as `KI`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledInfection` as `KI`.
 
 ### Example
 ```jldoctest
@@ -575,7 +575,7 @@ This occurs in:
 
 * the function [`compute_nofly`](@ref).
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `ExpungedInfection` as `XI`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `ExpungedInfection` as `XI`.
 
 ### Example
 ```jldoctest
@@ -624,7 +624,7 @@ $(TYPEDFIELDS)
 This is a marker normally placed at the start of an epidemic to signal initial infected time lines.
 Differs from (for example) `Infection` in that the `target` mark can be zero.
 
-The submodule [`.abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `InfectionMarker` as `IM`.
+The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `InfectionMarker` as `IM`.
 ### Example
 ```jldoctest
 julia> InfectionMarker(0.2, 1, 2)
@@ -764,15 +764,25 @@ If they are used (for example for random generation) then there is a need to tes
 have been assigned realistic values.
 """
 struct Innovation <: AbstractInnovation
+    "Number of target population."
     population ::Int
+    "Maximum possible number of infectives/removals."
     size       ::Int
+    "Starting time of epidemic."
     t0         ::Real
+    "Duration of epidemic."
     duration   ::Real
+    "List of potential AbstractInfections."
     infections ::Vector{<:AbstractInfection}
+    "List of potential removal incidents."
     removals   ::Vector{<:AbstractRemoval}
+    "List of conditional removal incidents."
     cremovals  ::Vector{CRemoval}
+    "Time-ordered list of potential incidences."
     chronology ::Vector{<:AbstractIncident}
+    "Specific infectivity."
     α          ::Real
+    "Pairwise specific infectivity."
     β          ::Real
 
 @doc """
@@ -846,9 +856,6 @@ function Innovation(population::Int,
 end
 
 @doc """
-$(TYPEDEF)
-$(TYPEDFIELDS)
-    
 Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
 
 ### Example
@@ -941,18 +948,31 @@ AbstractRemoval[𝒞₀.₀₀¹,ℳ⁺[∞]²,ℳ⁺[∞]³]
 ```
 """
 struct Evolution <: AbstractEvolution
+    "Number of target population."
     population  ::Int
+    "Maximum possible number of infectives/removals."
     size        ::Int
+    "List of potential AbstractInfections."
     infections  ::Vector{<:AbstractInfection}
+    "List of potential removal incidents."
     removals    ::Vector{<:AbstractRemoval}
+    "List of conditional removal incidents."
     cremovals   ::Vector{CRemoval}
+    "Time-ordered list of potential incidences."
     chronology  ::Vector{<:AbstractIncident}
+    "Time-ordered list of states forming trajectory."
     trajectory  ::Vector{SIR}
+    "Time-ordered list of incidents on trajectory."
     history     ::Vector{AbstractIncident}
+    "Initial state."
     initial     ::SIR
+    "Starts of infectious intervals."
     start       ::Vector{AbstractInfection}
+    "Finishes of infectious intervals."
     finis       ::Vector{AbstractRemoval}
+    "Starting time of epidemic."
     t0          ::Real
+    "Duration of epidemic."
     duration    ::Real
 
 @doc """
@@ -1062,7 +1082,7 @@ to compute start and finish incidents
 for infectious intervals.
 
 It possesses extra fields `LFE`, `NFZ1`,  `NFZ2`, and `NFZ` which are respectively
-the incidents involved in the laziest feasible epidemic, the maxima _per_ time line
+the incidents involved in the laziest feasible evolution, the maxima _per_ time line
 of times of `Removal`s occurring _before_ the epidemic trajectory as measured
 by `start`, the monotonically increasing envelope of `NFZ1`, and the region which must
 not be infected if we are not to violate conditioning on removals.
@@ -1100,24 +1120,41 @@ AbstractIncident[𝒩₀.₀₀²ᑉ³,𝒳₀.₂₀²ᑉ³,ℐ₀.₇₀¹ᑉ�
 ```
 """
 struct CEvolution <: AbstractEvolution
+    "Number of target population."
     population ::Int
+    "Maximum possible number of infectives/removals."
     size       ::Int
+    "List of potential AbstractInfections."
     infections ::Vector{<:AbstractInfection}
+    "List of potential removal incidents."
     removals   ::Vector{<:AbstractRemoval}
+    "List of conditional removal incidents."
     cremovals  ::Vector{CRemoval}
+    "Time-ordered list of potential incidences."
     chronology ::Vector{<:AbstractIncident}
+    "Time-ordered list of states forming trajectory."
     trajectory ::Vector{SIR}
+    "Time-ordered list of incidents on trajectory."
     history    ::Vector{AbstractIncident}
+    "Initial state."
     initial    ::SIR
+    "Starts of infectious intervals."
     start      ::Vector{AbstractInfection}
+    "Finishes of infectious intervals."
     finis      ::Vector{AbstractRemoval}
-    # Remaining fields are special to `CEvolution`
-    LFE        ::Vector{AbstractIncident}
-    NFZ1       ::Vector{Real}
-    NFZ2       ::Vector{Real}
-    NFZ        ::Vector{Real}
+    "Starting time of epidemic."
     t0         ::Real
+    "Duration of epidemic."
     duration   ::Real
+    # Remaining fields are special to `CEvolution`
+    "Incidents forming least feasible evolution."
+    LFE        ::Vector{AbstractIncident}
+    "No-fly zone (I)."
+    NFZ1       ::Vector{Real}
+    "No-fly zone (II)."
+    NFZ2       ::Vector{Real}
+    "No-fly zone (III) -- final version."
+    NFZ        ::Vector{Real}
 
 @doc """
 This is the first way to construct a [`CEvolution`](@ref): 

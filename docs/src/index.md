@@ -106,25 +106,7 @@ Markdown.parse("""
 |:-----------------|:---------------------------|:--------------------------|:----------------------|
 | `julia` version  | `$VERSION`                 | --                        |                       |
 | `EpidemicsCFTP`  | `$(EpidemicsCFTP.version)` | `$(EpidemicsCFTP.branch)` | $(EpidemicsCFTP.date) |
-""")```@example CFTP
-civ2   = rand(civ1)
-evmin2 = evmin1 ⋄ civ2 ;
-evmax2 = evmax1 ⋄ civ2 ;
-                                                               # hide
-tutorial_evmin2 = new_figure(                                  # hide
-    draw_evolution!(deepcopy(incidents_template), evmin2,      # hide
-        duration, theme=theme, select=MOST))                   # hide
-tutorial_evmax2 = new_figure(                                  # hide
-    draw_evolution!(deepcopy(incidents_template), evmax2,      # hide
-        duration, theme=theme, select=MOST))                   # hide
-                                                               # hide
-depict("tutorial-evmin2-evmax2", new_figure(                   # hide
-    hstack(tutorial_evmin2, tutorial_evmax2)),                 # hide
-    imagetype="pdfonly"                                        # hide
-) ; nothing                                                    # hide
-```
-![Algorithmic time 2. Left: minimal. Right: maximal.](image/tutorial-evmin2-evmax2.pdf) 
-
+""")
 ```
 
 
@@ -220,8 +202,9 @@ in algorithmic time, using the same innovations `civ1` then `civ2`,
 `civ3`
 (Figures 3.4, 3.5, 3.6).
 ```@example CFTP
-civ1   = rand(Innovation(initial.n, AI[x for x in evmin0.cremovals], 
-            duration=duration,α=α, β=β))
+civ0   = Innovation(initial.n, AI[x for x in evmin0.cremovals], 
+            duration=duration, α=α, β=β)
+civ1   = rand(civ0)    ;
 evmin1 = evmin0 ⋄ civ1 ;
 evmax1 = evmax0 ⋄ civ1 ;
                                                                # hide
@@ -240,7 +223,7 @@ depict("tutorial-evmin1-evmax1", new_figure(                   # hide
 ![Algorithmic time 1. Left: minimal. Right: maximal.](image/tutorial-evmin1-evmax1.pdf) 
 
 ```@example CFTP
-civ2   = rand(civ1)
+civ2   = rand(civ0)    ;
 evmin2 = evmin1 ⋄ civ2 ;
 evmax2 = evmax1 ⋄ civ2 ;
                                                                # hide
@@ -259,7 +242,7 @@ depict("tutorial-evmin2-evmax2", new_figure(                   # hide
 ![Algorithmic time 2. Left: minimal. Right: maximal.](image/tutorial-evmin2-evmax2.pdf) 
 
 ```@example CFTP
-civ3   = rand(civ1)
+civ3   = rand(civ0)    ;
 evmin3 = evmin2 ⋄ civ3 ;
 evmax3 = evmax2 ⋄ civ3 ;
                                                                # hide
@@ -278,7 +261,7 @@ depict("tutorial-evmin3-evmax3", new_figure(                   # hide
 ![Algorithmic time 3. Left: minimal. Right: maximal.](image/tutorial-evmin3-evmax3.pdf) 
 
 Observe that monotonicity is maintained: proving this is a significant
-piece of theoretical work [ProppWilson-1996a](@cite). 
+piece of theoretical work [ConnorKendall-2023](@cite). 
 Eventually the trajectories derived
 from the original maximal trajectory will coalesce with those
 derived from the original minimal trajectory. This phenomenon

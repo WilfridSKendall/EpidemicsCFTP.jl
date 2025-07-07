@@ -114,10 +114,11 @@ Markdown.parse("""
 ### Unconditional epidemic
 Consider the simulation of an `S-I-R` epidemic
 in a population of 6 individuals, with 1 initial infective.
-The simulation is driven by an "innovation" `iv0`,
+The simulation is driven by an [`Innovation`](@ref) `iv0`,
 a randomly generated set of potential infections and removals 
 (Figure 3.1, left).
-This innovation `iv0` generates an "evolution" `ev0`, an `S-I-R` epidemic trajectory
+This innovation `iv0` generates an [`Evolution](@ref) `ev0`,
+an `S-I-R` epidemic trajectory
 (Figure 3.1, right).
 ![Unconditional evolution, algorithmic time 0. Left: incidents. Right: superimposed trajectory.](image/tutorial-iv0-ev0.pdf) 
 ```@example CFTP
@@ -144,7 +145,7 @@ depict("tutorial-iv0-ev0", new_figure(                         # hide
 ev0                                                            # hide
 ```
 
-We consider a new random innovation `iv1` (Figure 3.2, left).
+We consider a new random [`Innovation`](@ref) `iv1` (Figure 3.2, left).
 This innovation `iv1` is used in turn to generate a further `S-I-R` epidemic trajectory `ev1`
 (Figure 3.2, right).
 ```@example CFTP
@@ -171,14 +172,17 @@ ev1                                                            # hide
 
 ### Conditional epidemic
 Now consider the same `S-I-R` epidemic, but conditioned by requiring
-removals to occur at times
+removals 
+([`CRemoval`](@ref)s)
+to occur at times
 ```@example CFTP
 ctimes = collect(0.05:0.4:2.0)
 crem = [R(t,i) for (i,t) in enumerate(0.05:0.4:2.0)] ;
 println(ctimes)                          # hide
 ```
 We consider simulations beginning at maximal and minimal trajectories
-compatible with the conditioning (Figure 3.3).
+compatible with the conditioning (Figure 3.3),
+using the function [`extremal_evolution`](@ref).
 ```@example CFTP
 evmax0 = extremal_evolution(initial, duration, ctimes) ;
 evmin0 = extremal_evolution(initial, duration, ctimes; maximal=false) ;
@@ -198,8 +202,8 @@ depict("tutorial-evmin0-evmax0", new_figure(                   # hide
 ![Conditional evolution, algorithmic time 0. Left: minimal. Right: maximal.](image/tutorial-evmin0-evmax0.pdf) 
 
 Maximal and minimal trajectories are now evolved by three steps
-in algorithmic time, using the same innovations `civ1` then `civ2`,
-`civ3`
+in algorithmic time, using the same [`Innovation`](@ref)s `civ1` then `civ2`,
+`civ3` to produce successive [`CEvolution`](@ref)s
 (Figures 3.4, 3.5, 3.6).
 ```@example CFTP
 civ0   = Innovation(initial.n, AI[x for x in evmin0.cremovals], 

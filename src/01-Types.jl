@@ -830,9 +830,6 @@ function Innovation(population::Int, infections::Vector{<:AbstractInfection},
 end
 
 @doc """
-$(TYPEDEF)
-$(TYPEDFIELDS)
-    
 Variant which omits `cremovals` list, which will be assumed to be empty.
 
 ### Example
@@ -857,9 +854,6 @@ function Innovation(population::Int,
 end
 
 @doc """
-$(TYPEDEF)
-$(TYPEDFIELDS)
-    
 Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
 
 ### Example

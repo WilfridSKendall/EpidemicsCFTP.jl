@@ -6,10 +6,12 @@
 """
 $(TYPEDEF)
 
-This represents an abstract incident or a state as occurring
+Represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
-Concrete sub-types are expected to possess a field `t<:Real` (used by function [`isless`](@ref)
-to help produce a total ordering extending the partial ordering 
+Concrete sub-types must possess a field `t<:Real` (used by function [`isless`](@ref).
+This, together with [`EpidemicsCFTP.Removal_order`](@ref)
+and `target` and `infectee` marks,
+produces a total ordering extending the partial ordering 
 (by time) of lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
@@ -25,7 +27,7 @@ Expects a field `kind` which is a `String`,
 used by function `show`
 to represent the particular kind of incident
 symbolically. Data for the `kind` field are held in the
-internal dictionary `kindd`.
+internal dictionary [`TextualRepresentation`](@ref).
 
 The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `AbstractIncident` as `AI`.
 """
@@ -162,7 +164,7 @@ struct Removal <: OperativeRemoval
         noun = "Removal($t, $target)"
         return (target ≤ 0 ? 
                 throw(DomainError(noun, "non-positive mark")) :
-                new(SymbolicRepresentation[Removal], float(t), target))
+                new(TextualRepresentation[Removal], float(t), target))
     end
 
     function Removal(z::AbstractRemoval)
@@ -189,7 +191,7 @@ julia> CRemoval(0.1, 4)
 struct CRemoval <: OperativeRemoval
     "String representation"
     kind::String     
-    "Time of occurrence of R"
+    "Time of occurrence of C"
     t::Float64
     "Timeline whose infection yields activation"
     target::Int
@@ -198,7 +200,7 @@ struct CRemoval <: OperativeRemoval
         noun = "CRemoval($t, $target)"
         return (target ≤ 0 ? 
                 throw(DomainError(noun, "non-positive mark")) :
-                new(SymbolicRepresentation[CRemoval], float(t), target))
+                new(TextualRepresentation[CRemoval], float(t), target))
     end
 
 @doc """
@@ -231,9 +233,8 @@ A `KilledRemoval` should be created (by conversion) only in:
 and it should be the case that `KilledRemoval`s are precisely those
 `AbstractRemoval`s which have `target` in the removal zone.
 
-:::{.callout-warning}
-The above list of functions (creating `KilledRemoval`) should be **reduced**!
-:::
+!!! warning
+    The above list of functions (creating `KilledRemoval`) should be **reduced**!
 
 The submodule [`abbreviations`](@ref EpidemicsCFTP.abbreviations) abbreviates `KilledRemoval` as `KR`.
 
@@ -246,7 +247,7 @@ julia> KilledRemoval(0.1, 4)
 struct KilledRemoval <: NonOperativeRemoval
     "String representation"
     kind::String     
-    "Time of occurrence of R"
+    "Time of occurrence of KR"
     t::Float64
     "Timeline whose infection yields activation"
     target::Int
@@ -255,7 +256,7 @@ function KilledRemoval(t::Real, target::Int)
     noun = "KilledRemoval($t, $target)"
     return (target ≤ 0 ? 
             throw(DomainError(noun, "non-positive mark")) :
-            new(SymbolicRepresentation[KilledRemoval], float(t), target))
+            new(TextualRepresentation[KilledRemoval], float(t), target))
 end
 
 @doc """
@@ -298,7 +299,7 @@ struct RemovalMarker <: NonOperativeRemoval
         noun = "RemovalMarker($t, $target)"
         return (target ≤ 0 ? 
                 throw(DomainError(noun, "non-positive mark")) :
-                new(SymbolicRepresentation[RemovalMarker], float(t), target))
+                new(TextualRepresentation[RemovalMarker], float(t), target))
     end
 
 @doc """
@@ -351,7 +352,7 @@ struct Infection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark(s)"))
         else
-            return new(SymbolicRepresentation[Infection], float(t), target, infectee)
+            return new(TextualRepresentation[Infection], float(t), target, infectee)
         end
     end
 
@@ -390,7 +391,7 @@ julia> PInfection(0.2, 1, 2)
 struct PInfection <: OperativeInfection
     "String representation"
     kind::String
-    "Time of occurrence of I"
+    "Time of occurrence of P"
     t::Float64
     "Timeline needing to be lowest susceptible"
     target::Int
@@ -404,7 +405,7 @@ struct PInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(SymbolicRepresentation[PInfection], float(t), target, infectee)
+            return new(TextualRepresentation[PInfection], float(t), target, infectee)
         end
     end
 
@@ -455,7 +456,7 @@ julia> NoFlyInfection(0.2, 1, 2)
 struct NoFlyInfection <: OperativeInfection
     "String representation"
     kind::String
-    "Time of occurrence of I"
+    "Time of occurrence of NF"
     t::Float64
     "Timeline needing to be lowest susceptible"
     target::Int
@@ -469,7 +470,7 @@ struct NoFlyInfection <: OperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(SymbolicRepresentation[NoFlyInfection], float(t), target, infectee)
+            return new(TextualRepresentation[NoFlyInfection], float(t), target, infectee)
         end
     end
     
@@ -515,7 +516,7 @@ julia> KilledInfection(0.2, 1, 2)
 struct KilledInfection <: NonOperativeInfection
     "String representation"
     kind::String
-    "Time of occurrence of I"
+    "Time of occurrence of KI"
     t::Float64
     "Timeline needing to be lowest susceptible"
     target::Int
@@ -529,7 +530,7 @@ struct KilledInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(SymbolicRepresentation[KilledInfection], float(t), target, infectee)
+            return new(TextualRepresentation[KilledInfection], float(t), target, infectee)
         end
     end
     
@@ -586,7 +587,7 @@ julia> ExpungedInfection(0.2, 1, 2)
 struct ExpungedInfection <: NonOperativeInfection
     "String representation"
     kind::String
-    "Time of occurrence of I"
+    "Time of occurrence of XI"
     t::Float64
     "Timeline needing to be lowest susceptible"
     target::Int
@@ -600,7 +601,7 @@ struct ExpungedInfection <: NonOperativeInfection
         elseif target ≤ 0
             throw(DomainError(noun, "non-positive mark"))
         else
-            return new(SymbolicRepresentation[ExpungedInfection], float(t), target, infectee)
+            return new(TextualRepresentation[ExpungedInfection], float(t), target, infectee)
         end
     end
 
@@ -644,7 +645,7 @@ struct InfectionMarker <: NonOperativeInfection
         elseif target < 0
             throw(DomainError(noun, "negative mark"))
         else
-            return new(SymbolicRepresentation[InfectionMarker], float(t), target, infectee)
+            return new(TextualRepresentation[InfectionMarker], float(t), target, infectee)
         end
     end
     
@@ -1546,9 +1547,11 @@ function InnovationStart_aRWM(prob::Vector{<: Real}, ρ::Real, mark::Real, shift
 end
 end
 
-# Here is the internal dictionary holding the strings 
-# for the `kind` field of various concrete incidents.
-SymbolicRepresentation = Dict(
+"""Internal dictionary holding strings to supply textual 
+representations _via_ the `kind` field of various 
+concrete incidents.
+"""
+TextualRepresentation = Dict(
     Removal           => "ℛ",
     CRemoval          => "𝒞",
     KilledRemoval     => "𝒦",

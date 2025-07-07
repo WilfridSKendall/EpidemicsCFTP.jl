@@ -25,6 +25,10 @@ has sub-types `AbstractIncident`
 and `SIR` 
 (representing the state of the `S-I-R` 
 incident at a particular moment of time). 
+```@docs
+EpidemicsCFTP.TextualRepresentation
+```
+
 
 ### The state of an epidemic
 The purpose of the type `SIR` is 

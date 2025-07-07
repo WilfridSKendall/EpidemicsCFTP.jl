@@ -119,7 +119,7 @@ a randomly generated set of potential infections and removals
 (Figure 3.1, left).
 This innovation `iv0` generates an "evolution" `ev0`, an `S-I-R` epidemic trajectory
 (Figure 3.1, right).
-![Algorithmic time 0. Left: incidents. Right: incidents with superimposed trajectory.](image/tutorial-iv0-ev0.pdf) 
+![Unconditional evolution, algorithmic time 0. Left: incidents. Right: superimposed trajectory.](image/tutorial-iv0-ev0.pdf) 
 ```@example CFTP
 initial  = SIR(0.0, 5, 1, 0);
 iv0 = rand(Innovation(initial.n, AI[], duration=duration, α=α, β=β)) ;
@@ -166,7 +166,7 @@ depict("tutorial-iv1-ev1", new_figure(                         # hide
 ) ; nothing                                                    # hide
 ev1                                                            # hide
 ```
-![Algorithmic time 1. Left: incidents. Right: incidents with superimposed trajectory.](image/tutorial-iv1-ev1.pdf) 
+![Unconditional evolution, algorithmic time 1. Left: incidents. Right: superimposed trajectory.](image/tutorial-iv1-ev1.pdf) 
 
 
 ### Conditional epidemic
@@ -195,7 +195,7 @@ depict("tutorial-evmin0-evmax0", new_figure(                   # hide
     imagetype="pdfonly"                                        # hide
 ) ; nothing                                                    # hide
 ```
-![Algorithmic time 0. Left: minimal. Right: maximal.](image/tutorial-evmin0-evmax0.pdf) 
+![Conditional evolution, algorithmic time 0. Left: minimal. Right: maximal.](image/tutorial-evmin0-evmax0.pdf) 
 
 Maximal and minimal trajectories are now evolved by three steps
 in algorithmic time, using the same innovations `civ1` then `civ2`,
@@ -220,7 +220,7 @@ depict("tutorial-evmin1-evmax1", new_figure(                   # hide
     imagetype="pdfonly"                                        # hide
 ) ; nothing                                                    # hide
 ```
-![Algorithmic time 1. Left: minimal. Right: maximal.](image/tutorial-evmin1-evmax1.pdf) 
+![Conditional evolution, algorithmic time 1. Left: minimal. Right: maximal.](image/tutorial-evmin1-evmax1.pdf) 
 
 ```@example CFTP
 civ2   = rand(civ0)    ;
@@ -239,7 +239,7 @@ depict("tutorial-evmin2-evmax2", new_figure(                   # hide
     imagetype="pdfonly"                                        # hide
 ) ; nothing                                                    # hide
 ```
-![Algorithmic time 2. Left: minimal. Right: maximal.](image/tutorial-evmin2-evmax2.pdf) 
+![Conditional evolution, algorithmic time 2. Left: minimal. Right: maximal.](image/tutorial-evmin2-evmax2.pdf) 
 
 ```@example CFTP
 civ3   = rand(civ0)    ;
@@ -258,7 +258,7 @@ depict("tutorial-evmin3-evmax3", new_figure(                   # hide
     imagetype="pdfonly"                                        # hide
 ) ; nothing                                                    # hide
 ```
-![Algorithmic time 3. Left: minimal. Right: maximal.](image/tutorial-evmin3-evmax3.pdf) 
+![Conditional evolution, algorithmic time 3. Left: minimal. Right: maximal.](image/tutorial-evmin3-evmax3.pdf) 
 
 Observe that monotonicity is maintained: proving this is a significant
 piece of theoretical work [ConnorKendall-2023](@cite). 

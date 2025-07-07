@@ -18,10 +18,14 @@ based principally on time `t` of occurrence of
 the two arguments, which should be 
 instances of
 [`AbstractIncident`](@ref)s.
-`AbstractInfection`s precede `AbstractRemoval`s if occurring at the same time `t`.
+`AbstractInfection`s precede `AbstractRemoval`s if occurring at the same time `t`,
+additionally
+a pre-computed order of subtypes is employed:
+```@docs
+EpidemicsCFTP.Removal_order
+```
 If necessary, further consideration uses
 `target` mark (and `infectee` mark if applicable).
-Finally a pre-computed order of subtypes is employed.
 ```@docs
 isless(::AbstractIncident,  ::AbstractIncident)
 isless(::AbstractRemoval,   ::AbstractRemoval) 

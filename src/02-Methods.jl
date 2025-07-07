@@ -450,6 +450,9 @@ function isless(x::AbstractIncident, y::AbstractIncident)
 end
 
 # Possible efficiency gain: implement as `Tuple`?
+"""
+Data to help determine total ordering for concrete [`AbstractIncident`](@ref) types.
+"""
 Removal_order = Dict(CRemoval => 1, Removal => 2, 
                      KilledRemoval => 3, RemovalMarker => 4)
 

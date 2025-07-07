@@ -1194,8 +1194,7 @@ for an `AbstractRemoval` occurring after removal time for the corresponding time
 ### Keyword arguments
 $(keyword_table("t0::Real=-Inf, duration::Real=Inf"))
 
-!!! warning
-    Why no `size` parameter?!
+There is no `size` keyword-parameter because it is deduced from the `size` parameter for the `ev` argument.
 
 ### Example
 ```jldoctest CEvolution_setup
@@ -1345,7 +1344,7 @@ employing an [`Innovation`](@ref).
 and their default values are empty lists.
 
 ### Keyword arguments
-$(keyword_table("LFE::Vector{AI}=AbstractIncident[], NFZ1::Vector{Real}=Real[], NFZ2::Vector{Real}=Real[], NFZ::Vector{Real}=Real[], size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
+$(keyword_table("LFE::Vector{AI}=AI[], NFZ1::Vector{Real}=Real[], NFZ2::Vector{Real}=Real[], NFZ::Vector{Real}=Real[], size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
 
 ### Example
 ```jldoctest CEvolution_setup

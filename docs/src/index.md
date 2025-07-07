@@ -117,7 +117,7 @@ in a population of 6 individuals, with 1 initial infective.
 The simulation is driven by an [`Innovation`](@ref) `iv0`,
 a randomly generated set of potential infections and removals 
 (Figure 3.1, left).
-This innovation `iv0` generates an [`Evolution](@ref) `ev0`,
+This innovation `iv0` generates an [`Evolution`](@ref) `ev0`,
 an `S-I-R` epidemic trajectory
 (Figure 3.1, right).
 ![Unconditional evolution, algorithmic time 0. Left: incidents. Right: superimposed trajectory.](image/tutorial-iv0-ev0.pdf) 
@@ -146,7 +146,8 @@ ev0                                                            # hide
 ```
 
 We consider a new random [`Innovation`](@ref) `iv1` (Figure 3.2, left).
-This innovation `iv1` is used in turn to generate a further `S-I-R` epidemic trajectory `ev1`
+This innovation `iv1` is used in turn to generate  an [`Evolution`](@ref)
+(a further `S-I-R` epidemic trajectory) `ev1`
 (Figure 3.2, right).
 ```@example CFTP
 iv1 = rand(iv0) ;

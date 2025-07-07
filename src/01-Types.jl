@@ -787,10 +787,16 @@ struct Innovation <: AbstractInnovation
     β          ::Real
 
 @doc """
-    Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval}, ::Vector{CRemoval};
-                t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0) 
 This is the usual basic creation of an `Innovation`, specifying
 all of `infections`, `removals`, and `cremovals`.
+
+### Keyword arguments
+`t0::Real=-Inf`, 
+`duration::Real=Inf`, 
+`size::Int=0`, 
+`α::Real=0.0`, 
+`β::Real=0.0`
+
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
 population = 3
@@ -809,7 +815,8 @@ cremovals:  CRemoval[𝒞₀.₀₀¹,𝒞₀.₀₅²])
 function Innovation(population::Int, infections::Vector{<:AbstractInfection},
                     removals::Vector{<:AbstractRemoval},
                     cremovals::Vector{CRemoval};
-                    t0::Real=-Inf, duration::Real=Inf, size::Int=0, α::Real=0.0, β::Real=0.0) 
+                    t0::Real=-Inf, 
+                    duration::Real=Inf, size::Int=0, α::Real=0.0, β::Real=0.0) 
     noun = "Innovation($population, $infections, $removals, $cremovals)"
     if population ≤ 0
         throw(DomainError(noun, "non-positive population size $population"))
@@ -831,6 +838,13 @@ end
 
 @doc """
 Variant which omits `cremovals` list, which will be assumed to be empty.
+
+### Keyword arguments
+`t0::Real=-Inf`, 
+`duration::Real=Inf`, 
+`size::Int=-1`, 
+`α::Real=-1.0`, 
+`β::Real=-1.0`
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -855,6 +869,13 @@ end
 
 @doc """
 Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
+
+### Keyword arguments
+`t0::Real=-Inf`, 
+`duration::Real=Inf`, 
+`size::Int=-1`, 
+`α::Real=-1.0`, 
+`β::Real=-1.0`
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -977,6 +998,9 @@ struct Evolution <: AbstractEvolution
 An `Evolution` can be constructed using only an `initial` state 
 and an `AbstractInnovation`.
 
+### Keyword arguments
+`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+
 ### Example
 ```jldoctest
 initial    = SIR(0, 2, 1, 0)
@@ -1023,6 +1047,10 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation;
 An `Evolution` can be constructed using only an `initial` state 
 and a `chronology` (a `Vector{AbstractIncident}` of `AbstractIncident`s
 in increasing order).
+
+### Keyword arguments
+`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+
 ### Example 
 ```jldoctest
 initial    = SIR(0, 2, 1, 0)
@@ -1158,6 +1186,7 @@ struct CEvolution <: AbstractEvolution
 @doc """
 This is the first way to construct a [`CEvolution`](@ref): 
 updating an [`AbstractEvolution`](@ref) using a candidate `Innovation`.
+
 The procedure is as follows:
 
 1. Test for compatibility between `ev` and `iv`:  
@@ -1174,6 +1203,11 @@ for an `AbstractRemoval` occurring after removal time for the corresponding time
 6. Now use `compute_nofly` to compute the "no fly zone".
 7. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ`.
 
+### Keyword arguments
+`t0::Real=-Inf`, `duration::Real=Inf`
+
+!!! warning
+    Why no `size` parameter?!
 
 ### Example
 ```jldoctest CEvolution_setup
@@ -1284,6 +1318,11 @@ This is the second way to construct a [`CEvolution`](@ref):
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
 **Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
 and their default values are empty lists.
+
+### Keyword arguments
+`LFE=AbstractIncident[]`, `NFZ1=Real[]`, `NFZ2=Real[]`, `NFZ=Real[]`,
+`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+
 ### Example
 ```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
@@ -1317,6 +1356,11 @@ This is the third way:
 employing an [`Innovation`](@ref).
 **Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
 and their default values are empty lists.
+
+### Keyword arguments
+`LFE=AbstractIncident[]`, `NFZ1=Real[]`, `NFZ2=Real[]`, `NFZ=Real[]`,
+`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+
 ### Example
 ```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
@@ -1523,6 +1567,9 @@ function InnovationStart_aRWM(prior::Categorical, ρ::Real, mark::Real, shift::I
 end    
 
 @doc """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution
 and (by default) .
@@ -1541,7 +1588,8 @@ function InnovationStart_aRWM(prob::Vector{<: Real}, ρ::Real, mark::Real, shift
 end
 end
 
-"""Internal dictionary holding strings to supply textual 
+"""
+Internal dictionary holding strings to supply textual 
 representations _via_ the `kind` field of various 
 concrete incidents.
 """

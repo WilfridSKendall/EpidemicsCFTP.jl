@@ -38,9 +38,11 @@ export AI,
     IM, RM
     
  AI = AbstractIncident;
-AIF = AbstractInfection;   I = Infection; P = PInfection;
+AIF = AbstractInfection;   
+  I = Infection;           P = PInfection;
  NF = NoFlyInfection;     XI = ExpungedInfection;
-AIR = AbstractRemoval;     R = Removal;   C = CRemoval;
+AIR = AbstractRemoval;     
+  R = Removal;             C = CRemoval;
  KI = KilledInfection;    KR = KilledRemoval;
  OI = OperativeInfection; NR = NonOperativeInfection;
  OR = OperativeRemoval;   NR = NonOperativeRemoval;

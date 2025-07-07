@@ -791,11 +791,7 @@ This is the usual basic creation of an `Innovation`, specifying
 all of `infections`, `removals`, and `cremovals`.
 
 ### Keyword arguments
-`t0::Real=-Inf`, 
-`duration::Real=Inf`, 
-`size::Int=0`, 
-`α::Real=0.0`, 
-`β::Real=0.0`
+$(keyword_table("t0::Real=-Inf, duration::Real=Inf, size::Int=0, α::Real=0.0, β::Real=0.0"))
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -840,11 +836,7 @@ end
 Variant which omits `cremovals` list, which will be assumed to be empty.
 
 ### Keyword arguments
-`t0::Real=-Inf`, 
-`duration::Real=Inf`, 
-`size::Int=-1`, 
-`α::Real=-1.0`, 
-`β::Real=-1.0`
+$(keyword_table("t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0"))
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -871,11 +863,7 @@ end
 Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
 
 ### Keyword arguments
-`t0::Real=-Inf`, 
-`duration::Real=Inf`, 
-`size::Int=-1`, 
-`α::Real=-1.0`, 
-`β::Real=-1.0`
+$(keyword_table("t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0"))
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -999,7 +987,7 @@ An `Evolution` can be constructed using only an `initial` state
 and an `AbstractInnovation`.
 
 ### Keyword arguments
-`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+$(keyword_table("size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
 
 ### Example
 ```jldoctest
@@ -1049,7 +1037,7 @@ and a `chronology` (a `Vector{AbstractIncident}` of `AbstractIncident`s
 in increasing order).
 
 ### Keyword arguments
-`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+$(keyword_table("size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
 
 ### Example 
 ```jldoctest
@@ -1204,7 +1192,7 @@ for an `AbstractRemoval` occurring after removal time for the corresponding time
 7. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ`.
 
 ### Keyword arguments
-`t0::Real=-Inf`, `duration::Real=Inf`
+$(keyword_table("t0::Real=-Inf, duration::Real=Inf"))
 
 !!! warning
     Why no `size` parameter?!
@@ -1320,8 +1308,7 @@ using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
 and their default values are empty lists.
 
 ### Keyword arguments
-`LFE=AbstractIncident[]`, `NFZ1=Real[]`, `NFZ2=Real[]`, `NFZ=Real[]`,
-`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+$(keyword_table("LFE::Vector{AI}=AI[], NFZ1::Vector{Real}=Real[], NFZ2::Vector{Real}=Real[], NFZ::Vector{Real}=Real[],  size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
 
 ### Example
 ```jldoctest CEvolution_setup
@@ -1358,8 +1345,7 @@ employing an [`Innovation`](@ref).
 and their default values are empty lists.
 
 ### Keyword arguments
-`LFE=AbstractIncident[]`, `NFZ1=Real[]`, `NFZ2=Real[]`, `NFZ=Real[]`,
-`size::Int=0`, `t0::Real=-Inf`, `duration::Real=Inf`
+$(keyword_table("LFE::Vector{AI}=AbstractIncident[], NFZ1::Vector{Real}=Real[], NFZ2::Vector{Real}=Real[], NFZ::Vector{Real}=Real[], size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
 
 ### Example
 ```jldoctest CEvolution_setup

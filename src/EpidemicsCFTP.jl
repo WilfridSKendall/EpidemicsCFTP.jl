@@ -33,6 +33,8 @@ import DataFrames
 import Random
 import Random: SamplerTrivial, rand, AbstractRNG
 
+import PrettyTables: pretty_table
+
 # # Exports
 # # =======
 # # These entities can be invoked without qualification by parent module `EpidemicsCFTP`.
@@ -77,6 +79,17 @@ export BadNFZ, ExpungedInfectionGivesValidTrajectory
 # This is _not_ explicitly exported: import or use it 
 # as `EpidemicsCFTP.abbreviations`.
 
+# # Useful helper function
+# This generates a Markdown table from a line of keyword arguments
+# separated by commas
+function keyword_table(x::String) 
+    y = [split(replace(strip(line),"::"=>"="),"=") for line in split(x,",")]
+    z = stack(y,dims=2)
+    pretty_table(String, z[2:end,:]; header=z[1,:], backend=Val(:markdown),
+                 row_label_column_title="Keyword", 
+                 row_labels=["Type", "Default"])
+    end
+    
 # # Included files
 # # ==============
 # # Include types defined in this package.

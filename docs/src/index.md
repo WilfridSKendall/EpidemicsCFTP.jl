@@ -123,6 +123,10 @@ an `S-I-R` epidemic trajectory
 ![Unconditional evolution, algorithmic time 0. Left: incidents. Right: superimposed trajectory.](image/tutorial-iv0-ev0.pdf) 
 ```@example CFTP
 initial  = SIR(0.0, 5, 1, 0);
+
+duration = 2.0;
+α, β     = 0.2, 1.5;
+
 iv0 = rand(Innovation(initial.n, AI[], duration=duration, α=α, β=β)) ;
 ev0 = Evolution(initial, iv0)
                                                                # hide
@@ -172,15 +176,23 @@ ev1                                                            # hide
 
 
 ### Conditional epidemic
-Now consider the same `S-I-R` epidemic, but conditioned by requiring
-removals 
+Now consider an `S-I-R` epidemic conditioned by requiring
+removals
 ([`CRemoval`](@ref)s)
 to occur at times
 ```@example CFTP
+initial  = SIR(0.0, 5, 1, 0);
+
+duration = 2.0;
+α, β     = 0.4, 1.5;
+
 ctimes = collect(0.05:0.4:2.0)
 crem = [R(t,i) for (i,t) in enumerate(0.05:0.4:2.0)] ;
 println(ctimes)                          # hide
 ```
+Here we double the specific infection rate α to obtain better development of the
+algorithmic evolution.
+
 We consider simulations beginning at maximal and minimal trajectories
 compatible with the conditioning (Figure 3.3),
 using the function [`extremal_evolution`](@ref).

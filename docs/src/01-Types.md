@@ -82,7 +82,7 @@ depict("key", new_figure(key_template,                             # hide
             R(x+10dx,2),                                           # hide
             KilledRemoval(x+12dx,1),                               # hide
             C(x+14dx,2)], theme=theme),                            # hide
-        draw_elements([I(x+dx,1,3),                                # hide 
+        draw_elements([I(x+dx,1,3),                                # hide
             P(x+3dx,2,3),                                          # hide
             NoFlyInfection(x+5dx,1,3),                             # hide
             ExpungedInfection(x+7dx,2,3),                          # hide
@@ -90,7 +90,7 @@ depict("key", new_figure(key_template,                             # hide
             R(x+11dx,2),                                           # hide
             KilledRemoval(x+13dx,1),                               # hide
             C(x+15dx,2)], theme=theme),                            # hide
-        draw_elements([I(x+dx,1,3),                                # hide 
+        draw_elements([I(x+dx,1,3),                                # hide
             P(x+3dx,2,3),                                          # hide
             NoFlyInfection(x+5dx,1,3),                             # hide
             ExpungedInfection(x+7dx,2,3),                          # hide
@@ -269,6 +269,9 @@ Innovation(::Int, ::Vector{<:AbstractInfection}, ::Vector{<:AbstractRemoval})
 Innovation(::Int, ::Vector{AbstractIncident})
 ```
 
+!!! warning
+    Should `duration`, `α` and `β` (here and elsewhere) always be positive?
+
 ### Two kinds of `AbstractEvolution`
 [`AbstractEvolution`](@ref) has two subtypes:
 `Evolution` carries out the simulation of an epidemic from a given initial `SIR` value,
@@ -278,6 +281,8 @@ in the way it treats [`AbstractRemoval`](@ref)s.
 (This distinctive behaviour is implemented in the [`evolution`](@ref) function
 when keyword `conditioned` is `true`.)
 
+!!! warning
+    Should `duration` (here and elsewhere) always be positive?
 
 Instances should always possess fields as given in the table.
 
@@ -299,6 +304,7 @@ Instances should always possess fields as given in the table.
 | `size`        | `Int`                        | **keyword**  | `                 | ignored if `0`    |
 | `t0`          | `Real`                       | **keyword**  | `                 | computed if `-∞`  |
 | `duration`    | `Real`                       | **keyword**  | `                 | computed if `∞`   |
+
 
 #### Unconditioned `Evolution`
 

@@ -9,9 +9,9 @@ $(TYPEDEF)
 Represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 Concrete sub-types must possess a field `t<:Real` (used by function [`isless`](@ref).
-This, together with [`EpidemicsCFTP.Removal_order`](@ref)
+Combined with [`EpidemicsCFTP.Removal_order`](@ref)
 and `target` and `infectee` marks,
-produces a total ordering extending the partial ordering 
+this produces a total ordering extending the partial ordering 
 (by time) of lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
@@ -153,7 +153,7 @@ julia> Removal(0.1, 4)
 ```
 """
 struct Removal <: OperativeRemoval
-    "String representation"
+    "String representation using `ℛ`"
     kind::String     
     "Time of occurrence of R"
     t::Float64
@@ -189,7 +189,7 @@ julia> CRemoval(0.1, 4)
 ```
 """
 struct CRemoval <: OperativeRemoval
-    "String representation"
+    "String representation using `𝒞`"
     kind::String     
     "Time of occurrence of C"
     t::Float64
@@ -245,7 +245,7 @@ julia> KilledRemoval(0.1, 4)
 ```
 """
 struct KilledRemoval <: NonOperativeRemoval
-    "String representation"
+    "String representation using `𝒦`"
     kind::String     
     "Time of occurrence of KR"
     t::Float64
@@ -291,8 +291,11 @@ julia> RemovalMarker(0.1, 4)
 ```
 """
 struct RemovalMarker <: NonOperativeRemoval
+    "String representation using `ℳ`"
     kind      ::String
+    "Time of occurrence of RM"
     t         ::Float64
+    "Timeline whose infection would yield activation (not applicable here)"
     target    ::Int
     
     function RemovalMarker(t::Real, target::Int)
@@ -336,7 +339,7 @@ julia> Infection(0.2, 1, 2)
 ```
 """
 struct Infection <: OperativeInfection
-    "String representation"
+    "String representation using `ℐ`"
     kind::String
     "Time of occurrence of I"
     t::Float64
@@ -389,7 +392,7 @@ julia> PInfection(0.2, 1, 2)
 ```
 """
 struct PInfection <: OperativeInfection
-    "String representation"
+    "String representation using `𝒫`"
     kind::String
     "Time of occurrence of P"
     t::Float64
@@ -454,7 +457,7 @@ julia> NoFlyInfection(0.2, 1, 2)
 ```
 """
 struct NoFlyInfection <: OperativeInfection
-    "String representation"
+    "String representation using `𝒩`"
     kind::String
     "Time of occurrence of NF"
     t::Float64
@@ -514,7 +517,7 @@ julia> KilledInfection(0.2, 1, 2)
 ```
 """
 struct KilledInfection <: NonOperativeInfection
-    "String representation"
+    "String representation using `𝒦`"
     kind::String
     "Time of occurrence of KI"
     t::Float64
@@ -585,7 +588,7 @@ julia> ExpungedInfection(0.2, 1, 2)
 ```
 """
 struct ExpungedInfection <: NonOperativeInfection
-    "String representation"
+    "String representation using `𝒳`"
     kind::String
     "Time of occurrence of XI"
     t::Float64
@@ -633,9 +636,13 @@ julia> InfectionMarker(0.2, 1, 2)
 ```
 """
 struct InfectionMarker <: NonOperativeInfection
+    "String representation using `ℳ`"
     kind      ::String
+    "Time of occurrence of IM"
     t         ::Float64
+    "Timeline needing to be lowest susceptible"
     target    ::Int
+    "Timeline whose infection would yield activation (not applicable here)"
     infectee  ::Int
     
     function InfectionMarker(t::Real, target::Int, infectee::Int) 
@@ -765,7 +772,7 @@ If they are used (for example for random generation) then there is a need to tes
 have been assigned realistic values.
 """
 struct Innovation <: AbstractInnovation
-    "Number of target population."
+    "Number of target population (should be positive)."
     population ::Int
     "Maximum possible number of infectives/removals."
     size       ::Int
@@ -955,7 +962,7 @@ AbstractRemoval[𝒞₀.₀₀¹,ℳ⁺[∞]²,ℳ⁺[∞]³]
 ```
 """
 struct Evolution <: AbstractEvolution
-    "Number of target population."
+    "Number of target population (should be positive)."
     population  ::Int
     "Maximum possible number of infectives/removals."
     size        ::Int
@@ -1134,7 +1141,7 @@ AbstractIncident[𝒩₀.₀₀²ᑉ³,𝒳₀.₂₀²ᑉ³,ℐ₀.₇₀¹ᑉ�
 ```
 """
 struct CEvolution <: AbstractEvolution
-    "Number of target population."
+    "Number of target population (should be positive)."
     population ::Int
     "Maximum possible number of infectives/removals."
     size       ::Int
@@ -1427,7 +1434,9 @@ InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
+    "Prior probability distribution"
     prior    ::Categorical
+    "Proposal of new starting value for initial `SIR`"
     proposal ::Int
 
 function InnovationStart_IS(prior::Categorical, proposal::Int)::InnovationStart_IS
@@ -1483,9 +1492,13 @@ InnovationStart_sRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Re
 ```
 """
 struct InnovationStart_sRWM <: AbstractInnovationStart
+    "Prior probability distribution (should be only on `[-1,0,+1]` and symmetric)"
     prior ::Categorical
+    "Used to determine acceptance."
     mark  ::Real
+    "Proposal of shift to apply to initial `SIR`."
     shift ::Int
+    "Maximum permissible value for starting value."
     nmax  ::Int
 
 function InnovationStart_sRWM(prior::Categorical, mark::Real, shift::Int)::InnovationStart_sRWM
@@ -1541,10 +1554,15 @@ InnovationStart_aRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Re
 ```
 """
 struct InnovationStart_aRWM <: AbstractInnovationStart
+    "Prior probability distribution (should be only on `[-1,0,+1]`)"
     prior ::Categorical
+    "Probability of proposing `-1`."
     ρ     ::Real
+    "Used to determine acceptance."
     mark  ::Real
+    "Proposal of shift to apply to initial `SIR`."
     shift ::Int
+    "Maximum permissible value for starting value."
     nmax  ::Int
 
 function InnovationStart_aRWM(prior::Categorical, ρ::Real, mark::Real, shift::Int)::InnovationStart_aRWM
@@ -1552,9 +1570,6 @@ function InnovationStart_aRWM(prior::Categorical, ρ::Real, mark::Real, shift::I
 end    
 
 @doc """
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution
 and (by default) .

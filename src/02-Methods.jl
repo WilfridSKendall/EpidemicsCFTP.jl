@@ -471,6 +471,7 @@ julia> R(0.10, 1) < R(0.10, 2)
 true
 julia> C(0.10, 1) < C(0.10, 2)
 true
+```
 """
 function isless(x::AbstractRemoval, y::AbstractRemoval) 
     if x.t != y.t
@@ -500,6 +501,7 @@ julia> P(0.15, 1, 5) < P(0.15, 2, 5)
 true
 julia> I(0.15, 1, 5) < I(0.15, 2, 4)
 false
+```
 """
 function isless(x::AbstractInfection, y::AbstractInfection) 
     # 

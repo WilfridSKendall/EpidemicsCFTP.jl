@@ -1636,9 +1636,13 @@ function Base.rand(rng::AbstractRNG, d::SamplerTrivial{Innovation})::Innovation
     if !(α > 0 && β > 0)
         error("Infection or removal parameter for innovation is not positive!")
     end
+    # Removals form Poisson process of intensity `β` on each timeline
+    # (identified by target `k`).
     removals = ∪([AIR[R(t, k) 
         for t ∈ rand(rng, Uniform(0, duration), rand(rng, Poisson(β * duration)))] 
         for k ∈ 1:m]...)
+    # Infections with infectee `k` form Poisson process of intensity `α (n-k+1)`
+    # on each appropriate timeline (identified by target/infector `i<k`).
     infections = ∪(Vector{AIF}[[
                         I(t, rand(rng, DiscreteUniform(1, k-1)), k)
                     for t ∈ rand(rng, Uniform(0, duration), 

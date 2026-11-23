@@ -1558,7 +1558,7 @@ struct InnovationStart_aRWM <: AbstractInnovationStart
     prior ::Categorical
     "Probability of proposing `-1`."
     ρ     ::Real
-    "Used to determine acceptance."
+    "Mark used to determine acceptance."
     mark  ::Real
     "Proposal of shift to apply to initial `SIR`."
     shift ::Int

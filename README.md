@@ -1,10 +1,12 @@
 # EpidemicsCFTP.jl
 
-This is a `julia` package, currently under development, which is intended to implement Coupling from the Past (CFTP) for $\operatorname{S-I-R}$ epidemics with observed removals.
+This is a `julia` package, currently under development, 
+which is intended to implement Coupling from the Past (CFTP) 
+for `SIR` epidemics with observed removals.
 
 Requirements
 ------------
-The package is being implemented using `Julia` 1.11 (as of `20-01-2025`)
+The package is implemented using `Julia` 1.13.3 (as of `23-11-2026`)
 
 > [!NOTE]
 >
@@ -70,18 +72,3 @@ For `pdf` format, working in `bash`,
 make pdf-format
 ```
 
-## TODO list
-
-- [ ] `26-02-2024` Introduce type `CInnovation`? Or include basic information in `Innovation`?
-  - [x] `26-02-2024` Add bare type.
-  
-  - [x] ~~`26-02-2024`  Arrange for this automatically to create `finis` field from `cremoval` list using `create_finis` (see below) and then render `KilledInfection`s in `infections` field and `KilledRemoval`s in `removals` field as appropriate.~~
-  - [x] `26-02-2024` Break up `interval` function into `create_finis` and `create_start` functions.
-  - [x] ~~`26-02-2024` Then add  `CEvolution(::AbstractEvolution,::CInnovation)` , and make  `CEvolution(::AbstractEvolution,::Innovation)`  factor through the new function.~~  
-  - [x] ~~`26-02-2024` Add a specific `CEvolution(::CEvolution,::CInnovation)` .~~
-- [x] `26-02-2024` Refactor `CEvolution(::AbstractEvolution,::Innovation)` to compute `NFZ` in a separate function, using `compute_NFZ(::CEvolution,::Innovation)`.
-- [ ] `26-02-2024` Refactor `CEvolution(::AbstractEvolution,::Innovation)` to be efficient about use of `resulting_cremovals(::AbstractEvolution,::Innovation)` function.
-- [ ] `26-02-2024` Check for functions which can be deprecated (use `@warn`) then removed.
-- [ ] Channel all random generation through `rand` (1/2)
-- [x] `13/03/24]`Introduce `AbstractInnovation`s which forbid `Infection`s (and `Removal`s) affecting time lines above a given threshold (most typically, the highest threshold experiencing a `CRemoval`).
-- [ ] `13/03/24]` Introduce  `AbstractInnovation`s to allow for change in initial infectives, and to do _CFTP_ in this case.

@@ -1430,7 +1430,7 @@ InnovationStart_IS(prior, 1)
 
 # output
 
-InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 1)
+InnovationStart_IS(Categorical(Real[0.8, 0.2]), 1)
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
@@ -1456,7 +1456,7 @@ InnovationStart_IS(prob, 1)
 
 # output
 
-InnovationStart_IS(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 1)
+InnovationStart_IS(Categorical(Real[0.7, 0.3]), 1)
 ```
 """
 function InnovationStart_IS(prob::Vector{<: Real}, proposal::Int)::InnovationStart_IS
@@ -1488,7 +1488,7 @@ InnovationStart_sRWM(prior, 0.5, 1)
 
 # output
 
-InnovationStart_sRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 0.5, 1, 2)
+InnovationStart_sRWM(Categorical(Real[0.8, 0.2]), 0.5, 1, 2)
 ```
 """
 struct InnovationStart_sRWM <: AbstractInnovationStart
@@ -1516,7 +1516,7 @@ InnovationStart_sRWM(prob, 0.5, 1)
 
 # output
 
-InnovationStart_sRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 0.5, 1, 2)
+InnovationStart_sRWM(Categorical(Real[0.7, 0.3]), 0.5, 1, 2)
 ```
 """
 function InnovationStart_sRWM(prob::Vector{<: Real}, mark::Real, shift::Int)::InnovationStart_sRWM
@@ -1550,7 +1550,7 @@ InnovationStart_aRWM(prior, 0.9, 0.5, 1)
 
 # output
 
-InnovationStart_aRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.8, 0.2]), 0.9, 0.5, 1, 2)
+InnovationStart_aRWM(Categorical(Real[0.8, 0.2]), 0.9, 0.5, 1, 2)
 ```
 """
 struct InnovationStart_aRWM <: AbstractInnovationStart
@@ -1580,8 +1580,7 @@ InnovationStart_aRWM(prob, 0.9, 0.5, 1)
 
 # output
 
-InnovationStart_aRWM(Categorical{Real, Vector{Real}}(support=Base.OneTo(2), p=Real[0.7, 0.3]), 0.9, 0.5, 1, 2)
-```
+InnovationStart_aRWM(Categorical(Real[0.7, 0.3]), 0.9, 0.5, 1, 2)```
 """
 function InnovationStart_aRWM(prob::Vector{<: Real}, ρ::Real, mark::Real, shift::Int)::InnovationStart_aRWM
    return new(Categorical(prob), ρ, mark, shift, length(prob))

@@ -1580,7 +1580,8 @@ InnovationStart_aRWM(prob, 0.9, 0.5, 1)
 
 # output
 
-InnovationStart_aRWM(Categorical(Real[0.7, 0.3]), 0.9, 0.5, 1, 2)```
+InnovationStart_aRWM(Categorical(Real[0.7, 0.3]), 0.9, 0.5, 1, 2)
+```
 """
 function InnovationStart_aRWM(prob::Vector{<: Real}, ρ::Real, mark::Real, shift::Int)::InnovationStart_aRWM
    return new(Categorical(prob), ρ, mark, shift, length(prob))

@@ -1011,20 +1011,21 @@ AbstractIncident[𝒞₂.₀₀¹]
 ```
 
 ### Example II
-```jldoctest LFE_test; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations, Random)
-Random.seed!(43) 
+```jldoctest LFE_test; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
+import StableRNGs: StableRNG
+rng = StableRNG(43) 
 duration, population = 5.0, 5
 α, β = 0.2, 0.1
 cremoval_times = [1.0, 2.0, 3.0, 4.0] 
 initial = SIR(0, population - 1, 1, 0) 
 ev  = extremal_evolution(initial, duration, cremoval_times)
 iv0 = Innovation(population, I[], R[], ev.cremovals; duration=duration, α=α, β=β)
-iv  = rand(iv0)
+iv  = rand(rng, iv0)
 evx = CEvolution(ev, iv)
 evx.LFE
 
 # output
-AbstractIncident[𝒫₀.₀₀¹ᑉ²,ℐ₀.₈₅²ᑉ³,ℐ₀.₉₆³ᑉ⁴,𝒞₁.₀₀⁴,𝒞₂.₀₀⁴,ℐ₂.₁₆⁴ᑉ⁵,𝒞₃.₀₀³,𝒞₄.₀₀⁵]
+AbstractIncident[𝒫₀.₀₀¹ᑉ²,ℐ₀.₂₄¹ᑉ³,ℐ₀.₄₄²ᑉ⁴,ℐ₀.₉₇⁴ᑉ⁵,𝒞₁.₀₀²,𝒞₂.₀₀³,𝒞₃.₀₀⁴,𝒞₄.₀₀⁵]
 ```
 
 ### Example III
@@ -1040,7 +1041,6 @@ true
 function laziest_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::AbstractInnovation,
     resampled_cremovals::Vector{CRemoval}) ::Vector{AbstractIncident}
-# import EpidemicsCFTP: laziest_feasible_evolution
         
     previous_active_infections  = [P(z) for z in ev.history if z isa OperativeInfection]   # <1>
     chron1 = sort(iv.infections ∪ previous_active_infections ∪ resampled_cremovals)        # <2>
@@ -1070,7 +1070,6 @@ function laziest_feasible_evolution(duration::Real,
 end
 function laziest_feasible_evolution(duration::Real, 
     ev::AbstractEvolution, iv::AbstractInnovation) ::Vector{AbstractIncident}
-# import EpidemicsCFTP: resulting_cremovals
     laziest_feasible_evolution(duration, ev, iv, resulting_cremovals(ev, iv))              # <8>
 end
 # 1. For each `OperativeInfection` in the `history` of the previous `CEvolution`, 
@@ -1407,16 +1406,16 @@ See example III from the doctests for [`laziest_feasible_evolution`](@ref) for
 a further simple complementary test using that function.
 ### Example
 ```jldoctest
-import Random
+import StableRNGs: StableRNG
 import EpidemicsCFTP: is_correct_LFE
-Random.seed!(43) 
+rng = StableRNG(43) 
 duration, population = 5.0, 5
 α, β = 0.2, 0.1
 cremoval_times = [1.0, 2.0, 3.0, 4.0] 
 initial = SIR(0, population - 1, 1, 0) 
 ev  = extremal_evolution(initial, duration, cremoval_times)
 iv0 = Innovation(population, I[], R[], ev.cremovals; duration=duration, α=α, β=β)
-iv  = rand(iv0)
+iv  = rand(rng, iv0)
 evx = CEvolution(ev, iv)
 is_correct_LFE(evx)
 
@@ -1542,13 +1541,13 @@ Enable sampling from an `InnovationStart_IS` to return an `Int` which is
 the proposed new initial number of infections.
 ### Example
 ```jldoctest
-import Random: seed!
-seed!(9)
+import StableRNGs: StableRNG
+rng = StableRNG(9)
 iv_ST = InnovationStart_IS(Real[0.4, 0.3, 0.3], 1)
-println([z.proposal for z in rand(iv_ST, 4)])
+println([z.proposal for z in rand(rng, iv_ST, 4)])
 
 # output
-[1, 1, 2, 1]
+[3, 2, 1, 2]
 ```
 """
 function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_IS})::InnovationStart_IS
@@ -1560,16 +1559,16 @@ Enable sampling from an `InnovationStart_sRWM`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
-import Random: seed!
-seed!(9)
+import StableRNGs: StableRNG
+rng = StableRNG(9)
 iv_RWM = InnovationStart_sRWM(Real[0.4, 0.3, 0.3], 0.5, -1)
-[(z.shift, z.mark) for z in rand(iv_RWM, 3)]
+[(z.shift, z.mark) for z in rand(rng, iv_RWM, 3)]
 
 # output
 3-element Vector{Tuple{Int64, Float64}}:
- (1, 0.32267671953844956)
- (1, 0.44225646604528)
- (-1, 0.3631773712936526)
+ (1, 0.7062327340119847)
+ (-1, 0.20531218701085385)
+ (1, 0.8029223816076339)
 ```
 """
 function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_sRWM}):Int
@@ -1581,16 +1580,16 @@ Enable sampling from an `InnovationStart_aRWM`.
 
 ### Example
 ```jldoctest; setup = :(using EpidemicsCFTP, Distributions)
-import Random: seed!
-seed!(9)
+import StableRNGs: StableRNG
+rng = StableRNG(9)
 iv_RWM = InnovationStart_aRWM(Real[0.4, 0.3, 0.3], 0.5, 0.5, -1)
-[(z.shift, z.mark) for z in rand(iv_RWM, 3)]
+[(z.shift, z.mark) for z in rand(rng, iv_RWM, 3)]
 
 # output
 3-element Vector{Tuple{Int64, Float64}}:
- (1, 0.32267671953844956)
- (1, 0.44225646604528)
- (-1, 0.3631773712936526)
+ (1, 0.7062327340119847)
+ (-1, 0.20531218701085385)
+ (1, 0.8029223816076339)
 ```
 """
 function Base.rand(rng::AbstractRNG, d::SamplerTrivial{InnovationStart_aRWM}):Int
@@ -1601,27 +1600,24 @@ end
 """
 Enable sampling of a new `Innovation`.
 ### Example 1
-```jldoctest
-using EpidemicsCFTP.abbreviations
-import Random: seed!
-seed!(9)
+```jldoctest; setup = :(using EpidemicsCFTP.abbreviations)
+import StableRNGs: StableRNG
+rng = StableRNG(9)
 iv = Innovation(2, AIF[I(0.0, 1, 2)], R[], C[C(1.0, 2)], duration=2.0, size=2, α=2, β=3)
-rand(iv)
+rand(rng, iv)
 
 # output
 Innovation(2,
-infections: AbstractInfection[ℐ₀.₁₃¹ᑉ²,ℐ₀.₁₄¹ᑉ²,ℐ₀.₉₂¹ᑉ²]
-removals:   AbstractRemoval[ℛ₀.₀₄¹,ℛ₀.₀₈¹,ℛ₀.₁₀²,ℛ₀.₁₅²,ℛ₀.₂₁²,ℛ₀.₇₂²,ℛ₀.₇₃¹,ℛ₀.₈₈¹,ℛ₁.₃₄²,
-    ℛ₁.₃₅²,ℛ₁.₄₈²,ℛ₁.₆₃²,ℛ₁.₈₁²,ℛ₁.₉₅¹]
-cremovals:  CRemoval[𝒞₁.₀₀¹])
+infections: AbstractInfection[ℐ₀.₀₇¹ᑉ²,ℐ₀.₂₄¹ᑉ²,ℐ₀.₈₃¹ᑉ²,ℐ₁.₁₃¹ᑉ²,ℐ₁.₇₂¹ᑉ²]
+removals:   AbstractRemoval[ℛ₀.₁₀²,ℛ₀.₁₉²,ℛ₀.₆₅²,ℛ₁.₀₀¹,ℛ₁.₀₇¹,ℛ₁.₃₁¹,ℛ₁.₆₅¹,ℛ₁.₆₇¹,ℛ₁.₉₅¹]
+cremovals:  CRemoval[𝒞₁.₀₀²])
 ```
 ### Example 2
-```jldoctest
-using EpidemicsCFTP.abbreviations
-import Random: seed!
-seed!(9)
+```jldoctest; setup = :(using EpidemicsCFTP.abbreviations)
+import StableRNGs: StableRNG
+rng = StableRNG(9)
 iv = Innovation(2, AIF[I(0.0, 1, 2)], R[], C[C(1.0, 2)], duration=2.0, size=2, α=-2, β=3)
-rand(iv)
+rand(rng, iv)
 
 # output
 ERROR: Infection or removal parameter for innovation is not positive!

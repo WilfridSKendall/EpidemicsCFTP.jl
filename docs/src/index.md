@@ -69,7 +69,8 @@ The simulation mechanism uses "algorithmic time" to vary an event-based simulati
 2. successive trajectories maintain the conditioning on active (observed) removals,
 3. the mechanism possesses sufficient monotonicity to permit construction of a classical CFTP algorithm.
 
-Figure 1.1 (see also cover page of manual) illustrates a single step of this procedure.
+Figure 1.1 illustrates a single step.
+The cover page hows the same image but adding information about marks to nodes.
 
 ![Snap-shot of single algorithmic time step towards a conditional epidemic equilibrium,
 together with associated geometric structures.](image/snapshot2-adorned.pdf)

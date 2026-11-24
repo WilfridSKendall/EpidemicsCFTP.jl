@@ -9,6 +9,12 @@ using DocStringExtensions
     $(TYPEDSIGNATURES)
     $(DOCSTRING)
     """
+@template (FUNCTIONS, METHODS, MACROS) =
+    """
+    $(SIGNATURES)
+    $(DOCSTRING)
+    $(METHODLIST)
+    """
 
 loc     = dirname(dirname(pathof(EpidemicsCFTP)))
 version = "$(read(Cmd(`git describe --tags`, dir=loc), String)[1:end-1])"

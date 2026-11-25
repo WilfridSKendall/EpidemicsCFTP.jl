@@ -8,19 +8,25 @@ Requirements
 ------------
 The package is implemented using `Julia` 1.13.3 (as of `23-11-2026`)
 
-> [!NOTE]
->
-> See `REQUIRE` for required `Julia` packages.
-
 Preliminary requirements:
 ```bash
 please apt install python3-pygments
 pip install mkdocs
 pip install python-markdown-math
 ```
-(Note: unsure whether we need `python3-pygments` or `python2-pygments`!
+(Note: unsure whether we need `python3-pygments` or `python2-pygments`!)
 
 Currently installed as developer package.
+
+## Caveats
+
+This is one of the first `julia` packages I have written.
+
+1. Its documentation system is tested only for PDF output.
+
+2. Documentation incidentally uses the `Compose` package for graphics (*via* the associated `EpidemicsUtilities.jl` package).
+   I hope eventually to re-write `EpidemicsUtilities.jl` based on a graphics
+   package which is more actively maintained.
 
 Abbreviations
 ----------

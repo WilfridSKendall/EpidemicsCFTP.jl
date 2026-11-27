@@ -9,9 +9,9 @@ $(TYPEDEF)
 Represents an abstract incident or a state as occurring
 at a time specified by a `Real` number `t`.
 Concrete sub-types must possess a field `t<:Real` (used by function [`isless`](@ref).
-Combined with [`EpidemicsCFTP.Removal_order`](@ref)
+This, together with [`EpidemicsCFTP.Removal_order`](@ref)
 and `target` and `infectee` marks,
-this produces a total ordering extending the partial ordering 
+produces a total ordering extending the partial ordering 
 (by time) of lists of `AbstractTimedOccurrence` entities).
 """
 abstract type AbstractTimedOccurrence end
@@ -295,7 +295,7 @@ struct RemovalMarker <: NonOperativeRemoval
     kind      ::String
     "Time of occurrence of RM"
     t         ::Float64
-    "Timeline whose infection would yield activation (not applicable here)"
+    "Time of occurrence of RM"
     target    ::Int
     
     function RemovalMarker(t::Real, target::Int)
@@ -392,7 +392,7 @@ julia> PInfection(0.2, 1, 2)
 ```
 """
 struct PInfection <: OperativeInfection
-    "String representation using `𝒫`"
+    "String representation"
     kind::String
     "Time of occurrence of P"
     t::Float64
@@ -457,7 +457,7 @@ julia> NoFlyInfection(0.2, 1, 2)
 ```
 """
 struct NoFlyInfection <: OperativeInfection
-    "String representation using `𝒩`"
+    "String representation"
     kind::String
     "Time of occurrence of NF"
     t::Float64
@@ -517,7 +517,7 @@ julia> KilledInfection(0.2, 1, 2)
 ```
 """
 struct KilledInfection <: NonOperativeInfection
-    "String representation using `𝒦`"
+    "String representation"
     kind::String
     "Time of occurrence of KI"
     t::Float64
@@ -588,7 +588,7 @@ julia> ExpungedInfection(0.2, 1, 2)
 ```
 """
 struct ExpungedInfection <: NonOperativeInfection
-    "String representation using `𝒳`"
+    "String representation"
     kind::String
     "Time of occurrence of XI"
     t::Float64
@@ -754,8 +754,7 @@ It is a generic sub-type of [`AbstractEnvironment`](@ref)
 abstract type AbstractInnovation <: AbstractEnvironment end
 
 """
-$(TYPEDEF)
-$(TYPEDFIELDS)
+($TYPEDFIELDS)
 
 This represents an entire unconditioned innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
@@ -772,7 +771,7 @@ If they are used (for example for random generation) then there is a need to tes
 have been assigned realistic values.
 """
 struct Innovation <: AbstractInnovation
-    "Number of target population (should be positive)."
+    "Number of target population."
     population ::Int
     "Maximum possible number of infectives/removals."
     size       ::Int
@@ -793,12 +792,20 @@ struct Innovation <: AbstractInnovation
     "Pairwise specific infectivity."
     β          ::Real
 
+
+# For some reason the following breaks compilation when inserted in next docstring!
+# ### Keyword arguments
+# $(keyword_table("t0::Real=-Inf, duration::Real=Inf, size::Int=0, α::Real=0.0, β::Real=0.0"))
+#
+# """
+    
+    
 @doc """
 This is the usual basic creation of an `Innovation`, specifying
 all of `infections`, `removals`, and `cremovals`.
 
-### Keyword arguments
-$(keyword_table("t0::Real=-Inf, duration::Real=Inf, size::Int=0, α::Real=0.0, β::Real=0.0"))
+Keywords are
+`t0::Real=-Inf`, `duration::Real=Inf`, `size::Int=0`, `α::Real=0.0`, `β::Real=0.0`
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -840,10 +847,9 @@ function Innovation(population::Int, infections::Vector{<:AbstractInfection},
 end
 
 @doc """
+$(TYPEDEF)
+    
 Variant which omits `cremovals` list, which will be assumed to be empty.
-
-### Keyword arguments
-$(keyword_table("t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0"))
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -867,10 +873,8 @@ function Innovation(population::Int,
 end
 
 @doc """
+    
 Variant of `Innovation` based on a time-ordered `chronology` of `AbstractIncident`s.
-
-### Keyword arguments
-$(keyword_table("t0::Real=-Inf, duration::Real=Inf, size::Int=-1, α::Real=-1.0, β::Real=-1.0"))
 
 ### Example
 ```jldoctest innovation; setup = :(using EpidemicsCFTP, EpidemicsCFTP.abbreviations)
@@ -899,7 +903,7 @@ end
     
 # ### Abstract evolution for an $\SIR$ epidemic
 """
-$(TYPEDEF)
+
 
 This represents variants of evolution of an `S-I-R` epidemic.
 It is a generic sub-type of [`AbstractEnvironment`](@ref)
@@ -908,7 +912,7 @@ abstract type AbstractEvolution <: AbstractEnvironment end
 
 # ### (Unconditioned) evolution for an $\SIR$ epidemic
 """
-$(TYPEDEF)
+
 $(TYPEDFIELDS)
 
 This represents an _unconditional_ evolution of an SIR epidemic 
@@ -962,7 +966,7 @@ AbstractRemoval[𝒞₀.₀₀¹,ℳ⁺[∞]²,ℳ⁺[∞]³]
 ```
 """
 struct Evolution <: AbstractEvolution
-    "Number of target population (should be positive)."
+    "Number of target population."
     population  ::Int
     "Maximum possible number of infectives/removals."
     size        ::Int
@@ -992,9 +996,6 @@ struct Evolution <: AbstractEvolution
 @doc """
 An `Evolution` can be constructed using only an `initial` state 
 and an `AbstractInnovation`.
-
-### Keyword arguments
-$(keyword_table("size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
 
 ### Example
 ```jldoctest
@@ -1042,10 +1043,6 @@ function Evolution(initial_state::SIR, innovation::AbstractInnovation;
 An `Evolution` can be constructed using only an `initial` state 
 and a `chronology` (a `Vector{AbstractIncident}` of `AbstractIncident`s
 in increasing order).
-
-### Keyword arguments
-$(keyword_table("size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
-
 ### Example 
 ```jldoctest
 initial    = SIR(0, 2, 1, 0)
@@ -1080,7 +1077,7 @@ end
                         
 # # ### (Conditioned) evolution for an $\SIR$ epidemic
 """
-$(TYPEDEF)
+
 $(TYPEDFIELDS)
 
 This implements _conditional_ evolution of an SIR epidemic 
@@ -1141,7 +1138,7 @@ AbstractIncident[𝒩₀.₀₀²ᑉ³,𝒳₀.₂₀²ᑉ³,ℐ₀.₇₀¹ᑉ�
 ```
 """
 struct CEvolution <: AbstractEvolution
-    "Number of target population (should be positive)."
+    "Number of target population."
     population ::Int
     "Maximum possible number of infectives/removals."
     size       ::Int
@@ -1181,7 +1178,6 @@ struct CEvolution <: AbstractEvolution
 @doc """
 This is the first way to construct a [`CEvolution`](@ref): 
 updating an [`AbstractEvolution`](@ref) using a candidate `Innovation`.
-
 The procedure is as follows:
 
 1. Test for compatibility between `ev` and `iv`:  
@@ -1198,10 +1194,6 @@ for an `AbstractRemoval` occurring after removal time for the corresponding time
 6. Now use `compute_nofly` to compute the "no fly zone".
 7. Then generate the next `CEvolution` using the new `removals` and `cremovals` lists, the new `processed_infections` list, and associated lists `LFE`, `NFZ1`, `NFZ2` and `NFZ`.
 
-### Keyword arguments
-$(keyword_table("t0::Real=-Inf, duration::Real=Inf"))
-
-There is no `size` keyword-parameter because it is deduced from the `size` parameter for the `ev` argument.
 
 ### Example
 ```jldoctest CEvolution_setup
@@ -1312,10 +1304,6 @@ This is the second way to construct a [`CEvolution`](@ref):
 using a `chronology` (a vector of [`AbstractIncident`](@ref)s).
 **Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
 and their default values are empty lists.
-
-### Keyword arguments
-$(keyword_table("LFE::Vector{AI}=AI[], NFZ1::Vector{Real}=Real[], NFZ2::Vector{Real}=Real[], NFZ::Vector{Real}=Real[],  size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
-
 ### Example
 ```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
@@ -1349,10 +1337,6 @@ This is the third way:
 employing an [`Innovation`](@ref).
 **Note** that `LFE`, `NFZ1`, `NFZ2`, `NFZ` are not computed here
 and their default values are empty lists.
-
-### Keyword arguments
-$(keyword_table("LFE::Vector{AI}=AI[], NFZ1::Vector{Real}=Real[], NFZ2::Vector{Real}=Real[], NFZ::Vector{Real}=Real[], size::Int=0, t0::Real=-Inf, duration::Real=Inf"))
-
 ### Example
 ```jldoctest CEvolution_setup
 initial    = SIR(0.0, 2, 1, 0)
@@ -1404,7 +1388,7 @@ end
 
 # ### Innovation starts
 """
-$(TYPEDEF)
+
 
 This abstract type holds information which can be generated by `rand`, and
 then in turn can be combined with a `CEvolution` using `⋄` to generate
@@ -1414,7 +1398,7 @@ the `CEvolution` meets required conditions when started with the proposal.
 abstract type AbstractInnovationStart end
 
 """
-$(TYPEDEF)
+
 $(TYPEDFIELDS)
     
 The `InnovationStart_IS` information is a proposal of a positive integer to be used for the infection field
@@ -1434,9 +1418,7 @@ InnovationStart_IS(Categorical(Real[0.8, 0.2]), 1)
 ```
 """
 struct InnovationStart_IS <: AbstractInnovationStart
-    "Prior probability distribution"
     prior    ::Categorical
-    "Proposal of new starting value for initial `SIR`"
     proposal ::Int
 
 function InnovationStart_IS(prior::Categorical, proposal::Int)::InnovationStart_IS
@@ -1444,9 +1426,6 @@ function InnovationStart_IS(prior::Categorical, proposal::Int)::InnovationStart_
 end    
 
 @doc """
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
 Shortcut: supply the vector of probabilities
 defining the required `Categorical` distribution.
 ### Example
@@ -1465,9 +1444,6 @@ end
 end
 
 """
-$(TYPEDEF)
-$(TYPEDFIELDS)
-    
 The `InnovationStart_sRWM` information is again
 simply a specific `Categorical` distribution `prior`
 to be used in constructing a new proposal for the initial state,
@@ -1492,13 +1468,9 @@ InnovationStart_sRWM(Categorical(Real[0.8, 0.2]), 0.5, 1, 2)
 ```
 """
 struct InnovationStart_sRWM <: AbstractInnovationStart
-    "Prior probability distribution (should be only on `[-1,0,+1]` and symmetric)"
     prior ::Categorical
-    "Used to determine acceptance."
     mark  ::Real
-    "Proposal of shift to apply to initial `SIR`."
     shift ::Int
-    "Maximum permissible value for starting value."
     nmax  ::Int
 
 function InnovationStart_sRWM(prior::Categorical, mark::Real, shift::Int)::InnovationStart_sRWM
@@ -1525,11 +1497,7 @@ end
 end
 
 
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-    
-The `InnovationStart_aRWM` information is again
+"""The `InnovationStart_aRWM` information is again
 simply a specific `Categorical` distribution `prior`
 to be used in constructing a new proposal for the initial state,
 on range of integer values `1:nmax`.
@@ -1554,15 +1522,10 @@ InnovationStart_aRWM(Categorical(Real[0.8, 0.2]), 0.9, 0.5, 1, 2)
 ```
 """
 struct InnovationStart_aRWM <: AbstractInnovationStart
-    "Prior probability distribution (should be only on `[-1,0,+1]`)"
     prior ::Categorical
-    "Probability of proposing `-1`."
     ρ     ::Real
-    "Mark used to determine acceptance."
     mark  ::Real
-    "Proposal of shift to apply to initial `SIR`."
     shift ::Int
-    "Maximum permissible value for starting value."
     nmax  ::Int
 
 function InnovationStart_aRWM(prior::Categorical, ρ::Real, mark::Real, shift::Int)::InnovationStart_aRWM

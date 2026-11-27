@@ -1,13 +1,14 @@
 VERSION.txt
 
 products.txt
-Manifest.toml
 
 *.stamp
 
 config
 
 TEMP-*
+
+SURPLUS/
 
 docs/build/
 src/ARCHIVE/

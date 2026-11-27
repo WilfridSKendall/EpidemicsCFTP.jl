@@ -6,7 +6,7 @@ module EpidemicsCFTP
 using DocStringExtensions
 @template DEFAULT =
     """
-    $(TYPEDSIGNATURES)
+    $(SIGNATURES)
     $(DOCSTRING)
     """
 @template (FUNCTIONS, METHODS, MACROS) =

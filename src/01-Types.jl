@@ -66,6 +66,8 @@ then `target` must index a time line which is infectious just before the removal
 abstract type OperativeRemoval <: AbstractRemoval end
 
 """
+$(TYPEDEF)
+
 This represents a _nonoperative_ abstract removal using a sub-type of [`AbstractRemoval`](@ref).
 It inherits a field `t<:Real` from `AbstractTimedOccurrence`. 
 It also expects a field `target<:Int`.
@@ -752,6 +754,9 @@ It is a generic sub-type of [`AbstractEnvironment`](@ref)
 abstract type AbstractInnovation <: AbstractEnvironment end
 
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 This represents an entire unconditioned innovation corresponding to a single step of _algorithmic_ time,
 stored as a sequence of three **time-ordered** lists 
 (realized and unrealized infections, unrealized removals, conditional removals).
@@ -894,6 +899,8 @@ end
     
 # ### Abstract evolution for an $\SIR$ epidemic
 """
+$(TYPEDEF)
+
 This represents variants of evolution of an `S-I-R` epidemic.
 It is a generic sub-type of [`AbstractEnvironment`](@ref)
 """
@@ -901,6 +908,9 @@ abstract type AbstractEvolution <: AbstractEnvironment end
 
 # ### (Unconditioned) evolution for an $\SIR$ epidemic
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 This represents an _unconditional_ evolution of an SIR epidemic 
 based on a given [`AbstractInnovation`](@ref) 
 for innovations,
@@ -1070,6 +1080,9 @@ end
                         
 # # ### (Conditioned) evolution for an $\SIR$ epidemic
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 This implements _conditional_ evolution of an SIR epidemic 
 based on a given [`Innovation`](@ref) 
 for innovations,

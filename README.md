@@ -28,7 +28,7 @@ This is one of the first `julia` packages I have written.
    I hope eventually to re-write `EpidemicsUtilities.jl` based on a graphics
    package which is more actively maintained.
 
-3. Further to the previous point, `Gadfly`, more specifically `Compose`, require the package `JSON` to be at version `v1.13.4` or earlier. Presently this is dealt with by pinning `JSON` to version `v0.21.4` in the `docs` environment.
+3. Further to the previous point, `Gadfly` and more specifically `Compose` require the package `JSON` to be at version `v1.13.4` or earlier. Presently this is dealt with by pinning `JSON` to version `v0.21.4` in the `docs` environment. A similar fix is required in the main directory, this time to permit `Documenter` to work.
 
 
 Abbreviations

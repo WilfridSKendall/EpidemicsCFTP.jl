@@ -114,7 +114,7 @@ depict("key", new_figure(key_template,                             # hide
 set_default_plot_size(theme.figwidth, theme.figheight)             # hide
 ```
 
-![Recognition chart for various varieties of abstract incidents.](image/key.pdf)
+FIGURE! [Recognition chart for various varieties of abstract incidents.](image/key.pdf)
 
 #### `AbstractRemoval`
 `AbstractRemoval` is a generic sub-type of [`AbstractIncident`](@ref),
